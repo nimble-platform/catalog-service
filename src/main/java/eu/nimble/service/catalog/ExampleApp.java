@@ -1,4 +1,4 @@
-package eu.nimble.service.example;
+package eu.nimble.service.catalog;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.ExitCodeGenerator;

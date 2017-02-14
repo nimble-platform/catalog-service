@@ -1,4 +1,4 @@
-package eu.nimble.service.example.impl;
+package eu.nimble.service.catalog.impl;
 
 import eu.nimble.service.example.swagger.api.ExampleApi;
 import eu.nimble.service.example.swagger.model.Example;
