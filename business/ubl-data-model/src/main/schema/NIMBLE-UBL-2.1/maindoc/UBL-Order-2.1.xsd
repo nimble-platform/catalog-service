@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="urn:oasis:names:specification:ubl:schema:xsd:Order-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:oasis:names:specification:ubl:schema:xsd:Order-2" elementFormDefault="qualified" attributeFormDefault="unqualified" version="2.1">
+	<xsd:import namespace="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" schemaLocation="../common/UBL-CommonAggregateComponents-2.1.xsd"/>
+	<xsd:import namespace="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" schemaLocation="../common/UBL-CommonBasicComponents-2.1.xsd"/>
+	<xsd:element name="Order" type="OrderType"/>
+	<xsd:complexType name="OrderType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:ID"/>
+			<xsd:element ref="cbc:UUID" minOccurs="0"/>
+			<xsd:element ref="cbc:IssueDate"/>
+			<xsd:element ref="cbc:IssueTime" minOccurs="0"/>
+			<xsd:element ref="cbc:Note" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cbc:PricingCurrencyCode" minOccurs="0"/>
+			<xsd:element ref="cac:ValidityPeriod" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cac:QuotationDocumentReference" minOccurs="0"/>
+			<xsd:element ref="cac:CatalogueReference" minOccurs="0"/>
+			<xsd:element ref="cac:AdditionalDocumentReference" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cac:BuyerCustomerParty"/>
+			<xsd:element ref="cac:SellerSupplierParty"/>
+			<xsd:element ref="cac:Delivery" minOccurs="0"/>
+			<xsd:element ref="cac:PaymentMeans" minOccurs="0"/>
+			<xsd:element ref="cac:PaymentTerms" minOccurs="0"/>
+			<xsd:element ref="cac:AllowanceCharge" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cac:TaxTotal" minOccurs="0"/>
+			<xsd:element ref="cac:AnticipatedMonetaryTotal" minOccurs="0"/>
+			<xsd:element ref="cac:OrderLine" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

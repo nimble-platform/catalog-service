@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bindings xsi:schemaLocation="http://java.sun.com/xml/ns/jaxb http://java.sun.com/xml/ns/jaxb/bindingschema_2_0.xsd" version="2.1" xmlns="http://java.sun.com/xml/ns/jaxb" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<globalBindings typesafeEnumMaxMembers="2000" typesafeEnumMemberName="generateError" localScoping="toplevel">
+		<serializable uid="1"/>
+	</globalBindings>
+	<bindings schemaLocation="../../../schema/NIMBLE-UBL-2.1/common/UBL-CommonAggregateComponents-2.1.xsd" node="/xsd:schema">
+		<schemaBindings>
+			<package name="eu.nimble.service.model.ubl.commonaggregatecomponents" />
+		</schemaBindings>
+	</bindings>
+	<bindings schemaLocation="../../../schema/NIMBLE-UBL-2.1/common/UBL-CommonBasicComponents-2.1.xsd" node="/xsd:schema">
+		<schemaBindings>
+			<package name="eu.nimble.service.model.ubl.commonbasiccomponents" />
+		</schemaBindings>
+	</bindings>
+	<bindings schemaLocation="../../../schema/NIMBLE-UBL-2.1/maindoc/UBL-Catalogue-2.1.xsd" node="/xsd:schema">
+		<schemaBindings>
+			<package name="eu.nimble.service.model.ubl.catalogue" />
+		</schemaBindings>
+	</bindings>
+	<bindings schemaLocation="../../../schema/NIMBLE-UBL-2.1/maindoc/UBL-DespatchAdvice-2.1.xsd" node="/xsd:schema">
+		<schemaBindings>
+			<package name="eu.nimble.service.model.ubl.despatchadvice" />
+		</schemaBindings>
+	</bindings>
+	<bindings schemaLocation="../../../schema/NIMBLE-UBL-2.1/maindoc/UBL-Order-2.1.xsd" node="/xsd:schema">
+		<schemaBindings>
+			<package name="eu.nimble.service.model.ubl.order" />
+		</schemaBindings>
+	</bindings>
+	<bindings schemaLocation="../../../schema/NIMBLE-UBL-2.1/maindoc/UBL-OrderResponseSimple-2.1.xsd" node="/xsd:schema">
+		<schemaBindings>
+			<package name="eu.nimble.service.model.ubl.orderresponsesimple" />
+		</schemaBindings>
+	</bindings>
+	<bindings schemaLocation="../../../schema/NIMBLE-UBL-2.1/maindoc/UBL-Quotation-2.1.xsd" node="/xsd:schema">
+		<schemaBindings>
+			<package name="eu.nimble.service.model.ubl.quotation" />
+		</schemaBindings>
+	</bindings>
+	<bindings schemaLocation="../../../schema/NIMBLE-UBL-2.1/maindoc/UBL-ReceiptAdvice-2.1.xsd" node="/xsd:schema">
+		<schemaBindings>
+			<package name="eu.nimble.service.model.ubl.receiptadvice" />
+		</schemaBindings>
+	</bindings>
+	<bindings schemaLocation="../../../schema/NIMBLE-UBL-2.1/maindoc/UBL-RequestForQuotation-2.1.xsd" node="/xsd:schema">
+		<schemaBindings>
+			<package name="eu.nimble.service.model.ubl.requestforquotation" />
+		</schemaBindings>
+	</bindings>
+</bindings>

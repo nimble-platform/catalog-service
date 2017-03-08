@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+	    <groupId>eu.nimble.core.infrastructure</groupId>
+		<artifactId>business</artifactId>
+		<version>0.1-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+	<groupId>eu.nimble.core.infrastructure.business</groupId>
+	<artifactId>ubl-data-model</artifactId>
+	<version>0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<properties>
+		<generated-sources>${project.build.directory}/generated-sources/java</generated-sources>
+		<maven-jaxb2-plugin.version>0.13.1</maven-jaxb2-plugin.version>
+		<build-helper-plugin.version>3.0.0</build-helper-plugin.version>
+	</properties>
+	
+	<profiles>
+		<profile>
+			<!--
+			Profile used to generated classes based on XML/jaxb scheme.
+			The files are generated here : target/generated-sources
+
+			This profile is not active by default.
+			This profile get active if the the directory:
+			src/main/java/eu/apps/notification/model
+			does not exists.
+
+			If you want to activate this profile use a command with syntax :
+			mvn .... -P re-jaxb-source-generator
+			-->
+			<id>re-jaxb-source-generator</id>
+
+			<activation>
+				<file>
+					<missing>${generated-sources}</missing>
+					<!--<missing>target/generated-sources/java</missing>-->
+
+				</file>
+			</activation>
+
+			<build>
+				<resources>
+					<resource>
+						<directory>src/main/resources</directory>
+						<excludes>
+							<exclude>**/*.java</exclude>
+						</excludes>
+					</resource>
+					<resource>
+						<directory>${generated-sources}</directory>
+						<excludes>
+							<exclude>**/*.java</exclude>
+						</excludes>
+					</resource>
+				</resources>
+				<plugins>
+					<plugin>
+						<groupId>org.jvnet.jaxb2.maven2</groupId>
+						<artifactId>maven-jaxb2-plugin</artifactId>
+						<version>${maven-jaxb2-plugin.version}</version>
+						<executions>
+							<execution>
+								<id>generate.ubl.xsd</id>
+								<phase>generate-sources</phase>
+								<goals>
+									<goal>generate</goal>
+								</goals>
+								<configuration>
+									<schemaDirectory>src/main/schema/NIMBLE-UBL-2.1/maindoc</schemaDirectory>
+									<generateDirectory>${generated-sources}</generateDirectory>
+									<extension>true</extension>
+									<bindingDirectory>src/main/resources/bindings/ubl</bindingDirectory>
+									<bindingIncludes>
+										<include>**/*.xjb</include>
+									</bindingIncludes>
+									<plugins>
+										<plugin>
+											<groupId>org.jvnet.hyperjaxb3</groupId>
+											<artifactId>hyperjaxb3-ejb-plugin</artifactId>
+											<version>0.6.1</version>
+										</plugin>
+										<plugin>
+											<groupId>org.jvnet.jaxb2_commons</groupId>
+											<artifactId>jaxb2-basics</artifactId>
+											<version>0.10.0</version>
+										</plugin>
+										<plugin>
+											<groupId>org.jvnet.jaxb2_commons</groupId>
+											<artifactId>jaxb2-basics-annotate</artifactId>
+											<version>1.0.2</version>
+										</plugin>
+									</plugins>
+									<args>
+										<arg>-Xannotate</arg>
+										<arg>-Xequals</arg>
+										<arg>-Xinheritance</arg>
+										<arg>-Xhyperjaxb3-ejb</arg>
+										<arg>-Xhyperjaxb3-ejb-roundtripTestClassName=RoundtripTest</arg>
+										<arg>-Xhyperjaxb3-ejb-persistenceUnitName=ubl-data-model</arg>
+									</args>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>add-source</id>
+								<phase>generate-sources</phase>
+								<goals>
+									<goal>add-source</goal>
+								</goals>
+								<configuration>
+									<sources>
+										<source>${generated-sources}</source>
+									</sources>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+
+				</plugins>
+			</build>
+			<dependencies>
+				<dependency>
+					<groupId>org.jvnet.jaxb2.maven2</groupId>
+					<artifactId>maven-jaxb2-plugin</artifactId>
+					<version>${maven-jaxb2-plugin.version}</version>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
+	<dependencies>
+		<!-- Roudtrip -->
+		<dependency>
+			<groupId>org.jvnet.hyperjaxb3</groupId>
+			<artifactId>hyperjaxb3-ejb-roundtrip</artifactId>
+			<version>0.6.1</version>
+			<exclusions>
+				<exclusion> 
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-log4j12</artifactId>
+				</exclusion>
+				<exclusion> 
+					<groupId>log4j</groupId>
+					<artifactId>log4j</artifactId>
+				</exclusion>
+			</exclusions> 
+		</dependency>
+		<dependency>
+			<groupId>eu.nimble.core.infrastructure.core</groupId>
+			<artifactId>utility</artifactId>
+			<version>0.1-SNAPSHOT</version>
+		</dependency>
+	</dependencies>
+</project>

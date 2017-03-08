@@ -1,0 +1,690 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Catalogue xsi:schemaLocation="urn:oasis:names:specification:ubl:schema:xsd:Catalogue-2 ..\..\main\schema\NIMBLE-UBL-2.1\maindoc\UBL-Catalogue-2.1.xsd" xmlns="urn:oasis:names:specification:ubl:schema:xsd:Catalogue-2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+	<cbc:ID>13871387</cbc:ID>
+	<cbc:UUID>367c7f4d-c8a4-43d0-bc67-b3229d3340a1</cbc:UUID>
+	<cbc:Name>String</cbc:Name>
+	<cbc:IssueDate>1967-08-13</cbc:IssueDate>
+	<cbc:IssueTime>14:20:00.0Z</cbc:IssueTime>
+	<cbc:RevisionDate>1967-08-13</cbc:RevisionDate>
+	<cbc:RevisionTime>14:20:00.0Z</cbc:RevisionTime>
+	<cbc:Description>0.0</cbc:Description>
+	<cbc:VersionID>normalizedString</cbc:VersionID>
+	<cbc:PreviousVersionID>normalizedString</cbc:PreviousVersionID>
+	<cac:ValidityPeriod>
+		<cbc:StartDate>1967-08-13</cbc:StartDate>
+		<cbc:StartTime>14:20:00.0Z</cbc:StartTime>
+		<cbc:EndDate>1967-08-13</cbc:EndDate>
+		<cbc:EndTime>14:20:00.0Z</cbc:EndTime>
+		<cbc:DurationMeasure unitCode="normalizedString">0.0</cbc:DurationMeasure>
+	</cac:ValidityPeriod>
+	<cac:ProviderParty>
+		<cbc:WebsiteURI>String</cbc:WebsiteURI>
+		<cbc:LogoReferenceID>normalizedString</cbc:LogoReferenceID>
+		<cbc:EndpointID>normalizedString</cbc:EndpointID>
+		<cbc:IndustryClassificationCode>normalizedString</cbc:IndustryClassificationCode>
+		<cac:PartyIdentification>
+			<cbc:ID>normalizedString</cbc:ID>
+		</cac:PartyIdentification>
+		<cac:PartyName>
+			<cbc:Name>String</cbc:Name>
+		</cac:PartyName>
+		<cac:Language>
+			<cbc:ID>normalizedString</cbc:ID>
+			<cbc:Name>String</cbc:Name>
+			<cbc:LocaleCode>normalizedString</cbc:LocaleCode>
+		</cac:Language>
+		<cac:PostalAddress>
+			<cbc:ID>normalizedString</cbc:ID>
+			<cbc:AddressTypeCode>normalizedString</cbc:AddressTypeCode>
+			<cbc:AddressFormatCode>normalizedString</cbc:AddressFormatCode>
+			<cbc:Postbox>String</cbc:Postbox>
+			<cbc:Floor>String</cbc:Floor>
+			<cbc:Room>String</cbc:Room>
+			<cbc:StreetName>String</cbc:StreetName>
+			<cbc:AdditionalStreetName>String</cbc:AdditionalStreetName>
+			<cbc:BlockName>String</cbc:BlockName>
+			<cbc:BuildingName>String</cbc:BuildingName>
+			<cbc:BuildingNumber>String</cbc:BuildingNumber>
+			<cbc:InhouseMail>String</cbc:InhouseMail>
+			<cbc:Department>String</cbc:Department>
+			<cbc:CitySubdivisionName>String</cbc:CitySubdivisionName>
+			<cbc:CityName>String</cbc:CityName>
+			<cbc:PostalZone>String</cbc:PostalZone>
+			<cbc:CountrySubentity>String</cbc:CountrySubentity>
+			<cbc:CountrySubentityCode>normalizedString</cbc:CountrySubentityCode>
+			<cbc:Region>String</cbc:Region>
+			<cbc:District>String</cbc:District>
+			<cac:AddressLine>
+				<cbc:Line>String</cbc:Line>
+			</cac:AddressLine>
+			<cac:Country>
+				<cbc:IdentificationCode>normalizedString</cbc:IdentificationCode>
+				<cbc:Name>String</cbc:Name>
+			</cac:Country>
+			<cac:LocationCoordinate>
+				<cbc:CoordinateSystemCode>normalizedString</cbc:CoordinateSystemCode>
+				<cbc:LatitudeDegreesMeasure unitCode="normalizedString">0.0</cbc:LatitudeDegreesMeasure>
+				<cbc:LatitudeMinutesMeasure unitCode="normalizedString">0.0</cbc:LatitudeMinutesMeasure>
+				<cbc:LatitudeDirectionCode>normalizedString</cbc:LatitudeDirectionCode>
+				<cbc:LongitudeDegreesMeasure unitCode="normalizedString">0.0</cbc:LongitudeDegreesMeasure>
+				<cbc:LongitudeMinutesMeasure unitCode="normalizedString">0.0</cbc:LongitudeMinutesMeasure>
+				<cbc:LongitudeDirectionCode>normalizedString</cbc:LongitudeDirectionCode>
+				<cbc:AltitudeMeasure unitCode="normalizedString">0.0</cbc:AltitudeMeasure>
+			</cac:LocationCoordinate>
+		</cac:PostalAddress>
+		<cac:PartyTaxScheme>
+			<cbc:RegistrationName>String</cbc:RegistrationName>
+			<cbc:CompanyID>normalizedString</cbc:CompanyID>
+			<cbc:TaxLevelCode>normalizedString</cbc:TaxLevelCode>
+			<cbc:ExemptionReasonCode>normalizedString</cbc:ExemptionReasonCode>
+			<cbc:ExemptionReason>String</cbc:ExemptionReason>
+			<cac:RegistrationAddress>
+				<cbc:ID>normalizedString</cbc:ID>
+				<cbc:AddressTypeCode>normalizedString</cbc:AddressTypeCode>
+				<cbc:AddressFormatCode>normalizedString</cbc:AddressFormatCode>
+				<cbc:Postbox>String</cbc:Postbox>
+				<cbc:Floor>String</cbc:Floor>
+				<cbc:Room>String</cbc:Room>
+				<cbc:StreetName>String</cbc:StreetName>
+				<cbc:AdditionalStreetName>String</cbc:AdditionalStreetName>
+				<cbc:BlockName>String</cbc:BlockName>
+				<cbc:BuildingName>String</cbc:BuildingName>
+				<cbc:BuildingNumber>String</cbc:BuildingNumber>
+				<cbc:InhouseMail>String</cbc:InhouseMail>
+				<cbc:Department>String</cbc:Department>
+				<cbc:CitySubdivisionName>String</cbc:CitySubdivisionName>
+				<cbc:CityName>String</cbc:CityName>
+				<cbc:PostalZone>String</cbc:PostalZone>
+				<cbc:CountrySubentity>String</cbc:CountrySubentity>
+				<cbc:CountrySubentityCode>normalizedString</cbc:CountrySubentityCode>
+				<cbc:Region>String</cbc:Region>
+				<cbc:District>String</cbc:District>
+				<cac:AddressLine>
+					<cbc:Line>String</cbc:Line>
+				</cac:AddressLine>
+				<cac:Country>
+					<cbc:IdentificationCode>normalizedString</cbc:IdentificationCode>
+					<cbc:Name>String</cbc:Name>
+				</cac:Country>
+				<cac:LocationCoordinate>
+					<cbc:CoordinateSystemCode>normalizedString</cbc:CoordinateSystemCode>
+					<cbc:LatitudeDegreesMeasure unitCode="normalizedString">0.0</cbc:LatitudeDegreesMeasure>
+					<cbc:LatitudeMinutesMeasure unitCode="normalizedString">0.0</cbc:LatitudeMinutesMeasure>
+					<cbc:LatitudeDirectionCode>normalizedString</cbc:LatitudeDirectionCode>
+					<cbc:LongitudeDegreesMeasure unitCode="normalizedString">0.0</cbc:LongitudeDegreesMeasure>
+					<cbc:LongitudeMinutesMeasure unitCode="normalizedString">0.0</cbc:LongitudeMinutesMeasure>
+					<cbc:LongitudeDirectionCode>normalizedString</cbc:LongitudeDirectionCode>
+					<cbc:AltitudeMeasure unitCode="normalizedString">0.0</cbc:AltitudeMeasure>
+				</cac:LocationCoordinate>
+			</cac:RegistrationAddress>
+			<cac:TaxScheme>
+				<cbc:Name>String</cbc:Name>
+				<cbc:TaxTypeCode>normalizedString</cbc:TaxTypeCode>
+			</cac:TaxScheme>
+		</cac:PartyTaxScheme>
+		<cac:PartyLegalEntity>
+			<cbc:RegistrationName>String</cbc:RegistrationName>
+			<cbc:CompanyID>normalizedString</cbc:CompanyID>
+			<cbc:RegistrationDate>1967-08-13</cbc:RegistrationDate>
+			<cbc:RegistrationExpirationDate>1967-08-13</cbc:RegistrationExpirationDate>
+			<cbc:CompanyLegalForm>String</cbc:CompanyLegalForm>
+			<cac:RegistrationAddress>
+				<cbc:ID>normalizedString</cbc:ID>
+				<cbc:AddressTypeCode>normalizedString</cbc:AddressTypeCode>
+				<cbc:AddressFormatCode>normalizedString</cbc:AddressFormatCode>
+				<cbc:Postbox>String</cbc:Postbox>
+				<cbc:Floor>String</cbc:Floor>
+				<cbc:Room>String</cbc:Room>
+				<cbc:StreetName>String</cbc:StreetName>
+				<cbc:AdditionalStreetName>String</cbc:AdditionalStreetName>
+				<cbc:BlockName>String</cbc:BlockName>
+				<cbc:BuildingName>String</cbc:BuildingName>
+				<cbc:BuildingNumber>String</cbc:BuildingNumber>
+				<cbc:InhouseMail>String</cbc:InhouseMail>
+				<cbc:Department>String</cbc:Department>
+				<cbc:CitySubdivisionName>String</cbc:CitySubdivisionName>
+				<cbc:CityName>String</cbc:CityName>
+				<cbc:PostalZone>String</cbc:PostalZone>
+				<cbc:CountrySubentity>String</cbc:CountrySubentity>
+				<cbc:CountrySubentityCode>normalizedString</cbc:CountrySubentityCode>
+				<cbc:Region>String</cbc:Region>
+				<cbc:District>String</cbc:District>
+				<cac:AddressLine>
+					<cbc:Line>String</cbc:Line>
+				</cac:AddressLine>
+				<cac:Country>
+					<cbc:IdentificationCode>normalizedString</cbc:IdentificationCode>
+					<cbc:Name>String</cbc:Name>
+				</cac:Country>
+				<cac:LocationCoordinate>
+					<cbc:CoordinateSystemCode>normalizedString</cbc:CoordinateSystemCode>
+					<cbc:LatitudeDegreesMeasure unitCode="normalizedString">0.0</cbc:LatitudeDegreesMeasure>
+					<cbc:LatitudeMinutesMeasure unitCode="normalizedString">0.0</cbc:LatitudeMinutesMeasure>
+					<cbc:LatitudeDirectionCode>normalizedString</cbc:LatitudeDirectionCode>
+					<cbc:LongitudeDegreesMeasure unitCode="normalizedString">0.0</cbc:LongitudeDegreesMeasure>
+					<cbc:LongitudeMinutesMeasure unitCode="normalizedString">0.0</cbc:LongitudeMinutesMeasure>
+					<cbc:LongitudeDirectionCode>normalizedString</cbc:LongitudeDirectionCode>
+					<cbc:AltitudeMeasure unitCode="normalizedString">0.0</cbc:AltitudeMeasure>
+				</cac:LocationCoordinate>
+			</cac:RegistrationAddress>
+			<cac:ShareholderParty>
+				<cbc:PartecipationPercent>0.0</cbc:PartecipationPercent>
+			</cac:ShareholderParty>
+		</cac:PartyLegalEntity>
+		<cac:Contact>
+			<cbc:ID>normalizedString</cbc:ID>
+			<cbc:Name>String</cbc:Name>
+			<cbc:Telephone>String</cbc:Telephone>
+			<cbc:Telefax>String</cbc:Telefax>
+			<cbc:ElectronicMail>String</cbc:ElectronicMail>
+			<cbc:Note>String</cbc:Note>
+			<cac:OtherCommunication>
+				<cbc:Channel>String</cbc:Channel>
+				<cbc:Value>String</cbc:Value>
+			</cac:OtherCommunication>
+		</cac:Contact>
+		<cac:FinancialAccount>
+			<cbc:ID>normalizedString</cbc:ID>
+			<cbc:Name>String</cbc:Name>
+			<cbc:AliasName>String</cbc:AliasName>
+			<cbc:AccountTypeCode>normalizedString</cbc:AccountTypeCode>
+			<cbc:AccountFormatCode>normalizedString</cbc:AccountFormatCode>
+			<cbc:CurrencyCode>normalizedString</cbc:CurrencyCode>
+			<cbc:PaymentNote>String</cbc:PaymentNote>
+			<cac:FinancialInstitutionBranch>
+				<cbc:ID>normalizedString</cbc:ID>
+				<cbc:Name>String</cbc:Name>
+				<cac:FinancialInstitution>
+					<cbc:ID>normalizedString</cbc:ID>
+					<cbc:Name>String</cbc:Name>
+				</cac:FinancialInstitution>
+				<cac:Address>
+					<cbc:ID>normalizedString</cbc:ID>
+					<cbc:AddressTypeCode>normalizedString</cbc:AddressTypeCode>
+					<cbc:AddressFormatCode>normalizedString</cbc:AddressFormatCode>
+					<cbc:Postbox>String</cbc:Postbox>
+					<cbc:Floor>String</cbc:Floor>
+					<cbc:Room>String</cbc:Room>
+					<cbc:StreetName>String</cbc:StreetName>
+					<cbc:AdditionalStreetName>String</cbc:AdditionalStreetName>
+					<cbc:BlockName>String</cbc:BlockName>
+					<cbc:BuildingName>String</cbc:BuildingName>
+					<cbc:BuildingNumber>String</cbc:BuildingNumber>
+					<cbc:InhouseMail>String</cbc:InhouseMail>
+					<cbc:Department>String</cbc:Department>
+					<cbc:CitySubdivisionName>String</cbc:CitySubdivisionName>
+					<cbc:CityName>String</cbc:CityName>
+					<cbc:PostalZone>String</cbc:PostalZone>
+					<cbc:CountrySubentity>String</cbc:CountrySubentity>
+					<cbc:CountrySubentityCode>normalizedString</cbc:CountrySubentityCode>
+					<cbc:Region>String</cbc:Region>
+					<cbc:District>String</cbc:District>
+					<cac:AddressLine>
+						<cbc:Line>String</cbc:Line>
+					</cac:AddressLine>
+					<cac:Country>
+						<cbc:IdentificationCode>normalizedString</cbc:IdentificationCode>
+						<cbc:Name>String</cbc:Name>
+					</cac:Country>
+					<cac:LocationCoordinate>
+						<cbc:CoordinateSystemCode>normalizedString</cbc:CoordinateSystemCode>
+						<cbc:LatitudeDegreesMeasure unitCode="normalizedString">0.0</cbc:LatitudeDegreesMeasure>
+						<cbc:LatitudeMinutesMeasure unitCode="normalizedString">0.0</cbc:LatitudeMinutesMeasure>
+						<cbc:LatitudeDirectionCode>normalizedString</cbc:LatitudeDirectionCode>
+						<cbc:LongitudeDegreesMeasure unitCode="normalizedString">0.0</cbc:LongitudeDegreesMeasure>
+						<cbc:LongitudeMinutesMeasure unitCode="normalizedString">0.0</cbc:LongitudeMinutesMeasure>
+						<cbc:LongitudeDirectionCode>normalizedString</cbc:LongitudeDirectionCode>
+						<cbc:AltitudeMeasure unitCode="normalizedString">0.0</cbc:AltitudeMeasure>
+					</cac:LocationCoordinate>
+				</cac:Address>
+			</cac:FinancialInstitutionBranch>
+		</cac:FinancialAccount>
+	</cac:ProviderParty>
+	<cac:ReceiverParty>
+		<cbc:WebsiteURI>String</cbc:WebsiteURI>
+		<cbc:LogoReferenceID>normalizedString</cbc:LogoReferenceID>
+		<cbc:EndpointID>normalizedString</cbc:EndpointID>
+		<cbc:IndustryClassificationCode>normalizedString</cbc:IndustryClassificationCode>
+		<cac:PartyIdentification>
+			<cbc:ID>normalizedString</cbc:ID>
+		</cac:PartyIdentification>
+		<cac:PartyName>
+			<cbc:Name>String</cbc:Name>
+		</cac:PartyName>
+		<cac:Language>
+			<cbc:ID>normalizedString</cbc:ID>
+			<cbc:Name>String</cbc:Name>
+			<cbc:LocaleCode>normalizedString</cbc:LocaleCode>
+		</cac:Language>
+		<cac:PostalAddress>
+			<cbc:ID>normalizedString</cbc:ID>
+			<cbc:AddressTypeCode>normalizedString</cbc:AddressTypeCode>
+			<cbc:AddressFormatCode>normalizedString</cbc:AddressFormatCode>
+			<cbc:Postbox>String</cbc:Postbox>
+			<cbc:Floor>String</cbc:Floor>
+			<cbc:Room>String</cbc:Room>
+			<cbc:StreetName>String</cbc:StreetName>
+			<cbc:AdditionalStreetName>String</cbc:AdditionalStreetName>
+			<cbc:BlockName>String</cbc:BlockName>
+			<cbc:BuildingName>String</cbc:BuildingName>
+			<cbc:BuildingNumber>String</cbc:BuildingNumber>
+			<cbc:InhouseMail>String</cbc:InhouseMail>
+			<cbc:Department>String</cbc:Department>
+			<cbc:CitySubdivisionName>String</cbc:CitySubdivisionName>
+			<cbc:CityName>String</cbc:CityName>
+			<cbc:PostalZone>String</cbc:PostalZone>
+			<cbc:CountrySubentity>String</cbc:CountrySubentity>
+			<cbc:CountrySubentityCode>normalizedString</cbc:CountrySubentityCode>
+			<cbc:Region>String</cbc:Region>
+			<cbc:District>String</cbc:District>
+			<cac:AddressLine>
+				<cbc:Line>String</cbc:Line>
+			</cac:AddressLine>
+			<cac:Country>
+				<cbc:IdentificationCode>normalizedString</cbc:IdentificationCode>
+				<cbc:Name>String</cbc:Name>
+			</cac:Country>
+			<cac:LocationCoordinate>
+				<cbc:CoordinateSystemCode>normalizedString</cbc:CoordinateSystemCode>
+				<cbc:LatitudeDegreesMeasure unitCode="normalizedString">0.0</cbc:LatitudeDegreesMeasure>
+				<cbc:LatitudeMinutesMeasure unitCode="normalizedString">0.0</cbc:LatitudeMinutesMeasure>
+				<cbc:LatitudeDirectionCode>normalizedString</cbc:LatitudeDirectionCode>
+				<cbc:LongitudeDegreesMeasure unitCode="normalizedString">0.0</cbc:LongitudeDegreesMeasure>
+				<cbc:LongitudeMinutesMeasure unitCode="normalizedString">0.0</cbc:LongitudeMinutesMeasure>
+				<cbc:LongitudeDirectionCode>normalizedString</cbc:LongitudeDirectionCode>
+				<cbc:AltitudeMeasure unitCode="normalizedString">0.0</cbc:AltitudeMeasure>
+			</cac:LocationCoordinate>
+		</cac:PostalAddress>
+		<cac:PartyTaxScheme>
+			<cbc:RegistrationName>String</cbc:RegistrationName>
+			<cbc:CompanyID>normalizedString</cbc:CompanyID>
+			<cbc:TaxLevelCode>normalizedString</cbc:TaxLevelCode>
+			<cbc:ExemptionReasonCode>normalizedString</cbc:ExemptionReasonCode>
+			<cbc:ExemptionReason>String</cbc:ExemptionReason>
+			<cac:RegistrationAddress>
+				<cbc:ID>normalizedString</cbc:ID>
+				<cbc:AddressTypeCode>normalizedString</cbc:AddressTypeCode>
+				<cbc:AddressFormatCode>normalizedString</cbc:AddressFormatCode>
+				<cbc:Postbox>String</cbc:Postbox>
+				<cbc:Floor>String</cbc:Floor>
+				<cbc:Room>String</cbc:Room>
+				<cbc:StreetName>String</cbc:StreetName>
+				<cbc:AdditionalStreetName>String</cbc:AdditionalStreetName>
+				<cbc:BlockName>String</cbc:BlockName>
+				<cbc:BuildingName>String</cbc:BuildingName>
+				<cbc:BuildingNumber>String</cbc:BuildingNumber>
+				<cbc:InhouseMail>String</cbc:InhouseMail>
+				<cbc:Department>String</cbc:Department>
+				<cbc:CitySubdivisionName>String</cbc:CitySubdivisionName>
+				<cbc:CityName>String</cbc:CityName>
+				<cbc:PostalZone>String</cbc:PostalZone>
+				<cbc:CountrySubentity>String</cbc:CountrySubentity>
+				<cbc:CountrySubentityCode>normalizedString</cbc:CountrySubentityCode>
+				<cbc:Region>String</cbc:Region>
+				<cbc:District>String</cbc:District>
+				<cac:AddressLine>
+					<cbc:Line>String</cbc:Line>
+				</cac:AddressLine>
+				<cac:Country>
+					<cbc:IdentificationCode>normalizedString</cbc:IdentificationCode>
+					<cbc:Name>String</cbc:Name>
+				</cac:Country>
+				<cac:LocationCoordinate>
+					<cbc:CoordinateSystemCode>normalizedString</cbc:CoordinateSystemCode>
+					<cbc:LatitudeDegreesMeasure unitCode="normalizedString">0.0</cbc:LatitudeDegreesMeasure>
+					<cbc:LatitudeMinutesMeasure unitCode="normalizedString">0.0</cbc:LatitudeMinutesMeasure>
+					<cbc:LatitudeDirectionCode>normalizedString</cbc:LatitudeDirectionCode>
+					<cbc:LongitudeDegreesMeasure unitCode="normalizedString">0.0</cbc:LongitudeDegreesMeasure>
+					<cbc:LongitudeMinutesMeasure unitCode="normalizedString">0.0</cbc:LongitudeMinutesMeasure>
+					<cbc:LongitudeDirectionCode>normalizedString</cbc:LongitudeDirectionCode>
+					<cbc:AltitudeMeasure unitCode="normalizedString">0.0</cbc:AltitudeMeasure>
+				</cac:LocationCoordinate>
+			</cac:RegistrationAddress>
+			<cac:TaxScheme>
+				<cbc:Name>String</cbc:Name>
+				<cbc:TaxTypeCode>normalizedString</cbc:TaxTypeCode>
+			</cac:TaxScheme>
+		</cac:PartyTaxScheme>
+		<cac:PartyLegalEntity>
+			<cbc:RegistrationName>String</cbc:RegistrationName>
+			<cbc:CompanyID>normalizedString</cbc:CompanyID>
+			<cbc:RegistrationDate>1967-08-13</cbc:RegistrationDate>
+			<cbc:RegistrationExpirationDate>1967-08-13</cbc:RegistrationExpirationDate>
+			<cbc:CompanyLegalForm>String</cbc:CompanyLegalForm>
+			<cac:RegistrationAddress>
+				<cbc:ID>normalizedString</cbc:ID>
+				<cbc:AddressTypeCode>normalizedString</cbc:AddressTypeCode>
+				<cbc:AddressFormatCode>normalizedString</cbc:AddressFormatCode>
+				<cbc:Postbox>String</cbc:Postbox>
+				<cbc:Floor>String</cbc:Floor>
+				<cbc:Room>String</cbc:Room>
+				<cbc:StreetName>String</cbc:StreetName>
+				<cbc:AdditionalStreetName>String</cbc:AdditionalStreetName>
+				<cbc:BlockName>String</cbc:BlockName>
+				<cbc:BuildingName>String</cbc:BuildingName>
+				<cbc:BuildingNumber>String</cbc:BuildingNumber>
+				<cbc:InhouseMail>String</cbc:InhouseMail>
+				<cbc:Department>String</cbc:Department>
+				<cbc:CitySubdivisionName>String</cbc:CitySubdivisionName>
+				<cbc:CityName>String</cbc:CityName>
+				<cbc:PostalZone>String</cbc:PostalZone>
+				<cbc:CountrySubentity>String</cbc:CountrySubentity>
+				<cbc:CountrySubentityCode>normalizedString</cbc:CountrySubentityCode>
+				<cbc:Region>String</cbc:Region>
+				<cbc:District>String</cbc:District>
+				<cac:AddressLine>
+					<cbc:Line>String</cbc:Line>
+				</cac:AddressLine>
+				<cac:Country>
+					<cbc:IdentificationCode>normalizedString</cbc:IdentificationCode>
+					<cbc:Name>String</cbc:Name>
+				</cac:Country>
+				<cac:LocationCoordinate>
+					<cbc:CoordinateSystemCode>normalizedString</cbc:CoordinateSystemCode>
+					<cbc:LatitudeDegreesMeasure unitCode="normalizedString">0.0</cbc:LatitudeDegreesMeasure>
+					<cbc:LatitudeMinutesMeasure unitCode="normalizedString">0.0</cbc:LatitudeMinutesMeasure>
+					<cbc:LatitudeDirectionCode>normalizedString</cbc:LatitudeDirectionCode>
+					<cbc:LongitudeDegreesMeasure unitCode="normalizedString">0.0</cbc:LongitudeDegreesMeasure>
+					<cbc:LongitudeMinutesMeasure unitCode="normalizedString">0.0</cbc:LongitudeMinutesMeasure>
+					<cbc:LongitudeDirectionCode>normalizedString</cbc:LongitudeDirectionCode>
+					<cbc:AltitudeMeasure unitCode="normalizedString">0.0</cbc:AltitudeMeasure>
+				</cac:LocationCoordinate>
+			</cac:RegistrationAddress>
+			<cac:ShareholderParty>
+				<cbc:PartecipationPercent>0.0</cbc:PartecipationPercent>
+			</cac:ShareholderParty>
+		</cac:PartyLegalEntity>
+		<cac:Contact>
+			<cbc:ID>normalizedString</cbc:ID>
+			<cbc:Name>String</cbc:Name>
+			<cbc:Telephone>String</cbc:Telephone>
+			<cbc:Telefax>String</cbc:Telefax>
+			<cbc:ElectronicMail>String</cbc:ElectronicMail>
+			<cbc:Note>String</cbc:Note>
+			<cac:OtherCommunication>
+				<cbc:Channel>String</cbc:Channel>
+				<cbc:Value>String</cbc:Value>
+			</cac:OtherCommunication>
+		</cac:Contact>
+		<cac:FinancialAccount>
+			<cbc:ID>normalizedString</cbc:ID>
+			<cbc:Name>String</cbc:Name>
+			<cbc:AliasName>String</cbc:AliasName>
+			<cbc:AccountTypeCode>normalizedString</cbc:AccountTypeCode>
+			<cbc:AccountFormatCode>normalizedString</cbc:AccountFormatCode>
+			<cbc:CurrencyCode>normalizedString</cbc:CurrencyCode>
+			<cbc:PaymentNote>String</cbc:PaymentNote>
+			<cac:FinancialInstitutionBranch>
+				<cbc:ID>normalizedString</cbc:ID>
+				<cbc:Name>String</cbc:Name>
+				<cac:FinancialInstitution>
+					<cbc:ID>normalizedString</cbc:ID>
+					<cbc:Name>String</cbc:Name>
+				</cac:FinancialInstitution>
+				<cac:Address>
+					<cbc:ID>normalizedString</cbc:ID>
+					<cbc:AddressTypeCode>normalizedString</cbc:AddressTypeCode>
+					<cbc:AddressFormatCode>normalizedString</cbc:AddressFormatCode>
+					<cbc:Postbox>String</cbc:Postbox>
+					<cbc:Floor>String</cbc:Floor>
+					<cbc:Room>String</cbc:Room>
+					<cbc:StreetName>String</cbc:StreetName>
+					<cbc:AdditionalStreetName>String</cbc:AdditionalStreetName>
+					<cbc:BlockName>String</cbc:BlockName>
+					<cbc:BuildingName>String</cbc:BuildingName>
+					<cbc:BuildingNumber>String</cbc:BuildingNumber>
+					<cbc:InhouseMail>String</cbc:InhouseMail>
+					<cbc:Department>String</cbc:Department>
+					<cbc:CitySubdivisionName>String</cbc:CitySubdivisionName>
+					<cbc:CityName>String</cbc:CityName>
+					<cbc:PostalZone>String</cbc:PostalZone>
+					<cbc:CountrySubentity>String</cbc:CountrySubentity>
+					<cbc:CountrySubentityCode>normalizedString</cbc:CountrySubentityCode>
+					<cbc:Region>String</cbc:Region>
+					<cbc:District>String</cbc:District>
+					<cac:AddressLine>
+						<cbc:Line>String</cbc:Line>
+					</cac:AddressLine>
+					<cac:Country>
+						<cbc:IdentificationCode>normalizedString</cbc:IdentificationCode>
+						<cbc:Name>String</cbc:Name>
+					</cac:Country>
+					<cac:LocationCoordinate>
+						<cbc:CoordinateSystemCode>normalizedString</cbc:CoordinateSystemCode>
+						<cbc:LatitudeDegreesMeasure unitCode="normalizedString">0.0</cbc:LatitudeDegreesMeasure>
+						<cbc:LatitudeMinutesMeasure unitCode="normalizedString">0.0</cbc:LatitudeMinutesMeasure>
+						<cbc:LatitudeDirectionCode>normalizedString</cbc:LatitudeDirectionCode>
+						<cbc:LongitudeDegreesMeasure unitCode="normalizedString">0.0</cbc:LongitudeDegreesMeasure>
+						<cbc:LongitudeMinutesMeasure unitCode="normalizedString">0.0</cbc:LongitudeMinutesMeasure>
+						<cbc:LongitudeDirectionCode>normalizedString</cbc:LongitudeDirectionCode>
+						<cbc:AltitudeMeasure unitCode="normalizedString">0.0</cbc:AltitudeMeasure>
+					</cac:LocationCoordinate>
+				</cac:Address>
+			</cac:FinancialInstitutionBranch>
+		</cac:FinancialAccount>
+	</cac:ReceiverParty>
+	<cac:CatalogueLine>
+		<cbc:ID>normalizedString</cbc:ID>
+		<cbc:Note>String</cbc:Note>
+		<cbc:OrderableIndicator>true</cbc:OrderableIndicator>
+		<cbc:OrderableUnit>String</cbc:OrderableUnit>
+		<cbc:ContentUnitQuantity unitCode="normalizedString">0.0</cbc:ContentUnitQuantity>
+		<cbc:OrderQuantityIncrementNumeric>0.0</cbc:OrderQuantityIncrementNumeric>
+		<cbc:MinimumOrderQuantity unitCode="normalizedString">0.0</cbc:MinimumOrderQuantity>
+		<cbc:MaximumOrderQuantity unitCode="normalizedString">0.0</cbc:MaximumOrderQuantity>
+		<cbc:WarrantyInformation>String</cbc:WarrantyInformation>
+		<cac:WarrantyValidityPeriod>
+			<cbc:StartDate>1967-08-13</cbc:StartDate>
+			<cbc:StartTime>14:20:00.0Z</cbc:StartTime>
+			<cbc:EndDate>1967-08-13</cbc:EndDate>
+			<cbc:EndTime>14:20:00.0Z</cbc:EndTime>
+			<cbc:DurationMeasure unitCode="normalizedString">0.0</cbc:DurationMeasure>
+		</cac:WarrantyValidityPeriod>
+		<cac:LineValidityPeriod>
+			<cbc:StartDate>1967-08-13</cbc:StartDate>
+			<cbc:StartTime>14:20:00.0Z</cbc:StartTime>
+			<cbc:EndDate>1967-08-13</cbc:EndDate>
+			<cbc:EndTime>14:20:00.0Z</cbc:EndTime>
+			<cbc:DurationMeasure unitCode="normalizedString">0.0</cbc:DurationMeasure>
+		</cac:LineValidityPeriod>
+		<cac:ComponentRelatedItem>
+			<cbc:ID>normalizedString</cbc:ID>
+			<cbc:Quantity unitCode="normalizedString">0.0</cbc:Quantity>
+			<cbc:Description>0.0</cbc:Description>
+		</cac:ComponentRelatedItem>
+		<cac:AccessoryRelatedItem>
+			<cbc:ID>normalizedString</cbc:ID>
+			<cbc:Quantity unitCode="normalizedString">0.0</cbc:Quantity>
+			<cbc:Description>0.0</cbc:Description>
+		</cac:AccessoryRelatedItem>
+		<cac:RequiredRelatedItem>
+			<cbc:ID>normalizedString</cbc:ID>
+			<cbc:Quantity unitCode="normalizedString">0.0</cbc:Quantity>
+			<cbc:Description>0.0</cbc:Description>
+		</cac:RequiredRelatedItem>
+		<cac:ComplementaryRelatedItem>
+			<cbc:ID>normalizedString</cbc:ID>
+			<cbc:Quantity unitCode="normalizedString">0.0</cbc:Quantity>
+			<cbc:Description>0.0</cbc:Description>
+		</cac:ComplementaryRelatedItem>
+		<cac:RequiredItemLocationQuantity>
+			<cbc:LeadTimeMeasure unitCode="normalizedString">0.0</cbc:LeadTimeMeasure>
+			<cbc:HazardousRiskIndicator>true</cbc:HazardousRiskIndicator>
+			<cbc:TradingRestrictions>String</cbc:TradingRestrictions>
+			<cac:Price>
+				<cbc:PriceAmount currencyID="normalizedString">0.0</cbc:PriceAmount>
+				<cbc:BaseQuantity unitCode="normalizedString">0.0</cbc:BaseQuantity>
+				<cbc:PriceChangeReason>String</cbc:PriceChangeReason>
+				<cbc:PriceType>String</cbc:PriceType>
+				<cac:ValidityPeriod>
+					<cbc:StartDate>1967-08-13</cbc:StartDate>
+					<cbc:StartTime>14:20:00.0Z</cbc:StartTime>
+					<cbc:EndDate>1967-08-13</cbc:EndDate>
+					<cbc:EndTime>14:20:00.0Z</cbc:EndTime>
+					<cbc:DurationMeasure unitCode="normalizedString">0.0</cbc:DurationMeasure>
+				</cac:ValidityPeriod>
+				<cac:AllowanceCharge>
+					<cbc:ChargeIndicator>true</cbc:ChargeIndicator>
+					<cbc:AllowanceChargeReason>String</cbc:AllowanceChargeReason>
+					<cbc:MultiplierFactorNumeric>0.0</cbc:MultiplierFactorNumeric>
+					<cbc:SequenceNumeric>0.0</cbc:SequenceNumeric>
+					<cbc:Amount currencyID="normalizedString">0.0</cbc:Amount>
+					<cbc:BaseAmount currencyID="normalizedString">0.0</cbc:BaseAmount>
+					<cbc:PerUnitAmount currencyID="normalizedString">0.0</cbc:PerUnitAmount>
+				</cac:AllowanceCharge>
+				<cac:PricingExchangeRate>
+					<cbc:SourceCurrencyCode>normalizedString</cbc:SourceCurrencyCode>
+					<cbc:TargetCurrencyCode>normalizedString</cbc:TargetCurrencyCode>
+					<cbc:CalculationRate>0.0</cbc:CalculationRate>
+					<cbc:Date>1967-08-13</cbc:Date>
+				</cac:PricingExchangeRate>
+			</cac:Price>
+			<cac:ApplicableTaxCategory>
+				<cbc:ID>normalizedString</cbc:ID>
+				<cbc:Name>String</cbc:Name>
+				<cbc:Percent>0.0</cbc:Percent>
+				<cbc:BaseUnitMeasure unitCode="normalizedString">0.0</cbc:BaseUnitMeasure>
+				<cbc:PerUnitAmount currencyID="normalizedString">0.0</cbc:PerUnitAmount>
+				<cbc:TaxExemptionReason>String</cbc:TaxExemptionReason>
+				<cbc:TierRange>String</cbc:TierRange>
+				<cbc:TierRatePercent>0.0</cbc:TierRatePercent>
+				<cac:TaxScheme>
+					<cbc:Name>String</cbc:Name>
+					<cbc:TaxTypeCode>normalizedString</cbc:TaxTypeCode>
+				</cac:TaxScheme>
+			</cac:ApplicableTaxCategory>
+			<cac:Package>
+				<cbc:Quantity unitCode="normalizedString">0.0</cbc:Quantity>
+				<cbc:PackagingTypeCode>normalizedString</cbc:PackagingTypeCode>
+				<cbc:TraceID>normalizedString</cbc:TraceID>
+				<cac:MeasurementDimension>
+					<cbc:AttributeID>normalizedString</cbc:AttributeID>
+					<cbc:Measure unitCode="normalizedString">0.0</cbc:Measure>
+					<cbc:Description>0.0</cbc:Description>
+					<cbc:MinimumMeasure unitCode="normalizedString">0.0</cbc:MinimumMeasure>
+					<cbc:MaximumMeasure unitCode="normalizedString">0.0</cbc:MaximumMeasure>
+				</cac:MeasurementDimension>
+			</cac:Package>
+			<cac:AllowanceCharge>
+				<cbc:ChargeIndicator>true</cbc:ChargeIndicator>
+				<cbc:AllowanceChargeReason>String</cbc:AllowanceChargeReason>
+				<cbc:MultiplierFactorNumeric>0.0</cbc:MultiplierFactorNumeric>
+				<cbc:SequenceNumeric>0.0</cbc:SequenceNumeric>
+				<cbc:Amount currencyID="normalizedString">0.0</cbc:Amount>
+				<cbc:BaseAmount currencyID="normalizedString">0.0</cbc:BaseAmount>
+				<cbc:PerUnitAmount currencyID="normalizedString">0.0</cbc:PerUnitAmount>
+			</cac:AllowanceCharge>
+		</cac:RequiredItemLocationQuantity>
+		<cac:Item>
+			<cbc:Description>0.0</cbc:Description>
+			<cbc:PackQuantity unitCode="normalizedString">0.0</cbc:PackQuantity>
+			<cbc:PackSizeNumeric>0.0</cbc:PackSizeNumeric>
+			<cbc:Name>String</cbc:Name>
+			<cbc:HazardousRiskIndicator>true</cbc:HazardousRiskIndicator>
+			<cbc:AdditionalInformation>String</cbc:AdditionalInformation>
+			<cbc:Keyword>String</cbc:Keyword>
+			<cbc:BrandName>String</cbc:BrandName>
+			<cbc:ModelName>String</cbc:ModelName>
+			<cac:BuyersItemIdentification>
+				<cbc:ID>normalizedString</cbc:ID>
+				<cbc:ExtendedID>normalizedString</cbc:ExtendedID>
+				<cbc:BarcodeSymbologyID>normalizedString</cbc:BarcodeSymbologyID>
+			</cac:BuyersItemIdentification>
+			<cac:SellersItemIdentification>
+				<cbc:ID>normalizedString</cbc:ID>
+				<cbc:ExtendedID>normalizedString</cbc:ExtendedID>
+				<cbc:BarcodeSymbologyID>normalizedString</cbc:BarcodeSymbologyID>
+			</cac:SellersItemIdentification>
+			<cac:ManufacturersItemIdentification>
+				<cbc:ID>normalizedString</cbc:ID>
+				<cbc:ExtendedID>normalizedString</cbc:ExtendedID>
+				<cbc:BarcodeSymbologyID>normalizedString</cbc:BarcodeSymbologyID>
+			</cac:ManufacturersItemIdentification>
+			<cac:StandardItemIdentification>
+				<cbc:ID>normalizedString</cbc:ID>
+				<cbc:ExtendedID>normalizedString</cbc:ExtendedID>
+				<cbc:BarcodeSymbologyID>normalizedString</cbc:BarcodeSymbologyID>
+			</cac:StandardItemIdentification>
+			<cac:AdditionalItemIdentification>
+				<cbc:ID>normalizedString</cbc:ID>
+				<cbc:ExtendedID>normalizedString</cbc:ExtendedID>
+				<cbc:BarcodeSymbologyID>normalizedString</cbc:BarcodeSymbologyID>
+			</cac:AdditionalItemIdentification>
+			<cac:ItemSpecificationDocumentReference>
+				<cbc:ID>normalizedString</cbc:ID>
+				<cbc:UUID>normalizedString</cbc:UUID>
+				<cbc:IssueDate>1967-08-13</cbc:IssueDate>
+				<cbc:IssueTime>14:20:00.0Z</cbc:IssueTime>
+				<cbc:DocumentTypeCode>normalizedString</cbc:DocumentTypeCode>
+				<cbc:DocumentType>String</cbc:DocumentType>
+				<cbc:LanguageID>normalizedString</cbc:LanguageID>
+				<cbc:VersionID>normalizedString</cbc:VersionID>
+				<cbc:DocumentDescription>0.0</cbc:DocumentDescription>
+				<cac:Attachment>
+					<cbc:EmbeddedDocumentBinaryObject mimeCode="normalizedString">UjBsR09EbGhjZ0dTQUxNQUFBUUNBRU1tQ1p0dU1GUXhEUzhi</cbc:EmbeddedDocumentBinaryObject>
+					<cac:ExternalReference>
+						<cbc:URI>String</cbc:URI>
+						<cbc:FileName>String</cbc:FileName>
+						<cbc:Description>0.0</cbc:Description>
+					</cac:ExternalReference>
+				</cac:Attachment>
+				<cac:ValidityPeriod>
+					<cbc:StartDate>1967-08-13</cbc:StartDate>
+					<cbc:StartTime>14:20:00.0Z</cbc:StartTime>
+					<cbc:EndDate>1967-08-13</cbc:EndDate>
+					<cbc:EndTime>14:20:00.0Z</cbc:EndTime>
+					<cbc:DurationMeasure unitCode="normalizedString">0.0</cbc:DurationMeasure>
+				</cac:ValidityPeriod>
+				</cac:ItemSpecificationDocumentReference>
+			<cac:OriginCountry>
+				<cbc:IdentificationCode>normalizedString</cbc:IdentificationCode>
+				<cbc:Name>String</cbc:Name>
+			</cac:OriginCountry>
+			<cac:CommodityClassification>
+				<cbc:NatureCode>normalizedString</cbc:NatureCode>
+				<cbc:CargoTypeCode>normalizedString</cbc:CargoTypeCode>
+				<cbc:ItemClassificationCode>normalizedString</cbc:ItemClassificationCode>
+			</cac:CommodityClassification>
+			<cac:ClassifiedTaxCategory>
+				<cbc:ID>normalizedString</cbc:ID>
+				<cbc:Name>String</cbc:Name>
+				<cbc:Percent>0.0</cbc:Percent>
+				<cbc:BaseUnitMeasure unitCode="normalizedString">0.0</cbc:BaseUnitMeasure>
+				<cbc:PerUnitAmount currencyID="normalizedString">0.0</cbc:PerUnitAmount>
+				<cbc:TaxExemptionReason>String</cbc:TaxExemptionReason>
+				<cbc:TierRange>String</cbc:TierRange>
+				<cbc:TierRatePercent>0.0</cbc:TierRatePercent>
+				<cac:TaxScheme>
+					<cbc:Name>String</cbc:Name>
+					<cbc:TaxTypeCode>normalizedString</cbc:TaxTypeCode>
+				</cac:TaxScheme>
+			</cac:ClassifiedTaxCategory>
+			<cac:AdditionalItemProperty>
+				<cbc:Name>String</cbc:Name>
+				<cbc:Value>String</cbc:Value>
+				<cac:UsabilityPeriod>
+					<cbc:StartDate>1967-08-13</cbc:StartDate>
+					<cbc:StartTime>14:20:00.0Z</cbc:StartTime>
+					<cbc:EndDate>1967-08-13</cbc:EndDate>
+					<cbc:EndTime>14:20:00.0Z</cbc:EndTime>
+					<cbc:DurationMeasure unitCode="normalizedString">0.0</cbc:DurationMeasure>
+				</cac:UsabilityPeriod>
+				<cac:ItemPropertyGroup>
+					<cbc:ID>normalizedString</cbc:ID>
+					<cbc:Name>String</cbc:Name>
+				</cac:ItemPropertyGroup>
+				<cac:RangeDimension>
+					<cbc:AttributeID>normalizedString</cbc:AttributeID>
+					<cbc:Measure unitCode="normalizedString">0.0</cbc:Measure>
+					<cbc:Description>0.0</cbc:Description>
+					<cbc:MinimumMeasure unitCode="normalizedString">0.0</cbc:MinimumMeasure>
+					<cbc:MaximumMeasure unitCode="normalizedString">0.0</cbc:MaximumMeasure>
+				</cac:RangeDimension>
+				<cac:ItemPropertyRange>
+					<cbc:MinimumValue>String</cbc:MinimumValue>
+					<cbc:MaximumValue>String</cbc:MaximumValue>
+				</cac:ItemPropertyRange>
+			</cac:AdditionalItemProperty>
+		</cac:Item>
+	</cac:CatalogueLine>
+</Catalogue>

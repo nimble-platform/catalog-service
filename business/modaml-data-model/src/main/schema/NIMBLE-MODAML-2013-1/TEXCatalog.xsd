@@ -1,0 +1,1640 @@
+<xsd:schema targetNamespace="urn:moda-ml:repository:schema:TEXCatalog" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="urn:moda-ml:repository:schema:TEXCatalog" xmlns:ml="urn:moda-ml:repository:schema:TEXCatalog" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="v2013-1">
+
+    <!-- Elemento radice   -->
+    <xsd:element name="TEXCatalog" type="TEXCatalog_Type"/>
+
+    <!-- Tipo dell'elemento radice   -->
+    <xsd:complexType name="TEXCatalog_Type">
+        <xsd:annotation><xsd:documentation>TEXCatalog - Textiles articles catalogue and pricelist</xsd:documentation></xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="TCheader" type="TCheader_Type" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="TCbody" type="TCbody_Type" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute name="msgfunction" type="msgfunction_Type" use="optional" default="OR"/>
+        <xsd:attribute name="version" type="version_Type" use="optional" default="2013-1"/>
+        <xsd:attribute name="useProfile" type="useProfile_Type" use="optional"/>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 283) -->
+    <xsd:complexType name="TCheader_Type">
+        <xsd:annotation><xsd:documentation>TC header - header of the document TEXTILES CATALOGUE</xsd:documentation></xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="msgN" type="msgN_Type" minOccurs="1" maxOccurs="1"/>
+            <xsd:choice>
+                <xsd:element name="msgID" type="msgID_Type" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="docID" type="docID_Type" minOccurs="0" maxOccurs="1"/>
+        </xsd:choice>
+            <xsd:element name="msgDate" type="msgDate_Type" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="msgCurrency" type="msgCurrency_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="season" type="season_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="validityStart" type="validityStart_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="validityEnd" type="validityEnd_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="buyer" type="buyer_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="supplier" type="supplier_Type" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="note" type="note_Type" minOccurs="0" maxOccurs="19"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 281) -->
+    <xsd:complexType name="TCbody_Type">
+        <xsd:annotation><xsd:documentation>TC body - body of the document TEXTILES CATALOGUE</xsd:documentation></xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="TCgroup" type="TCgroup_Type" minOccurs="1" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- Attribute (Instance ID: 370) -->
+    <xsd:simpleType name="msgfunction_Type">
+        <xsd:annotation><xsd:documentation>message function - function performed by the present message with regards to the transmission</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+<!-- Enumerazione: NT18-->            <xsd:enumeration value="CA"/>
+            <xsd:enumeration value="CP"/>
+            <xsd:enumeration value="OR"/>
+            <xsd:enumeration value="RC"/>
+            <xsd:enumeration value="RT"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Attribute (Instance ID: 928) -->
+    <xsd:simpleType name="version_Type">
+        <xsd:annotation><xsd:documentation>dictionary version - Dictionary version from which the instance has been created</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+<!-- Enumerazione: NT100-->            <xsd:enumeration value="2013-1"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Attribute (Instance ID: 939) -->
+    <xsd:simpleType name="useProfile_Type">
+        <xsd:annotation><xsd:documentation>document use profile - use profile to which the present document if compliant if it was agreed by the parties. It is suggested a URI with reference to the firms or the URL of the profile.</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 35) -->
+    <xsd:simpleType name="msgN_Type">
+        <xsd:annotation><xsd:documentation>message identifier - identification number given to the message (xml document) by its issuer</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="35"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 814) -->
+    <xsd:simpleType name="msgID_Type">
+        <xsd:annotation><xsd:documentation>message IT identifier - key identifier of the document in the information system of the issuing Party</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="35"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 374) -->
+    <xsd:simpleType name="sub_docID_Type">
+        <xsd:annotation><xsd:documentation>document identifier - identification number of the referenced document SINCE 2008-1 ITS USE IN THE HEADER IS DISCOURAGED (REPLACED BY msgID)</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="80"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="docID_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_docID_Type">
+            <xsd:annotation><xsd:documentation>document identifier - identification number of the referenced document SINCE 2008-1 ITS USE IN THE HEADER IS DISCOURAGED (REPLACED BY msgID)</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="numberingOrg" type="numberingOrg_Type" use="optional"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 36) -->
+    <xsd:simpleType name="sub_msgDate_Type">
+        <xsd:annotation><xsd:documentation>message date - date of issue of the present message (xml document), according to one of the patterns YYYY-MM-DD, YYYY-MM-DD:HH-MM or YYYY-WW.</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="(((19|20)\d\d)-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])(:([0,1]\d|2[0-4])-([0-5][0-9])){0,1})|(((19|20)\d\d)-([0-4]\d|[5][0-2]))"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="msgDate_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_msgDate_Type">
+            <xsd:annotation><xsd:documentation>message date - date of issue of the present message (xml document), according to one of the patterns YYYY-MM-DD, YYYY-MM-DD:HH-MM or YYYY-WW.</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="dateForm" type="dateForm_Type" use="optional"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 37) -->
+    <xsd:simpleType name="msgCurrency_Type">
+        <xsd:annotation><xsd:documentation>message currency code - currency used to express the monetary amounts of the message</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+<!-- Enumerazione: T9-->            <xsd:enumeration value="ADP"/>
+            <xsd:enumeration value="AED"/>
+            <xsd:enumeration value="AFA"/>
+            <xsd:enumeration value="ALL"/>
+            <xsd:enumeration value="AMD"/>
+            <xsd:enumeration value="ANG"/>
+            <xsd:enumeration value="AOK"/>
+            <xsd:enumeration value="AON"/>
+            <xsd:enumeration value="ARA"/>
+            <xsd:enumeration value="ARP"/>
+            <xsd:enumeration value="ARS"/>
+            <xsd:enumeration value="ATS"/>
+            <xsd:enumeration value="AUD"/>
+            <xsd:enumeration value="AWG"/>
+            <xsd:enumeration value="AZM"/>
+            <xsd:enumeration value="BAD"/>
+            <xsd:enumeration value="BBD"/>
+            <xsd:enumeration value="BDT"/>
+            <xsd:enumeration value="BEC"/>
+            <xsd:enumeration value="BEF"/>
+            <xsd:enumeration value="BEL"/>
+            <xsd:enumeration value="BFF"/>
+            <xsd:enumeration value="BGL"/>
+            <xsd:enumeration value="BHD"/>
+            <xsd:enumeration value="BIF"/>
+            <xsd:enumeration value="BMD"/>
+            <xsd:enumeration value="BND"/>
+            <xsd:enumeration value="BOB"/>
+            <xsd:enumeration value="BOP"/>
+            <xsd:enumeration value="BRC"/>
+            <xsd:enumeration value="BRL"/>
+            <xsd:enumeration value="BRR"/>
+            <xsd:enumeration value="BSD"/>
+            <xsd:enumeration value="BTN"/>
+            <xsd:enumeration value="BWP"/>
+            <xsd:enumeration value="BYR"/>
+            <xsd:enumeration value="BZD"/>
+            <xsd:enumeration value="CAD"/>
+            <xsd:enumeration value="CDZ"/>
+            <xsd:enumeration value="CHF"/>
+            <xsd:enumeration value="CLF"/>
+            <xsd:enumeration value="CLP"/>
+            <xsd:enumeration value="CNY"/>
+            <xsd:enumeration value="COP"/>
+            <xsd:enumeration value="CRC"/>
+            <xsd:enumeration value="CSK"/>
+            <xsd:enumeration value="CUP"/>
+            <xsd:enumeration value="CVE"/>
+            <xsd:enumeration value="CYP"/>
+            <xsd:enumeration value="CZK"/>
+            <xsd:enumeration value="DEM"/>
+            <xsd:enumeration value="DJF"/>
+            <xsd:enumeration value="DKK"/>
+            <xsd:enumeration value="DOP"/>
+            <xsd:enumeration value="DZD"/>
+            <xsd:enumeration value="ECS"/>
+            <xsd:enumeration value="EEK"/>
+            <xsd:enumeration value="EGP"/>
+            <xsd:enumeration value="ERN"/>
+            <xsd:enumeration value="ESP"/>
+            <xsd:enumeration value="ETB"/>
+            <xsd:enumeration value="EUR"/>
+            <xsd:enumeration value="FIM"/>
+            <xsd:enumeration value="FJD"/>
+            <xsd:enumeration value="FKP"/>
+            <xsd:enumeration value="FRF"/>
+            <xsd:enumeration value="GBP"/>
+            <xsd:enumeration value="GEL"/>
+            <xsd:enumeration value="GHC"/>
+            <xsd:enumeration value="GIP"/>
+            <xsd:enumeration value="GMD"/>
+            <xsd:enumeration value="GNS"/>
+            <xsd:enumeration value="GQE"/>
+            <xsd:enumeration value="GRD"/>
+            <xsd:enumeration value="GTQ"/>
+            <xsd:enumeration value="GWP"/>
+            <xsd:enumeration value="GYD"/>
+            <xsd:enumeration value="HKD"/>
+            <xsd:enumeration value="HNL"/>
+            <xsd:enumeration value="HRD"/>
+            <xsd:enumeration value="HRK"/>
+            <xsd:enumeration value="HTG"/>
+            <xsd:enumeration value="HUF"/>
+            <xsd:enumeration value="IDR"/>
+            <xsd:enumeration value="IEP"/>
+            <xsd:enumeration value="ILS"/>
+            <xsd:enumeration value="INR"/>
+            <xsd:enumeration value="IQD"/>
+            <xsd:enumeration value="IRR"/>
+            <xsd:enumeration value="ISK"/>
+            <xsd:enumeration value="ITL"/>
+            <xsd:enumeration value="JMD"/>
+            <xsd:enumeration value="JOD"/>
+            <xsd:enumeration value="JPY"/>
+            <xsd:enumeration value="KES"/>
+            <xsd:enumeration value="KGS"/>
+            <xsd:enumeration value="KHR"/>
+            <xsd:enumeration value="KMF"/>
+            <xsd:enumeration value="KPW"/>
+            <xsd:enumeration value="KRW"/>
+            <xsd:enumeration value="KWD"/>
+            <xsd:enumeration value="KYD"/>
+            <xsd:enumeration value="KZT"/>
+            <xsd:enumeration value="LAK"/>
+            <xsd:enumeration value="LBP"/>
+            <xsd:enumeration value="LKR"/>
+            <xsd:enumeration value="LRD"/>
+            <xsd:enumeration value="LSL"/>
+            <xsd:enumeration value="LSM"/>
+            <xsd:enumeration value="LTL"/>
+            <xsd:enumeration value="LUF"/>
+            <xsd:enumeration value="LVL"/>
+            <xsd:enumeration value="LYD"/>
+            <xsd:enumeration value="MAD"/>
+            <xsd:enumeration value="MDL"/>
+            <xsd:enumeration value="MGF"/>
+            <xsd:enumeration value="MKD"/>
+            <xsd:enumeration value="MLF"/>
+            <xsd:enumeration value="MMK"/>
+            <xsd:enumeration value="MNT"/>
+            <xsd:enumeration value="MOP"/>
+            <xsd:enumeration value="MRO"/>
+            <xsd:enumeration value="MTL"/>
+            <xsd:enumeration value="MUR"/>
+            <xsd:enumeration value="MVR"/>
+            <xsd:enumeration value="MWK"/>
+            <xsd:enumeration value="MXN"/>
+            <xsd:enumeration value="MYR"/>
+            <xsd:enumeration value="MZM"/>
+            <xsd:enumeration value="NAD"/>
+            <xsd:enumeration value="NGN"/>
+            <xsd:enumeration value="NIC"/>
+            <xsd:enumeration value="NLG"/>
+            <xsd:enumeration value="NOK"/>
+            <xsd:enumeration value="NPR"/>
+            <xsd:enumeration value="NZD"/>
+            <xsd:enumeration value="OMR"/>
+            <xsd:enumeration value="PAB"/>
+            <xsd:enumeration value="PEI"/>
+            <xsd:enumeration value="PEN"/>
+            <xsd:enumeration value="PGK"/>
+            <xsd:enumeration value="PHP"/>
+            <xsd:enumeration value="PKR"/>
+            <xsd:enumeration value="PLN"/>
+            <xsd:enumeration value="PTE"/>
+            <xsd:enumeration value="PYG"/>
+            <xsd:enumeration value="QAR"/>
+            <xsd:enumeration value="ROL"/>
+            <xsd:enumeration value="RUR"/>
+            <xsd:enumeration value="RWF"/>
+            <xsd:enumeration value="SAR"/>
+            <xsd:enumeration value="SBD"/>
+            <xsd:enumeration value="SCR"/>
+            <xsd:enumeration value="SDD"/>
+            <xsd:enumeration value="SDP"/>
+            <xsd:enumeration value="SEK"/>
+            <xsd:enumeration value="SGD"/>
+            <xsd:enumeration value="SHP"/>
+            <xsd:enumeration value="SIT"/>
+            <xsd:enumeration value="SKK"/>
+            <xsd:enumeration value="SLL"/>
+            <xsd:enumeration value="SOS"/>
+            <xsd:enumeration value="SRG"/>
+            <xsd:enumeration value="STD"/>
+            <xsd:enumeration value="SUR"/>
+            <xsd:enumeration value="SVC"/>
+            <xsd:enumeration value="SYP"/>
+            <xsd:enumeration value="SZL"/>
+            <xsd:enumeration value="THB"/>
+            <xsd:enumeration value="TJR"/>
+            <xsd:enumeration value="TMM"/>
+            <xsd:enumeration value="TND"/>
+            <xsd:enumeration value="TOP"/>
+            <xsd:enumeration value="TPE"/>
+            <xsd:enumeration value="TRL"/>
+            <xsd:enumeration value="TTD"/>
+            <xsd:enumeration value="TWD"/>
+            <xsd:enumeration value="TZS"/>
+            <xsd:enumeration value="UAH"/>
+            <xsd:enumeration value="UAK"/>
+            <xsd:enumeration value="UGS"/>
+            <xsd:enumeration value="USD"/>
+            <xsd:enumeration value="USN"/>
+            <xsd:enumeration value="USS"/>
+            <xsd:enumeration value="UYU"/>
+            <xsd:enumeration value="UZS"/>
+            <xsd:enumeration value="VEB"/>
+            <xsd:enumeration value="VND"/>
+            <xsd:enumeration value="VUV"/>
+            <xsd:enumeration value="WST"/>
+            <xsd:enumeration value="XAF"/>
+            <xsd:enumeration value="XAU"/>
+            <xsd:enumeration value="XBA"/>
+            <xsd:enumeration value="XBB"/>
+            <xsd:enumeration value="XCD"/>
+            <xsd:enumeration value="XDR"/>
+            <xsd:enumeration value="XOF"/>
+            <xsd:enumeration value="XPF"/>
+            <xsd:enumeration value="YDD"/>
+            <xsd:enumeration value="YER"/>
+            <xsd:enumeration value="YUD"/>
+            <xsd:enumeration value="ZAL"/>
+            <xsd:enumeration value="ZAR"/>
+            <xsd:enumeration value="ZMK"/>
+            <xsd:enumeration value="ZWD"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 68) -->
+    <xsd:simpleType name="season_Type">
+        <xsd:annotation><xsd:documentation>season identifier - sale season; defined as: season (1 crt) + year (4 crt) - season: S/S=1 A/W=2 Spring=3 Summer=4 Autumn=5 Winter=6: for more than four seasons use alphabetic sequence: 1st season=A 2nd season=B etc.etc.</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="15"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 331) -->
+    <xsd:simpleType name="sub_validityStart_Type">
+        <xsd:annotation><xsd:documentation>validity start date - date by which the validity starts, according to one of the patterns YYYY-MM-DD, YYYY-MM-DD:HH-MM or YYYY-WW.</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="(((19|20)\d\d)-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])(:([0,1]\d|2[0-4])-([0-5][0-9])){0,1})|(((19|20)\d\d)-([0-4]\d|[5][0-2]))"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="validityStart_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_validityStart_Type">
+            <xsd:annotation><xsd:documentation>validity start date - date by which the validity starts, according to one of the patterns YYYY-MM-DD, YYYY-MM-DD:HH-MM or YYYY-WW.</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="dateForm" type="dateForm_Type" use="optional"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 330) -->
+    <xsd:simpleType name="sub_validityEnd_Type">
+        <xsd:annotation><xsd:documentation>validity end date - date by which the validity ends, according to one of the patterns YYYY-MM-DD, YYYY-MM-DD:HH-MM or YYYY-WW.</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:pattern value="(((19|20)\d\d)-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])(:([0,1]\d|2[0-4])-([0-5][0-9])){0,1})|(((19|20)\d\d)-([0-4]\d|[5][0-2]))"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="validityEnd_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_validityEnd_Type">
+            <xsd:annotation><xsd:documentation>validity end date - date by which the validity ends, according to one of the patterns YYYY-MM-DD, YYYY-MM-DD:HH-MM or YYYY-WW.</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="dateForm" type="dateForm_Type" use="optional"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 133) -->
+    <xsd:complexType name="buyer_Type">
+        <xsd:annotation><xsd:documentation>Buyer - details of the Buyer</xsd:documentation></xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="id" type="id_Type" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="legalName" type="legalName_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="dept" type="dept_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="person" type="person_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="street" type="street_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="city" type="city_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="subCountry" type="subCountry_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="country" type="country_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="postCode" type="postCode_Type" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute name="logo" type="logo_Type" use="optional"/>
+        <xsd:attribute name="sender" type="sender_Type" use="optional"/>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 134) -->
+    <xsd:complexType name="supplier_Type">
+        <xsd:annotation><xsd:documentation>Supplier - details of the Supplier</xsd:documentation></xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="id" type="id_Type" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="legalName" type="legalName_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="dept" type="dept_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="person" type="person_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="street" type="street_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="city" type="city_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="subCountry" type="subCountry_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="country" type="country_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="postCode" type="postCode_Type" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute name="logo" type="logo_Type" use="optional"/>
+        <xsd:attribute name="sender" type="sender_Type" use="optional"/>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 38) -->
+    <xsd:simpleType name="sub_note_Type">
+        <xsd:annotation><xsd:documentation>general note - free text or structured (computer processing) note. For note structuring use the attributes "noteLabel" and "codelist"</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="350"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="note_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_note_Type">
+            <xsd:annotation><xsd:documentation>general note - free text or structured (computer processing) note. For note structuring use the attributes "noteLabel" and "codelist"</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="numberingOrg" type="numberingOrg_Type" use="optional"/>
+        <xsd:attribute name="codeList" type="codeList_Type" use="optional"/>
+        <xsd:attribute name="noteLabel" type="noteLabel_Type" use="optional"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 369) -->
+    <xsd:complexType name="TCgroup_Type">
+        <xsd:annotation><xsd:documentation>TC Group - articles grouping of the TEXTILES CATALOGUE</xsd:documentation></xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="artGroup" type="artGroup_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="artGroupName" type="artGroupName_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="TCitem" type="TCitem_Type" minOccurs="1" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- Attribute (Instance ID: 118) -->
+    <xsd:simpleType name="numberingOrg_Type">
+        <xsd:annotation><xsd:documentation>numbering organisation code - code specifying the organisation who has created or owns the coding or numbering system</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+<!-- Enumerazione: NT6-->            <xsd:enumeration value="CL"/>
+            <xsd:enumeration value="CO"/>
+            <xsd:enumeration value="EN"/>
+            <xsd:enumeration value="ES"/>
+            <xsd:enumeration value="FO"/>
+            <xsd:enumeration value="GS"/>
+            <xsd:enumeration value="MF"/>
+            <xsd:enumeration value="ML"/>
+            <xsd:enumeration value="SP"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Attribute (Instance ID: 707) -->
+    <xsd:simpleType name="dateForm_Type">
+        <xsd:annotation><xsd:documentation>date format - format used for the date</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+<!-- Enumerazione: NT29-->            <xsd:enumeration value="D"/>
+            <xsd:enumeration value="M"/>
+            <xsd:enumeration value="W"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 47) -->
+    <xsd:simpleType name="sub_id_Type">
+        <xsd:annotation><xsd:documentation>Party identifier - primary identification code of a Party; it is recommended the format: nation code (ISO 3166) + VAT identification number (11 crt), with the qualifier "numberingOrg"= MF</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="15"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="id_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_id_Type">
+            <xsd:annotation><xsd:documentation>Party identifier - primary identification code of a Party; it is recommended the format: nation code (ISO 3166) + VAT identification number (11 crt), with the qualifier "numberingOrg"= MF</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="numberingOrg" type="numberingOrg_Type" use="optional"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 51) -->
+    <xsd:simpleType name="legalName_Type">
+        <xsd:annotation><xsd:documentation>Legal name - legal name of a Party</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="80"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 48) -->
+    <xsd:simpleType name="dept_Type">
+        <xsd:annotation><xsd:documentation>department identifier - name or code of a contact department within a Party</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="40"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 50) -->
+    <xsd:simpleType name="sub_person_Type">
+        <xsd:annotation><xsd:documentation>contact person name - name of the contact person within a Party</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="40"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="person_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_person_Type">
+            <xsd:annotation><xsd:documentation>contact person name - name of the contact person within a Party</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="email" type="email_Type" use="optional"/>
+        <xsd:attribute name="phone" type="phone_Type" use="optional"/>
+        <xsd:attribute name="fax" type="fax_Type" use="optional"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 52) -->
+    <xsd:simpleType name="street_Type">
+        <xsd:annotation><xsd:documentation>street and building identifier - street and building number identifying a location</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="80"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 53) -->
+    <xsd:simpleType name="city_Type">
+        <xsd:annotation><xsd:documentation>city name - name of the city (town, village)</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="40"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 54) -->
+    <xsd:simpleType name="subCountry_Type">
+        <xsd:annotation><xsd:documentation>sub-country identifier - short name or code of the sub-country entity</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="9"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 55) -->
+    <xsd:simpleType name="country_Type">
+        <xsd:annotation><xsd:documentation>country code - code of the nation</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+<!-- Enumerazione: T10-->            <xsd:enumeration value="AD"/>
+            <xsd:enumeration value="AE"/>
+            <xsd:enumeration value="AF"/>
+            <xsd:enumeration value="AG"/>
+            <xsd:enumeration value="AI"/>
+            <xsd:enumeration value="AL"/>
+            <xsd:enumeration value="AM"/>
+            <xsd:enumeration value="AN"/>
+            <xsd:enumeration value="AO"/>
+            <xsd:enumeration value="AQ"/>
+            <xsd:enumeration value="AR"/>
+            <xsd:enumeration value="AS"/>
+            <xsd:enumeration value="AT"/>
+            <xsd:enumeration value="AU"/>
+            <xsd:enumeration value="AW"/>
+            <xsd:enumeration value="AZ"/>
+            <xsd:enumeration value="BA"/>
+            <xsd:enumeration value="BB"/>
+            <xsd:enumeration value="BD"/>
+            <xsd:enumeration value="BE"/>
+            <xsd:enumeration value="BF"/>
+            <xsd:enumeration value="BG"/>
+            <xsd:enumeration value="BH"/>
+            <xsd:enumeration value="BI"/>
+            <xsd:enumeration value="BJ"/>
+            <xsd:enumeration value="BM"/>
+            <xsd:enumeration value="BN"/>
+            <xsd:enumeration value="BO"/>
+            <xsd:enumeration value="BR"/>
+            <xsd:enumeration value="BS"/>
+            <xsd:enumeration value="BT"/>
+            <xsd:enumeration value="BV"/>
+            <xsd:enumeration value="BW"/>
+            <xsd:enumeration value="BY"/>
+            <xsd:enumeration value="BZ"/>
+            <xsd:enumeration value="CA"/>
+            <xsd:enumeration value="CC"/>
+            <xsd:enumeration value="CF"/>
+            <xsd:enumeration value="CG"/>
+            <xsd:enumeration value="CH"/>
+            <xsd:enumeration value="CI"/>
+            <xsd:enumeration value="CK"/>
+            <xsd:enumeration value="CL"/>
+            <xsd:enumeration value="CM"/>
+            <xsd:enumeration value="CN"/>
+            <xsd:enumeration value="CO"/>
+            <xsd:enumeration value="CR"/>
+            <xsd:enumeration value="CU"/>
+            <xsd:enumeration value="CV"/>
+            <xsd:enumeration value="CX"/>
+            <xsd:enumeration value="CY"/>
+            <xsd:enumeration value="CZ"/>
+            <xsd:enumeration value="DE"/>
+            <xsd:enumeration value="DJ"/>
+            <xsd:enumeration value="DK"/>
+            <xsd:enumeration value="DM"/>
+            <xsd:enumeration value="DO"/>
+            <xsd:enumeration value="DZ"/>
+            <xsd:enumeration value="EC"/>
+            <xsd:enumeration value="EE"/>
+            <xsd:enumeration value="EG"/>
+            <xsd:enumeration value="EH"/>
+            <xsd:enumeration value="ER"/>
+            <xsd:enumeration value="ES"/>
+            <xsd:enumeration value="ET"/>
+            <xsd:enumeration value="FI"/>
+            <xsd:enumeration value="FJ"/>
+            <xsd:enumeration value="FK"/>
+            <xsd:enumeration value="FM"/>
+            <xsd:enumeration value="FO"/>
+            <xsd:enumeration value="FR"/>
+            <xsd:enumeration value="FX"/>
+            <xsd:enumeration value="GA"/>
+            <xsd:enumeration value="GB"/>
+            <xsd:enumeration value="GD"/>
+            <xsd:enumeration value="GE"/>
+            <xsd:enumeration value="GF"/>
+            <xsd:enumeration value="GH"/>
+            <xsd:enumeration value="GI"/>
+            <xsd:enumeration value="GL"/>
+            <xsd:enumeration value="GM"/>
+            <xsd:enumeration value="GN"/>
+            <xsd:enumeration value="GP"/>
+            <xsd:enumeration value="GQ"/>
+            <xsd:enumeration value="GR"/>
+            <xsd:enumeration value="GS"/>
+            <xsd:enumeration value="GT"/>
+            <xsd:enumeration value="GU"/>
+            <xsd:enumeration value="GW"/>
+            <xsd:enumeration value="GY"/>
+            <xsd:enumeration value="HK"/>
+            <xsd:enumeration value="HM"/>
+            <xsd:enumeration value="HN"/>
+            <xsd:enumeration value="HR"/>
+            <xsd:enumeration value="HT"/>
+            <xsd:enumeration value="HU"/>
+            <xsd:enumeration value="ID"/>
+            <xsd:enumeration value="IE"/>
+            <xsd:enumeration value="IL"/>
+            <xsd:enumeration value="IN"/>
+            <xsd:enumeration value="IO"/>
+            <xsd:enumeration value="IQ"/>
+            <xsd:enumeration value="IR"/>
+            <xsd:enumeration value="IS"/>
+            <xsd:enumeration value="IT"/>
+            <xsd:enumeration value="JM"/>
+            <xsd:enumeration value="JO"/>
+            <xsd:enumeration value="JP"/>
+            <xsd:enumeration value="KE"/>
+            <xsd:enumeration value="KG"/>
+            <xsd:enumeration value="KH"/>
+            <xsd:enumeration value="KI"/>
+            <xsd:enumeration value="KM"/>
+            <xsd:enumeration value="KN"/>
+            <xsd:enumeration value="KP"/>
+            <xsd:enumeration value="KR"/>
+            <xsd:enumeration value="KW"/>
+            <xsd:enumeration value="KY"/>
+            <xsd:enumeration value="KZ"/>
+            <xsd:enumeration value="LA"/>
+            <xsd:enumeration value="LB"/>
+            <xsd:enumeration value="LC"/>
+            <xsd:enumeration value="LI"/>
+            <xsd:enumeration value="LK"/>
+            <xsd:enumeration value="LR"/>
+            <xsd:enumeration value="LS"/>
+            <xsd:enumeration value="LT"/>
+            <xsd:enumeration value="LU"/>
+            <xsd:enumeration value="LV"/>
+            <xsd:enumeration value="LY"/>
+            <xsd:enumeration value="MA"/>
+            <xsd:enumeration value="MC"/>
+            <xsd:enumeration value="MD"/>
+            <xsd:enumeration value="MG"/>
+            <xsd:enumeration value="MH"/>
+            <xsd:enumeration value="MK"/>
+            <xsd:enumeration value="ML"/>
+            <xsd:enumeration value="MM"/>
+            <xsd:enumeration value="MN"/>
+            <xsd:enumeration value="MO"/>
+            <xsd:enumeration value="MP"/>
+            <xsd:enumeration value="MQ"/>
+            <xsd:enumeration value="MR"/>
+            <xsd:enumeration value="MS"/>
+            <xsd:enumeration value="MT"/>
+            <xsd:enumeration value="MU"/>
+            <xsd:enumeration value="MV"/>
+            <xsd:enumeration value="MW"/>
+            <xsd:enumeration value="MX"/>
+            <xsd:enumeration value="MY"/>
+            <xsd:enumeration value="MZ"/>
+            <xsd:enumeration value="NA"/>
+            <xsd:enumeration value="NC"/>
+            <xsd:enumeration value="NE"/>
+            <xsd:enumeration value="NF"/>
+            <xsd:enumeration value="NG"/>
+            <xsd:enumeration value="NI"/>
+            <xsd:enumeration value="NL"/>
+            <xsd:enumeration value="NO"/>
+            <xsd:enumeration value="NP"/>
+            <xsd:enumeration value="NR"/>
+            <xsd:enumeration value="NU"/>
+            <xsd:enumeration value="NZ"/>
+            <xsd:enumeration value="OM"/>
+            <xsd:enumeration value="PA"/>
+            <xsd:enumeration value="PE"/>
+            <xsd:enumeration value="PF"/>
+            <xsd:enumeration value="PG"/>
+            <xsd:enumeration value="PH"/>
+            <xsd:enumeration value="PK"/>
+            <xsd:enumeration value="PL"/>
+            <xsd:enumeration value="PM"/>
+            <xsd:enumeration value="PN"/>
+            <xsd:enumeration value="PR"/>
+            <xsd:enumeration value="PT"/>
+            <xsd:enumeration value="PW"/>
+            <xsd:enumeration value="PY"/>
+            <xsd:enumeration value="QA"/>
+            <xsd:enumeration value="RE"/>
+            <xsd:enumeration value="RO"/>
+            <xsd:enumeration value="RU"/>
+            <xsd:enumeration value="RW"/>
+            <xsd:enumeration value="SA"/>
+            <xsd:enumeration value="SB"/>
+            <xsd:enumeration value="SC"/>
+            <xsd:enumeration value="SD"/>
+            <xsd:enumeration value="SE"/>
+            <xsd:enumeration value="SG"/>
+            <xsd:enumeration value="SH"/>
+            <xsd:enumeration value="SI"/>
+            <xsd:enumeration value="SJ"/>
+            <xsd:enumeration value="SK"/>
+            <xsd:enumeration value="SL"/>
+            <xsd:enumeration value="SM"/>
+            <xsd:enumeration value="SN"/>
+            <xsd:enumeration value="SO"/>
+            <xsd:enumeration value="SR"/>
+            <xsd:enumeration value="ST"/>
+            <xsd:enumeration value="SV"/>
+            <xsd:enumeration value="SY"/>
+            <xsd:enumeration value="SZ"/>
+            <xsd:enumeration value="TC"/>
+            <xsd:enumeration value="TD"/>
+            <xsd:enumeration value="TF"/>
+            <xsd:enumeration value="TG"/>
+            <xsd:enumeration value="TH"/>
+            <xsd:enumeration value="TJ"/>
+            <xsd:enumeration value="TK"/>
+            <xsd:enumeration value="TM"/>
+            <xsd:enumeration value="TN"/>
+            <xsd:enumeration value="TO"/>
+            <xsd:enumeration value="TP"/>
+            <xsd:enumeration value="TR"/>
+            <xsd:enumeration value="TT"/>
+            <xsd:enumeration value="TV"/>
+            <xsd:enumeration value="TW"/>
+            <xsd:enumeration value="TZ"/>
+            <xsd:enumeration value="UA"/>
+            <xsd:enumeration value="UG"/>
+            <xsd:enumeration value="UM"/>
+            <xsd:enumeration value="US"/>
+            <xsd:enumeration value="UY"/>
+            <xsd:enumeration value="UZ"/>
+            <xsd:enumeration value="VA"/>
+            <xsd:enumeration value="VC"/>
+            <xsd:enumeration value="VE"/>
+            <xsd:enumeration value="VG"/>
+            <xsd:enumeration value="VI"/>
+            <xsd:enumeration value="VN"/>
+            <xsd:enumeration value="VU"/>
+            <xsd:enumeration value="WF"/>
+            <xsd:enumeration value="WS"/>
+            <xsd:enumeration value="YE"/>
+            <xsd:enumeration value="YT"/>
+            <xsd:enumeration value="YU"/>
+            <xsd:enumeration value="ZA"/>
+            <xsd:enumeration value="ZM"/>
+            <xsd:enumeration value="ZR"/>
+            <xsd:enumeration value="ZW"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 56) -->
+    <xsd:simpleType name="postCode_Type">
+        <xsd:annotation><xsd:documentation>postal zone identifier - code defining the postal zone</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="10"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Attribute (Instance ID: 132) -->
+    <xsd:simpleType name="logo_Type">
+        <xsd:annotation><xsd:documentation>party logo - company logo (URL of the image jpeg or gif). It is recommended that the width of the image does not exceed 640 pixel.</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="255"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Attribute (Instance ID: 802) -->
+    <xsd:simpleType name="sender_Type">
+        <xsd:annotation><xsd:documentation>sender Party qualifier - qualifier that specifies the Party issuing of the document</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:boolean">
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Attribute (Instance ID: 832) -->
+    <xsd:simpleType name="codeList_Type">
+        <xsd:annotation><xsd:documentation>code list reference - it specifies the URL where the list of codes used to make an instance of the element can be found</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="255"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Attribute (Instance ID: 860) -->
+    <xsd:simpleType name="noteLabel_Type">
+        <xsd:annotation><xsd:documentation>note qualifier - subject qualifier of a note</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="35"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 367) -->
+    <xsd:simpleType name="sub_artGroup_Type">
+        <xsd:annotation><xsd:documentation>group identifier - code identifying a class of products</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="40"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="artGroup_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_artGroup_Type">
+            <xsd:annotation><xsd:documentation>group identifier - code identifying a class of products</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="numberingOrg" type="numberingOrg_Type" use="optional"/>
+        <xsd:attribute name="codeList" type="codeList_Type" use="optional"/>
+        <xsd:attribute name="listName" type="listName_Type" use="optional"/>
+        <xsd:attribute name="listVersion" type="listVersion_Type" use="optional"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 368) -->
+    <xsd:simpleType name="artGroupName_Type">
+        <xsd:annotation><xsd:documentation>group name - description of a class of products</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="70"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 280) -->
+    <xsd:complexType name="TCitem_Type">
+        <xsd:annotation><xsd:documentation>TC item - line item of the message TEXTILES CATALOGUE</xsd:documentation></xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="lineN" type="lineN_Type" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="fabricNameSupplier" type="fabricNameSupplier_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="art" type="art_Type" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="pattern" type="pattern_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="color" type="color_Type" minOccurs="0" maxOccurs="99"/>
+            <xsd:element name="added" type="added_Type" minOccurs="0" maxOccurs="99"/>
+            <xsd:element name="catalogPrice" type="catalogPrice_Type" minOccurs="0" maxOccurs="9"/>
+            <xsd:element name="generalChar" type="generalChar_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="construction" type="construction_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="note" type="note_Type" minOccurs="0" maxOccurs="19"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- Attribute (Instance ID: 49) -->
+    <xsd:simpleType name="email_Type">
+        <xsd:annotation><xsd:documentation>e-mail - electronic mail address of the contact person within a Party</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="80"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Attribute (Instance ID: 861) -->
+    <xsd:simpleType name="phone_Type">
+        <xsd:annotation><xsd:documentation>phone number - phone number of the contact person within a Party</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="35"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Attribute (Instance ID: 862) -->
+    <xsd:simpleType name="fax_Type">
+        <xsd:annotation><xsd:documentation>fax number - fax number of the contact person within a Party</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="35"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Attribute (Instance ID: 833) -->
+    <xsd:simpleType name="listName_Type">
+        <xsd:annotation><xsd:documentation>code list name - it specifies the name of the list of codes used to make an instance of the element</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="40"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Attribute (Instance ID: 834) -->
+    <xsd:simpleType name="listVersion_Type">
+        <xsd:annotation><xsd:documentation>code list version - it specifie the version of the list of codes used to make an instance of the element</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="6"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 79) -->
+    <xsd:simpleType name="sub_lineN_Type">
+        <xsd:annotation><xsd:documentation>line number - number of the line item of the present message (xml document) and is set by the role that produces the document.</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:positiveInteger">
+            <xsd:minInclusive value="1"/>
+            <xsd:maxInclusive value="9999"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="lineN_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_lineN_Type">
+            <xsd:annotation><xsd:documentation>line number - number of the line item of the present message (xml document) and is set by the role that produces the document.</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="VAT" type="VAT_Type" use="optional"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 225) -->
+    <xsd:simpleType name="fabricNameSupplier_Type">
+        <xsd:annotation><xsd:documentation>Supplier fabric name - name given to the fabric (article/pattern) by the Supplier</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="70"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 81) -->
+    <xsd:simpleType name="sub_art_Type">
+        <xsd:annotation><xsd:documentation>article identifier - article number of the product</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="25"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="art_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_art_Type">
+            <xsd:annotation><xsd:documentation>article identifier - article number of the product</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="numberingOrg" type="numberingOrg_Type" use="optional"/>
+        <xsd:attribute name="codeList" type="codeList_Type" use="optional"/>
+        <xsd:attribute name="listName" type="listName_Type" use="optional"/>
+        <xsd:attribute name="listVersion" type="listVersion_Type" use="optional"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 82) -->
+    <xsd:simpleType name="sub_pattern_Type">
+        <xsd:annotation><xsd:documentation>article's pattern  identifier - pattern/design number of the product, when not included in the article code</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="15"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="pattern_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_pattern_Type">
+            <xsd:annotation><xsd:documentation>article's pattern  identifier - pattern/design number of the product, when not included in the article code</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="numberingOrg" type="numberingOrg_Type" use="optional"/>
+        <xsd:attribute name="codeList" type="codeList_Type" use="optional"/>
+        <xsd:attribute name="listName" type="listName_Type" use="optional"/>
+        <xsd:attribute name="listVersion" type="listVersion_Type" use="optional"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 83) -->
+    <xsd:simpleType name="sub_color_Type">
+        <xsd:annotation><xsd:documentation>article's colour identifier - colour number of the product, when not included in the model or fabric code</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="15"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="color_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_color_Type">
+            <xsd:annotation><xsd:documentation>article's colour identifier - colour number of the product, when not included in the model or fabric code</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="numberingOrg" type="numberingOrg_Type" use="optional"/>
+        <xsd:attribute name="codeList" type="codeList_Type" use="optional"/>
+        <xsd:attribute name="listName" type="listName_Type" use="optional"/>
+        <xsd:attribute name="listVersion" type="listVersion_Type" use="optional"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 84) -->
+    <xsd:simpleType name="sub_added_Type">
+        <xsd:annotation><xsd:documentation>article's additional identifier - additional code of the product (complementing the formers)</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="15"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="added_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_added_Type">
+            <xsd:annotation><xsd:documentation>article's additional identifier - additional code of the product (complementing the formers)</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="numberingOrg" type="numberingOrg_Type" use="optional"/>
+        <xsd:attribute name="addType" type="addType_Type" use="optional"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 279) -->
+    <xsd:simpleType name="sub_catalogPrice_Type">
+        <xsd:annotation><xsd:documentation>catalogue price amount - price shown in the Supplier's Catalogue</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:decimal">
+            <xsd:fractionDigits value="2"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="catalogPrice_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_catalogPrice_Type">
+            <xsd:annotation><xsd:documentation>catalogue price amount - price shown in the Supplier's Catalogue</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="um" type="um_Type" use="required"/>
+        <xsd:attribute name="minQty" type="minQty_Type" use="optional"/>
+        <xsd:attribute name="garmentMarket" type="garmentMarket_Type" use="optional"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 232) -->
+    <xsd:complexType name="generalChar_Type">
+        <xsd:annotation><xsd:documentation>General characteristics fabric - general data included in the technical sheet of the fabric article</xsd:documentation></xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="fabricNameSupplier" type="fabricNameSupplier_Type" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="fabricNameBuyer" type="fabricNameBuyer_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="season" type="season_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="tradeMark" type="tradeMark_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="customsStat" type="customsStat_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="fabricCompos" type="fabricCompos_Type" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="dyeProcess" type="dyeProcess_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="dyeStuff" type="dyeStuff_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="careLabel" type="careLabel_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="minLot" type="minLot_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="minLotExclusive" type="minLotExclusive_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="avgDeliveryDD" type="avgDeliveryDD_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="estFaultiness" type="estFaultiness_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="note" type="note_Type" minOccurs="0" maxOccurs="19"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 240) -->
+    <xsd:complexType name="construction_Type">
+        <xsd:annotation><xsd:documentation>Construction details fabric - construction data and features included in the technical sheet of the fabric article</xsd:documentation></xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="fabricWeightM" type="fabricWeightM_Type" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="fabricWeightM2" type="fabricWeightM2_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="fabricWidth" type="fabricWidth_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="fabricCutWidth" type="fabricCutWidth_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="pieceLength" type="pieceLength_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="weave" type="weave_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="warpCount" type="warpCount_Type" minOccurs="0" maxOccurs="9"/>
+            <xsd:element name="weftCount" type="weftCount_Type" minOccurs="0" maxOccurs="9"/>
+            <xsd:element name="warpEndsN" type="warpEndsN_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="weftEndsN" type="weftEndsN_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="bowingWarp" type="bowingWarp_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="bowingWeft" type="bowingWeft_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="checksFlaw" type="checksFlaw_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="weftDev" type="weftDev_Type" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="resin" type="resin_Type" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- Attribute (Instance ID: 104) -->
+    <xsd:simpleType name="VAT_Type">
+        <xsd:annotation><xsd:documentation>VAT rate - VAT rate or code ( deprecated, use dtScheme element )</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+<!-- Enumerazione: NT16-->            <xsd:enumeration value="001"/>
+            <xsd:enumeration value="002"/>
+            <xsd:enumeration value="003"/>
+            <xsd:enumeration value="004"/>
+            <xsd:enumeration value="005"/>
+            <xsd:enumeration value="006"/>
+            <xsd:enumeration value="007"/>
+            <xsd:enumeration value="008"/>
+            <xsd:enumeration value="009"/>
+            <xsd:enumeration value="010"/>
+            <xsd:enumeration value="011"/>
+            <xsd:enumeration value="012"/>
+            <xsd:enumeration value="013"/>
+            <xsd:enumeration value="014"/>
+            <xsd:enumeration value="015"/>
+            <xsd:enumeration value="016"/>
+            <xsd:enumeration value="017"/>
+            <xsd:enumeration value="018"/>
+            <xsd:enumeration value="019"/>
+            <xsd:enumeration value="020"/>
+            <xsd:enumeration value="021"/>
+            <xsd:enumeration value="022"/>
+            <xsd:enumeration value="023"/>
+            <xsd:enumeration value="024"/>
+            <xsd:enumeration value="025"/>
+            <xsd:enumeration value="162"/>
+            <xsd:enumeration value="164"/>
+            <xsd:enumeration value="165"/>
+            <xsd:enumeration value="166"/>
+            <xsd:enumeration value="169"/>
+            <xsd:enumeration value="174"/>
+            <xsd:enumeration value="177"/>
+            <xsd:enumeration value="183"/>
+            <xsd:enumeration value="184"/>
+            <xsd:enumeration value="201"/>
+            <xsd:enumeration value="220"/>
+            <xsd:enumeration value="227"/>
+            <xsd:enumeration value="374"/>
+            <xsd:enumeration value="701"/>
+            <xsd:enumeration value="702"/>
+            <xsd:enumeration value="902"/>
+            <xsd:enumeration value="904"/>
+            <xsd:enumeration value="905"/>
+            <xsd:enumeration value="907"/>
+            <xsd:enumeration value="915"/>
+            <xsd:enumeration value="926"/>
+            <xsd:enumeration value="974"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Attribute (Instance ID: 606) -->
+    <xsd:simpleType name="addType_Type">
+        <xsd:annotation><xsd:documentation>additional identifier type - qualifier of the additional coding of a product</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+<!-- Enumerazione: T44-->            <xsd:enumeration value="CC"/>
+            <xsd:enumeration value="CL"/>
+            <xsd:enumeration value="DY"/>
+            <xsd:enumeration value="LT"/>
+            <xsd:enumeration value="MS"/>
+            <xsd:enumeration value="PKG"/>
+            <xsd:enumeration value="PL"/>
+            <xsd:enumeration value="RGB"/>
+            <xsd:enumeration value="SE"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Attribute (Instance ID: 75) -->
+    <xsd:simpleType name="um_Type">
+        <xsd:annotation><xsd:documentation>unit of measure code - specification of the unit of measure</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+<!-- Enumerazione: NT7-->            <xsd:enumeration value="CMT"/>
+            <xsd:enumeration value="CNE"/>
+            <xsd:enumeration value="COUPLES"/>
+            <xsd:enumeration value="DMQ"/>
+            <xsd:enumeration value="GRM"/>
+            <xsd:enumeration value="HUR"/>
+            <xsd:enumeration value="INH"/>
+            <xsd:enumeration value="KGM"/>
+            <xsd:enumeration value="KMT"/>
+            <xsd:enumeration value="LBR"/>
+            <xsd:enumeration value="MIN"/>
+            <xsd:enumeration value="MTQ"/>
+            <xsd:enumeration value="MTR"/>
+            <xsd:enumeration value="NMB"/>
+            <xsd:enumeration value="ONZ"/>
+            <xsd:enumeration value="P1"/>
+            <xsd:enumeration value="PPM"/>
+            <xsd:enumeration value="PZ"/>
+            <xsd:enumeration value="RPM"/>
+            <xsd:enumeration value="YRD"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Attribute (Instance ID: 278) -->
+    <xsd:simpleType name="minQty_Type">
+        <xsd:annotation><xsd:documentation>minimum quantity - minimum quantity required for the application of a given price</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:decimal">
+            <xsd:minInclusive value="0"/>
+            <xsd:fractionDigits value="2"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Attribute (Instance ID: 518) -->
+    <xsd:simpleType name="garmentMarket_Type">
+        <xsd:annotation><xsd:documentation>garment market - market segment of the garment item</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+<!-- Enumerazione: NT34-->            <xsd:enumeration value="00"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 226) -->
+    <xsd:simpleType name="fabricNameBuyer_Type">
+        <xsd:annotation><xsd:documentation>Buyer fabric name - name given to the fabric (article/pattern) by the Buyer</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="70"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 227) -->
+    <xsd:simpleType name="tradeMark_Type">
+        <xsd:annotation><xsd:documentation>trademark name - name of the official trademark of a specified product</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="50"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 228) -->
+    <xsd:simpleType name="customsStat_Type">
+        <xsd:annotation><xsd:documentation>customs code - statistic code assigned by Customs to a specified product</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="15"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 229) -->
+    <xsd:complexType name="fabricCompos_Type">
+        <xsd:annotation><xsd:documentation>fabric composition - composition of the fabric according to the Directory 97/37/CE</xsd:documentation></xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="percCompos" type="percCompos_Type" minOccurs="1" maxOccurs="9"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 233) -->
+    <xsd:simpleType name="dyeProcess_Type">
+        <xsd:annotation><xsd:documentation>dye process code - dye process applied to the fabric</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+<!-- Enumerazione: T15-->            <xsd:enumeration value="CP"/>
+            <xsd:enumeration value="DP"/>
+            <xsd:enumeration value="FI"/>
+            <xsd:enumeration value="PC"/>
+            <xsd:enumeration value="PR"/>
+            <xsd:enumeration value="SP"/>
+            <xsd:enumeration value="TP"/>
+            <xsd:enumeration value="YR"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 234) -->
+    <xsd:simpleType name="dyeStuff_Type">
+        <xsd:annotation><xsd:documentation>dye stuff code - dye stuff used in the fabric dye process</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+<!-- Enumerazione: T16-->            <xsd:enumeration value="AC"/>
+            <xsd:enumeration value="AN"/>
+            <xsd:enumeration value="CA"/>
+            <xsd:enumeration value="DI"/>
+            <xsd:enumeration value="DS"/>
+            <xsd:enumeration value="NP"/>
+            <xsd:enumeration value="PI"/>
+            <xsd:enumeration value="PM"/>
+            <xsd:enumeration value="RE"/>
+            <xsd:enumeration value="SU"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 230) -->
+    <xsd:simpleType name="careLabel_Type">
+        <xsd:annotation><xsd:documentation>care labelling code - codification of the care instructions printed on the label (ISO 3758)</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:length value="5"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 231) -->
+    <xsd:simpleType name="sub_minLot_Type">
+        <xsd:annotation><xsd:documentation>minimum order quantity - minimum order quantity of a product requested by the Supplier</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:decimal">
+            <xsd:minInclusive value="0"/>
+            <xsd:fractionDigits value="2"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="minLot_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_minLot_Type">
+            <xsd:annotation><xsd:documentation>minimum order quantity - minimum order quantity of a product requested by the Supplier</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="um" type="um_Type" use="required"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 500) -->
+    <xsd:simpleType name="sub_minLotExclusive_Type">
+        <xsd:annotation><xsd:documentation>minimum exclusive order quantity - minimum order quantity of a product requested by the Supplier for an exclusive color</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:decimal">
+            <xsd:minInclusive value="0"/>
+            <xsd:fractionDigits value="2"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="minLotExclusive_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_minLotExclusive_Type">
+            <xsd:annotation><xsd:documentation>minimum exclusive order quantity - minimum order quantity of a product requested by the Supplier for an exclusive color</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="um" type="um_Type" use="required"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 501) -->
+    <xsd:simpleType name="avgDeliveryDD_Type">
+        <xsd:annotation><xsd:documentation>average delivery time - average time (workdays) between order receipt and delivery of an article, specified by the Supplier</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:duration">
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 503) -->
+    <xsd:simpleType name="estFaultiness_Type">
+        <xsd:annotation><xsd:documentation>estimated faultiness - percent faultiness of an article, estimated by the Supplier</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:decimal">
+            <xsd:minInclusive value="0"/>
+            <xsd:maxInclusive value="100"/>
+            <xsd:fractionDigits value="2"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 188) -->
+    <xsd:simpleType name="sub_fabricWeightM_Type">
+        <xsd:annotation><xsd:documentation>fabric weightM measure - weight per metre of the fabric as technical specification</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:decimal">
+            <xsd:minInclusive value="0"/>
+            <xsd:fractionDigits value="2"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="fabricWeightM_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_fabricWeightM_Type">
+            <xsd:annotation><xsd:documentation>fabric weightM measure - weight per metre of the fabric as technical specification</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="um" type="um_Type" use="optional" default="GRM"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 274) -->
+    <xsd:simpleType name="sub_fabricWeightM2_Type">
+        <xsd:annotation><xsd:documentation>fabric weighM2 measure - weight per square metre of the fabric as technical specification</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:decimal">
+            <xsd:minInclusive value="0"/>
+            <xsd:fractionDigits value="2"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="fabricWeightM2_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_fabricWeightM2_Type">
+            <xsd:annotation><xsd:documentation>fabric weighM2 measure - weight per square metre of the fabric as technical specification</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="um" type="um_Type" use="optional" default="GRM"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 73) -->
+    <xsd:simpleType name="sub_fabricWidth_Type">
+        <xsd:annotation><xsd:documentation>fabric width measure - width of the fabric as technical specification</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:decimal">
+            <xsd:minInclusive value="0"/>
+            <xsd:fractionDigits value="2"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="fabricWidth_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_fabricWidth_Type">
+            <xsd:annotation><xsd:documentation>fabric width measure - width of the fabric as technical specification</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="um" type="um_Type" use="optional" default="CMT"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 187) -->
+    <xsd:simpleType name="sub_fabricCutWidth_Type">
+        <xsd:annotation><xsd:documentation>fabric cutting width measure - usable width of the fabric (for garments manufacturing) as technical specification</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:decimal">
+            <xsd:minInclusive value="0"/>
+            <xsd:fractionDigits value="2"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="fabricCutWidth_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_fabricCutWidth_Type">
+            <xsd:annotation><xsd:documentation>fabric cutting width measure - usable width of the fabric (for garments manufacturing) as technical specification</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="um" type="um_Type" use="optional" default="CMT"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 74) -->
+    <xsd:simpleType name="sub_pieceLength_Type">
+        <xsd:annotation><xsd:documentation>piece length measure - length of the piece</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:decimal">
+            <xsd:minInclusive value="0"/>
+            <xsd:fractionDigits value="2"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="pieceLength_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_pieceLength_Type">
+            <xsd:annotation><xsd:documentation>piece length measure - length of the piece</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="um" type="um_Type" use="optional" default="MTR"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 235) -->
+    <xsd:simpleType name="weave_Type">
+        <xsd:annotation><xsd:documentation>weave code - type of weaving used in the manufacturing of fabric</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+<!-- Enumerazione: T17-->            <xsd:enumeration value="BA"/>
+            <xsd:enumeration value="BE"/>
+            <xsd:enumeration value="CO"/>
+            <xsd:enumeration value="DE"/>
+            <xsd:enumeration value="DO"/>
+            <xsd:enumeration value="GA"/>
+            <xsd:enumeration value="GR"/>
+            <xsd:enumeration value="HO"/>
+            <xsd:enumeration value="HS"/>
+            <xsd:enumeration value="MA"/>
+            <xsd:enumeration value="PL"/>
+            <xsd:enumeration value="SA"/>
+            <xsd:enumeration value="TO"/>
+            <xsd:enumeration value="TR"/>
+            <xsd:enumeration value="TW"/>
+            <xsd:enumeration value="V"/>
+            <xsd:enumeration value="W"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 236) -->
+    <xsd:simpleType name="sub_warpCount_Type">
+        <xsd:annotation><xsd:documentation>warp count - measure of thinness of the warp thread</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="10"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="warpCount_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_warpCount_Type">
+            <xsd:annotation><xsd:documentation>warp count - measure of thinness of the warp thread</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="method" type="method_Type" use="optional" default="ISO-2060"/>
+        <xsd:attribute name="fibre" type="fibre_Type" use="optional"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 237) -->
+    <xsd:simpleType name="sub_weftCount_Type">
+        <xsd:annotation><xsd:documentation>weft count - measure of thinness of the weft thread</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="10"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="weftCount_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_weftCount_Type">
+            <xsd:annotation><xsd:documentation>weft count - measure of thinness of the weft thread</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="method" type="method_Type" use="optional" default="ISO-2060"/>
+        <xsd:attribute name="fibre" type="fibre_Type" use="optional"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 238) -->
+    <xsd:simpleType name="warpEndsN_Type">
+        <xsd:annotation><xsd:documentation>num ends warp - number of warp threads in 1 centimetre</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:decimal">
+            <xsd:minInclusive value="0"/>
+            <xsd:fractionDigits value="1"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 239) -->
+    <xsd:simpleType name="weftEndsN_Type">
+        <xsd:annotation><xsd:documentation>num ends weft - number of weft threads in 1 centimetre</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:decimal">
+            <xsd:minInclusive value="0"/>
+            <xsd:fractionDigits value="1"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 667) -->
+    <xsd:simpleType name="sub_bowingWarp_Type">
+        <xsd:annotation><xsd:documentation>warp bowing - warp bowing</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:decimal">
+            <xsd:minInclusive value="0"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="bowingWarp_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_bowingWarp_Type">
+            <xsd:annotation><xsd:documentation>warp bowing - warp bowing</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="method" type="method_Type" use="optional"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 668) -->
+    <xsd:simpleType name="sub_bowingWeft_Type">
+        <xsd:annotation><xsd:documentation>weft bowing - weft bowing</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:decimal">
+            <xsd:minInclusive value="0"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="bowingWeft_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_bowingWeft_Type">
+            <xsd:annotation><xsd:documentation>weft bowing - weft bowing</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="method" type="method_Type" use="optional"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 669) -->
+    <xsd:simpleType name="sub_checksFlaw_Type">
+        <xsd:annotation><xsd:documentation>checks flaw - flaw in checks</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:decimal">
+            <xsd:minInclusive value="0"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="checksFlaw_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_checksFlaw_Type">
+            <xsd:annotation><xsd:documentation>checks flaw - flaw in checks</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="method" type="method_Type" use="optional"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 670) -->
+    <xsd:simpleType name="sub_weftDev_Type">
+        <xsd:annotation><xsd:documentation>weft deviation - deviation from right angle in weft</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:decimal">
+            <xsd:minInclusive value="0"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="weftDev_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_weftDev_Type">
+            <xsd:annotation><xsd:documentation>weft deviation - deviation from right angle in weft</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="method" type="method_Type" use="optional"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Element (Instance ID: 687) -->
+    <xsd:simpleType name="resin_Type">
+        <xsd:annotation><xsd:documentation>resin rate - resin (coating) percentage in finished weight</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:decimal">
+            <xsd:minInclusive value="0"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Element (Instance ID: 315) -->
+    <xsd:simpleType name="sub_percCompos_Type">
+        <xsd:annotation><xsd:documentation>composition rate - fiber rate in the product composition</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:decimal">
+            <xsd:minInclusive value="0"/>
+            <xsd:maxInclusive value="100"/>
+            <xsd:fractionDigits value="2"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="percCompos_Type">
+        <xsd:simpleContent>
+          <xsd:extension base="sub_percCompos_Type">
+            <xsd:annotation><xsd:documentation>composition rate - fiber rate in the product composition</xsd:documentation></xsd:annotation>
+        <xsd:attribute name="fibre" type="fibre_Type" use="required"/>
+          </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <!-- Attribute (Instance ID: 202) -->
+    <xsd:simpleType name="method_Type">
+        <xsd:annotation><xsd:documentation>test method identifier - standard protocol or method employed in a test to evaluate a characteristic or a parameter</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+            <xsd:maxLength value="25"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!-- Attribute (Instance ID: 316) -->
+    <xsd:simpleType name="fibre_Type">
+        <xsd:annotation><xsd:documentation>textiles fibre code - type of fibre used in a textile product</xsd:documentation></xsd:annotation>
+        <xsd:restriction base="xsd:string">
+<!-- Enumerazione: T19-->            <xsd:enumeration value="AC"/>
+            <xsd:enumeration value="AF"/>
+            <xsd:enumeration value="AG"/>
+            <xsd:enumeration value="CA"/>
+            <xsd:enumeration value="CL"/>
+            <xsd:enumeration value="CO"/>
+            <xsd:enumeration value="CU"/>
+            <xsd:enumeration value="EA"/>
+            <xsd:enumeration value="FL"/>
+            <xsd:enumeration value="GL"/>
+            <xsd:enumeration value="HL"/>
+            <xsd:enumeration value="JU"/>
+            <xsd:enumeration value="LI"/>
+            <xsd:enumeration value="MA"/>
+            <xsd:enumeration value="MD"/>
+            <xsd:enumeration value="ME"/>
+            <xsd:enumeration value="PA"/>
+            <xsd:enumeration value="PB"/>
+            <xsd:enumeration value="PC"/>
+            <xsd:enumeration value="PE"/>
+            <xsd:enumeration value="PL"/>
+            <xsd:enumeration value="PM"/>
+            <xsd:enumeration value="PP"/>
+            <xsd:enumeration value="PR"/>
+            <xsd:enumeration value="PU"/>
+            <xsd:enumeration value="SE"/>
+            <xsd:enumeration value="TA"/>
+            <xsd:enumeration value="TV"/>
+            <xsd:enumeration value="VI"/>
+            <xsd:enumeration value="VY"/>
+            <xsd:enumeration value="WA"/>
+            <xsd:enumeration value="WC"/>
+            <xsd:enumeration value="WG"/>
+            <xsd:enumeration value="WK"/>
+            <xsd:enumeration value="WL"/>
+            <xsd:enumeration value="WM"/>
+            <xsd:enumeration value="WO"/>
+            <xsd:enumeration value="WP"/>
+            <xsd:enumeration value="WS"/>
+            <xsd:enumeration value="WU"/>
+            <xsd:enumeration value="WV"/>
+            <xsd:enumeration value="WY"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+<!-- Finito: getIndex = putIndex -->
+</xsd:schema>
