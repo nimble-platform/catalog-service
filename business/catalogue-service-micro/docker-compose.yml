@@ -9,10 +9,13 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
       - CONFIG_SERVER_URI=http://config-server:8888
       - DISCOVERY_SERVER_URI=http://service-discovery:8761
+    networks:
+      - nimble-infra
+      - default
   catalog-service-srdc-db:
     image: postgres
 
 networks:
-  default:
+  nimble-infra:
     external:
       name: nimbleinfra_default
