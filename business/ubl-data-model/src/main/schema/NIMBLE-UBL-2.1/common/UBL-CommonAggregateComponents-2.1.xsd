@@ -1984,6 +1984,7 @@
 		<xsd:sequence>
 			<xsd:element ref="cbc:Name"/>
 			<xsd:element ref="cbc:Value" minOccurs="0"/>
+			<xsd:element ref="cbc:ValueQualifier" minOccurs="0"/>
 			<xsd:element ref="cac:UsabilityPeriod" minOccurs="0"/>
 			<xsd:element ref="cac:ItemPropertyGroup" minOccurs="0"/>
 			<xsd:element ref="cac:RangeDimension" minOccurs="0"/>
