@@ -136,7 +136,7 @@
 							</execution>
 						</executions>
 						<configuration>
-							<imageName>${docker.image.prefix}/${project.artifactId}</imageName>
+							<imageName>${docker.image.prefix}/${project.artifactId}-srdc</imageName>
 							<dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
 							<buildArgs>
 								<finalName>${project.build.finalName}.jar</finalName>
@@ -146,11 +146,6 @@
 									<targetPath>/</targetPath>
 									<directory>${project.build.directory}</directory>
 									<include>${project.build.finalName}.jar</include>
-								</resource>
-								<resource>
-									<targetPath>/</targetPath>
-									<directory>${project.basedir}/src/main/docker</directory>
-									<include>entrypoint.sh</include>
 								</resource>
 							</resources>
 							<imageTags>
