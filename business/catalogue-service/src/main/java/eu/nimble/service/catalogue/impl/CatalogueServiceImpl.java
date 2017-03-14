@@ -118,10 +118,10 @@ public class CatalogueServiceImpl implements CatalogueService {
         Category category = pcs.getCategory(categoryId);
 
         Workbook template = new XSSFWorkbook();
-        Sheet infoTab = template.createSheet("Information");
-        Sheet propertiesTab = template.createSheet(SHEET_NAME_PRODUCT_PROPERTIES);
-        Sheet propertyDetailsTab = template.createSheet("Property Details");
-        Sheet valuesTab = template.createSheet("Allowed Values for Properties");
+        Sheet infoTab = template.createSheet(TEMPLATE_TAB_INFORMATION);
+        Sheet propertiesTab = template.createSheet(TEMPLATE_TAB_PRODUCT_PROPERTIES);
+        Sheet propertyDetailsTab = template.createSheet(TEMPLATE_TAB_PROPERTY_DETAILS);
+        Sheet valuesTab = template.createSheet(TEMPLATE_TAB_INFORMATION);
 
         populateInfoTab(infoTab);
         populateProductPropertiesTab(category, propertiesTab);
@@ -143,44 +143,44 @@ public class CatalogueServiceImpl implements CatalogueService {
     private void populateInfoTab(Sheet infoTab) {
         int rowIndex = 0;
         Row row = infoTab.createRow(rowIndex);
-        row.createCell(0).setCellValue("How to fill in this template?");
+        row.createCell(0).setCellValue(TEMPLATE_INFO_HOW_TO_FILL);
         row = infoTab.createRow(++rowIndex);
-        row.createCell(0).setCellValue("This tab provides information about the other tabs of this template");
+        row.createCell(0).setCellValue(TEMPLATE_INFO_THIS_TAB_PROVIDES);
         rowIndex++;
         row = infoTab.createRow(++rowIndex);
-        row.createCell(0).setCellValue("Product Properties");
+        row.createCell(0).setCellValue(TEMPLATE_TAB_PRODUCT_PROPERTIES);
         row = infoTab.createRow(++rowIndex);
-        row.createCell(0).setCellValue("Top 3 columns of the Product Properties tab includes the information about the properties to be filled in for each product variation.");
+        row.createCell(0).setCellValue(TEMPLATE_INFO_TOP_THREE_COLUMNS);
         row = infoTab.createRow(++rowIndex);
-        row.createCell(0).setCellValue("The first row is the name of the property. and the second row shows the unit associated with the property value if there is any.");
+        row.createCell(0).setCellValue(TEMPLATE_INFO_THE_FIRST_ROW);
         row = infoTab.createRow(++rowIndex);
-        row.createCell(0).setCellValue("The second row shows the data type of the property.");
+        row.createCell(0).setCellValue(TEMPLATE_INFO_THE_SECOND_ROW);
         row = infoTab.createRow(++rowIndex);
-        row.createCell(0).setCellValue("The third row shows the unit associated with the property value if there is any.");
+        row.createCell(0).setCellValue(TEMPLATE_INFO_THE_THIRD_ROW);
         row = infoTab.createRow(++rowIndex);
-        row.createCell(0).setCellValue("Details of the property and allowed values can be investigated in \"Property Details\" and \"Allowed Values for Properties\" tabs respectively based on the name of the property ");
+        row.createCell(0).setCellValue(TEMPLATE_INFO_DETAILS_OF_THE_PROPERTY);
         row = infoTab.createRow(++rowIndex);
-        row.createCell(0).setCellValue("The 4th row onwards, each row corresponds to a product variation for the chosen product category");
+        row.createCell(0).setCellValue(TEMPLATE_INFO_THE_FOURTH_ROW);
         rowIndex++;
         row = infoTab.createRow(++rowIndex);
-        row.createCell(0).setCellValue("Property Details");
+        row.createCell(0).setCellValue(TEMPLATE_TAB_PROPERTY_DETAILS);
         row = infoTab.createRow(++rowIndex);
-        row.createCell(0).setCellValue("This tab contains additional information for each property associated with the chosen product category");
+        row.createCell(0).setCellValue(TEMPLATE_INFO_THIS_TAB_CONTAINS);
         rowIndex++;
         row = infoTab.createRow(++rowIndex);
-        row.createCell(0).setCellValue("Allowed Values for Properties");
+        row.createCell(0).setCellValue(TEMPLATE_TAB_ALLOWED_VALUES_FOR_PROPERTIES);
         row = infoTab.createRow(++rowIndex);
-        row.createCell(0).setCellValue("This tab contains values that are allowed to be set for each property starting from the 4th row");
+        row.createCell(0).setCellValue(TEMPLATE_INFO_THIS_TAB_CONTAINS_VALUES);
     }
 
     private void populateProductPropertiesTab(Category category, Sheet productPropertiesTab) {
         int rowIndex = 0;
         Row firstRow = productPropertiesTab.createRow(rowIndex);
-        firstRow.createCell(0).setCellValue("Property Name");
+        firstRow.createCell(0).setCellValue(TEMPLATE_PRODUCT_PROPERTIES_PROPERTY_NAME);
         Row secondRow = productPropertiesTab.createRow(++rowIndex);
-        secondRow.createCell(0).setCellValue("Property Data Type");
+        secondRow.createCell(0).setCellValue(TEMPLATE_PRODUCT_PROPERTIES_PROPERTY_DATA_TYPE);
         Row thirdRow = productPropertiesTab.createRow(++rowIndex);
-        thirdRow.createCell(0).setCellValue("Property Unit");
+        thirdRow.createCell(0).setCellValue(TEMPLATE_PRODUCT_PROPERTIES_PROPERTY_UNIT);
 
         List<Property> properties = TemplateConfig.getFixedProperties();
         properties.addAll(category.getProperties());
@@ -196,16 +196,16 @@ public class CatalogueServiceImpl implements CatalogueService {
         int rowIndex = 0;
         int columnIndex = 0;
         Row row = propertyDetailsTab.createRow(rowIndex);
-        row.createCell(columnIndex).setCellValue("Property Name");
-        row.createCell(++columnIndex).setCellValue("Short Name");
-        row.createCell(++columnIndex).setCellValue("Definition");
-        row.createCell(++columnIndex).setCellValue("Note");
-        row.createCell(++columnIndex).setCellValue("Remark");
-        row.createCell(++columnIndex).setCellValue("Preferred Symbol");
-        row.createCell(++columnIndex).setCellValue("Unit");
-        row.createCell(++columnIndex).setCellValue("IEC Category");
-        row.createCell(++columnIndex).setCellValue("Attribute Type");
-        row.createCell(++columnIndex).setCellValue("Data Type");
+        row.createCell(columnIndex).setCellValue(TEMPLATE_PROPERTY_DETAILS_PROPERTY_NAME);
+        row.createCell(++columnIndex).setCellValue(TEMPLATE_PROPERTY_DETAILS_SHORT_NAME);
+        row.createCell(++columnIndex).setCellValue(TEMPLATE_PROPERTY_DETAILS_DEFINITION);
+        row.createCell(++columnIndex).setCellValue(TEMPLATE_PROPERTY_DETAILS_NOTE);
+        row.createCell(++columnIndex).setCellValue(TEMPLATE_PROPERTY_DETAILS_REMARK);
+        row.createCell(++columnIndex).setCellValue(TEMPLATE_PROPERTY_DETAILS_PREFERRED_SYMBOL);
+        row.createCell(++columnIndex).setCellValue(TEMPLATE_PROPERTY_DETAILS_UNIT);
+        row.createCell(++columnIndex).setCellValue(TEMPLATE_PROPERTY_DETAILS_IEC_CATEGORY);
+        row.createCell(++columnIndex).setCellValue(TEMPLATE_PROPERTY_DETAILS_ATTRIBUTE_TYPE);
+        row.createCell(++columnIndex).setCellValue(TEMPLATE_PROPERTY_DETAILS_DATA_TYPE);
 
         List<Property> properties = category.getProperties();
         for (int i = 0; i < properties.size(); i++) {
@@ -288,7 +288,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     private List<CatalogueLineType> getCatalogueLines(Workbook template) {
         List<CatalogueLineType> results = new ArrayList<>();
 
-        Sheet productPropertiesTab = template.getSheet(SHEET_NAME_PRODUCT_PROPERTIES);
+        Sheet productPropertiesTab = template.getSheet(TEMPLATE_TAB_PRODUCT_PROPERTIES);
         int propertyNum = productPropertiesTab.getRow(0).getLastCellNum();
         int catalogSize = productPropertiesTab.getLastRowNum();
         int fixedPropNumber = TemplateConfig.getFixedProperties().size();
@@ -339,9 +339,9 @@ public class CatalogueServiceImpl implements CatalogueService {
             Property property = properties.get(i);
             Cell cell = propertiesRow.getCell(i);
             if (cell != null) {
-                if (property.equals(PROPERTY_NAME_NAME)) {
+                if (property.equals(TEMPLATE_FIXED_PROPERTY_NAME)) {
                     item.setName(getCellStringValue(cell));
-                } else if (property.equals(PROPERTY_NAME_DESCRIPTION)) {
+                } else if (property.equals(TEMPLATE_FIXED_PROPERTY_DESCRIPTION)) {
                     item.setDescription(getCellStringValue(cell));
                 }
             }
