@@ -232,7 +232,7 @@
 	<xsd:element name="DeliveryInstructions" type="xsd:string"/>
 	<xsd:element name="DemurrageInstructions" type="xsd:string"/>
 	<xsd:element name="Department" type="xsd:string"/>
-	<xsd:element name="Description" type="xsd:decimal"/>
+	<xsd:element name="Description" type="xsd:string"/>
 	<xsd:element name="DescriptionCode" type="CodeType"/>
 	<xsd:element name="DespatchAdviceTypeCode" type="CodeType"/>
 	<xsd:element name="DifferenceTemperatureReductionQuantity"

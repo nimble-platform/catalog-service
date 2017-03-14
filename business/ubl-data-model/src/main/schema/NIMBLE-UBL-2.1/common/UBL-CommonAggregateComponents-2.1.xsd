@@ -1893,7 +1893,7 @@
 	</xsd:complexType>
 	<xsd:complexType name="ItemType">
 		<xsd:sequence>
-			<xsd:element ref="cbc:Description" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cbc:Description" minOccurs="0"/>
 			<xsd:element ref="cbc:PackQuantity" minOccurs="0"/>
 			<xsd:element ref="cbc:PackSizeNumeric" minOccurs="0"/>
 			<xsd:element ref="cbc:Name" minOccurs="0"/>
