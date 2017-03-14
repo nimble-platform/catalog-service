@@ -43,6 +43,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     private static final Logger logger = LoggerFactory.getLogger(CatalogueServiceImpl.class);
     private static CatalogueService instance = null;
+    private static ProductCategoryService pcsInstance = ProductCategoryServiceImpl.getInstance();
 
     private CatalogueServiceImpl() {
     }
@@ -114,8 +115,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     @Override
     public OutputStream generateTemplateForCategory(String categoryId) {
-        ProductCategoryService pcs = new ProductCategoryServiceImpl();
-        Category category = pcs.getCategory(categoryId);
+        Category category = pcsInstance.getCategory(categoryId);
 
         Workbook template = new XSSFWorkbook();
         Sheet infoTab = template.createSheet(TEMPLATE_TAB_INFORMATION);

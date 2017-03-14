@@ -1,5 +1,6 @@
 package eu.nimble.service.catalogue.impl;
 
+import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.ProductCategoryService;
 import eu.nimble.service.catalogue.category.datamodel.Category;
 import eu.nimble.service.catalogue.exception.CategoryDatabaseException;
@@ -15,6 +16,18 @@ import java.util.List;
  */
 public class ProductCategoryServiceImpl implements ProductCategoryService {
     private static final Logger logger = LoggerFactory.getLogger(ProductCategoryServiceImpl.class);
+    private static ProductCategoryServiceImpl instance = null;
+
+    private ProductCategoryServiceImpl() {
+    }
+
+    public static ProductCategoryServiceImpl getInstance() {
+        if (instance == null) {
+            return new ProductCategoryServiceImpl();
+        } else {
+            return instance;
+        }
+    }
 
     @Override
     public Category getCategory(String categoryId) {
@@ -46,7 +59,7 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
         EClassCategoryDatabaseAdapter eClassCategoryDatabaseAdapter = new EClassCategoryDatabaseAdapter();
         List<Category> categories;
         try {
-            categories = eClassCategoryDatabaseAdapter.getClassificationClassesByLevel(1);
+            categories = eClassCategoryDatabaseAdapter.getClassificationClassesByLevel(level);
         } catch (CategoryDatabaseException e) {
             throw new ProductCategoryServiceException("Failed to retrieve product categories", e);
         }
