@@ -1,9 +1,9 @@
 server:
-  port: ${PORT:8081}
+  port: ${PORT:8095}
 spring:
   application:
     # the name of the application represents the global identifier of this microservice.
-    name: catalogue-service
+    name: catalogue-service-srdc
   cloud:
     config:
       uri: ${vcap.services.config-service.credentials.url:${CONFIG_SERVER_URI:http://localhost:8888}}

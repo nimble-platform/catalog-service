@@ -1,0 +1,21 @@
+version: '2'
+
+services:
+  catalog-service-srdc:
+    image: nimbleplatform/catalogue-service-micro-srdc
+    ports:
+      - "8095:8095"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - CONFIG_SERVER_URI=http://config-server:8888
+      - DISCOVERY_SERVER_URI=http://service-discovery:8761
+    networks:
+      - nimble-infra
+      - default
+  catalog-service-srdc-db:
+    image: postgres
+
+networks:
+  nimble-infra:
+    external:
+      name: nimbleinfra_default
