@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" elementFormDefault="qualified" attributeFormDefault="unqualified" version="2.1">
+	<xsd:element name="AccountFormatCode" type="CodeType"/>
+	<xsd:element name="AccountTypeCode" type="CodeType"/>
+	<xsd:element name="AdditionalInformation" type="xsd:string"/>
+	<xsd:element name="AttributeID" type="IdentifierType"/>
+	<xsd:element name="BrandName" type="xsd:string"/>
+	<xsd:element name="CargoTypeCode" type="CodeType"/>
+	<xsd:element name="CertificateType" type="xsd:string"/>
+	<xsd:element name="CertificateTypeCode" type="CodeType"/>
+	<xsd:element name="CityName" type="xsd:string"/>
+	<xsd:element name="CompanyID" type="IdentifierType"/>
+	<xsd:element name="ContentUnitQuantity" type="QuantityType"/>
+	<xsd:element name="CurrencyCode" type="CodeType"/>
+	<xsd:element name="Description" type="xsd:string"/>
+	<xsd:element name="District" type="xsd:string"/>
+	<xsd:element name="DocumentDescription" type="xsd:decimal"/>
+	<xsd:element name="DocumentType" type="xsd:string"/>
+	<xsd:element name="ElectronicMail" type="xsd:string"/>
+	<xsd:element name="EmbeddedDocumentBinaryObject" type="BinaryObjectType"/>
+	<xsd:element name="ExemptionReason" type="xsd:string"/>
+	<xsd:element name="ExemptionReasonCode" type="CodeType"/>
+	<xsd:element name="FamilyName" type="xsd:string"/>
+	<xsd:element name="FileName" type="xsd:string"/>
+	<xsd:element name="FirstName" type="xsd:string"/>
+	<xsd:element name="ID" type="IdentifierType"/>
+	<xsd:element name="IdentificationCode" type="CodeType"/>
+	<xsd:element name="IndustryClassificationCode" type="CodeType"/>
+	<xsd:element name="IssueDate" type="xsd:date"/>
+	<xsd:element name="ItemClassificationCode" type="CodeType"/>
+	<xsd:element name="JobTitle" type="xsd:string"/>
+	<xsd:element name="Keyword" type="xsd:string"/>
+	<xsd:element name="Measure" type="QuantityType"/>
+	<xsd:element name="ModelName" type="xsd:string"/>
+	<xsd:element name="Name" type="xsd:string"/>
+	<xsd:element name="NationalityID" type="IdentifierType"/>
+	<xsd:element name="NatureCode" type="CodeType"/>
+	<xsd:element name="OrderableUnit" type="xsd:string"/>
+	<xsd:element name="OrganizationDepartment" type="xsd:string"/>
+	<xsd:element name="PackQuantity" type="QuantityType"/>
+	<xsd:element name="PackSizeNumeric" type="xsd:decimal"/>
+	<xsd:element name="Region" type="xsd:string"/>
+	<xsd:element name="RegistrationDate" type="xsd:date"/>
+	<xsd:element name="RegistrationExpirationDate" type="xsd:date"/>
+	<xsd:element name="RegistrationName" type="xsd:string"/>
+	<xsd:element name="TaxLevelCode" type="CodeType"/>
+	<xsd:element name="TaxPointDate" type="xsd:date"/>
+	<xsd:element name="TaxTypeCode" type="CodeType"/>
+	<xsd:element name="Telephone" type="xsd:string"/>
+	<xsd:element name="Title" type="xsd:string"/>
+	<xsd:element name="URI" type="xsd:string"/>
+	<xsd:element name="Value" type="xsd:string"/>
+	<xsd:element name="ValueQualifier" type="xsd:string"/>
+	<xsd:element name="WebsiteURI" type="xsd:string"/>
+
+	<xsd:complexType name="BinaryObjectType">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:base64Binary">
+				<xsd:attribute name="mimeCode" type="xsd:normalizedString" use="required"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="CodeType">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:normalizedString">
+				<xsd:attribute name="listID" type="xsd:normalizedString" use="optional"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="IdentifierType">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:normalizedString">
+				<xsd:attribute name="schemeID" type="xsd:normalizedString" use="optional"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="QuantityType">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:decimal">
+				<xsd:attribute name="unitCode" type="xsd:normalizedString" use="required"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+</xsd:schema>

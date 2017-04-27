@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" elementFormDefault="qualified" attributeFormDefault="unqualified" version="2.1">
+	<xsd:import namespace="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" schemaLocation="UBL-CommonBasicComponents-2.1.xsd"/>
+	<xsd:element name="AdditionalItemProperty" type="ItemPropertyType"/>
+	<xsd:element name="Address" type="AddressType"/>
+	<xsd:element name="Attachment" type="AttachmentType"/>
+	<xsd:element name="BuyersItemIdentification" type="ItemIdentificationType"/>
+	<xsd:element name="CatalogueLine" type="CatalogueLineType"/>
+	<xsd:element name="Certificate" type="CertificateType"/>
+	<xsd:element name="CommodityClassification" type="CommodityClassificationType"/>
+	<xsd:element name="Contact" type="ContactType"/>
+	<xsd:element name="Country" type="CountryType"/>
+	<xsd:element name="Dimension" type="DimensionType"/>
+	<xsd:element name="DocumentReference" type="DocumentReferenceType"/>
+	<xsd:element name="ExternalReference" type="ExternalReferenceType"/>
+	<xsd:element name="FinancialAccount" type="FinancialAccountType"/>
+	<xsd:element name="FinancialInstitution" type="FinancialInstitutionType"/>
+	<xsd:element name="FinancialInstitutionBranch" type="BranchType"/>
+	<xsd:element name="IdentityDocumentReference" type="DocumentReferenceType"/>
+	<xsd:element name="IssuerParty" type="PartyType"/>
+	<xsd:element name="Item" type="ItemType"/>
+	<xsd:element name="ItemPropertyGroup" type="ItemPropertyGroupType"/>
+	<xsd:element name="ItemSpecificationDocumentReference" type="DocumentReferenceType"/>
+	<xsd:element name="ManufacturersItemIdentification" type="ItemIdentificationType"/>
+	<xsd:element name="ManufacturerParty" type="PartyType"/>
+	<xsd:element name="OriginCountry" type="CountryType"/>
+	<xsd:element name="PartyIdentification" type="PartyIdentificationType"/>
+	<xsd:element name="PartyLegalEntity" type="PartyLegalEntityType"/>
+	<xsd:element name="PartyName" type="PartyNameType"/>
+	<xsd:element name="PartyTaxScheme" type="PartyTaxSchemeType"/>
+	<xsd:element name="Person" type="PersonType"/>
+	<xsd:element name="PostalAddress" type="AddressType"/>
+	<xsd:element name="ProviderParty" type="PartyType"/>
+	<xsd:element name="RegistrationAddress" type="AddressType"/>
+	<xsd:element name="StandardItemIdentification" type="ItemIdentificationType"/>
+	<xsd:element name="TaxScheme" type="TaxSchemeType"/>
+	<xsd:complexType name="AddressType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:CityName" minOccurs="0"/>
+			<xsd:element ref="cbc:Region" minOccurs="0"/>
+			<xsd:element ref="cbc:District" minOccurs="0"/>
+			<xsd:element ref="cac:Country" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="AttachmentType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:EmbeddedDocumentBinaryObject" minOccurs="0"/>
+			<xsd:element ref="cac:ExternalReference" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="BranchType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:ID" minOccurs="0"/>
+			<xsd:element ref="cbc:Name" minOccurs="0"/>
+			<xsd:element ref="cac:FinancialInstitution" minOccurs="0"/>
+			<xsd:element ref="cac:Address" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CatalogueLineType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:ID"/>
+			<xsd:element ref="cbc:OrderableUnit" minOccurs="0"/>
+			<xsd:element ref="cbc:ContentUnitQuantity" minOccurs="0"/>
+			<xsd:element ref="cac:Item"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CertificateType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:ID"/>
+			<xsd:element ref="cbc:CertificateTypeCode"/>
+			<xsd:element ref="cbc:CertificateType"/>
+			<xsd:element ref="cac:IssuerParty"/>
+			<xsd:element ref="cac:DocumentReference" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CommodityClassificationType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:NatureCode" minOccurs="0"/>
+			<xsd:element ref="cbc:CargoTypeCode" minOccurs="0"/>
+			<xsd:element ref="cbc:ItemClassificationCode" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ContactType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:Telephone" minOccurs="0"/>
+			<xsd:element ref="cbc:ElectronicMail" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="CountryType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:IdentificationCode" minOccurs="0"/>
+			<xsd:element ref="cbc:Name" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="DimensionType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:AttributeID"/>
+			<xsd:element ref="cbc:Measure" minOccurs="0"/>
+			<xsd:element ref="cbc:Description" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="DocumentReferenceType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:ID"/>
+			<xsd:element ref="cbc:IssueDate" minOccurs="0"/>
+			<xsd:element ref="cbc:DocumentType" minOccurs="0"/>
+			<xsd:element ref="cbc:DocumentDescription" minOccurs="0"/>
+			<xsd:element ref="cac:Attachment" minOccurs="0"/>
+			<xsd:element ref="cac:IssuerParty" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ExternalReferenceType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:URI" minOccurs="0"/>
+			<xsd:element ref="cbc:FileName" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="FinancialAccountType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:ID" minOccurs="0"/>
+			<xsd:element ref="cbc:Name" minOccurs="0"/>
+			<xsd:element ref="cbc:AccountTypeCode" minOccurs="0"/>
+			<xsd:element ref="cbc:AccountFormatCode" minOccurs="0"/>
+			<xsd:element ref="cbc:CurrencyCode" minOccurs="0"/>
+			<xsd:element ref="cac:FinancialInstitutionBranch" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="FinancialInstitutionType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:ID" minOccurs="0"/>
+			<xsd:element ref="cbc:Name" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ItemIdentificationType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:ID"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ItemPropertyType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:Name"/>
+			<xsd:element ref="cbc:Value" minOccurs="0"/>
+			<xsd:element ref="cbc:ValueQualifier" minOccurs="0"/>
+			<xsd:element ref="cac:ItemPropertyGroup" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ItemPropertyGroupType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:ID"/>
+			<xsd:element ref="cbc:Name" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ItemType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:Description" minOccurs="0"/>
+			<xsd:element ref="cbc:PackQuantity" minOccurs="0"/>
+			<xsd:element ref="cbc:PackSizeNumeric" minOccurs="0"/>
+			<xsd:element ref="cbc:Name" minOccurs="0"/>
+			<xsd:element ref="cbc:AdditionalInformation" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cbc:Keyword" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cbc:BrandName" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cbc:ModelName" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cac:BuyersItemIdentification" minOccurs="0"/>
+			<xsd:element ref="cac:ManufacturersItemIdentification" minOccurs="0"/>
+			<xsd:element ref="cac:StandardItemIdentification" minOccurs="0"/>
+			<xsd:element ref="cac:ItemSpecificationDocumentReference" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cac:OriginCountry" minOccurs="0"/>
+			<xsd:element ref="cac:CommodityClassification" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cac:AdditionalItemProperty" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cac:ManufacturerParty" minOccurs="0"/>
+			<xsd:element ref="cac:Certificate" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cac:Dimension" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PartyType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:WebsiteURI" minOccurs="0"/>
+			<xsd:element ref="cbc:IndustryClassificationCode" minOccurs="0"/>
+			<xsd:element ref="cac:PartyIdentification" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cac:PartyName" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cac:PostalAddress" minOccurs="0"/>
+			<xsd:element ref="cac:PartyTaxScheme" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cac:PartyLegalEntity" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cac:Contact" minOccurs="0"/>
+			<xsd:element ref="cac:Person" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cac:FinancialAccount" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PartyIdentificationType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:ID"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PartyLegalEntityType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:RegistrationName" minOccurs="0"/>
+			<xsd:element ref="cbc:CompanyID" minOccurs="0"/>
+			<xsd:element ref="cbc:RegistrationDate" minOccurs="0"/>
+			<xsd:element ref="cbc:RegistrationExpirationDate" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PartyNameType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:Name"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PartyTaxSchemeType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:RegistrationName" minOccurs="0"/>
+			<xsd:element ref="cbc:CompanyID" minOccurs="0"/>
+			<xsd:element ref="cbc:TaxLevelCode" minOccurs="0"/>
+			<xsd:element ref="cbc:ExemptionReasonCode" minOccurs="0"/>
+			<xsd:element ref="cbc:ExemptionReason" minOccurs="0"/>
+			<xsd:element ref="cac:RegistrationAddress" minOccurs="0"/>
+			<xsd:element ref="cac:TaxScheme"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PersonType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:ID" minOccurs="0"/>
+			<xsd:element ref="cbc:FirstName" minOccurs="0"/>
+			<xsd:element ref="cbc:FamilyName" minOccurs="0"/>
+			<xsd:element ref="cbc:Title" minOccurs="0"/>
+			<xsd:element ref="cbc:JobTitle" minOccurs="0"/>
+			<xsd:element ref="cbc:NationalityID" minOccurs="0"/>
+			<xsd:element ref="cbc:OrganizationDepartment" minOccurs="0"/>
+			<xsd:element ref="cac:Contact" minOccurs="0"/>
+			<xsd:element ref="cac:IdentityDocumentReference" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="TaxSchemeType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:Name" minOccurs="0"/>
+			<xsd:element ref="cbc:TaxTypeCode" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

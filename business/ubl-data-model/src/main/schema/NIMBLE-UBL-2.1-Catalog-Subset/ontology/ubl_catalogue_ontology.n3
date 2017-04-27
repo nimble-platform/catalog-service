@@ -1,0 +1,1856 @@
+@prefix :        <urn:oasis:names:specification:ubl:schema:xsd:Catalogue-2#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix dtype:   <http://www.srdc.com.tr/ontmalizer#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ns2:     <urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2#> .
+@prefix ns3:     <urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#> .
+
+ns3:BrandNameDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns3:URIDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns3:BinaryObjectType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty dtype:hasValue
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:cardinality "1"^^xsd:int ;
+                owl:onProperty ns3:mimeCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:base64Binary ;
+                owl:onProperty dtype:hasValue
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:normalizedString ;
+                owl:onProperty ns3:mimeCode
+              ] .
+
+ns3:listID
+      a       owl:DatatypeProperty .
+
+ns3:NationalityID
+      a       owl:Class , ns3:IdentifierType , owl:ObjectProperty .
+
+ns3:FamilyNameDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns3:ElectronicMail
+      a       owl:DatatypeProperty .
+
+ns2:Address
+      a       owl:Class , ns2:AddressType , owl:ObjectProperty .
+
+ns2:FinancialInstitutionType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:ID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:Name
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:IdentifierType ;
+                owl:onProperty ns3:ID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:Name
+              ] .
+
+ns2:Attachment
+      a       owl:Class , ns2:AttachmentType , owl:ObjectProperty .
+
+ns3:RegistrationNameDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns3:OrganizationDepartment
+      a       owl:DatatypeProperty .
+
+ns2:ItemType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:minCardinality "0"^^xsd:int ;
+                owl:onProperty ns2:Certificate
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:ItemIdentificationType ;
+                owl:onProperty ns2:StandardItemIdentification
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "2147483647"^^xsd:int ;
+                owl:onProperty ns3:AdditionalInformation
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "2147483647"^^xsd:int ;
+                owl:onProperty ns2:Dimension
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "2147483647"^^xsd:int ;
+                owl:onProperty ns2:ItemSpecificationDocumentReference
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:DimensionType ;
+                owl:onProperty ns2:Dimension
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:AdditionalInformation
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:DocumentReferenceType ;
+                owl:onProperty ns2:ItemSpecificationDocumentReference
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:BrandName
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:minCardinality "0"^^xsd:int ;
+                owl:onProperty ns2:CommodityClassification
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:minCardinality "0"^^xsd:int ;
+                owl:onProperty ns3:Keyword
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns2:OriginCountry
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "2147483647"^^xsd:int ;
+                owl:onProperty ns3:BrandName
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:Description
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:minCardinality "0"^^xsd:int ;
+                owl:onProperty ns2:AdditionalItemProperty
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "2147483647"^^xsd:int ;
+                owl:onProperty ns3:ModelName
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:Description
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:ModelName
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "2147483647"^^xsd:int ;
+                owl:onProperty ns2:CommodityClassification
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:PackSizeNumeric
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:PartyType ;
+                owl:onProperty ns2:ManufacturerParty
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns2:BuyersItemIdentification
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:PackQuantity
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns2:ManufacturersItemIdentification
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:Name
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "2147483647"^^xsd:int ;
+                owl:onProperty ns2:Certificate
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:CertificateType ;
+                owl:onProperty ns2:Certificate
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:minCardinality "0"^^xsd:int ;
+                owl:onProperty ns2:ItemSpecificationDocumentReference
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:Keyword
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns2:StandardItemIdentification
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:minCardinality "0"^^xsd:int ;
+                owl:onProperty ns3:AdditionalInformation
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:minCardinality "0"^^xsd:int ;
+                owl:onProperty ns2:Dimension
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:CommodityClassificationType ;
+                owl:onProperty ns2:CommodityClassification
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:minCardinality "0"^^xsd:int ;
+                owl:onProperty ns3:BrandName
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:CountryType ;
+                owl:onProperty ns2:OriginCountry
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "2147483647"^^xsd:int ;
+                owl:onProperty ns3:Keyword
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:QuantityType ;
+                owl:onProperty ns3:PackQuantity
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:minCardinality "0"^^xsd:int ;
+                owl:onProperty ns3:ModelName
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "2147483647"^^xsd:int ;
+                owl:onProperty ns2:AdditionalItemProperty
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:ItemPropertyType ;
+                owl:onProperty ns2:AdditionalItemProperty
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:Name
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:ItemIdentificationType ;
+                owl:onProperty ns2:ManufacturersItemIdentification
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:decimal ;
+                owl:onProperty ns3:PackSizeNumeric
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:ItemIdentificationType ;
+                owl:onProperty ns2:BuyersItemIdentification
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns2:ManufacturerParty
+              ] .
+
+ns3:TaxPointDateDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:date ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:date
+              ] .
+
+ns2:BranchType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns2:Address
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:AddressType ;
+                owl:onProperty ns2:Address
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns2:FinancialInstitution
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:Name
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:Name
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:ID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:IdentifierType ;
+                owl:onProperty ns3:ID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:FinancialInstitutionType ;
+                owl:onProperty ns2:FinancialInstitution
+              ] .
+
+ns2:PartyTaxScheme
+      a       ns2:PartyTaxSchemeType , owl:Class , owl:ObjectProperty .
+
+ns3:PackSizeNumericDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:decimal ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:decimal
+              ] .
+
+ns3:Telephone
+      a       owl:DatatypeProperty .
+
+ns2:Item
+      a       ns2:ItemType , owl:Class , owl:ObjectProperty .
+
+ns2:TaxScheme
+      a       owl:Class , ns2:TaxSchemeType , owl:ObjectProperty .
+
+ns3:TelephoneDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns3:DocumentTypeDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns2:AdditionalItemProperty
+      a       owl:Class , ns2:ItemPropertyType , owl:ObjectProperty .
+
+ns3:DistrictDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns3:PackSizeNumeric
+      a       owl:DatatypeProperty .
+
+ns2:FinancialAccountType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:AccountTypeCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:CodeType ;
+                owl:onProperty ns3:AccountFormatCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:IdentifierType ;
+                owl:onProperty ns3:ID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:CurrencyCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:BranchType ;
+                owl:onProperty ns2:FinancialInstitutionBranch
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:ID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:AccountFormatCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:CodeType ;
+                owl:onProperty ns3:CurrencyCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:CodeType ;
+                owl:onProperty ns3:AccountTypeCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:Name
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns2:FinancialInstitutionBranch
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:Name
+              ] .
+
+ns3:ExemptionReason
+      a       owl:DatatypeProperty .
+
+ns3:mimeCode
+      a       owl:DatatypeProperty .
+
+ns2:IdentityDocumentReference
+      a       owl:Class , ns2:DocumentReferenceType , owl:ObjectProperty .
+
+ns2:CatalogueLine
+      a       ns2:CatalogueLineType , owl:Class , owl:ObjectProperty .
+
+ns3:URI
+      a       owl:DatatypeProperty .
+
+ns2:RegistrationAddress
+      a       owl:Class , ns2:AddressType , owl:ObjectProperty .
+
+ns3:Value
+      a       owl:DatatypeProperty .
+
+ns3:CurrencyCode
+      a       ns3:CodeType , owl:Class , owl:ObjectProperty .
+
+ns3:ValueQualifier
+      a       owl:DatatypeProperty .
+
+ns2:DocumentReference
+      a       owl:Class , ns2:DocumentReferenceType , owl:ObjectProperty .
+
+ns2:CommodityClassification
+      a       owl:Class , ns2:CommodityClassificationType , owl:ObjectProperty .
+
+ns3:ID
+      a       owl:Class , ns3:IdentifierType , owl:ObjectProperty .
+
+ns2:ContactType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:Telephone
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:Telephone
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:ElectronicMail
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:ElectronicMail
+              ] .
+
+ns3:FamilyName
+      a       owl:DatatypeProperty .
+
+ns3:RegistrationDate
+      a       owl:DatatypeProperty .
+
+ns3:CityName
+      a       owl:DatatypeProperty .
+
+ns3:AdditionalInformationDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns3:DescriptionDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns2:PartyNameType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:cardinality "1"^^xsd:int ;
+                owl:onProperty ns3:Name
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:Name
+              ] .
+
+ns3:FileNameDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns2:ItemPropertyType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:cardinality "1"^^xsd:int ;
+                owl:onProperty ns3:Name
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:ValueQualifier
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:ValueQualifier
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:Value
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:Value
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:Name
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:ItemPropertyGroupType ;
+                owl:onProperty ns2:ItemPropertyGroup
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns2:ItemPropertyGroup
+              ] .
+
+ns3:ExemptionReasonCode
+      a       ns3:CodeType , owl:Class , owl:ObjectProperty .
+
+ns3:AdditionalInformation
+      a       owl:DatatypeProperty .
+
+ns3:DocumentDescriptionDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:decimal ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:decimal
+              ] .
+
+ns2:CountryType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:Name
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:Name
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:IdentificationCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:CodeType ;
+                owl:onProperty ns3:IdentificationCode
+              ] .
+
+ns3:QuantityType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:cardinality "1"^^xsd:int ;
+                owl:onProperty ns3:unitCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:normalizedString ;
+                owl:onProperty ns3:unitCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty dtype:hasValue
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:decimal ;
+                owl:onProperty dtype:hasValue
+              ] .
+
+ns3:RegionDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns2:ManufacturersItemIdentification
+      a       owl:Class , ns2:ItemIdentificationType , owl:ObjectProperty .
+
+ns3:BrandName
+      a       owl:DatatypeProperty .
+
+ns3:ModelName
+      a       owl:DatatypeProperty .
+
+ns3:Keyword
+      a       owl:DatatypeProperty .
+
+ns3:DocumentType
+      a       owl:DatatypeProperty .
+
+ns3:RegistrationExpirationDate
+      a       owl:DatatypeProperty .
+
+ns2:BuyersItemIdentification
+      a       owl:Class , ns2:ItemIdentificationType , owl:ObjectProperty .
+
+ns3:ValueQualifierDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns2:FinancialInstitutionBranch
+      a       owl:Class , ns2:BranchType , owl:ObjectProperty .
+
+ns2:PersonType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:NationalityID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:JobTitle
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:IdentifierType ;
+                owl:onProperty ns3:NationalityID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:OrganizationDepartment
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns2:Contact
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:DocumentReferenceType ;
+                owl:onProperty ns2:IdentityDocumentReference
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:OrganizationDepartment
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:ContactType ;
+                owl:onProperty ns2:Contact
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:minCardinality "0"^^xsd:int ;
+                owl:onProperty ns2:IdentityDocumentReference
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:IdentifierType ;
+                owl:onProperty ns3:ID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:ID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:FirstName
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:FamilyName
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "2147483647"^^xsd:int ;
+                owl:onProperty ns2:IdentityDocumentReference
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:FirstName
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:Title
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:JobTitle
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:FamilyName
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:Title
+              ] .
+
+ns2:FinancialInstitution
+      a       owl:Class , ns2:FinancialInstitutionType , owl:ObjectProperty .
+
+ns3:IssueDate
+      a       owl:DatatypeProperty .
+
+ns2:ItemIdentificationType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:IdentifierType ;
+                owl:onProperty ns3:ID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:cardinality "1"^^xsd:int ;
+                owl:onProperty ns3:ID
+              ] .
+
+ns2:CertificateType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:cardinality "1"^^xsd:int ;
+                owl:onProperty ns3:CertificateTypeCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:CertificateType
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:cardinality "1"^^xsd:int ;
+                owl:onProperty ns3:CertificateType
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:PartyType ;
+                owl:onProperty ns2:IssuerParty
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns2:DocumentReference
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:cardinality "1"^^xsd:int ;
+                owl:onProperty ns3:ID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:CodeType ;
+                owl:onProperty ns3:CertificateTypeCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:cardinality "1"^^xsd:int ;
+                owl:onProperty ns2:IssuerParty
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:DocumentReferenceType ;
+                owl:onProperty ns2:DocumentReference
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:IdentifierType ;
+                owl:onProperty ns3:ID
+              ] .
+
+ns3:schemeID
+      a       owl:DatatypeProperty .
+
+ns3:CargoTypeCode
+      a       ns3:CodeType , owl:Class , owl:ObjectProperty .
+
+ns2:PostalAddress
+      a       owl:Class , ns2:AddressType , owl:ObjectProperty .
+
+ns2:Country
+      a       ns2:CountryType , owl:Class , owl:ObjectProperty .
+
+ns2:ItemSpecificationDocumentReference
+      a       owl:Class , ns2:DocumentReferenceType , owl:ObjectProperty .
+
+ns3:AccountTypeCode
+      a       ns3:CodeType , owl:Class , owl:ObjectProperty .
+
+ns3:FileName
+      a       owl:DatatypeProperty .
+
+ns3:CodeType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty dtype:hasValue
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:listID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:normalizedString ;
+                owl:onProperty dtype:hasValue
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:normalizedString ;
+                owl:onProperty ns3:listID
+              ] .
+
+ns3:IdentificationCode
+      a       ns3:CodeType , owl:Class , owl:ObjectProperty .
+
+ns3:IdentifierType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:schemeID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:normalizedString ;
+                owl:onProperty ns3:schemeID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:normalizedString ;
+                owl:onProperty dtype:hasValue
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty dtype:hasValue
+              ] .
+
+ns3:WebsiteURIDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns3:unitCode
+      a       owl:DatatypeProperty .
+
+ns2:Certificate
+      a       ns2:CertificateType , owl:Class , owl:ObjectProperty .
+
+ns3:OrderableUnitDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns3:CertificateType
+      a       owl:DatatypeProperty .
+
+ns2:PartyLegalEntity
+      a       owl:Class , ns2:PartyLegalEntityType , owl:ObjectProperty .
+
+ns3:ContentUnitQuantity
+      a       owl:Class , ns3:QuantityType , owl:ObjectProperty .
+
+ns3:RegistrationExpirationDateDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:date ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:date
+              ] .
+
+ns2:Contact
+      a       owl:Class , ns2:ContactType , owl:ObjectProperty .
+
+ns2:PartyTaxSchemeType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:CompanyID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:CodeType ;
+                owl:onProperty ns3:TaxLevelCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:ExemptionReasonCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:ExemptionReason
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:TaxLevelCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:CodeType ;
+                owl:onProperty ns3:ExemptionReasonCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:ExemptionReason
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:TaxSchemeType ;
+                owl:onProperty ns2:TaxScheme
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:cardinality "1"^^xsd:int ;
+                owl:onProperty ns2:TaxScheme
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:AddressType ;
+                owl:onProperty ns2:RegistrationAddress
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns2:RegistrationAddress
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:RegistrationName
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:RegistrationName
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:IdentifierType ;
+                owl:onProperty ns3:CompanyID
+              ] .
+
+ns3:CertificateTypeCode
+      a       ns3:CodeType , owl:Class , owl:ObjectProperty .
+
+ns2:ItemPropertyGroup
+      a       ns2:ItemPropertyGroupType , owl:Class , owl:ObjectProperty .
+
+:CatalogueType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:CatalogueLineType ;
+                owl:onProperty ns2:CatalogueLine
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:cardinality "1"^^xsd:int ;
+                owl:onProperty ns2:ProviderParty
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "2147483647"^^xsd:int ;
+                owl:onProperty ns2:CatalogueLine
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:minCardinality "1"^^xsd:int ;
+                owl:onProperty ns2:CatalogueLine
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:PartyType ;
+                owl:onProperty ns2:ProviderParty
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:cardinality "1"^^xsd:int ;
+                owl:onProperty ns3:ID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:IdentifierType ;
+                owl:onProperty ns3:ID
+              ] .
+
+ns2:CommodityClassificationType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:CargoTypeCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:CodeType ;
+                owl:onProperty ns3:ItemClassificationCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:CodeType ;
+                owl:onProperty ns3:CargoTypeCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:ItemClassificationCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:CodeType ;
+                owl:onProperty ns3:NatureCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:NatureCode
+              ] .
+
+ns3:IndustryClassificationCode
+      a       ns3:CodeType , owl:Class , owl:ObjectProperty .
+
+ns3:TaxTypeCode
+      a       ns3:CodeType , owl:Class , owl:ObjectProperty .
+
+ns2:TaxSchemeType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:Name
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:TaxTypeCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:CodeType ;
+                owl:onProperty ns3:TaxTypeCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:Name
+              ] .
+
+ns2:CatalogueLineType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:ContentUnitQuantity
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:ItemType ;
+                owl:onProperty ns2:Item
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:OrderableUnit
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:QuantityType ;
+                owl:onProperty ns3:ContentUnitQuantity
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:cardinality "1"^^xsd:int ;
+                owl:onProperty ns3:ID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:OrderableUnit
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:cardinality "1"^^xsd:int ;
+                owl:onProperty ns2:Item
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:IdentifierType ;
+                owl:onProperty ns3:ID
+              ] .
+
+dtype:hasValue
+      a       owl:DatatypeProperty .
+
+ns3:PackQuantity
+      a       owl:Class , ns3:QuantityType , owl:ObjectProperty .
+
+ns2:FinancialAccount
+      a       ns2:FinancialAccountType , owl:Class , owl:ObjectProperty .
+
+ns3:AttributeID
+      a       owl:Class , ns3:IdentifierType , owl:ObjectProperty .
+
+ns3:AccountFormatCode
+      a       ns3:CodeType , owl:Class , owl:ObjectProperty .
+
+ns2:AddressType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:Region
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:District
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:CityName
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:Region
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns2:Country
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:District
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:CountryType ;
+                owl:onProperty ns2:Country
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:CityName
+              ] .
+
+ns2:PartyType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "2147483647"^^xsd:int ;
+                owl:onProperty ns2:PartyIdentification
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns2:FinancialAccount
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "2147483647"^^xsd:int ;
+                owl:onProperty ns2:Person
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:AddressType ;
+                owl:onProperty ns2:PostalAddress
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:minCardinality "0"^^xsd:int ;
+                owl:onProperty ns2:PartyName
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:PartyTaxSchemeType ;
+                owl:onProperty ns2:PartyTaxScheme
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:minCardinality "0"^^xsd:int ;
+                owl:onProperty ns2:PartyLegalEntity
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "2147483647"^^xsd:int ;
+                owl:onProperty ns2:PartyTaxScheme
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:CodeType ;
+                owl:onProperty ns3:IndustryClassificationCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:PersonType ;
+                owl:onProperty ns2:Person
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:WebsiteURI
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:ContactType ;
+                owl:onProperty ns2:Contact
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:PartyIdentificationType ;
+                owl:onProperty ns2:PartyIdentification
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:FinancialAccountType ;
+                owl:onProperty ns2:FinancialAccount
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:PartyNameType ;
+                owl:onProperty ns2:PartyName
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:minCardinality "0"^^xsd:int ;
+                owl:onProperty ns2:Person
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:minCardinality "0"^^xsd:int ;
+                owl:onProperty ns2:PartyIdentification
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "2147483647"^^xsd:int ;
+                owl:onProperty ns2:PartyName
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns2:PostalAddress
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:PartyLegalEntityType ;
+                owl:onProperty ns2:PartyLegalEntity
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:minCardinality "0"^^xsd:int ;
+                owl:onProperty ns2:PartyTaxScheme
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns2:Contact
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:IndustryClassificationCode
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "2147483647"^^xsd:int ;
+                owl:onProperty ns2:PartyLegalEntity
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:WebsiteURI
+              ] .
+
+ns2:ManufacturerParty
+      a       owl:Class , ns2:PartyType , owl:ObjectProperty .
+
+ns3:JobTitle
+      a       owl:DatatypeProperty .
+
+ns2:DimensionType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:cardinality "1"^^xsd:int ;
+                owl:onProperty ns3:AttributeID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:IdentifierType ;
+                owl:onProperty ns3:AttributeID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "2147483647"^^xsd:int ;
+                owl:onProperty ns3:Description
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:minCardinality "0"^^xsd:int ;
+                owl:onProperty ns3:Description
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:Description
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:Measure
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:QuantityType ;
+                owl:onProperty ns3:Measure
+              ] .
+
+ns2:AttachmentType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:EmbeddedDocumentBinaryObject
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:BinaryObjectType ;
+                owl:onProperty ns3:EmbeddedDocumentBinaryObject
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns2:ExternalReference
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:ExternalReferenceType ;
+                owl:onProperty ns2:ExternalReference
+              ] .
+
+ns3:FirstNameDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns3:CompanyID
+      a       owl:Class , ns3:IdentifierType , owl:ObjectProperty .
+
+ns3:ValueDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns3:EmbeddedDocumentBinaryObject
+      a       ns3:BinaryObjectType , owl:Class , owl:ObjectProperty .
+
+ns3:FirstName
+      a       owl:DatatypeProperty .
+
+ns3:NameDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns3:TaxLevelCode
+      a       ns3:CodeType , owl:Class , owl:ObjectProperty .
+
+ns3:NatureCode
+      a       ns3:CodeType , owl:Class , owl:ObjectProperty .
+
+ns3:DocumentDescription
+      a       owl:DatatypeProperty .
+
+ns2:IssuerParty
+      a       owl:Class , ns2:PartyType , owl:ObjectProperty .
+
+ns3:OrganizationDepartmentDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns3:RegistrationDateDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:date ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:date
+              ] .
+
+ns3:WebsiteURI
+      a       owl:DatatypeProperty .
+
+ns2:PartyName
+      a       ns2:PartyNameType , owl:Class , owl:ObjectProperty .
+
+ns2:ProviderParty
+      a       owl:Class , ns2:PartyType , owl:ObjectProperty .
+
+ns3:RegistrationName
+      a       owl:DatatypeProperty .
+
+ns2:PartyIdentification
+      a       ns2:PartyIdentificationType , owl:Class , owl:ObjectProperty .
+
+ns2:StandardItemIdentification
+      a       owl:Class , ns2:ItemIdentificationType , owl:ObjectProperty .
+
+ns3:ElectronicMailDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+:Catalogue
+      a       :CatalogueType , owl:Class .
+
+ns2:PartyIdentificationType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:cardinality "1"^^xsd:int ;
+                owl:onProperty ns3:ID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:IdentifierType ;
+                owl:onProperty ns3:ID
+              ] .
+
+ns2:ItemPropertyGroupType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:Name
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:cardinality "1"^^xsd:int ;
+                owl:onProperty ns3:ID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:IdentifierType ;
+                owl:onProperty ns3:ID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:Name
+              ] .
+
+ns2:DocumentReferenceType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:DocumentDescription
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:date ;
+                owl:onProperty ns3:IssueDate
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:PartyType ;
+                owl:onProperty ns2:IssuerParty
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns2:IssuerParty
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:IssueDate
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns2:AttachmentType ;
+                owl:onProperty ns2:Attachment
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:IdentifierType ;
+                owl:onProperty ns3:ID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:cardinality "1"^^xsd:int ;
+                owl:onProperty ns3:ID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns2:Attachment
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:decimal ;
+                owl:onProperty ns3:DocumentDescription
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:DocumentType
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:DocumentType
+              ] .
+
+ns3:IssueDateDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:date ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:date
+              ] .
+
+ns3:Region
+      a       owl:DatatypeProperty .
+
+ns3:CertificateTypeDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns3:KeywordDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns2:Dimension
+      a       owl:Class , ns2:DimensionType , owl:ObjectProperty .
+
+ns2:OriginCountry
+      a       ns2:CountryType , owl:Class , owl:ObjectProperty .
+
+ns3:Measure
+      a       owl:Class , ns3:QuantityType , owl:ObjectProperty .
+
+ns2:Person
+      a       ns2:PersonType , owl:Class , owl:ObjectProperty .
+
+ns3:CityNameDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns3:ItemClassificationCode
+      a       ns3:CodeType , owl:Class , owl:ObjectProperty .
+
+ns3:Description
+      a       owl:DatatypeProperty .
+
+ns2:ExternalReferenceType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:FileName
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:FileName
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:URI
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:URI
+              ] .
+
+ns3:ModelNameDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns3:JobTitleDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns3:ExemptionReasonDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns3:TitleDatatype
+      a       rdfs:Datatype ;
+      rdfs:subClassOf xsd:string ;
+      owl:equivalentClass
+              [ a       rdfs:Datatype ;
+                owl:onDatatype xsd:string
+              ] .
+
+ns3:OrderableUnit
+      a       owl:DatatypeProperty .
+
+ns2:ExternalReference
+      a       ns2:ExternalReferenceType , owl:Class , owl:ObjectProperty .
+
+ns2:PartyLegalEntityType
+      a       owl:Class ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:string ;
+                owl:onProperty ns3:RegistrationName
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:CompanyID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:RegistrationName
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom ns3:IdentifierType ;
+                owl:onProperty ns3:CompanyID
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:date ;
+                owl:onProperty ns3:RegistrationExpirationDate
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:RegistrationExpirationDate
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:allValuesFrom xsd:date ;
+                owl:onProperty ns3:RegistrationDate
+              ] ;
+      rdfs:subClassOf
+              [ a       owl:Restriction ;
+                owl:maxCardinality "1"^^xsd:int ;
+                owl:onProperty ns3:RegistrationDate
+              ] .
+
+ns3:Name
+      a       owl:DatatypeProperty .
+
+ns3:Title
+      a       owl:DatatypeProperty .
+
+ns3:District
+      a       owl:DatatypeProperty .
