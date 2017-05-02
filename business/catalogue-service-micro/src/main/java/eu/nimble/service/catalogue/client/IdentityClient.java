@@ -25,6 +25,8 @@ public interface IdentityClient {
 class IdentityClientFallback implements IdentityClient {
     @Override
     public PartyType getParty(String storeId) {
-        return null;
+        // TODO for Suat: What should happen if identity service is not available?
+        // For now an empty party type is returned, which makes life easier for further development :)
+        return new PartyType();
     }
 }

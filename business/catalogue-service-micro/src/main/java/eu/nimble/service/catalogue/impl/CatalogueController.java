@@ -30,15 +30,9 @@ public class CatalogueController {
 	public ResponseEntity<Void> addUBLCatalogue(@RequestBody String catalogueXML, @RequestParam String partyId) {
 
 		PartyType party = identityClient.getParty(partyId);
-		if (party == null)
-		{
-			log.warn("Party with Id {0} not found", partyId);
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-		}
-
 		log.debug("Fetched party with Id {0}", party.getHjid());
 
-		// TODO for Suat: use party type in catalague
+		// TODO for Suat: use party type in catalogue.
 		service.addCatalogue(catalogueXML, Configuration.Standard.UBL);
 		return ResponseEntity.ok(null);
 	}
