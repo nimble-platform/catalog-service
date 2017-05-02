@@ -28,6 +28,7 @@
 		<module>registration-service</module>
 		<module>registration-service-micro</module>
 		<module>registration-service-rest</module>
+		<module>ontmalizer</module>
 		<!--module>catalogue-rest</module-->
 </modules>
 

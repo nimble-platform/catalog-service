@@ -33,20 +33,8 @@ public class ProductCategoryController {
     @RequestMapping(value = "/catalogue/category",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getCategoriesByLevel(@RequestParam(required = false) Integer categoryLevel, @RequestParam(required = false) String categoryName) {
-        if(categoryLevel == null && categoryName == null) {
-            return ResponseEntity.badRequest().body(new String("One of the categoryLevel or categoryName parameters should be set"));
-        }
-        if(categoryLevel != null && categoryName != null) {
-            return ResponseEntity.badRequest().body(new String("This method does not support querying by both categoryLevel and categoryName parameters"));
-        }
-        List<Category> categories;
-        if(categoryLevel != null) {
-            categories = pcs.getProductCategories(categoryLevel);
-        } else {
-            categories = pcs.getProductCategories(categoryName);
-        }
-
+    public ResponseEntity getCategoriesByLevel(@RequestParam(required = false) String categoryName) {
+        List<Category> categories = pcs.getProductCategories(categoryName);
         return ResponseEntity.ok(categories);
     }
 

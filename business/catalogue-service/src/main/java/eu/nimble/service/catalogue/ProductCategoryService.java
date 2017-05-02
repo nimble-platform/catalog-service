@@ -14,7 +14,5 @@ public interface ProductCategoryService {
 
     public List<Category> getProductCategories(String categoryName);
 
-    public List<Category> getProductCategories(int level);
-
     public List<Category> getSubCategories(String categoryId);
 }

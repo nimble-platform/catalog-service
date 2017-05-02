@@ -37,6 +37,8 @@ public class Configuration {
 	public static final String UBL_UNQUALIFIEDDATATYPES_NS = "urn:oasis:names:specification:ubl:schema:xsd:UnqualifiedDataTypes-2";
 	public static final String UBL_CCT_NS = "urn:un:unece:uncefact:data:specification:CoreComponentTypeSchemaModule:2";
 	public static final String UBL_CCTS_NS = "urn:un:unece:uncefact:documentation:2";
+
+	public static final String UBL_CATALOGUE_SCHEMA = "/NIMBLE-UBL-2.1/maindoc/UBL-Catalogue-2.1.xsd";
 	
 	public static final String MODAML_CATALOGUE_NS = "urn:moda-ml:repository:schema:TEXCatalog";
 	

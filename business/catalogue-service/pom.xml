@@ -32,6 +32,11 @@
 			<version>0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
+			<groupId>eu.nimble.core.infrastructure.business</groupId>
+			<artifactId>ontmalizer</artifactId>
+			<version>0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
 			<groupId>eu.nimble.core.infrastructure.core</groupId>
 			<artifactId>utility</artifactId>
 			<version>0.1-SNAPSHOT</version>
@@ -50,6 +55,11 @@
 			<groupId>postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<version>9.1-901.jdbc4</version>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>1.4.193</version>
 		</dependency>
 	</dependencies>
 </project>

@@ -55,18 +55,6 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
     }
 
     @Override
-    public List<Category> getProductCategories(int level) {
-        EClassCategoryDatabaseAdapter eClassCategoryDatabaseAdapter = new EClassCategoryDatabaseAdapter();
-        List<Category> categories;
-        try {
-            categories = eClassCategoryDatabaseAdapter.getClassificationClassesByLevel(level);
-        } catch (CategoryDatabaseException e) {
-            throw new ProductCategoryServiceException("Failed to retrieve product categories", e);
-        }
-        return categories;
-    }
-
-    @Override
     public List<Category> getSubCategories(String categoryId) {
         EClassCategoryDatabaseAdapter eClassCategoryDatabaseAdapter = new EClassCategoryDatabaseAdapter();
         List<Category> categories;

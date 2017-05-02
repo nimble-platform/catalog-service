@@ -1,11 +1,26 @@
 package eu.nimble.service.catalogue.impl.database;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.util.List;
 
 /**
  * Created by suat on 03-Mar-17.
  */
 public class EClassCategoryDatabaseConfig {
+    public static void main(String[] a)
+            throws Exception {
+        Class.forName("org.h2.Driver");
+        Connection conn = DriverManager.
+                getConnection("jdbc:h2:~/nimble/eclass", "sa", "");
+        // add application code here
+
+        ResultSet meta = conn.getMetaData().getTables(null, null, "TABLE%", new String[]{"TABLE"});
+        System.out.println(meta.next());
+
+        conn.close();
+    }
     // Connection configurations
     public static String PRODUCT_CATEGORY_POSTGRESQL_CONFIG_DRIVER = "org.postgresql.Driver";
     public static String PRODUCT_CATEGORY_POSTGRESQL_CONFIG_URL = "jdbc:postgresql://localhost:5432/postgres";
@@ -13,15 +28,22 @@ public class EClassCategoryDatabaseConfig {
     public static String PRODUCT_CATEGORY_POSTGRESQL_CONFIG_PASSWORD = "nimble";
     public static String PRODUCT_CATEGORY_POSTGRESQL_CONFIG_SCHEMA = "eClass";
 
+    public static String PRODUCT_CATEGORY_H2_CONFIG_DRIVER = "org.h2.Driver";
+    //public static String PRODUCT_CATEGORY_H2_CONFIG_URL = "jdbc:h2:~/eClass;INIT=create schema if not exists test\\;runscript from '~/sql/init.sql'\"";
+    public static String PRODUCT_CATEGORY_H2_CONFIG_URL = "jdbc:h2:~/nimble/eClass;IGNORECASE=TRUE";
+    public static String PRODUCT_CATEGORY_H2_CONFIG_USER = "sa";
+    public static String PRODUCT_CATEGORY_H2_CONFIG_PASSWORD = "";
+    public static String PRODUCT_CATEGORY_H2_SOURCE_HOME_PATH = "D:/srdc/projects/NIMBLE/project_starts/WP2/T2.2/eClass/eClass10_0/173100000enUSbasicCSV01";
+
     // Table names
-    public static String TABLE_NAME_CLASSIFICATION_CLASS = "Classification_Class";
-    public static String TABLE_NAME_CLASSIFICATION_CLASS_PROPERTY = "Classification_Class_Property";
-    public static String TABLE_NAME_CLASSIFICATION_CLASS_PROPERTY_VALUE = "Classification_Class_Property_Value";
-    public static String TABLE_NAME_PROPERTY = "Property";
-    public static String TABLE_NAME_PROPERTY_VALUE = "Property_Value";
-    public static String TABLE_NAME_KEYWORD_SYNONYM = "Keyword_Synonym";
-    public static String TABLE_NAME_UNIT = "Unit";
-    public static String TABLE_NAME_ECLASS_VALUE = "eClass_Value";
+    public static String TABLE_NAME_CLASSIFICATION_CLASS = "CLASSIFICATION_CLASS";
+    public static String TABLE_NAME_CLASSIFICATION_CLASS_PROPERTY = "CLASSIFICATION_CLASS_PROPERTY";
+    public static String TABLE_NAME_CLASSIFICATION_CLASS_PROPERTY_VALUE = "CLASSIFICATION_CLASS_PROPERTY_VALUE";
+    public static String TABLE_NAME_PROPERTY = "PROPERTY";
+    public static String TABLE_NAME_PROPERTY_VALUE = "PROPERTY_VALUE";
+    public static String TABLE_NAME_KEYWORD_SYNONYM = "KEYWORD_SYNONYM";
+    public static String TABLE_NAME_UNIT = "UNIT";
+    public static String TABLE_NAME_ECLASS_VALUE = "ECLASS_VALUE";
 
     // Column name indices
     public static String COLUMN_CLASSIFICATION_CLASS_CODED_NAME = "CodedName";

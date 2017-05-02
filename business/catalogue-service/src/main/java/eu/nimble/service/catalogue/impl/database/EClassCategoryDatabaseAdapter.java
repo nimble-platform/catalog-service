@@ -5,9 +5,15 @@ import eu.nimble.service.catalogue.category.datamodel.Property;
 import eu.nimble.service.catalogue.category.datamodel.Unit;
 import eu.nimble.service.catalogue.category.datamodel.Value;
 import eu.nimble.service.catalogue.exception.CategoryDatabaseException;
+import org.apache.commons.io.IOUtils;
+import org.apache.jena.ext.com.google.common.io.CharStreams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.*;
 
@@ -19,22 +25,36 @@ import static eu.nimble.service.catalogue.impl.database.EClassCategoryDatabaseCo
 public class EClassCategoryDatabaseAdapter {
     private static final Logger logger = LoggerFactory.getLogger(EClassCategoryDatabaseAdapter.class);
 
-    public static void main(String[] args) throws CategoryDatabaseException {
+    public static void main(String[] args) throws CategoryDatabaseException, SQLException, ClassNotFoundException {
         EClassCategoryDatabaseAdapter e = new EClassCategoryDatabaseAdapter();
-        //List<Category> results = e.getClassificationClassesByName("yarn");
+        Connection c = e.getConnection();
+        List<Category> results = e.getClassificationClassesByName("yarn");
         //List<Category> results = e.getClassificationClassesByLevel(1);
-        List<Category> results = e.getSubCategories("0173-1#01-ADG629#002");
+        //List<Category> results = e.getSubCategories("0173-1#01-ADG629#002");
         for (Category cc : results) {
             System.out.println(cc.getPreferredName());
         }
+        c.close();
     }
 
     private Connection getConnection() throws ClassNotFoundException, SQLException {
-        Class.forName(PRODUCT_CATEGORY_POSTGRESQL_CONFIG_DRIVER);
+        Class.forName(PRODUCT_CATEGORY_H2_CONFIG_DRIVER);
         Connection connection = DriverManager
-                .getConnection(PRODUCT_CATEGORY_POSTGRESQL_CONFIG_URL, PRODUCT_CATEGORY_POSTGRESQL_CONFIG_USER, PRODUCT_CATEGORY_POSTGRESQL_CONFIG_PASSWORD);
-        PreparedStatement preparedStatement = connection.prepareStatement(eClassQuerySetDatabaseSchema());
-        preparedStatement.execute();
+                .getConnection(PRODUCT_CATEGORY_H2_CONFIG_URL, PRODUCT_CATEGORY_H2_CONFIG_USER, PRODUCT_CATEGORY_H2_CONFIG_PASSWORD);
+        //PreparedStatement preparedStatement = connection.prepareStatement(eClassQuerySetDatabaseSchema());
+        //preparedStatement.execute();
+        ResultSet meta = connection.getMetaData().getTables(null, null, TABLE_NAME_CLASSIFICATION_CLASS, null);
+        if(meta.next() == false) {
+            InputStream is = EClassCategoryDatabaseAdapter.class.getResourceAsStream("/eClassLoader.sql");
+            try {
+                String initScript = IOUtils.toString(is);
+                initScript = initScript.replace("{dataPath}", EClassCategoryDatabaseConfig.PRODUCT_CATEGORY_H2_SOURCE_HOME_PATH);
+                Statement stmt = connection.createStatement();
+                stmt.execute(initScript);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         return connection;
     }
 
