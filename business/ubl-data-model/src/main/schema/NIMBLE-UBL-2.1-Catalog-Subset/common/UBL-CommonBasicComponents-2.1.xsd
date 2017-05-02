@@ -16,18 +16,23 @@
 	<xsd:element name="District" type="xsd:string"/>
 	<xsd:element name="DocumentDescription" type="xsd:decimal"/>
 	<xsd:element name="DocumentType" type="xsd:string"/>
+	<xsd:element name="DurationMeasure" type="QuantityType"/>
 	<xsd:element name="ElectronicMail" type="xsd:string"/>
 	<xsd:element name="EmbeddedDocumentBinaryObject" type="BinaryObjectType"/>
+	<xsd:element name="EndDate" type="xsd:date"/>
 	<xsd:element name="ExemptionReason" type="xsd:string"/>
 	<xsd:element name="ExemptionReasonCode" type="CodeType"/>
+	<xsd:element name="ExternalAward" type="xsd:string"/>
 	<xsd:element name="FamilyName" type="xsd:string"/>
 	<xsd:element name="FileName" type="xsd:string"/>
 	<xsd:element name="FirstName" type="xsd:string"/>
+	<xsd:element name="FreeOfChargeIndicator" type="xsd:boolean"/>
 	<xsd:element name="ID" type="IdentifierType"/>
 	<xsd:element name="IdentificationCode" type="CodeType"/>
 	<xsd:element name="IndustryClassificationCode" type="CodeType"/>
 	<xsd:element name="IssueDate" type="xsd:date"/>
 	<xsd:element name="ItemClassificationCode" type="CodeType"/>
+	<xsd:element name="ItemPropertyURI" type="xsd:string"/>
 	<xsd:element name="JobTitle" type="xsd:string"/>
 	<xsd:element name="Keyword" type="xsd:string"/>
 	<xsd:element name="Measure" type="QuantityType"/>
@@ -37,22 +42,30 @@
 	<xsd:element name="NatureCode" type="CodeType"/>
 	<xsd:element name="OrderableUnit" type="xsd:string"/>
 	<xsd:element name="OrganizationDepartment" type="xsd:string"/>
+	<xsd:element name="PackagingTypeCode" type="CodeType"/>
 	<xsd:element name="PackQuantity" type="QuantityType"/>
 	<xsd:element name="PackSizeNumeric" type="xsd:decimal"/>
+	<xsd:element name="PaymentMeansCode" type="CodeType"/>
+	<xsd:element name="QualityParameter" type="xsd:string"/>
+	<xsd:element name="Postbox" type="xsd:string"/>
+	<xsd:element name="Quantity" type="QuantityType"/>
 	<xsd:element name="Region" type="xsd:string"/>
 	<xsd:element name="RegistrationDate" type="xsd:date"/>
 	<xsd:element name="RegistrationExpirationDate" type="xsd:date"/>
 	<xsd:element name="RegistrationName" type="xsd:string"/>
+	<xsd:element name="SpecialTerms" type="xsd:string"/>
+	<xsd:element name="StartDate" type="xsd:date"/>
+	<xsd:element name="StreetName" type="xsd:string"/>
 	<xsd:element name="TaxLevelCode" type="CodeType"/>
 	<xsd:element name="TaxPointDate" type="xsd:date"/>
 	<xsd:element name="TaxTypeCode" type="CodeType"/>
 	<xsd:element name="Telephone" type="xsd:string"/>
+	<xsd:element name="TransportModeCode" type="CodeType"/>
 	<xsd:element name="Title" type="xsd:string"/>
 	<xsd:element name="URI" type="xsd:string"/>
 	<xsd:element name="Value" type="xsd:string"/>
 	<xsd:element name="ValueQualifier" type="xsd:string"/>
 	<xsd:element name="WebsiteURI" type="xsd:string"/>
-
 	<xsd:complexType name="BinaryObjectType">
 		<xsd:simpleContent>
 			<xsd:extension base="xsd:base64Binary">

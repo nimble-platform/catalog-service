@@ -304,6 +304,7 @@
 	<xsd:element name="ExpressionCode" type="CodeType"/>
 	<xsd:element name="ExtendedID" type="IdentifierType"/>
 	<xsd:element name="Extension" type="xsd:string"/>
+	<xsd:element name="ExternalAward" type="xsd:string"/>
 	<xsd:element name="FaceValueAmount" type="AmountType"/>
 	<xsd:element name="FamilyName" type="xsd:string"/>
 	<xsd:element name="FeatureTacticTypeCode" type="CodeType"/>
@@ -386,6 +387,7 @@
 	<xsd:element name="IssueTime" type="xsd:time"/>
 	<xsd:element name="IssuerID" type="IdentifierType"/>
 	<xsd:element name="ItemClassificationCode" type="CodeType"/>
+	<xsd:element name="ItemPropertyURI" type="xsd:string"/>
 	<xsd:element name="ItemUpdateRequestIndicator" type="xsd:boolean"/>
 	<xsd:element name="JobTitle" type="xsd:string"/>
 	<xsd:element name="JourneyID" type="IdentifierType"/>
@@ -654,6 +656,7 @@
 	<xsd:element name="Purpose" type="xsd:string"/>
 	<xsd:element name="PurposeCode" type="CodeType"/>
 	<xsd:element name="QualityControlCode" type="CodeType"/>
+	<xsd:element name="QualityParameter" type="xsd:string"/>
 	<xsd:element name="Quantity" type="QuantityType"/>
 	<xsd:element name="QuantityDiscrepancyCode" type="CodeType"/>
 	<xsd:element name="RadioCallSignID" type="IdentifierType"/>
