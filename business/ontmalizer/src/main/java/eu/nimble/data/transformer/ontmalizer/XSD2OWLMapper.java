@@ -81,7 +81,7 @@ public class XSD2OWLMapper {
 
         // This part converts XML instance to RDF eu.nimble.data.transformer.data model.
         //XML2OWLMapper generator = new XML2OWLMapper(new File("D:\\srdc\\projects\\NIMBLE\\project_starts\\codes\\catalog-service-srdc\\serialized_ubl_catalogue.xml"), mapping);
-        XML2OWLMapper generator = new XML2OWLMapper(new File("D:\\srdc\\projects\\NIMBLE\\project_starts\\codes\\catalog-service-srdc\\business\\ubl-eu.nimble.data.transformer.data-model\\src\\test\\resources\\UBL-CatalogueFullDummy.xml"), mapping);
+        XML2OWLMapper generator = new XML2OWLMapper(new File("D:\\srdc\\projects\\NIMBLE\\project_starts\\codes\\catalog-service-srdc\\business\\ubl-data-model\\src\\test\\resources\\UBL-CatalogueFullDummy.xml"), mapping);
 
         generator.convertXML2OWL();
 
