@@ -1,12 +1,15 @@
 package eu.nimble.service.catalogue.impl;
 
 import eu.nimble.service.catalogue.CatalogueService;
+import eu.nimble.service.catalogue.client.IdentityClient;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.Configuration;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -20,41 +23,51 @@ import java.io.IOException;
 @Controller
 public class CatalogueController {
 
-	private static Logger log = LoggerFactory
-		.getLogger(CatalogueController.class);
+    private static Logger log = LoggerFactory
+            .getLogger(CatalogueController.class);
 
     private CatalogueService service = CatalogueServiceImpl.getInstance();
 
-	@RequestMapping(value = "/catalogue/ubl",
-		method = RequestMethod.POST)
-	public ResponseEntity<Void> addUBLCatalogue(@RequestBody String catalogueXML) {
-		//log.info(" $$$ XML Representation: " + catalogueXML);
-		service.addCatalogue(catalogueXML, Configuration.Standard.UBL);
-		return ResponseEntity.ok(null);
-	}
+    @Autowired
+    private IdentityClient identityClient;
 
-	@RequestMapping(value = "/catalogue/ubl/{uuid}",
-		produces = {"application/json"},
-		method = RequestMethod.GET)
-	public ResponseEntity<CatalogueType> getUBLCatalogueByUUID(@PathVariable String uuid) {
-		CatalogueType catalogue = (CatalogueType) service.getCatalogueByUUID(uuid, Configuration.Standard.UBL);
-		return ResponseEntity.ok(catalogue);
-	}
+    @RequestMapping(value = "/catalogue/ubl",
+            method = RequestMethod.POST)
+    public ResponseEntity<Void> addUBLCatalogue(@RequestBody String catalogueXML, @RequestParam String partyId) {
 
-	@RequestMapping(value = "/catalogue/modaml",
-		method = RequestMethod.POST)
-	public ResponseEntity<Void> addMODAMLCatalogue(@RequestBody String catalogueXML) {
-		service.addCatalogue(catalogueXML, Configuration.Standard.UBL);
-		return ResponseEntity.ok(null);
-	}
-	
-	@RequestMapping(value = "/catalogue/modaml/{uuid}",
-		produces = {"application/json"},
-		method = RequestMethod.GET)
-	public ResponseEntity<TEXCatalogType> getMODAMLCatalogueByUUID(@PathVariable String uuid) {
-		TEXCatalogType catalogue = (TEXCatalogType) service.getCatalogueByUUID(uuid, Configuration.Standard.MODAML);
-		return ResponseEntity.ok(catalogue);
-	}
+        PartyType party = identityClient.getParty(partyId);
+        log.debug("Fetched party with Id {0}", party.getHjid());
+
+        service.addCatalogue(party, catalogueXML, Configuration.Standard.UBL);
+        return ResponseEntity.ok(null);
+    }
+
+    @RequestMapping(value = "/catalogue/ubl/{uuid}",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity<CatalogueType> getUBLCatalogueByUUID(@PathVariable String uuid) {
+        CatalogueType catalogue = (CatalogueType) service.getCatalogueByUUID(uuid, Configuration.Standard.UBL);
+        return ResponseEntity.ok(catalogue);
+    }
+
+    @RequestMapping(value = "/catalogue/modaml",
+            method = RequestMethod.POST)
+    public ResponseEntity<Void> addMODAMLCatalogue(@RequestBody String catalogueXML, @RequestParam String partyId) {
+
+        PartyType party = identityClient.getParty(partyId);
+        log.debug("Fetched party with Id {0}", party.getHjid());
+
+        service.addCatalogue(party, catalogueXML, Configuration.Standard.UBL);
+        return ResponseEntity.ok(null);
+    }
+
+    @RequestMapping(value = "/catalogue/modaml/{uuid}",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity<TEXCatalogType> getMODAMLCatalogueByUUID(@PathVariable String uuid) {
+        TEXCatalogType catalogue = (TEXCatalogType) service.getCatalogueByUUID(uuid, Configuration.Standard.MODAML);
+        return ResponseEntity.ok(catalogue);
+    }
 
     @RequestMapping(value = "/catalogue/template",
             method = RequestMethod.GET,
@@ -78,10 +91,12 @@ public class CatalogueController {
     @RequestMapping(value = "/catalogue/template/upload", method = RequestMethod.POST)
     public ResponseEntity uploadTemplate(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("companyId") String companyId) {
+            @RequestParam("companyId") String partyId) {
         try {
-            //TODO construct the party instance properly
-            service.addCatalogue(null, file.getInputStream());
+            PartyType party = identityClient.getParty(partyId);
+            log.debug("Fetched party with Id {0}", party.getHjid());
+
+            service.addCatalogue(party, file.getInputStream());
 
         } catch (IOException e) {
             e.printStackTrace();

@@ -11,15 +11,15 @@ import java.io.OutputStream;
 
 public interface CatalogueService {
 
-	public void addCatalogue(String xml, Configuration.Standard standard);
+	public void addCatalogue(PartyType party, String xml, Configuration.Standard standard);
 	
 	public Object getCatalogueByUUID(String uuid, Configuration.Standard standard);
 	
 	public void deleteCatalogueByUUID(String uuid, Configuration.Standard standard);
 
-	public void addCatalogue(CatalogueType catalogue);
+	public void addCatalogue(PartyType party, CatalogueType catalogue);
 
-	public void addCatalogue(TEXCatalogType catalogue);
+	public void addCatalogue(PartyType party, TEXCatalogType catalogue);
 
 	public Workbook generateTemplateForCategory(String categoryId);
 
