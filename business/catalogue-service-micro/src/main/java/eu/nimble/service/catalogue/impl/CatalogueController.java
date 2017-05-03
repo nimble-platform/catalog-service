@@ -1,17 +1,18 @@
 package eu.nimble.service.catalogue.impl;
 
 import eu.nimble.service.catalogue.CatalogueService;
+import eu.nimble.service.catalogue.client.IdentityClient;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 public class CatalogueController {
@@ -21,10 +22,17 @@ public class CatalogueController {
 
 	private CatalogueService service = CatalogueServiceImpl.getInstance();
 
+	@Autowired
+    private  IdentityClient identityClient;
+
 	@RequestMapping(value = "/catalogue/ubl",
 		method = RequestMethod.POST)
-	public ResponseEntity<Void> addUBLCatalogue(@RequestBody String catalogueXML) {
-		//log.info(" $$$ XML Representation: " + catalogueXML);
+	public ResponseEntity<Void> addUBLCatalogue(@RequestBody String catalogueXML, @RequestParam String partyId) {
+
+		PartyType party = identityClient.getParty(partyId);
+		log.debug("Fetched party with Id {0}", party.getHjid());
+
+		// TODO for Suat: use party type in catalogue.
 		service.addCatalogue(catalogueXML, Configuration.Standard.UBL);
 		return ResponseEntity.ok(null);
 	}
@@ -43,7 +51,7 @@ public class CatalogueController {
 		service.addCatalogue(catalogueXML, Configuration.Standard.UBL);
 		return ResponseEntity.ok(null);
 	}
-	
+
 	@RequestMapping(value = "/catalogue/modaml/{uuid}",
 		produces = {"application/json"},
 		method = RequestMethod.GET)
