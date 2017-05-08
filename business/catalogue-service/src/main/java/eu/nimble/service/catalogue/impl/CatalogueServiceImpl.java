@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import javax.xml.bind.*;
 import javax.xml.namespace.QName;
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -59,23 +60,23 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public void addCatalogue(CatalogueType catalogue) {
+    public void addCatalogue(PartyType party, CatalogueType catalogue) {
         HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).persist(catalogue);
     }
 
     @Override
-    public void addCatalogue(TEXCatalogType catalogue) {
+    public void addCatalogue(PartyType party, TEXCatalogType catalogue) {
         HibernateUtility.getInstance(Configuration.MODAML_PERSISTENCE_UNIT_NAME).persist(catalogue);
     }
 
     @Override
-    public void addCatalogue(String xml, Configuration.Standard standard) {
+    public void addCatalogue(PartyType party, String xml, Configuration.Standard standard) {
         if (standard == Configuration.Standard.UBL) {
             CatalogueType catalogue = (CatalogueType) JAXBUtility.deserialize(xml, Configuration.UBL_CATALOGUE_PACKAGENAME);
-            addCatalogue(catalogue);
+            addCatalogue(party, catalogue);
         } else if (standard == Configuration.Standard.MODAML) {
             TEXCatalogType catalogue = (TEXCatalogType) JAXBUtility.deserialize(xml, Configuration.MODAML_CATALOGUE_PACKAGENAME);
-            addCatalogue(catalogue);
+            addCatalogue(party, catalogue);
         }
     }
 
@@ -414,7 +415,9 @@ public class CatalogueServiceImpl implements CatalogueService {
             for (int i = fixedPropNumber; i < properties.size(); i++) {
                 Cell cell = getCellWithMissingCellPolicy(row, i);
                 ItemPropertyType itemProp = new ItemPropertyType();
-                itemProp.setValue(getCellStringValue(cell));
+                List<String>  values= new ArrayList<>();
+                values.add(getCellStringValue(cell));
+                itemProp.setValue(values);
                 itemProp.setName(properties.get(i).getPreferredName());
                 itemProp.setValueQualifier(properties.get(i).getDataType());
                 itemProperties.add(itemProp);
@@ -453,5 +456,25 @@ public class CatalogueServiceImpl implements CatalogueService {
             default:
                 return "";
         }
+    }
+
+    @Override
+    public void addProduct(PartyType party, GoodsItemType item) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public void addPropertyToProduct(Long itemId, String value, String propertyURI) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public void addPropertyToProduct(Long itemId, String propertyName, String value, String minValue, String maxValue, String valueQualifier, String unit) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Override
+    public void addPropertyToProduct(Long itemId, String propertyName, String binaryValue, String mimeCode, String contentURI) {
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 }

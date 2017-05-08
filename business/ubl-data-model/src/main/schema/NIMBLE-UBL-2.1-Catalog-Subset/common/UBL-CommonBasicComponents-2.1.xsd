@@ -35,7 +35,9 @@
 	<xsd:element name="ItemPropertyURI" type="xsd:string"/>
 	<xsd:element name="JobTitle" type="xsd:string"/>
 	<xsd:element name="Keyword" type="xsd:string"/>
+	<xsd:element name="MaximumValue" type="xsd:string"/>
 	<xsd:element name="Measure" type="QuantityType"/>
+	<xsd:element name="MinimumValue" type="xsd:string"/>
 	<xsd:element name="ModelName" type="xsd:string"/>
 	<xsd:element name="Name" type="xsd:string"/>
 	<xsd:element name="NationalityID" type="IdentifierType"/>
@@ -65,11 +67,13 @@
 	<xsd:element name="URI" type="xsd:string"/>
 	<xsd:element name="Value" type="xsd:string"/>
 	<xsd:element name="ValueQualifier" type="xsd:string"/>
+	<xsd:element name="ValueQuantity" type="QuantityType"/>
 	<xsd:element name="WebsiteURI" type="xsd:string"/>
 	<xsd:complexType name="BinaryObjectType">
 		<xsd:simpleContent>
 			<xsd:extension base="xsd:base64Binary">
 				<xsd:attribute name="mimeCode" type="xsd:normalizedString" use="required"/>
+				<xsd:attribute name="uri" type="xsd:anyURI" use="optional"/>
 			</xsd:extension>
 		</xsd:simpleContent>
 	</xsd:complexType>

@@ -26,6 +26,7 @@
 	<xsd:element name="IssuerParty" type="PartyType"/>
 	<xsd:element name="Item" type="ItemType"/>
 	<xsd:element name="ItemPropertyGroup" type="ItemPropertyGroupType"/>
+	<xsd:element name="ItemPropertyRange" type="ItemPropertyRangeType"/>
 	<xsd:element name="ItemSpecificationDocumentReference" type="DocumentReferenceType"/>
 	<xsd:element name="ManufacturersItemIdentification" type="ItemIdentificationType"/>
 	<xsd:element name="ManufacturerParty" type="PartyType"/>
@@ -179,13 +180,22 @@
 		<xsd:sequence>
 			<xsd:element ref="cbc:Name"/>
 			<xsd:element ref="cbc:Value" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cbc:ValueQuantity" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cbc:EmbeddedDocumentBinaryObject" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cbc:ValueQualifier" minOccurs="0"/>
 			<xsd:element ref="cac:ItemPropertyGroup" minOccurs="0"/>
+			<xsd:element ref="cac:ItemPropertyRange" minOccurs="0"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="ItemPropertyGroupType">
 		<xsd:sequence>
 			<xsd:element ref="cbc:Name" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ItemPropertyRangeType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:MinimumValue" minOccurs="0"/>
+			<xsd:element ref="cbc:MaximumValue" minOccurs="0"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="ItemType">
