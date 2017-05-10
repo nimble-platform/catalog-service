@@ -10,6 +10,4 @@ ENV PORT 8095
 
 EXPOSE $PORT
 
-ENV DISCOVERY_ENABLED true
-
 ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom", "-jar", "/app.jar"]
