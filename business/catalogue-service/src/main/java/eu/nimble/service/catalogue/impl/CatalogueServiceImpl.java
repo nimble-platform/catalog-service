@@ -208,7 +208,6 @@ public class CatalogueServiceImpl implements CatalogueService {
 
             columnIndex = 0;
             row.createCell(columnIndex).setCellValue(property.getPreferredName());
-            row.createCell(++columnIndex).setCellValue(property.getPreferredName());
             row.createCell(++columnIndex).setCellValue(property.getShortName());
             row.createCell(++columnIndex).setCellValue(property.getDefinition());
             row.createCell(++columnIndex).setCellValue(property.getNote());
@@ -273,11 +272,11 @@ public class CatalogueServiceImpl implements CatalogueService {
             marsh.marshal(element, baos);
 
             //HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).persist(catalogue);
-            /*PrintWriter writer = new PrintWriter("serialized_ubl_catalogue.xml");
-            String serializedCatalogue = JAXBUtility.serialize(catalogue, Configuration.UBL_CATALOGUE_NS, "Catalogue");
+            PrintWriter writer = new PrintWriter("serialized_ubl_catalogue.xml");
+            String serializedCatalogue = JAXBUtility.serialize(catalogue, "Catalogue");
             writer.println(serializedCatalogue);
             writer.flush();
-            writer.close();*/
+            writer.close();
 
             URL url = CatalogueServiceImpl.class.getResource(Configuration.UBL_CATALOGUE_SCHEMA);
             XSD2OWLMapper mapping = new XSD2OWLMapper(url);
@@ -334,7 +333,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         // TODO: properly configure the Marmotta URL
         URL marmottaURL = null;
         try {
-            marmottaURL = new URL("http://localhost:8080/marmotta/import/upload?context=catalog");
+            marmottaURL = new URL("http://134.168.33.237:8080/marmotta/import/upload?context=Catalogue");
         } catch (MalformedURLException e) {
             throw new CatalogueServiceException("Invalid format for the submitted template", e);
         }
@@ -361,15 +360,15 @@ public class CatalogueServiceImpl implements CatalogueService {
         List<CatalogueLineType> results = new ArrayList<>();
 
         Sheet productPropertiesTab = template.getSheet(TEMPLATE_TAB_PRODUCT_PROPERTIES);
-        Sheet productDetailsTab = template.getSheet(TEMPLATE_TAB_PROPERTY_DETAILS);
-        int propertyNum = productDetailsTab.getRow(0).getLastCellNum();
+        Sheet propertyDetailsTab = template.getSheet(TEMPLATE_TAB_PROPERTY_DETAILS);
+        int propertyNum = propertyDetailsTab.getLastRowNum();
         int catalogSize = productPropertiesTab.getLastRowNum();
         int fixedPropNumber = TemplateConfig.getFixedProperties().size();
 
         List<Property> properties = new ArrayList<>();
-        for (int i = 1; i < propertyNum; i++) {
+        for (int i = 1; i <= propertyNum; i++) {
             int columnNum = 0;
-            Row row = productDetailsTab.getRow(i);
+            Row row = propertyDetailsTab.getRow(i);
             String propertyName = getCellWithMissingCellPolicy(row, columnNum++).getStringCellValue();
             String shortName = getCellWithMissingCellPolicy(row, columnNum++).getStringCellValue();
             String definition = getCellWithMissingCellPolicy(row, columnNum++).getStringCellValue();
@@ -412,11 +411,16 @@ public class CatalogueServiceImpl implements CatalogueService {
 
             Row row = productPropertiesTab.getRow(rowNum);
             parseFixedProperties(row, item);
-            for (int i = fixedPropNumber; i < properties.size(); i++) {
-                Cell cell = getCellWithMissingCellPolicy(row, i);
+            for (int i = 0; i < properties.size(); i++) {
+                Cell cell = getCellWithMissingCellPolicy(row, i + fixedPropNumber + 1);
                 ItemPropertyType itemProp = new ItemPropertyType();
-                List<String>  values= new ArrayList<>();
-                values.add(getCellStringValue(cell));
+                List<String> values = new ArrayList<>();
+                String value = getCellStringValue(cell);
+                values.add(value);
+                if (value.equals("")) {
+                    continue;
+                }
+
                 itemProp.setValue(values);
                 itemProp.setName(properties.get(i).getPreferredName());
                 itemProp.setValueQualifier(properties.get(i).getDataType());
@@ -426,14 +430,20 @@ public class CatalogueServiceImpl implements CatalogueService {
         return results;
     }
 
+    /**
+     * Parses the properties fixed in the common data model
+     *
+     * @param propertiesRow
+     * @param item
+     */
     private void parseFixedProperties(Row propertiesRow, ItemType item) {
         List<Property> properties = TemplateConfig.getFixedProperties();
         for (int i = 0; i < properties.size(); i++) {
             Property property = properties.get(i);
-            Cell cell = getCellWithMissingCellPolicy(propertiesRow, i);
-            if (property.equals(TEMPLATE_FIXED_PROPERTY_NAME)) {
+            Cell cell = getCellWithMissingCellPolicy(propertiesRow, i+1);
+            if (property.getPreferredName().equals(TEMPLATE_FIXED_PROPERTY_NAME)) {
                 item.setName(getCellStringValue(cell));
-            } else if (property.equals(TEMPLATE_FIXED_PROPERTY_DESCRIPTION)) {
+            } else if (property.getPreferredName().equals(TEMPLATE_FIXED_PROPERTY_DESCRIPTION)) {
                 item.setDescription(getCellStringValue(cell));
             }
         }

@@ -22,18 +22,27 @@ public class EClassCategoryDatabaseConfig {
         conn.close();
     }
     // Connection configurations
-    public static String PRODUCT_CATEGORY_POSTGRESQL_CONFIG_DRIVER = "org.postgresql.Driver";
+    public static String PRODUCT_CATEGORY_DATA_PATH = "D:/srdc/projects/NIMBLE/project_starts/WP2/T2.2/eClass/eClass10_0/173100000enUSbasicCSV01";
+
+    // Local Postgres DB configurations
+    /*public static String PRODUCT_CATEGORY_POSTGRESQL_CONFIG_DRIVER = "org.postgresql.Driver";
     public static String PRODUCT_CATEGORY_POSTGRESQL_CONFIG_URL = "jdbc:postgresql://localhost:5432/postgres";
     public static String PRODUCT_CATEGORY_POSTGRESQL_CONFIG_USER = "postgres";
     public static String PRODUCT_CATEGORY_POSTGRESQL_CONFIG_PASSWORD = "nimble";
-    public static String PRODUCT_CATEGORY_POSTGRESQL_CONFIG_SCHEMA = "eClass";
+    public static String PRODUCT_CATEGORY_POSTGRESQL_CONFIG_SCHEMA = "eClass";*/
+
+    // Bluemix Postgres DB service configurations
+    public static String PRODUCT_CATEGORY_POSTGRESQL_CONFIG_DRIVER = "org.postgresql.Driver";
+    public static String PRODUCT_CATEGORY_POSTGRESQL_CONFIG_URL = "jdbc:postgresql://qdjjtnkv.db.elephantsql.com:5432/mnocjzwc";
+    public static String PRODUCT_CATEGORY_POSTGRESQL_CONFIG_USER = "mnocjzwc";
+    public static String PRODUCT_CATEGORY_POSTGRESQL_CONFIG_PASSWORD = "bkryPYM3rj651059qZ73Q_oOvbgg3MDV";
+    public static String PRODUCT_CATEGORY_POSTGRESQL_CONFIG_SCHEMA = "public";
 
     public static String PRODUCT_CATEGORY_H2_CONFIG_DRIVER = "org.h2.Driver";
     //public static String PRODUCT_CATEGORY_H2_CONFIG_URL = "jdbc:h2:~/eClass;INIT=create schema if not exists test\\;runscript from '~/sql/init.sql'\"";
     public static String PRODUCT_CATEGORY_H2_CONFIG_URL = "jdbc:h2:~/nimble/eClass;IGNORECASE=TRUE";
     public static String PRODUCT_CATEGORY_H2_CONFIG_USER = "sa";
     public static String PRODUCT_CATEGORY_H2_CONFIG_PASSWORD = "";
-    public static String PRODUCT_CATEGORY_H2_SOURCE_HOME_PATH = "D:/srdc/projects/NIMBLE/project_starts/WP2/T2.2/eClass/eClass10_0/173100000enUSbasicCSV01";
 
     // Table names
     public static String TABLE_NAME_CLASSIFICATION_CLASS = "CLASSIFICATION_CLASS";
@@ -102,7 +111,7 @@ public class EClassCategoryDatabaseConfig {
     public static String COLUMN_ECLASS_VALUE_SHORT_NAME = "ShortName";
     public static String COLUMN_ECLASS_VALUE_DEFINITION = "Definition";
 
-    public static String eClassQuerySetDatabaseSchema() {
+    public static String eClassQuerySetPostgresDatabaseSchema() {
         return new StringBuilder("SET SEARCH_PATH = '").append(PRODUCT_CATEGORY_POSTGRESQL_CONFIG_SCHEMA).append("'").toString();
     }
 
