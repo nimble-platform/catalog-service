@@ -211,6 +211,6 @@ public class HibernateUtility {
 			return Configuration.UBL_PERSISTENCE_PROPERTIES_FILE_NAME;
 		else if(persistenceUnitName.equals(Configuration.MODAML_PERSISTENCE_UNIT_NAME))
 			return Configuration.MODAML_PERSISTENCE_PROPERTIES_FILE_NAME;
-		else return "";
+		else return "persistence.properties";
 	}
 }
