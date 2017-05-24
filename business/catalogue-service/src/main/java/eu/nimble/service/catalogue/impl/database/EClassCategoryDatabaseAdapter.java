@@ -156,6 +156,7 @@ public class EClassCategoryDatabaseAdapter {
             preparedStatement.close();
 
             // get the classification classes based on the retrieved ids
+            //TODO handle the case where no classId is returned
             preparedStatement = connection.prepareStatement(eClassQueryGetClassificationClassByIdList(classIds));
             for (int i = 0; i < classIds.size(); i++) {
                 preparedStatement.setString(i + 1, classIds.get(i));

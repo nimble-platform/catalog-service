@@ -22,6 +22,7 @@ public class ProductCategoryController {
 
     private ProductCategoryService pcs = ProductCategoryServiceImpl.getInstance();
 
+    @CrossOrigin(origins = {"http://localhost:9093", "http://localhost:9092"})
     @RequestMapping(value = "/catalogue/category/{categoryId}",
             produces = {"application/json"},
             method = RequestMethod.GET)
@@ -30,10 +31,11 @@ public class ProductCategoryController {
         return ResponseEntity.ok(category);
     }
 
+    @CrossOrigin(origins = {"http://localhost:9093", "http://localhost:9092"})
     @RequestMapping(value = "/catalogue/category",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getCategoriesByLevel(@RequestParam(required = false) String categoryName) {
+    public ResponseEntity getCategoriesByName(@RequestParam(required = false) String categoryName) {
         List<Category> categories = pcs.getProductCategories(categoryName);
         return ResponseEntity.ok(categories);
     }

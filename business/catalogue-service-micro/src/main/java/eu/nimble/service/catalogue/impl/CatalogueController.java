@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.impl;
 
 import eu.nimble.service.catalogue.CatalogueService;
+import eu.nimble.service.catalogue.category.datamodel.Category;
 import eu.nimble.service.catalogue.client.IdentityClient;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
@@ -19,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletResponse;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 @Controller
 public class CatalogueController {
@@ -68,6 +70,16 @@ public class CatalogueController {
         TEXCatalogType catalogue = (TEXCatalogType) service.getCatalogueByUUID(uuid, Configuration.Standard.MODAML);
         return ResponseEntity.ok(catalogue);
     }
+
+    @CrossOrigin(origins = {"http://localhost:9093", "http://localhost:9092"})
+    @RequestMapping(value = "/catalogue/product",
+            consumes = {"application/json"},
+            method = RequestMethod.POST)
+    public ResponseEntity getCategoriesByName(@RequestBody String goodsItem) {
+        log.info("GOODS ITEM: " + goodsItem);
+        return null;
+    }
+
 
     @RequestMapping(value = "/catalogue/template",
             method = RequestMethod.GET,
