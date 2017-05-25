@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 public class HibernateUtility {
 
-	public static org.slf4j.Logger log = LoggerFactory.getLogger(XMLUtility.class);
+	public static org.slf4j.Logger log = LoggerFactory.getLogger(HibernateUtility.class);
 	private EntityManagerFactory entityManagerFactory;
 
 	private static HashMap<String, HibernateUtility> engineInstances = new HashMap<>();
