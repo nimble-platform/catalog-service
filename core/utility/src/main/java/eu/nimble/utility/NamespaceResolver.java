@@ -41,6 +41,10 @@ public class NamespaceResolver implements NamespaceContext {
 			return Configuration.UBL_CCTS_NS;
 		} else if (prefix.equals("modamlcatalogue")) {
 			return Configuration.MODAML_CATALOGUE_NS;
+		} else if (prefix.equals("camunda")) {
+			return "http://camunda.org/schema/1.0/bpmn";
+		} else if (prefix.equals("bpmn")) {
+			return "http://www.omg.org/spec/BPMN/20100524/MODEL";
 		} else {
 			return XMLConstants.NULL_NS_URI;
 		}
