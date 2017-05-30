@@ -47,6 +47,7 @@ public class CatalogueServiceTest {
 
 	@Test
 	public void test3_deleteCatalogueTest_UBL() {
+		Assert.assertNotNull(addedCatalogueUUID);
 		CatalogueServiceImpl.getInstance().deleteCatalogue(addedCatalogueUUID);
 	}
 
