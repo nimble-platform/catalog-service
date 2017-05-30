@@ -39,7 +39,7 @@ public class CatalogueController {
     @Autowired
     private IdentityClient identityClient;
 
-    @RequestMapping(value = "/catalogue/ubl/{uuid}",
+    @RequestMapping(value = "/catalogue/{uuid}",
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity<CatalogueType> getUBLCatalogueByUUID(@PathVariable String uuid) {
@@ -47,7 +47,7 @@ public class CatalogueController {
         return ResponseEntity.ok(catalogue);
     }
 
-    @CrossOrigin(origins = {"http://localhost:9092"})
+    @CrossOrigin(origins = {"${catalogue.cross.origins}"})
     @RequestMapping(value = "/catalogue/{partyId}/default",
             produces = {"application/json"},
             method = RequestMethod.GET)
@@ -89,7 +89,7 @@ public class CatalogueController {
         return ResponseEntity.ok(null);
     }
 
-    @CrossOrigin(origins = {"http://localhost:9092"})
+    @CrossOrigin(origins = {"${catalogue.cross.origins}"})
     @RequestMapping(value = "/catalogue",
             consumes = {"application/json"},
             produces = {"application/json"},
@@ -119,22 +119,22 @@ public class CatalogueController {
 
         service.addCatalogue(catalogue, dummyParty);
 
-        URI catalogueURI = null;
+        URI catalogueURI;
         try {
             // TODO make the url below configurable
-            catalogueURI = new URI("http://localhost:9092/catalogue/" + catalogue.getUUID().getValue());
+            catalogueURI = new URI("${catalogue.application.url}/catalogue/" + catalogue.getUUID().getValue());
         } catch (URISyntaxException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to generate a URI for the newly created item");
         }
         return ResponseEntity.created(catalogueURI).body(catalogue);
     }
 
-    @CrossOrigin(origins = {"http://localhost:9092"})
+    @CrossOrigin(origins = {"${catalogue.cross.origins}"})
     @RequestMapping(value = "/catalogue/{uuid]",
             consumes = {"application/json"},
             produces = {"application/json"},
             method = RequestMethod.PUT)
-    public ResponseEntity getCatalogueByUUID(@RequestBody String catalogueJson, @PathVariable("uuid") String string) {
+    public ResponseEntity updateCatalogue(@RequestBody String catalogueJson, @PathVariable("uuid") String string) {
         log.debug("Submitted catalogue: " + catalogueJson);
 
         CatalogueType catalogue = null;
@@ -150,7 +150,7 @@ public class CatalogueController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-
+    @CrossOrigin(origins = {"${catalogue.cross.origins}"})
     @RequestMapping(value = "/catalogue/template",
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
@@ -170,6 +170,7 @@ public class CatalogueController {
         response.flushBuffer();
     }
 
+    @CrossOrigin(origins = {"${catalogue.cross.origins}"})
     @RequestMapping(value = "/catalogue/template/upload", method = RequestMethod.POST)
     public ResponseEntity uploadTemplate(
             @RequestParam("file") MultipartFile file,

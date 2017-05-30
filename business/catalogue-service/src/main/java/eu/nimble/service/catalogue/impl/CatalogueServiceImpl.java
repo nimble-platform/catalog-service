@@ -40,6 +40,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.UUID;
 
 import static eu.nimble.service.catalogue.impl.TemplateConfig.*;
@@ -435,14 +436,18 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     private void submitCatalogueDataToMarmotta(XML2OWLMapper generator, String catalogueContext) {
-        // TODO: use party id as the context
         // TODO: properly configure the Marmotta URL
-        URL marmottaURL = null;
+        URL marmottaURL;
         try {
-            marmottaURL = new URL("http://134.168.33.237:8080/marmotta/import/upload?context=" + catalogueContext);
+            Properties prop = new Properties();
+            prop.load(CatalogueServiceImpl.class.getClassLoader().getResourceAsStream("application.properties"));
+            marmottaURL = new URL(prop.getProperty("marmotta.url") + "/import/upload?context=" + catalogueContext);
         } catch (MalformedURLException e) {
             throw new CatalogueServiceException("Invalid format for the submitted template", e);
+        } catch (IOException e) {
+            throw new CatalogueServiceException("Failed to read Marmotta URL from config file", e);
         }
+
         HttpURLConnection conn = null;
         try {
             conn = (HttpURLConnection) marmottaURL.openConnection();

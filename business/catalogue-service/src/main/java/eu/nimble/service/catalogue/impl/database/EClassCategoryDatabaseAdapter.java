@@ -35,14 +35,23 @@ public class EClassCategoryDatabaseAdapter {
         c.close();*/
     }
 
-    private Connection getConnection() throws ClassNotFoundException, SQLException {
-        Class.forName(PRODUCT_CATEGORY_POSTGRESQL_CONFIG_DRIVER);
-        Connection connection = DriverManager
-                .getConnection(PRODUCT_CATEGORY_POSTGRESQL_CONFIG_URL, PRODUCT_CATEGORY_POSTGRESQL_CONFIG_USER, PRODUCT_CATEGORY_POSTGRESQL_CONFIG_PASSWORD);
+    private Connection getConnection() throws CategoryDatabaseException {
+        try {
+            Properties props = new Properties();
+            props.load(EClassCategoryDatabaseAdapter.class.getClassLoader().getResourceAsStream("application.properties"));
 
-        PreparedStatement preparedStatement = connection.prepareStatement(eClassQuerySetPostgresDatabaseSchema());
-        preparedStatement.execute();
+            Class.forName(props.getProperty("category.db.driver"));
+            Connection connection = DriverManager
+                    .getConnection(props.getProperty("category.db.url"), props.getProperty("category.db.user"), props.getProperty("category.db.password"));
 
+            PreparedStatement preparedStatement = connection.prepareStatement(eClassQuerySetPostgresDatabaseSchema(props.getProperty("category.db.schema")));
+            preparedStatement.execute();
+
+            return connection;
+
+        } catch (IOException | SQLException | ClassNotFoundException e) {
+            throw new CategoryDatabaseException("Failed to get connection", e);
+        }
 
         /*Class.forName(PRODUCT_CATEGORY_H2_CONFIG_DRIVER);
         Connection connection = DriverManager
@@ -60,7 +69,6 @@ public class EClassCategoryDatabaseAdapter {
                 e.printStackTrace();
             }
         }*/
-        return connection;
     }
 
     private void closeConnection(Connection connection) {
@@ -87,7 +95,7 @@ public class EClassCategoryDatabaseAdapter {
             preparedStatement.close();
 
             return cc;
-        } catch (ClassNotFoundException | SQLException e) {
+        } catch (SQLException e) {
             throw new CategoryDatabaseException("Failed to retrieve classification by level", e);
         } finally {
             closeConnection(connection);
@@ -116,8 +124,6 @@ public class EClassCategoryDatabaseAdapter {
             results.addAll(getClassificationClassesByKeywords(connection, categoryName));
 
             return results;
-        } catch (ClassNotFoundException | SQLException e) {
-            throw new CategoryDatabaseException("Failed to retrieve classification classes", e);
         } finally {
             closeConnection(connection);
         }
@@ -187,7 +193,7 @@ public class EClassCategoryDatabaseAdapter {
             preparedStatement.close();
 
             return results;
-        } catch (ClassNotFoundException | SQLException e) {
+        } catch (SQLException e) {
             throw new CategoryDatabaseException("Failed to retrieve classification by level", e);
         } finally {
             closeConnection(connection);
@@ -211,7 +217,7 @@ public class EClassCategoryDatabaseAdapter {
             preparedStatement.close();
 
             return results;
-        } catch (ClassNotFoundException | SQLException e) {
+        } catch (SQLException e) {
             throw new CategoryDatabaseException("Failed to retrieve classification by level", e);
         } finally {
             closeConnection(connection);
@@ -250,7 +256,7 @@ public class EClassCategoryDatabaseAdapter {
             preparedStatement.close();
 
             return new ArrayList<>(properties.values());
-        } catch (ClassNotFoundException | SQLException e) {
+        } catch (SQLException e) {
             throw new CategoryDatabaseException("Failed to retrieve properties for the category", e);
         } finally {
             closeConnection(connection);

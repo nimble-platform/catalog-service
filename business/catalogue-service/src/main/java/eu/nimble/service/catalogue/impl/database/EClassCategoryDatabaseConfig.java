@@ -111,8 +111,8 @@ public class EClassCategoryDatabaseConfig {
     public static String COLUMN_ECLASS_VALUE_SHORT_NAME = "ShortName";
     public static String COLUMN_ECLASS_VALUE_DEFINITION = "Definition";
 
-    public static String eClassQuerySetPostgresDatabaseSchema() {
-        return new StringBuilder("SET SEARCH_PATH = '").append(PRODUCT_CATEGORY_POSTGRESQL_CONFIG_SCHEMA).append("'").toString();
+    public static String eClassQuerySetPostgresDatabaseSchema(String schemaName) {
+        return new StringBuilder("SET SEARCH_PATH = '").append(schemaName).append("'").toString();
     }
 
     public static String eClassQueryGetClassificationClassByName() {
