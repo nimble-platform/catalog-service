@@ -17,6 +17,7 @@ import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
+import eu.nimble.service.model.ubl.commonbasiccomponents.IdentifierType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
@@ -26,16 +27,20 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import javax.xml.bind.*;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
 import java.io.*;
-import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static eu.nimble.service.catalogue.impl.TemplateConfig.*;
 
@@ -60,59 +65,154 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public void addCatalogue(PartyType party, CatalogueType catalogue) {
-        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).persist(catalogue);
+    public CatalogueType addCatalogue(CatalogueType catalogue, PartyType party) {
+        return addCatalogue(catalogue, party, Configuration.Standard.UBL);
     }
 
     @Override
-    public void addCatalogue(PartyType party, TEXCatalogType catalogue) {
-        HibernateUtility.getInstance(Configuration.MODAML_PERSISTENCE_UNIT_NAME).persist(catalogue);
+    public CatalogueType addCatalogue(String catalogueXml, PartyType party) {
+        return addCatalogue(catalogueXml, party, Configuration.Standard.UBL);
     }
 
     @Override
-    public void addCatalogue(PartyType party, String xml, Configuration.Standard standard) {
+    public CatalogueType getCatalogue(String uuid) {
+        return getCatalogue(uuid, Configuration.Standard.UBL);
+    }
+
+    @Override
+    public CatalogueType getCatalogue(String id, String partyId) {
+        return getCatalogue(id, partyId, Configuration.Standard.UBL);
+    }
+
+    @Override
+    public CatalogueType updateCatalogue(CatalogueType catalogue) {
+        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
+        return catalogue;
+    }
+
+    @Override
+    public void deleteCatalogue(String uuid) {
+        deleteCatalogue(uuid, Configuration.Standard.UBL);
+    }
+
+    @Override
+    public void deleteCatalogue(String id, String partyId) {
+        CatalogueType catalogue = getCatalogue(id, partyId);
+        Long hjid = catalogue.getHjid();
+        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).delete(CatalogueType.class, hjid);
+    }
+
+    @Override
+    public <T> T addCatalogue(String catalogueXml, PartyType party, Configuration.Standard standard) {
+        T catalogue = null;
         if (standard == Configuration.Standard.UBL) {
-            CatalogueType catalogue = (CatalogueType) JAXBUtility.deserialize(xml, Configuration.UBL_CATALOGUE_PACKAGENAME);
-            addCatalogue(party, catalogue);
+            CatalogueType ublCatalogue = (CatalogueType) JAXBUtility.deserialize(catalogueXml, Configuration.UBL_CATALOGUE_PACKAGENAME);
+            ublCatalogue.setProviderParty(party);
+            catalogue = (T) ublCatalogue;
+
         } else if (standard == Configuration.Standard.MODAML) {
-            TEXCatalogType catalogue = (TEXCatalogType) JAXBUtility.deserialize(xml, Configuration.MODAML_CATALOGUE_PACKAGENAME);
-            addCatalogue(party, catalogue);
+            catalogue = (T) JAXBUtility.deserialize(catalogueXml, Configuration.MODAML_CATALOGUE_PACKAGENAME);
         }
+        addCatalogue(catalogue, party, standard);
+
+        return catalogue;
     }
 
     @Override
-    public Object getCatalogueByUUID(String uuid, Configuration.Standard standard) {
-        List resultSet = null;
+    public <T> T addCatalogue(T catalogue, PartyType party, Configuration.Standard standard) {
+        if(standard == Configuration.Standard.UBL) {
+            // create a globally unique identifier
+            IdentifierType uuid = new IdentifierType();
+            uuid.setValue(UUID.randomUUID().toString());
+            ((CatalogueType) catalogue).setUUID(uuid);
 
+            // persist the catalogue in relational DB
+            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).persist(catalogue);
+
+            // persist the catalogue also in Marmotta
+            XML2OWLMapper rdfGenerator = transformCatalogueToRDF((CatalogueType) catalogue);
+            submitCatalogueDataToMarmotta(rdfGenerator, uuid.getValue());
+
+        } else if(standard == Configuration.Standard.MODAML){
+            HibernateUtility.getInstance(Configuration.MODAML_PERSISTENCE_UNIT_NAME).persist(catalogue);
+        }
+        return catalogue;
+    }
+
+    @Override
+    public <T> T getCatalogue(String uuid, Configuration.Standard standard) {
+        T catalogue = null;
+        List<T> resultSet = null;
+
+        String query;
         if (standard == Configuration.Standard.UBL) {
-            String query = "SELECT catalogue FROM CatalogueType catalogue "
-                    + " JOIN FETCH catalogue.UUID catalogue_uuid "
+            query = "SELECT catalogue FROM CatalogueType catalogue "
+                    + " JOIN catalogue.UUID as catalogue_uuid "
                     + " WHERE catalogue_uuid.value = '" + uuid + "'";
-            resultSet = (List<CatalogueType>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
+
+            resultSet = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
                     .loadAll(query);
+            if (resultSet.size() > 0) {
+                catalogue = (T) resultSet.get(0);
+            }
+
         } else if (standard == Configuration.Standard.MODAML) {
-            String query = "SELECT catalogue FROM TEXCatalogType catalogue "
+            query = "SELECT catalogue FROM TEXCatalogType catalogue "
                     + " JOIN FETCH catalogue.TCheader catalogue_header "
                     + " WHERE catalogue_header.msgID = '" + uuid + "'";
-            resultSet = (List<TEXCatalogType>) HibernateUtility.getInstance(Configuration.MODAML_PERSISTENCE_UNIT_NAME)
+            resultSet = (List<T>) HibernateUtility.getInstance(Configuration.MODAML_PERSISTENCE_UNIT_NAME)
                     .loadAll(query);
+
+        }
+        if (resultSet != null && resultSet.size() > 0) {
+            catalogue = resultSet.get(0);
+        }
+
+        return catalogue;
+    }
+
+    @Override
+    public <T> T getCatalogue(String id, String partyId, Configuration.Standard standard) {
+        T catalogue = null;
+        List<T> resultSet = null;
+
+        String query;
+        if (standard == Configuration.Standard.UBL) {
+            query = "SELECT catalogue FROM CatalogueType as catalogue "
+                    + " JOIN catalogue.ID as catalogue_id "
+                    + " JOIN catalogue.providerParty as catalogue_provider_party"
+                    + " JOIN catalogue_provider_party.ID as party_id"
+                    + " WHERE catalogue_id.value = '" + id + "'"
+                    + " AND party_id.value = '" + partyId + "'";
+
+            resultSet = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
+                    .loadAll(query);
+
+        } else if (standard == Configuration.Standard.MODAML) {
+            logger.warn("Fetching catalogues with id and party id from MODAML repository is not implemented yet");
+            throw new NotImplementedException();
         }
 
         if (resultSet.size() > 0) {
-            return resultSet.get(0);
+            catalogue = resultSet.get(0);
         }
 
-        return null;
+        return catalogue;
     }
 
     @Override
-    public void deleteCatalogueByUUID(String uuid, Configuration.Standard standard) {
-        if (standard == Configuration.Standard.UBL) {
-            CatalogueType catalogue = (CatalogueType) getCatalogueByUUID(uuid, standard);
-            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).delete(CatalogueType.class, catalogue.getHjid());
-        } else if (standard == Configuration.Standard.MODAML) {
-            TEXCatalogType catalogue = (TEXCatalogType) getCatalogueByUUID(uuid, standard);
-            HibernateUtility.getInstance(Configuration.MODAML_PERSISTENCE_UNIT_NAME).delete(TEXCatalogType.class, catalogue.getHjid());
+    public void deleteCatalogue(String uuid, Configuration.Standard standard) {
+        if(standard == Configuration.Standard.UBL) {
+            // delete catalogue from relational db
+            CatalogueType catalogue = getCatalogue(uuid);
+            Long hjid = catalogue.getHjid();
+            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).delete(CatalogueType.class, hjid);
+
+            // delete catalogue from marmotta
+        } else if(standard == Configuration.Standard.MODAML) {
+            TEXCatalogType catalogue = getCatalogue(uuid, Configuration.Standard.MODAML);
+            Long hjid = catalogue.getHjid();
+            HibernateUtility.getInstance(Configuration.MODAML_PERSISTENCE_UNIT_NAME).delete(TEXCatalogType.class, hjid);
         }
     }
 
@@ -252,37 +352,60 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public void addCatalogue(PartyType party, InputStream template) {
+    public void addCatalogue(InputStream catalogueTemplate, PartyType party) {
+        CatalogueType catalogue;
         OPCPackage pkg = null;
         try {
-            pkg = OPCPackage.open(template);
+            pkg = OPCPackage.open(catalogueTemplate);
             XSSFWorkbook wb = new XSSFWorkbook(pkg);
             List<CatalogueLineType> products = getCatalogueLines(wb);
-            CatalogueType catalogue = new CatalogueType();
+            catalogue = new CatalogueType();
             catalogue.setCatalogueLine(products);
-            catalogue.setProviderParty(party);
 
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            addCatalogue(catalogue, party);
+
+        } catch (InvalidFormatException e) {
+            throw new CatalogueServiceException("Invalid format for the submitted template", e);
+        } catch (IOException e) {
+            throw new CatalogueServiceException("Failed to read the submitted template", e);
+        } finally {
+            if (pkg != null) {
+                try {
+                    pkg.close();
+                } catch (IOException e) {
+                    logger.warn("Failed to close the OPC Package", e);
+                }
+            }
+        }
+    }
+
+    private XML2OWLMapper transformCatalogueToRDF(CatalogueType catalogue) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
             String packageName = catalogue.getClass().getPackage().getName();
             JAXBContext jc = JAXBContext.newInstance(packageName);
+
             Marshaller marsh = jc.createMarshaller();
             marsh.setProperty("jaxb.formatted.output", true);
             JAXBElement element = new JAXBElement(
                     new QName(Configuration.UBL_CATALOGUE_NS, "Catalogue"), catalogue.getClass(), catalogue);
             marsh.marshal(element, baos);
 
-            //HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).persist(catalogue);
-            PrintWriter writer = new PrintWriter("serialized_ubl_catalogue.xml");
+        } catch (JAXBException e) {
+            throw new CatalogueServiceException("Failed to serialize the catalogue instance to XML", e);
+        }
+
+            /*PrintWriter writer = new PrintWriter("serialized_ubl_catalogue.xml");
             String serializedCatalogue = JAXBUtility.serialize(catalogue, "Catalogue");
             writer.println(serializedCatalogue);
             writer.flush();
-            writer.close();
+            writer.close();*/
 
-            URL url = CatalogueServiceImpl.class.getResource(Configuration.UBL_CATALOGUE_SCHEMA);
-            XSD2OWLMapper mapping = new XSD2OWLMapper(url);
-            mapping.setObjectPropPrefix("");
-            mapping.setDataTypePropPrefix("");
-            mapping.convertXSD2OWL();
+        URL url = CatalogueServiceImpl.class.getResource(Configuration.UBL_CATALOGUE_SCHEMA);
+        XSD2OWLMapper mapping = new XSD2OWLMapper(url);
+        mapping.setObjectPropPrefix("");
+        mapping.setDataTypePropPrefix("");
+        mapping.convertXSD2OWL();
 
             /*FileOutputStream ont;
             try {
@@ -295,10 +418,10 @@ public class CatalogueServiceImpl implements CatalogueService {
             }*/
 
 
-            XML2OWLMapper generator = new XML2OWLMapper(new ByteArrayInputStream(baos.toByteArray()), mapping);
-            generator.convertXML2OWL();
+        XML2OWLMapper generator = new XML2OWLMapper(new ByteArrayInputStream(baos.toByteArray()), mapping);
+        generator.convertXML2OWL();
 
-            // This part prints the RDF data model to the specified file.
+        // This part prints the RDF data model to the specified file.
             /*try {
                 File f = new File("ubl_catalogue_serv.n3");
                 FileOutputStream fout = new FileOutputStream(f);
@@ -308,32 +431,15 @@ public class CatalogueServiceImpl implements CatalogueService {
             } catch (Exception e) {
                 e.printStackTrace();
             }*/
-
-            submitCatalogueDataToMarmotta(generator);
-
-        } catch (InvalidFormatException e) {
-            throw new CatalogueServiceException("Invalid format for the submitted template", e);
-        } catch (IOException e) {
-            throw new CatalogueServiceException("Failed to read the submitted template", e);
-        } catch (JAXBException e) {
-            e.printStackTrace();
-        } finally {
-            if (pkg != null) {
-                try {
-                    pkg.close();
-                } catch (IOException e) {
-                    logger.warn("Failed to close the OPC Package", e);
-                }
-            }
-        }
+        return generator;
     }
 
-    private void submitCatalogueDataToMarmotta(XML2OWLMapper generator) {
+    private void submitCatalogueDataToMarmotta(XML2OWLMapper generator, String catalogueContext) {
         // TODO: use party id as the context
         // TODO: properly configure the Marmotta URL
         URL marmottaURL = null;
         try {
-            marmottaURL = new URL("http://134.168.33.237:8080/marmotta/import/upload?context=Catalogue");
+            marmottaURL = new URL("http://134.168.33.237:8080/marmotta/import/upload?context=" + catalogueContext);
         } catch (MalformedURLException e) {
             throw new CatalogueServiceException("Invalid format for the submitted template", e);
         }
@@ -440,7 +546,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         List<Property> properties = TemplateConfig.getFixedProperties();
         for (int i = 0; i < properties.size(); i++) {
             Property property = properties.get(i);
-            Cell cell = getCellWithMissingCellPolicy(propertiesRow, i+1);
+            Cell cell = getCellWithMissingCellPolicy(propertiesRow, i + 1);
             if (property.getPreferredName().equals(TEMPLATE_FIXED_PROPERTY_NAME)) {
                 item.setName(getCellStringValue(cell));
             } else if (property.getPreferredName().equals(TEMPLATE_FIXED_PROPERTY_DESCRIPTION)) {
@@ -466,25 +572,5 @@ public class CatalogueServiceImpl implements CatalogueService {
             default:
                 return "";
         }
-    }
-
-    @Override
-    public void addProduct(PartyType party, GoodsItemType item) {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
-    public void addPropertyToProduct(Long itemId, String value, String propertyURI) {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
-    public void addPropertyToProduct(Long itemId, String propertyName, String value, String minValue, String maxValue, String valueQualifier, String unit) {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    @Override
-    public void addPropertyToProduct(Long itemId, String propertyName, String binaryValue, String mimeCode, String contentURI) {
-        throw new UnsupportedOperationException("Not implemented yet");
     }
 }

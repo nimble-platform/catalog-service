@@ -65,6 +65,7 @@
 	<xsd:element name="TransportModeCode" type="CodeType"/>
 	<xsd:element name="Title" type="xsd:string"/>
 	<xsd:element name="URI" type="xsd:string"/>
+	<xsd:element name="UUID" type="IdentifierType"/>
 	<xsd:element name="Value" type="xsd:string"/>
 	<xsd:element name="ValueQualifier" type="xsd:string"/>
 	<xsd:element name="ValueQuantity" type="QuantityType"/>

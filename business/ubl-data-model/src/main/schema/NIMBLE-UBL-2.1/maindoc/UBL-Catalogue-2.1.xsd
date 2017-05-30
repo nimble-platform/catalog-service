@@ -17,7 +17,7 @@
 			<xsd:element ref="cbc:PreviousVersionID" minOccurs="0"/>
 			<xsd:element ref="cac:ValidityPeriod" minOccurs="0"/>
 			<xsd:element ref="cac:DocumentReference" minOccurs="0" maxOccurs="unbounded"/>
-			<xsd:element ref="cac:ProviderParty"/>
+			<xsd:element ref="cac:ProviderParty" minOccurs="1"/>
 			<xsd:element ref="cac:ReceiverParty"/>
 			<xsd:element ref="cac:CatalogueLine" maxOccurs="unbounded"/>
 		</xsd:sequence>

@@ -1,16 +1,21 @@
 package eu.nimble.service.catalogue.impl;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
-import eu.nimble.service.catalogue.category.datamodel.Category;
 import eu.nimble.service.catalogue.client.IdentityClient;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.GoodsItemType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyNameType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
+import eu.nimble.service.model.ubl.commonbasiccomponents.IdentifierType;
 import eu.nimble.utility.Configuration;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -20,7 +25,8 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletResponse;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.List;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 @Controller
 public class CatalogueController {
@@ -33,22 +39,42 @@ public class CatalogueController {
     @Autowired
     private IdentityClient identityClient;
 
-    @RequestMapping(value = "/catalogue/ubl",
-            method = RequestMethod.POST)
-    public ResponseEntity<Void> addUBLCatalogue(@RequestBody String catalogueXML, @RequestParam String partyId) {
-
-        PartyType party = identityClient.getParty(partyId);
-        log.debug("Fetched party with Id {0}", party.getHjid());
-
-        service.addCatalogue(party, catalogueXML, Configuration.Standard.UBL);
-        return ResponseEntity.ok(null);
-    }
-
     @RequestMapping(value = "/catalogue/ubl/{uuid}",
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity<CatalogueType> getUBLCatalogueByUUID(@PathVariable String uuid) {
-        CatalogueType catalogue = (CatalogueType) service.getCatalogueByUUID(uuid, Configuration.Standard.UBL);
+        CatalogueType catalogue = (CatalogueType) service.getCatalogue(uuid);
+        return ResponseEntity.ok(catalogue);
+    }
+
+    @CrossOrigin(origins = {"http://localhost:9092"})
+    @RequestMapping(value = "/catalogue/{partyId}/default",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity<CatalogueType> getDefaultCatalogue(@PathVariable String partyId) {
+        CatalogueType catalogue = service.getCatalogue("default", partyId);
+        if(catalogue == null) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+        }
+        return ResponseEntity.ok(catalogue);
+    }
+
+    @RequestMapping(value = "/catalogue/modaml/{uuid}",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity<TEXCatalogType> getMODAMLCatalogueByUUID(@PathVariable String uuid) {
+        TEXCatalogType catalogue = service.getCatalogue(uuid, Configuration.Standard.MODAML);
+        return ResponseEntity.ok(catalogue);
+    }
+
+    @RequestMapping(value = "/catalogue/ubl",
+            method = RequestMethod.POST)
+    public ResponseEntity<CatalogueType> addUBLCatalogue(@RequestBody String catalogueXML, @RequestParam String partyId) {
+
+        PartyType party = identityClient.getParty(partyId);
+        log.debug("Fetched party with Id {0}", party.getHjid());
+
+        CatalogueType catalogue = service.addCatalogue(catalogueXML, party);
         return ResponseEntity.ok(catalogue);
     }
 
@@ -59,25 +85,69 @@ public class CatalogueController {
         PartyType party = identityClient.getParty(partyId);
         log.debug("Fetched party with Id {0}", party.getHjid());
 
-        service.addCatalogue(party, catalogueXML, Configuration.Standard.UBL);
+        service.addCatalogue(catalogueXML, party, Configuration.Standard.MODAML);
         return ResponseEntity.ok(null);
     }
 
-    @RequestMapping(value = "/catalogue/modaml/{uuid}",
+    @CrossOrigin(origins = {"http://localhost:9092"})
+    @RequestMapping(value = "/catalogue",
+            consumes = {"application/json"},
             produces = {"application/json"},
-            method = RequestMethod.GET)
-    public ResponseEntity<TEXCatalogType> getMODAMLCatalogueByUUID(@PathVariable String uuid) {
-        TEXCatalogType catalogue = (TEXCatalogType) service.getCatalogueByUUID(uuid, Configuration.Standard.MODAML);
-        return ResponseEntity.ok(catalogue);
+            method = RequestMethod.POST)
+    public ResponseEntity submitCatalogue(@RequestBody String catalogueJson, @RequestParam("partyId") String partyId) {
+        log.debug("Catalogue submitting party id: {}", partyId);
+        log.debug("Submitted catalogue: " + catalogueJson);
+
+        CatalogueType catalogue = null;
+        try {
+            catalogue = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(catalogueJson, CatalogueType.class);
+        } catch (IOException e) {
+            log.error("Failed to deserialize catalogue from json string", e);
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        //TODO fetch party with a given user id
+        //PartyType party = identityClient.getParty(partyId);
+        //log.debug("Fetched party with Id {0}", party.getHjid());
+        PartyType dummyParty = new PartyType();
+        IdentifierType id = new IdentifierType();
+        id.setValue("pid");
+        dummyParty.setID(id);
+        PartyNameType name = new PartyNameType();
+        name.setName("Dummy Party");
+        dummyParty.setPartyName(name);
+
+        service.addCatalogue(catalogue, dummyParty);
+
+        URI catalogueURI = null;
+        try {
+            // TODO make the url below configurable
+            catalogueURI = new URI("http://localhost:9092/catalogue/" + catalogue.getUUID().getValue());
+        } catch (URISyntaxException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to generate a URI for the newly created item");
+        }
+        return ResponseEntity.created(catalogueURI).body(catalogue);
     }
 
-    @CrossOrigin(origins = {"http://localhost:9093", "http://localhost:9092"})
-    @RequestMapping(value = "/catalogue/product",
+    @CrossOrigin(origins = {"http://localhost:9092"})
+    @RequestMapping(value = "/catalogue/{uuid]",
             consumes = {"application/json"},
-            method = RequestMethod.POST)
-    public ResponseEntity getCategoriesByName(@RequestBody String goodsItem) {
-        log.info("GOODS ITEM: " + goodsItem);
-        return null;
+            produces = {"application/json"},
+            method = RequestMethod.PUT)
+    public ResponseEntity getCatalogueByUUID(@RequestBody String catalogueJson, @PathVariable("uuid") String string) {
+        log.debug("Submitted catalogue: " + catalogueJson);
+
+        CatalogueType catalogue = null;
+        try {
+            catalogue = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(catalogueJson, CatalogueType.class);
+        } catch (IOException e) {
+            log.error("Failed to deserialize catalogue from json string", e);
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        service.updateCatalogue(catalogue);
+
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
 
@@ -108,7 +178,7 @@ public class CatalogueController {
             PartyType party = identityClient.getParty(partyId);
             log.debug("Fetched party with Id {0}", party.getHjid());
 
-            service.addCatalogue(party, file.getInputStream());
+            service.addCatalogue(file.getInputStream(), party);
 
         } catch (IOException e) {
             e.printStackTrace();

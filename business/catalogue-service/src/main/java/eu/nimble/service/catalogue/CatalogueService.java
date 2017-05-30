@@ -5,6 +5,7 @@ import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.GoodsItemType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.Configuration;
+import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.InputStream;
@@ -12,15 +13,30 @@ import java.io.OutputStream;
 
 public interface CatalogueService {
 
-    public void addCatalogue(PartyType party, String xml, Configuration.Standard standard);
+    // TODO convert PartyTypes to ids of String type
+    public CatalogueType addCatalogue(CatalogueType catalogue, PartyType party);
 
-    public Object getCatalogueByUUID(String uuid, Configuration.Standard standard);
+    public CatalogueType addCatalogue(String catalogueXml, PartyType party);
 
-    public void deleteCatalogueByUUID(String uuid, Configuration.Standard standard);
+    public CatalogueType getCatalogue(String uuid);
 
-    public void addCatalogue(PartyType party, CatalogueType catalogue);
+    public CatalogueType getCatalogue(String id, String partyId);
 
-    public void addCatalogue(PartyType party, TEXCatalogType catalogue);
+    public CatalogueType updateCatalogue(CatalogueType catalogue);
+
+    public void deleteCatalogue(String uuid);
+
+    public void deleteCatalogue(String id, String partyId);
+
+    public <T> T addCatalogue(String catalogueXML, PartyType party, Configuration.Standard standard);
+
+    public <T> T addCatalogue(T catalogue, PartyType party, Configuration.Standard standard);
+
+    public <T> T getCatalogue(String uuid, Configuration.Standard standard);
+
+    public <T> T getCatalogue(String id, String partyId, Configuration.Standard standard);
+
+    public void deleteCatalogue(String uuid, Configuration.Standard standard);
 
     /**
      * Generates the template for the given {@code categoryId}. The template includes the details about the
@@ -34,53 +50,8 @@ public interface CatalogueService {
     /**
      * Adds the catalogue given through the NIMBLE-specific, Excel-based template.
      *
+     * @param catalogueTemplate
      * @param party
-     * @param catalgoueTemplate
      */
-    public void addCatalogue(PartyType party, InputStream catalgoueTemplate);
-
-    /**
-     * Registers the {@code item} to the {@code party}
-     *
-     * @param party
-     * @param item
-     */
-    public void addProduct(PartyType party, GoodsItemType item);
-
-    /**
-     * Adds the new property specified by the dereferencable {@code propertyURI} with the {@code value} to the
-     * item.
-     *
-     * @param itemId
-     * @param value
-     * @param propertyURI dereferencable URI of the property. The referenced property should be compatible with the
-     *                    NIMBLE product category schema so that other details about the property could be retrieved.
-     */
-    public void addPropertyToProduct(Long itemId, String value, String propertyURI);
-
-    /**
-     * Adds the new property with the given details to the item
-     *
-     * @param itemId
-     * @param propertyName   name of the property
-     * @param value
-     * @param minValue minimum value of the range, the value is specified as a range
-     * @param maxValue maximum value of the range, the value is specified as a range
-     * @param valueQualifier used for specifying the data type of the property.
-     *                       Permitted qualifier types are STRING, NUMBER, BOOLEAN
-     * @param unit           if there is a unit for the property, the short name of (e.g. m2, kg) is provided via this
-     *                       parameter
-     */
-    public void addPropertyToProduct(Long itemId, String propertyName, String value, String minValue, String maxValue, String valueQualifier, String unit);
-
-    /**
-     * Adds the new property with a binary value to the item
-     *
-     * @param itemId
-     * @param binaryValue string serialization of the binary object if the value of the property is obtained from a
-     *                    non-dereferencable location e.g. local file system.
-     * @param mimeCode mime code of related to the provided value
-     * @param contentURI dereferencable URI to obtain the value for the property
-     */
-    public void addPropertyToProduct(Long itemId, String propertyName, String binaryValue, String mimeCode, String contentURI);
+    public void addCatalogue(InputStream catalogueTemplate, PartyType party);
 }
