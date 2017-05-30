@@ -74,6 +74,7 @@
 		<xsd:simpleContent>
 			<xsd:extension base="xsd:base64Binary">
 				<xsd:attribute name="mimeCode" type="xsd:normalizedString" use="required"/>
+				<xsd:attribute name="fileName" type="xsd:normalizedString" use="optional"/>
 				<xsd:attribute name="uri" type="xsd:anyURI" use="optional"/>
 			</xsd:extension>
 		</xsd:simpleContent>
