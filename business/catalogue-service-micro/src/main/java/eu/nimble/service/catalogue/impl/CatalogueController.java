@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.client.IdentityClient;
+import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.GoodsItemType;
@@ -27,6 +28,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Properties;
 
 @Controller
 public class CatalogueController {
@@ -69,23 +72,16 @@ public class CatalogueController {
 
     @RequestMapping(value = "/catalogue/ubl",
             method = RequestMethod.POST)
-    public ResponseEntity<CatalogueType> addUBLCatalogue(@RequestBody String catalogueXML, @RequestParam String partyId) {
+    public ResponseEntity<CatalogueType> addUBLCatalogue(@RequestBody String catalogueXML) {
 
-        PartyType party = identityClient.getParty(partyId);
-        log.debug("Fetched party with Id {0}", party.getHjid());
-
-        CatalogueType catalogue = service.addCatalogue(catalogueXML, party);
+        CatalogueType catalogue = service.addCatalogue(catalogueXML);
         return ResponseEntity.ok(catalogue);
     }
 
     @RequestMapping(value = "/catalogue/modaml",
             method = RequestMethod.POST)
-    public ResponseEntity<Void> addMODAMLCatalogue(@RequestBody String catalogueXML, @RequestParam String partyId) {
-
-        PartyType party = identityClient.getParty(partyId);
-        log.debug("Fetched party with Id {0}", party.getHjid());
-
-        service.addCatalogue(catalogueXML, party, Configuration.Standard.MODAML);
+    public ResponseEntity<Void> addMODAMLCatalogue(@RequestBody String catalogueXML) {
+        service.addCatalogue(catalogueXML, Configuration.Standard.MODAML);
         return ResponseEntity.ok(null);
     }
 
@@ -94,8 +90,7 @@ public class CatalogueController {
             consumes = {"application/json"},
             produces = {"application/json"},
             method = RequestMethod.POST)
-    public ResponseEntity submitCatalogue(@RequestBody String catalogueJson, @RequestParam("partyId") String partyId) {
-        log.debug("Catalogue submitting party id: {}", partyId);
+    public ResponseEntity addCatalogue(@RequestBody String catalogueJson) {
         log.debug("Submitted catalogue: " + catalogueJson);
 
         CatalogueType catalogue = null;
@@ -106,36 +101,28 @@ public class CatalogueController {
             ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
 
-        //TODO fetch party with a given user id
-        //PartyType party = identityClient.getParty(partyId);
-        //log.debug("Fetched party with Id {0}", party.getHjid());
-        PartyType dummyParty = new PartyType();
-        IdentifierType id = new IdentifierType();
-        id.setValue("pid");
-        dummyParty.setID(id);
-        PartyNameType name = new PartyNameType();
-        name.setName("Dummy Party");
-        dummyParty.setPartyName(name);
-
-        service.addCatalogue(catalogue, dummyParty);
+        service.addCatalogue(catalogue);
 
         URI catalogueURI;
         try {
-            // TODO make the url below configurable
-            catalogueURI = new URI("${catalogue.application.url}/catalogue/" + catalogue.getUUID().getValue());
-        } catch (URISyntaxException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to generate a URI for the newly created item");
+            Properties prop = new Properties();
+            prop.load(CatalogueServiceImpl.class.getClassLoader().getResourceAsStream("application.properties"));
+            catalogueURI = new URI(prop.getProperty("catalogue.application.url") + "/" + catalogue.getUUID().getValue());
+        } catch (URISyntaxException |IOException e) {
+            String msg = "Failed to generate a URI for the newly created item";
+            log.error(msg, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(msg);
         }
         return ResponseEntity.created(catalogueURI).body(catalogue);
     }
 
     @CrossOrigin(origins = {"${catalogue.cross.origins}"})
-    @RequestMapping(value = "/catalogue/{uuid]",
+    @RequestMapping(value = "/catalogue",
             consumes = {"application/json"},
             produces = {"application/json"},
             method = RequestMethod.PUT)
-    public ResponseEntity updateCatalogue(@RequestBody String catalogueJson, @PathVariable("uuid") String string) {
-        log.debug("Submitted catalogue: " + catalogueJson);
+    public ResponseEntity updateCatalogue(@RequestBody String catalogueJson) {
+        log.debug("Updated catalogue: " + catalogueJson);
 
         CatalogueType catalogue = null;
         try {
@@ -180,7 +167,6 @@ public class CatalogueController {
             log.debug("Fetched party with Id {0}", party.getHjid());
 
             service.addCatalogue(file.getInputStream(), party);
-
         } catch (IOException e) {
             e.printStackTrace();
         }

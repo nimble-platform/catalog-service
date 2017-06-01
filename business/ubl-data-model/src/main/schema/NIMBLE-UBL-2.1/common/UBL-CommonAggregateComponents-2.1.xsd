@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" elementFormDefault="qualified" attributeFormDefault="unqualified" version="2.1">
+<xsd:schema xmlns="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:hj="http://hyperjaxb3.jvnet.org/ejb/schemas/customizations" xmlns:orm="http://java.sun.com/xml/ns/persistence/orm" targetNamespace="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" elementFormDefault="qualified" attributeFormDefault="unqualified" version="2.1" jaxb:extensionBindingPrefixes="hj orm">
 	<xsd:import namespace="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" schemaLocation="UBL-CommonBasicComponents-2.1.xsd"/>
 	<xsd:element name="AcceptanceTransportEvent" type="TransportEventType"/>
 	<xsd:element name="AccessoryRelatedItem" type="RelatedItemType"/>
@@ -1908,6 +1908,16 @@
 			<xsd:element ref="cbc:BrandName" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cbc:ModelName" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cbc:FreeOfChargeIndicator" minOccurs="0" maxOccurs="unbounded"/>
+			<!-- TODO remove the demo-specific element --> 
+			<xsd:element ref="cbc:ItemConfigurationImages" minOccurs="0">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<hj:basic>
+							<orm:column length="2147483647"/>
+						</hj:basic>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:element>
 			<xsd:element ref="cac:BuyersItemIdentification" minOccurs="0"/>
 			<xsd:element ref="cac:SellersItemIdentification" minOccurs="0"/>
 			<xsd:element ref="cac:ManufacturersItemIdentification" minOccurs="0"/>
@@ -1993,6 +2003,16 @@
 			<xsd:element ref="cbc:ValueQuantity" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cbc:EmbeddedDocumentBinaryObject" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cbc:ValueQualifier" minOccurs="0"/>
+			<!-- TODO remove the demo-specific element --> 
+			<xsd:element ref="cbc:DemoSpecificMultipleContent" minOccurs="0">
+				<xsd:annotation>
+					<xsd:appinfo>
+						<hj:basic>
+							<orm:column length="2147483647"/>
+						</hj:basic>
+					</xsd:appinfo>
+				</xsd:annotation>
+			</xsd:element>
 			<xsd:element ref="cac:UsabilityPeriod" minOccurs="0"/>
 			<xsd:element ref="cac:ItemPropertyGroup" minOccurs="0"/>
 			<xsd:element ref="cac:RangeDimension" minOccurs="0"/>
@@ -2206,7 +2226,7 @@
 			<xsd:element ref="cbc:EndpointID" minOccurs="0"/>
 			<xsd:element ref="cbc:IndustryClassificationCode" minOccurs="0"/>
 			<xsd:element ref="cbc:ExternalAward" minOccurs="0"/>
-			<xsd:element ref="cac:PartyName" minOccurs="0"/>
+			<xsd:element ref="cac:PartyName" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cac:Language" minOccurs="0"/>
 			<xsd:element ref="cac:PostalAddress" minOccurs="0"/>
 			<xsd:element ref="cac:PhysicalLocation" minOccurs="0"/>

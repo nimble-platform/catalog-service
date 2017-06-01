@@ -205,6 +205,8 @@
 	<xsd:element name="DeclaredStatisticsValueAmount" type="AmountType"/>
 	<xsd:element name="DeliveredQuantity" type="QuantityType"/>
 	<xsd:element name="DeliveryInstructions" type="xsd:string"/>
+	<!-- TODO remove the demo-specific element --> 
+	<xsd:element name="DemoSpecificMultipleContent" type="xsd:string"/>
 	<xsd:element name="DemurrageInstructions" type="xsd:string"/>
 	<xsd:element name="Department" type="xsd:string"/>
 	<xsd:element name="Description" type="xsd:string"/>
@@ -349,6 +351,8 @@
 	<xsd:element name="IssueTime" type="xsd:time"/>
 	<xsd:element name="IssuerID" type="IdentifierType"/>
 	<xsd:element name="ItemClassificationCode" type="CodeType"/>
+	<!-- TODO remove the demo-specific element --> 
+	<xsd:element name="ItemConfigurationImages" type="xsd:string"/>
 	<xsd:element name="ItemPropertyURI" type="xsd:string"/>
 	<xsd:element name="ItemUpdateRequestIndicator" type="xsd:boolean"/>
 	<xsd:element name="JobTitle" type="xsd:string"/>

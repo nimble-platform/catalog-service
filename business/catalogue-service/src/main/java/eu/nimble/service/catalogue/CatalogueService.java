@@ -13,10 +13,9 @@ import java.io.OutputStream;
 
 public interface CatalogueService {
 
-    // TODO convert PartyTypes to ids of String type
-    public CatalogueType addCatalogue(CatalogueType catalogue, PartyType party);
+    public CatalogueType addCatalogue(CatalogueType catalogue);
 
-    public CatalogueType addCatalogue(String catalogueXml, PartyType party);
+    public CatalogueType addCatalogue(String catalogueXml);
 
     public CatalogueType getCatalogue(String uuid);
 
@@ -28,9 +27,9 @@ public interface CatalogueService {
 
     public void deleteCatalogue(String id, String partyId);
 
-    public <T> T addCatalogue(String catalogueXML, PartyType party, Configuration.Standard standard);
+    public <T> T addCatalogue(String catalogueXML, Configuration.Standard standard);
 
-    public <T> T addCatalogue(T catalogue, PartyType party, Configuration.Standard standard);
+    public <T> T addCatalogue(T catalogue, Configuration.Standard standard);
 
     public <T> T getCatalogue(String uuid, Configuration.Standard standard);
 

@@ -35,13 +35,13 @@ public class CatalogueServiceTest {
 	@Test
 	public void test1_addCatalogueTest_MODAML() {
 		String catalogueXML = FileUtility.readFile("../modaml-data-model/src/test/resources/MODAML-CatalogueFullDummy.xml");
-		CatalogueServiceImpl.getInstance().addCatalogue(catalogueXML, null, Configuration.Standard.MODAML);
+		CatalogueServiceImpl.getInstance().addCatalogue(catalogueXML, Configuration.Standard.MODAML);
 	}
 
 	@Test
 	public void test2_addCatalogueTest_UBL() {
 		String catalogueXML = FileUtility.readFile("../ubl-data-model/src/test/resources/UBL-CatalogueFullDummy.xml");
-		CatalogueType catalogueType = CatalogueServiceImpl.getInstance().addCatalogue(catalogueXML, null);
+		CatalogueType catalogueType = CatalogueServiceImpl.getInstance().addCatalogue(catalogueXML);
 		addedCatalogueUUID = catalogueType.getUUID().getValue();
 	}
 

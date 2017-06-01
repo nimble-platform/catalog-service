@@ -66,13 +66,13 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public CatalogueType addCatalogue(CatalogueType catalogue, PartyType party) {
-        return addCatalogue(catalogue, party, Configuration.Standard.UBL);
+    public CatalogueType addCatalogue(CatalogueType catalogue) {
+        return addCatalogue(catalogue, Configuration.Standard.UBL);
     }
 
     @Override
-    public CatalogueType addCatalogue(String catalogueXml, PartyType party) {
-        return addCatalogue(catalogueXml, party, Configuration.Standard.UBL);
+    public CatalogueType addCatalogue(String catalogueXml) {
+        return addCatalogue(catalogueXml, Configuration.Standard.UBL);
     }
 
     @Override
@@ -99,28 +99,26 @@ public class CatalogueServiceImpl implements CatalogueService {
     @Override
     public void deleteCatalogue(String id, String partyId) {
         CatalogueType catalogue = getCatalogue(id, partyId);
-        Long hjid = catalogue.getHjid();
-        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).delete(CatalogueType.class, hjid);
+        deleteCatalogue(catalogue.getUUID().getValue());
     }
 
     @Override
-    public <T> T addCatalogue(String catalogueXml, PartyType party, Configuration.Standard standard) {
+    public <T> T addCatalogue(String catalogueXml, Configuration.Standard standard) {
         T catalogue = null;
         if (standard == Configuration.Standard.UBL) {
             CatalogueType ublCatalogue = (CatalogueType) JAXBUtility.deserialize(catalogueXml, Configuration.UBL_CATALOGUE_PACKAGENAME);
-            ublCatalogue.setProviderParty(party);
             catalogue = (T) ublCatalogue;
 
         } else if (standard == Configuration.Standard.MODAML) {
             catalogue = (T) JAXBUtility.deserialize(catalogueXml, Configuration.MODAML_CATALOGUE_PACKAGENAME);
         }
-        addCatalogue(catalogue, party, standard);
+        addCatalogue(catalogue, standard);
 
         return catalogue;
     }
 
     @Override
-    public <T> T addCatalogue(T catalogue, PartyType party, Configuration.Standard standard) {
+    public <T> T addCatalogue(T catalogue, Configuration.Standard standard) {
         if(standard == Configuration.Standard.UBL) {
             // create a globally unique identifier
             IdentifierType uuid = new IdentifierType();
@@ -204,12 +202,38 @@ public class CatalogueServiceImpl implements CatalogueService {
     @Override
     public void deleteCatalogue(String uuid, Configuration.Standard standard) {
         if(standard == Configuration.Standard.UBL) {
+            logger.info("Deleting catalogue with uuid: {}", uuid);
             // delete catalogue from relational db
             CatalogueType catalogue = getCatalogue(uuid);
             Long hjid = catalogue.getHjid();
             HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).delete(CatalogueType.class, hjid);
 
             // delete catalogue from marmotta
+            URL marmottaURL;
+            try {
+                Properties prop = new Properties();
+                prop.load(CatalogueServiceImpl.class.getClassLoader().getResourceAsStream("application.properties"));
+                marmottaURL = new URL(prop.getProperty("marmotta.url") + "/delete/context" + uuid);
+            } catch (IOException e) {
+                throw new CatalogueServiceException("Failed to read Marmotta URL from config file", e);
+            }
+
+            HttpURLConnection conn;
+            try {
+                conn = (HttpURLConnection) marmottaURL.openConnection();
+                conn.setRequestMethod("DELETE");
+                conn.setDoOutput(true);
+
+                OutputStream os = conn.getOutputStream();
+                os.flush();
+
+                logger.info("Catalogue deleted from Marmotta. Received HTTP response: {}", conn.getResponseCode());
+
+                conn.disconnect();
+            } catch (IOException e) {
+                throw new CatalogueServiceException("Failed to submit catalogue to Marmotta", e);
+            }
+
         } else if(standard == Configuration.Standard.MODAML) {
             TEXCatalogType catalogue = getCatalogue(uuid, Configuration.Standard.MODAML);
             Long hjid = catalogue.getHjid();
@@ -363,7 +387,7 @@ public class CatalogueServiceImpl implements CatalogueService {
             catalogue = new CatalogueType();
             catalogue.setCatalogueLine(products);
 
-            addCatalogue(catalogue, party);
+            addCatalogue(catalogue);
 
         } catch (InvalidFormatException e) {
             throw new CatalogueServiceException("Invalid format for the submitted template", e);
@@ -436,7 +460,6 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     private void submitCatalogueDataToMarmotta(XML2OWLMapper generator, String catalogueContext) {
-        // TODO: properly configure the Marmotta URL
         URL marmottaURL;
         try {
             Properties prop = new Properties();
@@ -450,6 +473,8 @@ public class CatalogueServiceImpl implements CatalogueService {
 
         HttpURLConnection conn = null;
         try {
+            logger.info("Catalogue will be submitted to Marmotta.");
+
             conn = (HttpURLConnection) marmottaURL.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "text/n3");
