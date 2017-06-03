@@ -87,7 +87,16 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     @Override
     public CatalogueType updateCatalogue(CatalogueType catalogue) {
+        logger.info("Catalogue with uuid: {} will be updated", catalogue.getUUID().getValue());
+        // merge the hibernate object
         HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
+
+        // delete the catalgoue from marmotta and submit once again
+        deleteCatalogueFromMarmotta(catalogue.getUUID().getValue());
+
+        // submit again
+        submitCatalogueDataToMarmotta(catalogue);
+        logger.info("Catalogue with uuid: {} updated", catalogue.getUUID().getValue());
         return catalogue;
     }
 
@@ -119,20 +128,20 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     @Override
     public <T> T addCatalogue(T catalogue, Configuration.Standard standard) {
-        if(standard == Configuration.Standard.UBL) {
+        if (standard == Configuration.Standard.UBL) {
             // create a globally unique identifier
+            CatalogueType ublCatalogue = (CatalogueType) catalogue;
             IdentifierType uuid = new IdentifierType();
             uuid.setValue(UUID.randomUUID().toString());
-            ((CatalogueType) catalogue).setUUID(uuid);
+            ublCatalogue.setUUID(uuid);
 
             // persist the catalogue in relational DB
-            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).persist(catalogue);
+            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).persist(ublCatalogue);
 
             // persist the catalogue also in Marmotta
-            XML2OWLMapper rdfGenerator = transformCatalogueToRDF((CatalogueType) catalogue);
-            //submitCatalogueDataToMarmotta(rdfGenerator, uuid.getValue());
+            submitCatalogueDataToMarmotta(ublCatalogue);
 
-        } else if(standard == Configuration.Standard.MODAML){
+        } else if (standard == Configuration.Standard.MODAML) {
             HibernateUtility.getInstance(Configuration.MODAML_PERSISTENCE_UNIT_NAME).persist(catalogue);
         }
         return catalogue;
@@ -201,7 +210,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     @Override
     public void deleteCatalogue(String uuid, Configuration.Standard standard) {
-        if(standard == Configuration.Standard.UBL) {
+        if (standard == Configuration.Standard.UBL) {
             logger.info("Deleting catalogue with uuid: {}", uuid);
             // delete catalogue from relational db
             CatalogueType catalogue = getCatalogue(uuid);
@@ -209,36 +218,43 @@ public class CatalogueServiceImpl implements CatalogueService {
             HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).delete(CatalogueType.class, hjid);
 
             // delete catalogue from marmotta
-            URL marmottaURL;
-            try {
-                Properties prop = new Properties();
-                prop.load(CatalogueServiceImpl.class.getClassLoader().getResourceAsStream("application.properties"));
-                marmottaURL = new URL(prop.getProperty("marmotta.url") + "/delete/context" + uuid);
-            } catch (IOException e) {
-                throw new CatalogueServiceException("Failed to read Marmotta URL from config file", e);
-            }
+            deleteCatalogueFromMarmotta(uuid);
 
-            HttpURLConnection conn;
-            try {
-                conn = (HttpURLConnection) marmottaURL.openConnection();
-                conn.setRequestMethod("DELETE");
-                conn.setDoOutput(true);
-
-                OutputStream os = conn.getOutputStream();
-                os.flush();
-
-                logger.info("Catalogue deleted from Marmotta. Received HTTP response: {}", conn.getResponseCode());
-
-                conn.disconnect();
-            } catch (IOException e) {
-                throw new CatalogueServiceException("Failed to submit catalogue to Marmotta", e);
-            }
-
-        } else if(standard == Configuration.Standard.MODAML) {
+        } else if (standard == Configuration.Standard.MODAML) {
             TEXCatalogType catalogue = getCatalogue(uuid, Configuration.Standard.MODAML);
             Long hjid = catalogue.getHjid();
             HibernateUtility.getInstance(Configuration.MODAML_PERSISTENCE_UNIT_NAME).delete(TEXCatalogType.class, hjid);
         }
+    }
+
+    private void deleteCatalogueFromMarmotta(String uuid) {
+        logger.info("Catalogue with uuid: {} will be deleted from Marmotta", uuid);
+
+        URL marmottaURL;
+        try {
+            Properties prop = new Properties();
+            prop.load(CatalogueServiceImpl.class.getClassLoader().getResourceAsStream("application.properties"));
+            marmottaURL = new URL(prop.getProperty("marmotta.url") + "/context/" + uuid);
+        } catch (IOException e) {
+            throw new CatalogueServiceException("Failed to read Marmotta URL from config file", e);
+        }
+
+        HttpURLConnection conn;
+        try {
+            conn = (HttpURLConnection) marmottaURL.openConnection();
+            conn.setRequestMethod("DELETE");
+            conn.setDoOutput(true);
+
+            OutputStream os = conn.getOutputStream();
+            os.flush();
+
+            logger.info("Marmotta response for deleting catalogue with uuid: {}: {}", uuid, conn.getResponseCode());
+
+            conn.disconnect();
+        } catch (IOException e) {
+            throw new CatalogueServiceException("Failed to submit catalogue to Marmotta", e);
+        }
+        logger.info("Catalogue with uuid: {} deleted from Marmotta", uuid);
     }
 
     @Override
@@ -459,12 +475,16 @@ public class CatalogueServiceImpl implements CatalogueService {
         return generator;
     }
 
-    private void submitCatalogueDataToMarmotta(XML2OWLMapper generator, String catalogueContext) {
+    private void submitCatalogueDataToMarmotta(CatalogueType catalogue) {
+        logger.info("Catalogue with uuid: {} will be submitted to Marmotta.", catalogue.getUUID().getValue());
+        XML2OWLMapper rdfGenerator = transformCatalogueToRDF(catalogue);
+        logger.info("Transformed catalogue with uuid: {} to RDF", catalogue.getUUID().getValue());
+
         URL marmottaURL;
         try {
             Properties prop = new Properties();
             prop.load(CatalogueServiceImpl.class.getClassLoader().getResourceAsStream("application.properties"));
-            marmottaURL = new URL(prop.getProperty("marmotta.url") + "/import/upload?context=" + catalogueContext);
+            marmottaURL = new URL(prop.getProperty("marmotta.url") + "/import/upload?context=" + catalogue.getUUID().getValue());
         } catch (MalformedURLException e) {
             throw new CatalogueServiceException("Invalid format for the submitted template", e);
         } catch (IOException e) {
@@ -473,18 +493,16 @@ public class CatalogueServiceImpl implements CatalogueService {
 
         HttpURLConnection conn = null;
         try {
-            logger.info("Catalogue will be submitted to Marmotta.");
-
             conn = (HttpURLConnection) marmottaURL.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "text/n3");
             conn.setDoOutput(true);
 
             OutputStream os = conn.getOutputStream();
-            generator.writeModel(os, "N3");
+            rdfGenerator.writeModel(os, "N3");
             os.flush();
 
-            logger.info("Catalogue submitted to Marmotta. Received HTTP response: {}", conn.getResponseCode());
+            logger.info("Catalogue with uuid: {} submitted to Marmotta. Received HTTP response: {}", catalogue.getUUID().getValue(), conn.getResponseCode());
 
             conn.disconnect();
         } catch (IOException e) {
