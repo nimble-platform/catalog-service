@@ -172,4 +172,14 @@ public class CatalogueController {
         }
         return ResponseEntity.ok().build();
     }
+
+    @RequestMapping(value = "/catalogue/{uuid}",
+            produces = {"application/json"},
+            method = RequestMethod.DELETE)
+    public ResponseEntity deleteCatalogueByUUID(@PathVariable String uuid) {
+        log.info("Request for deleting catalogue with uuid: {}", uuid);
+        service.deleteCatalogue(uuid);
+        log.info("Request processed for deleting catalogue with uuid: {}", uuid);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 }
