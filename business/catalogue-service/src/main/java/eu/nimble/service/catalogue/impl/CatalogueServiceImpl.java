@@ -130,7 +130,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
             // persist the catalogue also in Marmotta
             XML2OWLMapper rdfGenerator = transformCatalogueToRDF((CatalogueType) catalogue);
-            submitCatalogueDataToMarmotta(rdfGenerator, uuid.getValue());
+            //submitCatalogueDataToMarmotta(rdfGenerator, uuid.getValue());
 
         } else if(standard == Configuration.Standard.MODAML){
             HibernateUtility.getInstance(Configuration.MODAML_PERSISTENCE_UNIT_NAME).persist(catalogue);
