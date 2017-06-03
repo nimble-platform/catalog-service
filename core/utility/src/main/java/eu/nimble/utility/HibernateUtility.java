@@ -47,6 +47,7 @@ public class HibernateUtility {
 			is = getClass().getClassLoader().getResourceAsStream(
 				persistencePropertiesFileName);
 			persistenceProperties.load(is);
+			persistenceProperties.setProperty("hibernate.event.merge.entity_copy_observer", "allow");
 		} catch (Exception ex) {
 			log.error("", ex);
 		} finally {
