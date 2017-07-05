@@ -214,11 +214,17 @@ public class CatalogueServiceImpl implements CatalogueService {
             logger.info("Deleting catalogue with uuid: {}", uuid);
             // delete catalogue from relational db
             CatalogueType catalogue = getCatalogue(uuid);
-            Long hjid = catalogue.getHjid();
-            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).delete(CatalogueType.class, hjid);
 
-            // delete catalogue from marmotta
-            deleteCatalogueFromMarmotta(uuid);
+            if(catalogue != null) {
+                Long hjid = catalogue.getHjid();
+                HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).delete(CatalogueType.class, hjid);
+
+                // delete catalogue from marmotta
+                deleteCatalogueFromMarmotta(uuid);
+                logger.info("Deleted catalogue with uuid: {}", uuid);
+            } else {
+                logger.info("No catalogue for uuid: {}", uuid);
+            }
 
         } else if (standard == Configuration.Standard.MODAML) {
             TEXCatalogType catalogue = getCatalogue(uuid, Configuration.Standard.MODAML);
