@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2008 sp1 (http://www.altova.com) by ff (gg) -->
 <xsd:schema xmlns="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:hj="http://hyperjaxb3.jvnet.org/ejb/schemas/customizations" xmlns:orm="http://java.sun.com/xml/ns/persistence/orm" targetNamespace="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" elementFormDefault="qualified" attributeFormDefault="unqualified" version="2.1" jaxb:extensionBindingPrefixes="hj orm">
 	<xsd:import namespace="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" schemaLocation="UBL-CommonBasicComponents-2.1.xsd"/>
 	<xsd:element name="AcceptanceTransportEvent" type="TransportEventType"/>
@@ -916,8 +917,6 @@
 			<xsd:element ref="cbc:UUID" minOccurs="0"/>
 			<xsd:element ref="cbc:IssueDate" minOccurs="0"/>
 			<xsd:element ref="cbc:IssueTime" minOccurs="0"/>
-			<xsd:element ref="cbc:RevisionDate" minOccurs="0"/>
-			<xsd:element ref="cbc:RevisionTime" minOccurs="0"/>
 			<xsd:element ref="cbc:Description" minOccurs="0"/>
 			<xsd:element ref="cbc:VersionID" minOccurs="0"/>
 		</xsd:sequence>
@@ -1408,7 +1407,6 @@
 			<xsd:element ref="cbc:TrackingID" minOccurs="0"/>
 			<xsd:element ref="cac:DeliveryAddress" minOccurs="0"/>
 			<xsd:element ref="cac:RequestedDeliveryPeriod" minOccurs="0"/>
-			<xsd:element ref="cac:PromisedDeliveryPeriod" minOccurs="0"/>
 			<xsd:element ref="cac:EstimatedDeliveryPeriod" minOccurs="0"/>
 			<xsd:element ref="cac:CarrierParty" minOccurs="0"/>
 			<xsd:element ref="cac:Despatch" minOccurs="0"/>
@@ -1419,7 +1417,7 @@
 	<xsd:complexType name="DeliveryTermsType">
 		<xsd:sequence>
 			<xsd:element ref="cbc:ID" minOccurs="0"/>
-			<xsd:element ref="cbc:SpecialTerms" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cbc:SpecialTerms" minOccurs="0"/>
 			<xsd:element ref="cbc:Amount" minOccurs="0"/>
 			<xsd:element ref="cac:Delivery" minOccurs="0"/>
 		</xsd:sequence>
@@ -1442,7 +1440,7 @@
 		<xsd:sequence>
 			<xsd:element ref="cbc:ActualDespatchDate" minOccurs="0"/>
 			<xsd:element ref="cbc:ActualDespatchTime" minOccurs="0"/>
-			<xsd:element ref="cbc:Instructions" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cbc:Instructions" minOccurs="0"/>
 			<xsd:element ref="cac:DespatchAddress" minOccurs="0"/>
 			<xsd:element ref="cac:EstimatedDespatchPeriod" minOccurs="0"/>
 		</xsd:sequence>
@@ -1908,7 +1906,7 @@
 			<xsd:element ref="cbc:BrandName" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cbc:ModelName" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cbc:FreeOfChargeIndicator" minOccurs="0" maxOccurs="unbounded"/>
-			<!-- TODO remove the demo-specific element --> 
+			<!-- TODO remove the demo-specific element -->
 			<xsd:element ref="cbc:ItemConfigurationImages" minOccurs="0">
 				<xsd:annotation>
 					<xsd:appinfo>
@@ -2003,7 +2001,7 @@
 			<xsd:element ref="cbc:ValueQuantity" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cbc:EmbeddedDocumentBinaryObject" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cbc:ValueQualifier" minOccurs="0"/>
-			<!-- TODO remove the demo-specific element --> 
+			<!-- TODO remove the demo-specific element -->
 			<xsd:element ref="cbc:DemoSpecificMultipleContent" minOccurs="0">
 				<xsd:annotation>
 					<xsd:appinfo>
@@ -2182,7 +2180,7 @@
 	</xsd:complexType>
 	<xsd:complexType name="OrderLineType">
 		<xsd:sequence>
-			<xsd:element ref="cbc:Note" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cbc:Note" minOccurs="0"/>
 			<xsd:element ref="cac:LineItem"/>
 			<xsd:element ref="cac:CatalogueLineReference" minOccurs="0"/>
 			<xsd:element ref="cac:QuotationLineReference" minOccurs="0"/>
@@ -2305,7 +2303,7 @@
 			<xsd:element ref="cbc:PaymentDueDate" minOccurs="0"/>
 			<xsd:element ref="cbc:PaymentChannelCode" minOccurs="0"/>
 			<xsd:element ref="cbc:InstructionID" minOccurs="0"/>
-			<xsd:element ref="cbc:InstructionNote" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cbc:InstructionNote" minOccurs="0"/>
 			<xsd:element ref="cbc:PaymentID" minOccurs="0"/>
 			<xsd:element ref="cac:CardAccount" minOccurs="0"/>
 			<xsd:element ref="cac:PayerFinancialAccount" minOccurs="0"/>
@@ -2745,8 +2743,8 @@
 			<xsd:element ref="cbc:ID"/>
 			<xsd:element ref="cbc:ShippingPriorityLevelCode" minOccurs="0"/>
 			<xsd:element ref="cbc:HandlingCode" minOccurs="0"/>
-			<xsd:element ref="cbc:HandlingInstructions" minOccurs="0" maxOccurs="unbounded"/>
-			<xsd:element ref="cbc:Information" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cbc:HandlingInstructions" minOccurs="0"/>
+			<xsd:element ref="cbc:Information" minOccurs="0"/>
 			<xsd:element ref="cbc:InsuranceValueAmount" minOccurs="0"/>
 			<xsd:element ref="cbc:DeclaredForCarriageValueAmount" minOccurs="0"/>
 			<xsd:element ref="cac:GoodsItem" minOccurs="0" maxOccurs="unbounded"/>
@@ -2758,7 +2756,7 @@
 			<xsd:element ref="cbc:TransportModeCode" minOccurs="0"/>
 			<xsd:element ref="cbc:LoadingSequenceID" minOccurs="0"/>
 			<xsd:element ref="cbc:SuccessiveSequenceID" minOccurs="0"/>
-			<xsd:element ref="cbc:Instructions" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cbc:Instructions" minOccurs="0"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="SignatureType">
@@ -2882,20 +2880,13 @@
 	</xsd:complexType>
 	<xsd:complexType name="TaxCategoryType">
 		<xsd:sequence>
-			<xsd:element ref="cbc:ID" minOccurs="0"/>
 			<xsd:element ref="cbc:Name" minOccurs="0"/>
-			<xsd:element ref="cbc:Percent" minOccurs="0"/>
-			<xsd:element ref="cbc:BaseUnitMeasure" minOccurs="0"/>
-			<xsd:element ref="cbc:PerUnitAmount" minOccurs="0"/>
-			<xsd:element ref="cbc:TaxExemptionReason" minOccurs="0" maxOccurs="unbounded"/>
-			<xsd:element ref="cbc:TierRange" minOccurs="0"/>
-			<xsd:element ref="cbc:TierRatePercent" minOccurs="0"/>
+			<xsd:element ref="cbc:TaxExemptionReason" minOccurs="0"/>
 			<xsd:element ref="cac:TaxScheme"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="TaxSchemeType">
 		<xsd:sequence>
-			<xsd:element ref="cbc:Name" minOccurs="0"/>
 			<xsd:element ref="cbc:TaxTypeCode" minOccurs="0"/>
 		</xsd:sequence>
 	</xsd:complexType>
@@ -2907,8 +2898,6 @@
 			<xsd:element ref="cbc:Percent" minOccurs="0"/>
 			<xsd:element ref="cbc:BaseUnitMeasure" minOccurs="0"/>
 			<xsd:element ref="cbc:PerUnitAmount" minOccurs="0"/>
-			<xsd:element ref="cbc:TierRange" minOccurs="0"/>
-			<xsd:element ref="cbc:TierRatePercent" minOccurs="0"/>
 			<xsd:element ref="cac:TaxCategory"/>
 		</xsd:sequence>
 	</xsd:complexType>
