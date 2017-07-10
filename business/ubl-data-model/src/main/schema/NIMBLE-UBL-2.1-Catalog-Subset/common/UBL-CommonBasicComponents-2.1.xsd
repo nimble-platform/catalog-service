@@ -48,6 +48,7 @@
 	<xsd:element name="PackQuantity" type="QuantityType"/>
 	<xsd:element name="PackSizeNumeric" type="xsd:decimal"/>
 	<xsd:element name="PaymentMeansCode" type="CodeType"/>
+	<xsd:element name="PriceAmount" type="AmountType"/>
 	<xsd:element name="QualityParameter" type="xsd:string"/>
 	<xsd:element name="Postbox" type="xsd:string"/>
 	<xsd:element name="Quantity" type="QuantityType"/>
@@ -70,6 +71,13 @@
 	<xsd:element name="ValueQualifier" type="xsd:string"/>
 	<xsd:element name="ValueQuantity" type="QuantityType"/>
 	<xsd:element name="WebsiteURI" type="xsd:string"/>
+	<xsd:complexType name="AmountType">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:decimal">
+				<xsd:attribute name="currencyID" type="xsd:normalizedString" use="required"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
 	<xsd:complexType name="BinaryObjectType">
 		<xsd:simpleContent>
 			<xsd:extension base="xsd:base64Binary">

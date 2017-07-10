@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2008 sp1 (http://www.altova.com) by ff (gg) -->
 <xsd:schema xmlns="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" elementFormDefault="qualified" attributeFormDefault="unqualified" version="2.1">
 	<xsd:import namespace="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" schemaLocation="UBL-CommonBasicComponents-2.1.xsd"/>
 	<xsd:element name="AdditionalItemProperty" type="ItemPropertyType"/>
@@ -40,9 +41,11 @@
 	<xsd:element name="PaymentMeans" type="PaymentMeansType"/>
 	<xsd:element name="Person" type="PersonType"/>
 	<xsd:element name="PostalAddress" type="AddressType"/>
+	<xsd:element name="Price" type="PriceType"/>
 	<xsd:element name="PromisedDeliveryPeriod" type="PeriodType"/>
 	<xsd:element name="ProviderParty" type="PartyType"/>
 	<xsd:element name="RegistrationAddress" type="AddressType"/>
+	<xsd:element name="RequiredItemLocationQuantity" type="ItemLocationQuantityType"/>
 	<xsd:element name="Shipment" type="ShipmentType"/>
 	<xsd:element name="ShipmentStage" type="ShipmentStageType"/>
 	<xsd:element name="StandardItemIdentification" type="ItemIdentificationType"/>
@@ -76,6 +79,7 @@
 			<xsd:element ref="cbc:ID"/>
 			<xsd:element ref="cbc:OrderableUnit" minOccurs="0"/>
 			<xsd:element ref="cbc:ContentUnitQuantity" minOccurs="0"/>
+			<xsd:element ref="cac:RequiredItemLocationQuantity"/>
 			<xsd:element ref="cac:GoodsItem"/>
 		</xsd:sequence>
 	</xsd:complexType>
@@ -174,6 +178,11 @@
 	<xsd:complexType name="ItemIdentificationType">
 		<xsd:sequence>
 			<xsd:element ref="cbc:ID"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ItemLocationQuantityType">
+		<xsd:sequence>
+			<xsd:element ref="cac:Price" minOccurs="0"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="ItemPropertyType">
@@ -305,6 +314,11 @@
 			<xsd:element ref="cbc:OrganizationDepartment" minOccurs="0"/>
 			<xsd:element ref="cac:Contact" minOccurs="0"/>
 			<xsd:element ref="cac:IdentityDocumentReference" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="PriceType">
+		<xsd:sequence>
+			<xsd:element ref="cbc:PriceAmount"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="ShipmentType">

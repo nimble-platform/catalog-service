@@ -56,7 +56,7 @@ public class CatalogueController {
             method = RequestMethod.GET)
     public ResponseEntity<CatalogueType> getDefaultCatalogue(@PathVariable String partyId) {
         CatalogueType catalogue = service.getCatalogue("default", partyId);
-        if(catalogue == null) {
+        if (catalogue == null) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
         }
         return ResponseEntity.ok(catalogue);
@@ -102,13 +102,14 @@ public class CatalogueController {
         }
 
         service.addCatalogue(catalogue);
+        log.info("Request for adding catalogue with uuid: {} completed", catalogue.getUUID().getValue());
 
         URI catalogueURI;
         try {
             Properties prop = new Properties();
             prop.load(CatalogueServiceImpl.class.getClassLoader().getResourceAsStream("application.properties"));
             catalogueURI = new URI(prop.getProperty("catalogue.application.url") + "/" + catalogue.getUUID().getValue());
-        } catch (URISyntaxException |IOException e) {
+        } catch (URISyntaxException | IOException e) {
             String msg = "Failed to generate a URI for the newly created item";
             log.error(msg, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(msg);
@@ -141,8 +142,8 @@ public class CatalogueController {
     @RequestMapping(value = "/catalogue/template",
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public void downloadTemplate(@RequestParam String categoryId, HttpServletResponse response) throws IOException {
-        Workbook template = service.generateTemplateForCategory(categoryId);
+    public void downloadTemplate(@RequestParam String taxonomyId, @RequestParam String categoryId, HttpServletResponse response) throws IOException {
+        Workbook template = service.generateTemplateForCategory(taxonomyId, categoryId);
 
         FileOutputStream fileOut = null;
         try {

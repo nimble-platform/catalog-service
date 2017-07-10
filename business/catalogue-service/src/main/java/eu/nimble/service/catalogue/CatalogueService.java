@@ -41,10 +41,11 @@ public interface CatalogueService {
      * Generates the template for the given {@code categoryId}. The template includes the details about the
      * properties
      *
+     * @param taxonomyId
      * @param categoryId
      * @return
      */
-    public Workbook generateTemplateForCategory(String categoryId);
+    public Workbook generateTemplateForCategory(String taxonomyId, String categoryId);
 
     /**
      * Adds the catalogue given through the NIMBLE-specific, Excel-based template.

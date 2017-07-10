@@ -8,7 +8,6 @@ package eu.nimble.service.catalogue.impl;
 import eu.nimble.data.transformer.ontmalizer.XML2OWLMapper;
 import eu.nimble.data.transformer.ontmalizer.XSD2OWLMapper;
 import eu.nimble.service.catalogue.CatalogueService;
-import eu.nimble.service.catalogue.ProductCategoryService;
 import eu.nimble.service.catalogue.category.datamodel.Category;
 import eu.nimble.service.catalogue.category.datamodel.Property;
 import eu.nimble.service.catalogue.category.datamodel.Unit;
@@ -52,7 +51,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     private static final Logger logger = LoggerFactory.getLogger(CatalogueServiceImpl.class);
     private static CatalogueService instance = null;
-    private static ProductCategoryService pcsInstance = ProductCategoryServiceImpl.getInstance();
+    private static CategoryServiceManager csmInstance = CategoryServiceManager.getInstance();
 
     private CatalogueServiceImpl() {
     }
@@ -137,6 +136,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
             // persist the catalogue in relational DB
             HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).persist(ublCatalogue);
+            logger.info("Catalogue with uuid: {} persisted in DB", uuid.getValue().toString());
 
             // persist the catalogue also in Marmotta
             submitCatalogueDataToMarmotta(ublCatalogue);
@@ -264,8 +264,8 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public Workbook generateTemplateForCategory(String categoryId) {
-        Category category = pcsInstance.getCategory(categoryId);
+    public Workbook generateTemplateForCategory(String taxonomyId, String categoryId) {
+        Category category = csmInstance.getCategory(taxonomyId, categoryId);
 
         Workbook template = new XSSFWorkbook();
         Sheet infoTab = template.createSheet(TEMPLATE_TAB_INFORMATION);

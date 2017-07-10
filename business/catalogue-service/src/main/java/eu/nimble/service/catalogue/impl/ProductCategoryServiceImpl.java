@@ -16,18 +16,6 @@ import java.util.List;
  */
 public class ProductCategoryServiceImpl implements ProductCategoryService {
     private static final Logger logger = LoggerFactory.getLogger(ProductCategoryServiceImpl.class);
-    private static ProductCategoryServiceImpl instance = null;
-
-    private ProductCategoryServiceImpl() {
-    }
-
-    public static ProductCategoryServiceImpl getInstance() {
-        if (instance == null) {
-            return new ProductCategoryServiceImpl();
-        } else {
-            return instance;
-        }
-    }
 
     @Override
     public Category getCategory(String categoryId) {
@@ -64,5 +52,10 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             throw new ProductCategoryServiceException("Failed to retrieve product sub-categories", e);
         }
         return categories;
+    }
+
+    @Override
+    public String getTaxonomyId() {
+        return "eClass";
     }
 }

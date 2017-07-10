@@ -15,6 +15,8 @@ public class Category {
     private String remark;
     private List<KeywordSynonym> keywords;
     private List<Property> properties;
+    private String taxonomyId;
+    private String categoryUri;
 
     public String getId() {
         return id;
@@ -78,5 +80,21 @@ public class Category {
 
     public void setProperties(List<Property> properties) {
         this.properties = properties;
+    }
+
+    public String getTaxonomyId() {
+        return taxonomyId;
+    }
+
+    public void setTaxonomyId(String taxonomyId) {
+        this.taxonomyId = taxonomyId;
+    }
+
+    public String getCategoryUri() {
+        return categoryUri;
+    }
+
+    public void setCategoryUri(String categoryUri) {
+        this.categoryUri = categoryUri;
     }
 }

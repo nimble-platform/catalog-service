@@ -114,14 +114,22 @@ public class EClassCategoryDatabaseAdapter {
     public List<Category> getClassificationClassesByName(String categoryName) throws CategoryDatabaseException {
         Connection connection = null;
         try {
-            List<Category> results = new ArrayList<>();
+            List<Category> allResults = new ArrayList<>();
 
             connection = getConnection();
             // first retrieve results from the classification list
-            results = getClassificationClassesByPreferredName(connection, categoryName);
+            allResults = getClassificationClassesByPreferredName(connection, categoryName);
 
             // then retrieve the results based on the equivalent keywords
-            results.addAll(getClassificationClassesByKeywords(connection, categoryName));
+            allResults.addAll(getClassificationClassesByKeywords(connection, categoryName));
+
+            // include only the leaf level classes in the result set
+            List<Category> results = new ArrayList<>();
+            for(Category category : allResults) {
+                if(category.getLevel() == 4) {
+                    results.add(category);
+                }
+            }
 
             return results;
         } finally {
@@ -151,7 +159,7 @@ public class EClassCategoryDatabaseAdapter {
         try {
             // Get the identifiers of the categories of which keywords match with the given category name
             PreparedStatement preparedStatement = connection.prepareStatement(eClassQueryGetKeywordByValue());
-            preparedStatement.setString(1, "% " + categoryName + "%");
+            preparedStatement.setString(1, "%" + categoryName + "%");
             ResultSet rs = preparedStatement.executeQuery();
 
             List<String> classIds = new ArrayList<>();
@@ -161,16 +169,17 @@ public class EClassCategoryDatabaseAdapter {
             rs.close();
             preparedStatement.close();
 
-            // get the classification classes based on the retrieved ids
-            //TODO handle the case where no classId is returned
-            preparedStatement = connection.prepareStatement(eClassQueryGetClassificationClassByIdList(classIds));
-            for (int i = 0; i < classIds.size(); i++) {
-                preparedStatement.setString(i + 1, classIds.get(i));
+            if (classIds.size() > 0) {
+                // get the classification classes based on the retrieved ids
+                preparedStatement = connection.prepareStatement(eClassQueryGetClassificationClassByIdList(classIds));
+                for (int i = 0; i < classIds.size(); i++) {
+                    preparedStatement.setString(i + 1, classIds.get(i));
+                }
+                rs = preparedStatement.executeQuery();
+                results = extractClassificationClassesFromResultSet(rs);
+                rs.close();
+                preparedStatement.close();
             }
-            rs = preparedStatement.executeQuery();
-            results = extractClassificationClassesFromResultSet(rs);
-            rs.close();
-            preparedStatement.close();
 
         } catch (SQLException e) {
             throw new CategoryDatabaseException("Failed to retrieve classification by preferred name", e);
@@ -274,6 +283,7 @@ public class EClassCategoryDatabaseAdapter {
             cc.setPreferredName(rs.getString(COLUMN_CLASSIFICATION_CLASS_PREFERRED_NAME));
             cc.setNote(rs.getString(COLUMN_CLASSIFICATION_CLASS_NOTE));
             cc.setRemark(rs.getString(COLUMN_CLASSIFICATION_CLASS_REMARK));
+            cc.setTaxonomyId("eClass");
             results.add(cc);
         }
         return results;
