@@ -7,7 +7,6 @@
 	<xsd:complexType name="OrderType">
 		<xsd:sequence>
 			<xsd:element ref="cbc:ID"/>
-			<xsd:element ref="cbc:UUID" minOccurs="0"/>
 			<xsd:element ref="cbc:IssueDate"/>
 			<xsd:element ref="cbc:IssueTime" minOccurs="0"/>
 			<xsd:element ref="cbc:Note" minOccurs="0"/>

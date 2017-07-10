@@ -46,6 +46,22 @@ public class JAXBUtility {
 		return null;
 	}
 
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	public static String serialize(Object object, JAXBElement element) {
+		try {
+			StringWriter writer = new StringWriter();
+			String packageName = object.getClass().getPackage().getName();
+			JAXBContext jc = JAXBContext.newInstance(packageName);
+			Marshaller marsh = jc.createMarshaller();
+			marsh.setProperty("jaxb.formatted.output", true);
+			marsh.marshal(element, writer);
+			return writer.toString();
+		} catch (JAXBException e) {
+			log.error("", e);
+		}
+		return null;
+	}
+
 	public static Object deserialize(String xmlContent, String packageName) {
 		javax.xml.bind.JAXBElement result = null;
 		try {

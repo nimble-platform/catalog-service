@@ -3,7 +3,7 @@
 	<xsd:element name="AcceptedIndicator" type="xsd:boolean"/>
 	<xsd:element name="AcceptedVariantsDescription" type="xsd:decimal"/>
 	<xsd:element name="AccountFormatCode" type="CodeType"/>
-	<xsd:element name="AccountID" type="IdentifierType"/>
+	<xsd:element name="AccountID" type="xsd:string"/>
 	<xsd:element name="AccountTypeCode" type="CodeType"/>
 	<xsd:element name="AccountingCost" type="xsd:string"/>
 	<xsd:element name="AccountingCostCode" type="CodeType"/>
@@ -18,7 +18,7 @@
 	<xsd:element name="ActualPickupTime" type="xsd:time"/>
 	<xsd:element name="ActualTemperatureReductionQuantity" type="QuantityType"/>
 	<xsd:element name="AdValoremIndicator" type="xsd:boolean"/>
-	<xsd:element name="AdditionalAccountID" type="IdentifierType"/>
+	<xsd:element name="AdditionalAccountID" type="xsd:string"/>
 	<xsd:element name="AdditionalConditions" type="xsd:string"/>
 	<xsd:element name="AdditionalInformation" type="xsd:string"/>
 	<xsd:element name="AdditionalStreetName" type="xsd:string"/>
@@ -27,10 +27,10 @@
 	<xsd:element name="AdjustmentReasonCode" type="CodeType"/>
 	<xsd:element name="AdmissionCode" type="CodeType"/>
 	<xsd:element name="AdvertisementAmount" type="AmountType"/>
-	<xsd:element name="AgencyID" type="IdentifierType"/>
+	<xsd:element name="AgencyID" type="xsd:string"/>
 	<xsd:element name="AgencyName" type="xsd:string"/>
 	<xsd:element name="AirFlowPercent" type="xsd:decimal"/>
-	<xsd:element name="AircraftID" type="IdentifierType"/>
+	<xsd:element name="AircraftID" type="xsd:string"/>
 	<xsd:element name="AliasName" type="xsd:string"/>
 	<xsd:element name="AllowanceChargeReason" type="xsd:string"/>
 	<xsd:element name="AllowanceChargeReasonCode" type="CodeType"/>
@@ -44,7 +44,7 @@
 	<xsd:element name="ApplicationStatusCode" type="CodeType"/>
 	<xsd:element name="ApprovalDate" type="xsd:date"/>
 	<xsd:element name="ApprovalStatus" type="xsd:string"/>
-	<xsd:element name="AttributeID" type="IdentifierType"/>
+	<xsd:element name="AttributeID" type="xsd:string"/>
 	<xsd:element name="AuctionConstraintIndicator" type="xsd:boolean"/>
 	<xsd:element name="AuctionURI" type="xsd:string"/>
 	<xsd:element name="AvailabilityDate" type="xsd:date"/>
@@ -54,7 +54,7 @@
 	<xsd:element name="AwardDate" type="xsd:date"/>
 	<xsd:element name="AwardTime" type="xsd:time"/>
 	<xsd:element name="AwardingCriterionDescription" type="xsd:decimal"/>
-	<xsd:element name="AwardingCriterionID" type="IdentifierType"/>
+	<xsd:element name="AwardingCriterionID" type="xsd:string"/>
 	<xsd:element name="AwardingCriterionTypeCode" type="CodeType"/>
 	<xsd:element name="AwardingMethodTypeCode" type="CodeType"/>
 	<xsd:element name="BackOrderAllowedIndicator" type="xsd:boolean"/>
@@ -62,7 +62,7 @@
 	<xsd:element name="BackorderReason" type="xsd:string"/>
 	<xsd:element name="BalanceAmount" type="AmountType"/>
 	<xsd:element name="BalanceBroughtForwardIndicator" type="xsd:boolean"/>
-	<xsd:element name="BarcodeSymbologyID" type="IdentifierType"/>
+	<xsd:element name="BarcodeSymbologyID" type="xsd:string"/>
 	<xsd:element name="BaseAmount" type="AmountType"/>
 	<xsd:element name="BaseQuantity" type="QuantityType"/>
 	<xsd:element name="BaseUnitMeasure" type="QuantityType"/>
@@ -75,17 +75,17 @@
 	<xsd:element name="BirthplaceName" type="xsd:string"/>
 	<xsd:element name="BlockName" type="xsd:string"/>
 	<xsd:element name="BrandName" type="xsd:string"/>
-	<xsd:element name="BrokerAssignedID" type="IdentifierType"/>
+	<xsd:element name="BrokerAssignedID" type="xsd:string"/>
 	<xsd:element name="BudgetYearNumeric" type="xsd:decimal"/>
 	<xsd:element name="BuildingName" type="xsd:string"/>
 	<xsd:element name="BuildingNumber" type="xsd:string"/>
 	<xsd:element name="BulkCargoIndicator" type="xsd:boolean"/>
-	<xsd:element name="BusinessClassificationEvidenceID" type="IdentifierType"/>
-	<xsd:element name="BusinessIdentityEvidenceID" type="IdentifierType"/>
-	<xsd:element name="BuyerEventID" type="IdentifierType"/>
+	<xsd:element name="BusinessClassificationEvidenceID" type="xsd:string"/>
+	<xsd:element name="BusinessIdentityEvidenceID" type="xsd:string"/>
+	<xsd:element name="BuyerEventID" type="xsd:string"/>
 	<xsd:element name="BuyerProfileURI" type="xsd:string"/>
 	<xsd:element name="BuyerReference" type="xsd:string"/>
-	<xsd:element name="CV2ID" type="IdentifierType"/>
+	<xsd:element name="CV2ID" type="xsd:string"/>
 	<xsd:element name="CalculationExpression" type="xsd:string"/>
 	<xsd:element name="CalculationExpressionCode" type="CodeType"/>
 	<xsd:element name="CalculationMethodCode" type="CodeType"/>
@@ -103,7 +103,7 @@
 	<xsd:element name="CardChipCode" type="CodeType"/>
 	<xsd:element name="CardTypeCode" type="CodeType"/>
 	<xsd:element name="CargoTypeCode" type="CodeType"/>
-	<xsd:element name="CarrierAssignedID" type="IdentifierType"/>
+	<xsd:element name="CarrierAssignedID" type="xsd:string"/>
 	<xsd:element name="CarrierServiceInstructions" type="xsd:string"/>
 	<xsd:element name="CatalogueIndicator" type="xsd:boolean"/>
 	<xsd:element name="CategoryName" type="xsd:string"/>
@@ -119,14 +119,14 @@
 	<xsd:element name="ChargeableQuantity" type="QuantityType"/>
 	<xsd:element name="ChargeableWeightMeasure" type="QuantityType"/>
 	<xsd:element name="ChildConsignmentQuantity" type="QuantityType"/>
-	<xsd:element name="ChipApplicationID" type="IdentifierType"/>
+	<xsd:element name="ChipApplicationID" type="xsd:string"/>
 	<xsd:element name="CityName" type="xsd:string"/>
 	<xsd:element name="CitySubdivisionName" type="xsd:string"/>
 	<xsd:element name="CodeValue" type="xsd:string"/>
 	<xsd:element name="CollaborationPriorityCode" type="CodeType"/>
 	<xsd:element name="Comment" type="xsd:string"/>
 	<xsd:element name="CommodityCode" type="CodeType"/>
-	<xsd:element name="CompanyID" type="IdentifierType"/>
+	<xsd:element name="CompanyID" type="xsd:string"/>
 	<xsd:element name="CompanyLegalForm" type="xsd:string"/>
 	<xsd:element name="CompanyLegalFormCode" type="CodeType"/>
 	<xsd:element name="CompanyLiquidationStatusCode" type="CodeType"/>
@@ -140,9 +140,9 @@
 	<xsd:element name="ConditionCode" type="CodeType"/>
 	<xsd:element name="Conditions" type="xsd:string"/>
 	<xsd:element name="ConditionsDescription" type="xsd:decimal"/>
-	<xsd:element name="ConsigneeAssignedID" type="IdentifierType"/>
+	<xsd:element name="ConsigneeAssignedID" type="xsd:string"/>
 	<xsd:element name="ConsignmentQuantity" type="QuantityType"/>
-	<xsd:element name="ConsignorAssignedID" type="IdentifierType"/>
+	<xsd:element name="ConsignorAssignedID" type="xsd:string"/>
 	<xsd:element name="ConsolidatableIndicator" type="xsd:boolean"/>
 	<xsd:element name="ConstitutionCode" type="CodeType"/>
 	<xsd:element name="ConsumerIncentiveTacticTypeCode" type="CodeType"/>
@@ -150,22 +150,22 @@
 	<xsd:element name="ConsumersEnergyLevel" type="xsd:string"/>
 	<xsd:element name="ConsumersEnergyLevelCode" type="CodeType"/>
 	<xsd:element name="ConsumptionEnergyQuantity" type="QuantityType"/>
-	<xsd:element name="ConsumptionID" type="IdentifierType"/>
+	<xsd:element name="ConsumptionID" type="xsd:string"/>
 	<xsd:element name="ConsumptionLevel" type="xsd:string"/>
 	<xsd:element name="ConsumptionLevelCode" type="CodeType"/>
-	<xsd:element name="ConsumptionReportID" type="IdentifierType"/>
+	<xsd:element name="ConsumptionReportID" type="xsd:string"/>
 	<xsd:element name="ConsumptionType" type="xsd:string"/>
 	<xsd:element name="ConsumptionTypeCode" type="CodeType"/>
 	<xsd:element name="ConsumptionWaterQuantity" type="QuantityType"/>
 	<xsd:element name="ContainerizedIndicator" type="xsd:boolean"/>
 	<xsd:element name="Content" type="xsd:string"/>
 	<xsd:element name="ContentUnitQuantity" type="QuantityType"/>
-	<xsd:element name="ContractFolderID" type="IdentifierType"/>
+	<xsd:element name="ContractFolderID" type="xsd:string"/>
 	<xsd:element name="ContractName" type="xsd:string"/>
 	<xsd:element name="ContractSubdivision" type="xsd:string"/>
 	<xsd:element name="ContractType" type="xsd:string"/>
 	<xsd:element name="ContractTypeCode" type="CodeType"/>
-	<xsd:element name="ContractedCarrierAssignedID" type="IdentifierType"/>
+	<xsd:element name="ContractedCarrierAssignedID" type="xsd:string"/>
 	<xsd:element name="ContractingSystemCode" type="CodeType"/>
 	<xsd:element name="CoordinateSystemCode" type="CodeType"/>
 	<xsd:element name="CopyIndicator" type="xsd:boolean"/>
@@ -184,9 +184,9 @@
 	<xsd:element name="CurrencyCode" type="CodeType"/>
 	<xsd:element name="CurrentChargeType" type="xsd:string"/>
 	<xsd:element name="CurrentChargeTypeCode" type="CodeType"/>
-	<xsd:element name="CustomerAssignedAccountID" type="IdentifierType"/>
+	<xsd:element name="CustomerAssignedAccountID" type="xsd:string"/>
 	<xsd:element name="CustomerReference" type="xsd:string"/>
-	<xsd:element name="CustomizationID" type="IdentifierType"/>
+	<xsd:element name="CustomizationID" type="xsd:string"/>
 	<xsd:element name="CustomsClearanceServiceInstructions" type="xsd:string"/>
 	<xsd:element name="CustomsImportClassifiedIndicator" type="xsd:boolean"/>
 	<xsd:element name="CustomsStatusCode" type="CodeType"/>
@@ -220,7 +220,7 @@
 	<xsd:element name="DocumentCurrencyCode" type="CodeType"/>
 	<xsd:element name="DocumentDescription" type="xsd:decimal"/>
 	<xsd:element name="DocumentHash" type="xsd:string"/>
-	<xsd:element name="DocumentID" type="IdentifierType"/>
+	<xsd:element name="DocumentID" type="xsd:string"/>
 	<xsd:element name="DocumentStatusCode" type="CodeType"/>
 	<xsd:element name="DocumentStatusReasonCode" type="CodeType"/>
 	<xsd:element name="DocumentStatusReasonDescription" type="xsd:decimal"/>
@@ -244,7 +244,7 @@
 	<xsd:element name="EncodingCode" type="CodeType"/>
 	<xsd:element name="EndDate" type="xsd:date"/>
 	<xsd:element name="EndTime" type="xsd:time"/>
-	<xsd:element name="EndpointID" type="IdentifierType"/>
+	<xsd:element name="EndpointID" type="xsd:string"/>
 	<xsd:element name="EnvironmentalEmissionTypeCode" type="CodeType"/>
 	<xsd:element name="EstimatedAmount" type="AmountType"/>
 	<xsd:element name="EstimatedConsumedQuantity" type="QuantityType"/>
@@ -258,7 +258,7 @@
 	<xsd:element name="EvidenceTypeCode" type="CodeType"/>
 	<xsd:element name="ExceptionResolutionCode" type="CodeType"/>
 	<xsd:element name="ExceptionStatusCode" type="CodeType"/>
-	<xsd:element name="ExchangeMarketID" type="IdentifierType"/>
+	<xsd:element name="ExchangeMarketID" type="xsd:string"/>
 	<xsd:element name="ExclusionReason" type="xsd:string"/>
 	<xsd:element name="ExecutionRequirementCode" type="CodeType"/>
 	<xsd:element name="ExemptionReason" type="xsd:string"/>
@@ -270,7 +270,7 @@
 	<xsd:element name="ExpiryTime" type="xsd:time"/>
 	<xsd:element name="Expression" type="xsd:string"/>
 	<xsd:element name="ExpressionCode" type="CodeType"/>
-	<xsd:element name="ExtendedID" type="IdentifierType"/>
+	<xsd:element name="ExtendedID" type="xsd:string"/>
 	<xsd:element name="Extension" type="xsd:string"/>
 	<xsd:element name="ExternalAward" type="xsd:string"/>
 	<xsd:element name="FaceValueAmount" type="AmountType"/>
@@ -290,7 +290,7 @@
 	<xsd:element name="ForwarderServiceInstructions" type="xsd:string"/>
 	<xsd:element name="FreeOfChargeIndicator" type="xsd:boolean"/>
 	<xsd:element name="FreeOnBoardValueAmount" type="AmountType"/>
-	<xsd:element name="FreightForwarderAssignedID" type="IdentifierType"/>
+	<xsd:element name="FreightForwarderAssignedID" type="xsd:string"/>
 	<xsd:element name="FreightRateClassCode" type="CodeType"/>
 	<xsd:element name="Frequency" type="xsd:string"/>
 	<xsd:element name="FrozenDocumentIndicator" type="xsd:boolean"/>
@@ -313,7 +313,7 @@
 	<xsd:element name="HandlingInstructions" type="xsd:string"/>
 	<xsd:element name="HashAlgorithmMethod" type="xsd:string"/>
 	<xsd:element name="HaulageInstructions" type="xsd:string"/>
-	<xsd:element name="HazardClassID" type="IdentifierType"/>
+	<xsd:element name="HazardClassID" type="xsd:string"/>
 	<xsd:element name="HazardousCategoryCode" type="CodeType"/>
 	<xsd:element name="HazardousRegulationCode" type="CodeType"/>
 	<xsd:element name="HazardousRiskIndicator" type="xsd:boolean"/>
@@ -324,10 +324,10 @@
 	<xsd:element name="HumanFoodApprovedIndicator" type="xsd:boolean"/>
 	<xsd:element name="HumanFoodIndicator" type="xsd:boolean"/>
 	<xsd:element name="HumidityPercent" type="xsd:decimal"/>
-	<xsd:element name="ID" type="IdentifierType"/>
+	<xsd:element name="ID" type="xsd:string"/>
 	<xsd:element name="IdentificationCode" type="CodeType"/>
-	<xsd:element name="IdentificationID" type="IdentifierType"/>
-	<xsd:element name="ImmobilizationCertificateID" type="IdentifierType"/>
+	<xsd:element name="IdentificationID" type="xsd:string"/>
+	<xsd:element name="ImmobilizationCertificateID" type="xsd:string"/>
 	<xsd:element name="ImportanceCode" type="CodeType"/>
 	<xsd:element name="IndicationIndicator" type="xsd:boolean"/>
 	<xsd:element name="IndustryClassificationCode" type="CodeType"/>
@@ -337,7 +337,7 @@
 	<xsd:element name="InhouseMail" type="xsd:string"/>
 	<xsd:element name="InspectionMethodCode" type="CodeType"/>
 	<xsd:element name="InstallmentDueDate" type="xsd:date"/>
-	<xsd:element name="InstructionID" type="IdentifierType"/>
+	<xsd:element name="InstructionID" type="xsd:string"/>
 	<xsd:element name="InstructionNote" type="xsd:string"/>
 	<xsd:element name="Instructions" type="xsd:string"/>
 	<xsd:element name="InsurancePremiumAmount" type="AmountType"/>
@@ -347,20 +347,20 @@
 	<xsd:element name="InvoicedQuantity" type="QuantityType"/>
 	<xsd:element name="InvoicingPartyReference" type="xsd:string"/>
 	<xsd:element name="IssueDate" type="xsd:date"/>
-	<xsd:element name="IssueNumberID" type="IdentifierType"/>
+	<xsd:element name="IssueNumberID" type="xsd:string"/>
 	<xsd:element name="IssueTime" type="xsd:time"/>
-	<xsd:element name="IssuerID" type="IdentifierType"/>
+	<xsd:element name="IssuerID" type="xsd:string"/>
 	<xsd:element name="ItemClassificationCode" type="CodeType"/>
 	<!-- TODO remove the demo-specific element --> 
 	<xsd:element name="ItemConfigurationImages" type="xsd:string"/>
 	<xsd:element name="ItemPropertyURI" type="xsd:string"/>
 	<xsd:element name="ItemUpdateRequestIndicator" type="xsd:boolean"/>
 	<xsd:element name="JobTitle" type="xsd:string"/>
-	<xsd:element name="JourneyID" type="IdentifierType"/>
+	<xsd:element name="JourneyID" type="xsd:string"/>
 	<xsd:element name="Justification" type="xsd:string"/>
 	<xsd:element name="JustificationDescription" type="xsd:decimal"/>
 	<xsd:element name="Keyword" type="xsd:string"/>
-	<xsd:element name="LanguageID" type="IdentifierType"/>
+	<xsd:element name="LanguageID" type="xsd:string"/>
 	<xsd:element name="LastRevisionDate" type="xsd:date"/>
 	<xsd:element name="LastRevisionTime" type="xsd:time"/>
 	<xsd:element name="LatestDeliveryDate" type="xsd:date"/>
@@ -380,33 +380,33 @@
 	<xsd:element name="LegalReference" type="xsd:string"/>
 	<xsd:element name="LegalStatusIndicator" type="xsd:boolean"/>
 	<xsd:element name="LiabilityAmount" type="AmountType"/>
-	<xsd:element name="LicensePlateID" type="IdentifierType"/>
+	<xsd:element name="LicensePlateID" type="xsd:string"/>
 	<xsd:element name="LifeCycleStatusCode" type="CodeType"/>
 	<xsd:element name="LimitationDescription" type="xsd:decimal"/>
 	<xsd:element name="Line" type="xsd:string"/>
 	<xsd:element name="LineCountNumeric" type="xsd:decimal"/>
 	<xsd:element name="LineExtensionAmount" type="AmountType"/>
-	<xsd:element name="LineID" type="IdentifierType"/>
+	<xsd:element name="LineID" type="xsd:string"/>
 	<xsd:element name="LineNumberNumeric" type="xsd:decimal"/>
 	<xsd:element name="LineStatusCode" type="CodeType"/>
 	<xsd:element name="ListValue" type="xsd:string"/>
 	<xsd:element name="LivestockIndicator" type="xsd:boolean"/>
 	<xsd:element name="LoadingLengthMeasure" type="QuantityType"/>
-	<xsd:element name="LoadingSequenceID" type="IdentifierType"/>
+	<xsd:element name="LoadingSequenceID" type="xsd:string"/>
 	<xsd:element name="LocaleCode" type="CodeType"/>
 	<xsd:element name="Location" type="xsd:string"/>
-	<xsd:element name="LocationID" type="IdentifierType"/>
+	<xsd:element name="LocationID" type="xsd:string"/>
 	<xsd:element name="LocationTypeCode" type="CodeType"/>
 	<xsd:element name="Login" type="xsd:string"/>
-	<xsd:element name="LogoReferenceID" type="IdentifierType"/>
+	<xsd:element name="LogoReferenceID" type="xsd:string"/>
 	<xsd:element name="LongitudeDegreesMeasure" type="QuantityType"/>
 	<xsd:element name="LongitudeDirectionCode" type="CodeType"/>
 	<xsd:element name="LongitudeMinutesMeasure" type="QuantityType"/>
 	<xsd:element name="LossRisk" type="xsd:string"/>
 	<xsd:element name="LossRiskResponsibilityCode" type="CodeType"/>
-	<xsd:element name="LotNumberID" type="IdentifierType"/>
+	<xsd:element name="LotNumberID" type="xsd:string"/>
 	<xsd:element name="LowTendersDescription" type="xsd:decimal"/>
-	<xsd:element name="LowerOrangeHazardPlacardID" type="IdentifierType"/>
+	<xsd:element name="LowerOrangeHazardPlacardID" type="xsd:string"/>
 	<xsd:element name="LowerTenderAmount" type="AmountType"/>
 	<xsd:element name="MandateTypeCode" type="CodeType"/>
 	<xsd:element name="ManufactureDate" type="xsd:date"/>
@@ -416,7 +416,7 @@
 	<xsd:element name="MarkCare" type="xsd:string"/>
 	<xsd:element name="MarkCareIndicator" type="xsd:boolean"/>
 	<xsd:element name="MarketValueAmount" type="AmountType"/>
-	<xsd:element name="MarkingID" type="IdentifierType"/>
+	<xsd:element name="MarkingID" type="xsd:string"/>
 	<xsd:element name="MathematicOperatorCode" type="CodeType"/>
 	<xsd:element name="MaximumAdvertisementAmount" type="AmountType"/>
 	<xsd:element name="MaximumAmount" type="AmountType"/>
@@ -462,14 +462,14 @@
 	<xsd:element name="Name" type="xsd:string"/>
 	<xsd:element name="NameCode" type="CodeType"/>
 	<xsd:element name="NameSuffix" type="xsd:string"/>
-	<xsd:element name="NationalityID" type="IdentifierType"/>
+	<xsd:element name="NationalityID" type="xsd:string"/>
 	<xsd:element name="NatureCode" type="CodeType"/>
 	<xsd:element name="NegotiationDescription" type="xsd:decimal"/>
 	<xsd:element name="NetNetWeightMeasure" type="QuantityType"/>
 	<xsd:element name="NetTonnageMeasure" type="QuantityType"/>
 	<xsd:element name="NetVolumeMeasure" type="QuantityType"/>
 	<xsd:element name="NetWeightMeasure" type="QuantityType"/>
-	<xsd:element name="NetworkID" type="IdentifierType"/>
+	<xsd:element name="NetworkID" type="xsd:string"/>
 	<xsd:element name="NominationDate" type="xsd:date"/>
 	<xsd:element name="NominationTime" type="xsd:time"/>
 	<xsd:element name="NormalTemperatureReductionQuantity" type="QuantityType"/>
@@ -481,7 +481,7 @@
 	<xsd:element name="OneTimeChargeType" type="xsd:string"/>
 	<xsd:element name="OneTimeChargeTypeCode" type="CodeType"/>
 	<xsd:element name="OntologyURI" type="xsd:string"/>
-	<xsd:element name="OpenTenderID" type="IdentifierType"/>
+	<xsd:element name="OpenTenderID" type="xsd:string"/>
 	<xsd:element name="OperatingYearsQuantity" type="QuantityType"/>
 	<xsd:element name="OptionalLineItemIndicator" type="xsd:boolean"/>
 	<xsd:element name="OptionsDescription" type="xsd:decimal"/>
@@ -493,8 +493,8 @@
 	<xsd:element name="OrderableUnit" type="xsd:string"/>
 	<xsd:element name="OrderableUnitFactorRate" type="xsd:decimal"/>
 	<xsd:element name="OrganizationDepartment" type="xsd:string"/>
-	<xsd:element name="OriginalContractingSystemID" type="IdentifierType"/>
-	<xsd:element name="OriginalJobID" type="IdentifierType"/>
+	<xsd:element name="OriginalContractingSystemID" type="xsd:string"/>
+	<xsd:element name="OriginalJobID" type="xsd:string"/>
 	<xsd:element name="OtherConditionsIndicator" type="xsd:boolean"/>
 	<xsd:element name="OtherInstruction" type="xsd:string"/>
 	<xsd:element name="OtherName" type="xsd:string"/>
@@ -512,10 +512,10 @@
 	<xsd:element name="PaidAmount" type="AmountType"/>
 	<xsd:element name="PaidDate" type="xsd:date"/>
 	<xsd:element name="PaidTime" type="xsd:time"/>
-	<xsd:element name="ParentDocumentID" type="IdentifierType"/>
-	<xsd:element name="ParentDocumentLineReferenceID" type="IdentifierType"/>
+	<xsd:element name="ParentDocumentID" type="xsd:string"/>
+	<xsd:element name="ParentDocumentLineReferenceID" type="xsd:string"/>
 	<xsd:element name="ParentDocumentTypeCode" type="CodeType"/>
-	<xsd:element name="ParentDocumentVersionID" type="IdentifierType"/>
+	<xsd:element name="ParentDocumentVersionID" type="xsd:string"/>
 	<xsd:element name="PartPresentationCode" type="CodeType"/>
 	<xsd:element name="PartecipationPercent" type="xsd:decimal"/>
 	<xsd:element name="PartialDeliveryIndicator" type="xsd:boolean"/>
@@ -536,9 +536,9 @@
 	<xsd:element name="PaymentDescription" type="xsd:decimal"/>
 	<xsd:element name="PaymentDueDate" type="xsd:date"/>
 	<xsd:element name="PaymentFrequencyCode" type="CodeType"/>
-	<xsd:element name="PaymentID" type="IdentifierType"/>
+	<xsd:element name="PaymentID" type="xsd:string"/>
 	<xsd:element name="PaymentMeansCode" type="CodeType"/>
-	<xsd:element name="PaymentMeansID" type="IdentifierType"/>
+	<xsd:element name="PaymentMeansID" type="xsd:string"/>
 	<xsd:element name="PaymentNote" type="xsd:string"/>
 	<xsd:element name="PaymentOrderReference" type="xsd:string"/>
 	<xsd:element name="PaymentPercent" type="xsd:decimal"/>
@@ -550,7 +550,7 @@
 	<xsd:element name="Percent" type="xsd:decimal"/>
 	<xsd:element name="PerformanceMetricTypeCode" type="CodeType"/>
 	<xsd:element name="PerformanceValueQuantity" type="QuantityType"/>
-	<xsd:element name="PerformingCarrierAssignedID" type="IdentifierType"/>
+	<xsd:element name="PerformingCarrierAssignedID" type="xsd:string"/>
 	<xsd:element name="PersonalSituation" type="xsd:string"/>
 	<xsd:element name="PhoneNumber" type="xsd:string"/>
 	<xsd:element name="PlacardEndorsement" type="xsd:string"/>
@@ -567,14 +567,14 @@
 	<xsd:element name="PreferenceCriterionCode" type="CodeType"/>
 	<xsd:element name="PrepaidAmount" type="AmountType"/>
 	<xsd:element name="PrepaidIndicator" type="xsd:boolean"/>
-	<xsd:element name="PrepaidPaymentReferenceID" type="IdentifierType"/>
+	<xsd:element name="PrepaidPaymentReferenceID" type="xsd:string"/>
 	<xsd:element name="PreviousCancellationReasonCode" type="CodeType"/>
-	<xsd:element name="PreviousJobID" type="IdentifierType"/>
+	<xsd:element name="PreviousJobID" type="xsd:string"/>
 	<xsd:element name="PreviousMeterQuantity" type="QuantityType"/>
 	<xsd:element name="PreviousMeterReadingDate" type="xsd:date"/>
 	<xsd:element name="PreviousMeterReadingMethod" type="xsd:string"/>
 	<xsd:element name="PreviousMeterReadingMethodCode" type="CodeType"/>
-	<xsd:element name="PreviousVersionID" type="IdentifierType"/>
+	<xsd:element name="PreviousVersionID" type="xsd:string"/>
 	<xsd:element name="PriceAmount" type="AmountType"/>
 	<xsd:element name="PriceChangeReason" type="xsd:string"/>
 	<xsd:element name="PriceEvaluationCode" type="CodeType"/>
@@ -583,7 +583,7 @@
 	<xsd:element name="PriceTypeCode" type="CodeType"/>
 	<xsd:element name="PricingCurrencyCode" type="CodeType"/>
 	<xsd:element name="PricingUpdateRequestIndicator" type="xsd:boolean"/>
-	<xsd:element name="PrimaryAccountNumberID" type="IdentifierType"/>
+	<xsd:element name="PrimaryAccountNumberID" type="xsd:string"/>
 	<xsd:element name="PrintQualifier" type="xsd:string"/>
 	<xsd:element name="Priority" type="xsd:string"/>
 	<xsd:element name="PrivacyCode" type="CodeType"/>
@@ -595,9 +595,9 @@
 	<xsd:element name="ProcessReasonCode" type="CodeType"/>
 	<xsd:element name="ProcurementSubTypeCode" type="CodeType"/>
 	<xsd:element name="ProcurementTypeCode" type="CodeType"/>
-	<xsd:element name="ProductTraceID" type="IdentifierType"/>
-	<xsd:element name="ProfileExecutionID" type="IdentifierType"/>
-	<xsd:element name="ProfileID" type="IdentifierType"/>
+	<xsd:element name="ProductTraceID" type="xsd:string"/>
+	<xsd:element name="ProfileExecutionID" type="xsd:string"/>
+	<xsd:element name="ProfileID" type="xsd:string"/>
 	<xsd:element name="ProfileStatusCode" type="CodeType"/>
 	<xsd:element name="ProgressPercent" type="xsd:decimal"/>
 	<xsd:element name="PromotionalEventTypeCode" type="CodeType"/>
@@ -609,8 +609,8 @@
 	<xsd:element name="QualityParameter" type="xsd:string"/>
 	<xsd:element name="Quantity" type="QuantityType"/>
 	<xsd:element name="QuantityDiscrepancyCode" type="CodeType"/>
-	<xsd:element name="RadioCallSignID" type="IdentifierType"/>
-	<xsd:element name="RailCarID" type="IdentifierType"/>
+	<xsd:element name="RadioCallSignID" type="xsd:string"/>
+	<xsd:element name="RailCarID" type="xsd:string"/>
 	<xsd:element name="Rank" type="xsd:string"/>
 	<xsd:element name="Rate" type="xsd:decimal"/>
 	<xsd:element name="ReceiptAdviceTypeCode" type="CodeType"/>
@@ -622,9 +622,9 @@
 	<xsd:element name="Reference" type="xsd:string"/>
 	<xsd:element name="ReferenceDate" type="xsd:date"/>
 	<xsd:element name="ReferenceEventCode" type="CodeType"/>
-	<xsd:element name="ReferenceID" type="IdentifierType"/>
+	<xsd:element name="ReferenceID" type="xsd:string"/>
 	<xsd:element name="ReferenceTime" type="xsd:time"/>
-	<xsd:element name="ReferencedConsignmentID" type="IdentifierType"/>
+	<xsd:element name="ReferencedConsignmentID" type="xsd:string"/>
 	<xsd:element name="RefrigeratedIndicator" type="xsd:boolean"/>
 	<xsd:element name="RefrigerationOnIndicator" type="xsd:boolean"/>
 	<xsd:element name="Region" type="xsd:string"/>
@@ -632,30 +632,30 @@
 	<xsd:element name="RegisteredTime" type="xsd:time"/>
 	<xsd:element name="RegistrationDate" type="xsd:date"/>
 	<xsd:element name="RegistrationExpirationDate" type="xsd:date"/>
-	<xsd:element name="RegistrationID" type="IdentifierType"/>
+	<xsd:element name="RegistrationID" type="xsd:string"/>
 	<xsd:element name="RegistrationName" type="xsd:string"/>
 	<xsd:element name="RegistrationNationality" type="xsd:string"/>
-	<xsd:element name="RegistrationNationalityID" type="IdentifierType"/>
+	<xsd:element name="RegistrationNationalityID" type="xsd:string"/>
 	<xsd:element name="RegulatoryDomain" type="xsd:string"/>
 	<xsd:element name="RejectActionCode" type="CodeType"/>
 	<xsd:element name="RejectReason" type="xsd:string"/>
 	<xsd:element name="RejectReasonCode" type="CodeType"/>
 	<xsd:element name="RejectedQuantity" type="QuantityType"/>
 	<xsd:element name="RejectionNote" type="xsd:string"/>
-	<xsd:element name="ReleaseID" type="IdentifierType"/>
+	<xsd:element name="ReleaseID" type="xsd:string"/>
 	<xsd:element name="ReliabilityPercent" type="xsd:decimal"/>
 	<xsd:element name="Remarks" type="xsd:string"/>
 	<xsd:element name="ReminderSequenceNumeric" type="xsd:decimal"/>
 	<xsd:element name="ReminderTypeCode" type="CodeType"/>
 	<xsd:element name="ReplenishmentOwnerDescription" type="xsd:decimal"/>
-	<xsd:element name="RequestForQuotationLineID" type="IdentifierType"/>
+	<xsd:element name="RequestForQuotationLineID" type="xsd:string"/>
 	<xsd:element name="RequestedDeliveryDate" type="xsd:date"/>
 	<xsd:element name="RequestedDespatchDate" type="xsd:date"/>
 	<xsd:element name="RequestedDespatchTime" type="xsd:time"/>
 	<xsd:element name="RequestedInvoiceCurrencyCode" type="CodeType"/>
 	<xsd:element name="RequestedPublicationDate" type="xsd:date"/>
 	<xsd:element name="RequiredCurriculaIndicator" type="xsd:boolean"/>
-	<xsd:element name="RequiredCustomsID" type="IdentifierType"/>
+	<xsd:element name="RequiredCustomsID" type="xsd:string"/>
 	<xsd:element name="RequiredDeliveryDate" type="xsd:date"/>
 	<xsd:element name="RequiredDeliveryTime" type="xsd:time"/>
 	<xsd:element name="RequiredFeeAmount" type="AmountType"/>
@@ -674,7 +674,7 @@
 	<xsd:element name="ReturnabilityIndicator" type="xsd:boolean"/>
 	<xsd:element name="ReturnableMaterialIndicator" type="xsd:boolean"/>
 	<xsd:element name="ReturnableQuantity" type="QuantityType"/>
-	<xsd:element name="RevisedForecastLineID" type="IdentifierType"/>
+	<xsd:element name="RevisedForecastLineID" type="xsd:string"/>
 	<xsd:element name="RevisionDate" type="xsd:date"/>
 	<xsd:element name="RevisionStatusCode" type="CodeType"/>
 	<xsd:element name="RevisionTime" type="xsd:time"/>
@@ -683,19 +683,19 @@
 	<xsd:element name="RoleDescription" type="xsd:decimal"/>
 	<xsd:element name="Room" type="xsd:string"/>
 	<xsd:element name="RoundingAmount" type="AmountType"/>
-	<xsd:element name="SalesOrderID" type="IdentifierType"/>
-	<xsd:element name="SalesOrderLineID" type="IdentifierType"/>
+	<xsd:element name="SalesOrderID" type="xsd:string"/>
+	<xsd:element name="SalesOrderLineID" type="xsd:string"/>
 	<xsd:element name="SchemeURI" type="xsd:string"/>
 	<xsd:element name="SealIssuerTypeCode" type="CodeType"/>
 	<xsd:element name="SealStatusCode" type="CodeType"/>
 	<xsd:element name="SealingPartyType" type="xsd:string"/>
 	<xsd:element name="SecurityClassificationCode" type="CodeType"/>
-	<xsd:element name="SecurityID" type="IdentifierType"/>
-	<xsd:element name="SellerEventID" type="IdentifierType"/>
-	<xsd:element name="SequenceID" type="IdentifierType"/>
-	<xsd:element name="SequenceNumberID" type="IdentifierType"/>
+	<xsd:element name="SecurityID" type="xsd:string"/>
+	<xsd:element name="SellerEventID" type="xsd:string"/>
+	<xsd:element name="SequenceID" type="xsd:string"/>
+	<xsd:element name="SequenceNumberID" type="xsd:string"/>
 	<xsd:element name="SequenceNumeric" type="xsd:decimal"/>
-	<xsd:element name="SerialID" type="IdentifierType"/>
+	<xsd:element name="SerialID" type="xsd:string"/>
 	<xsd:element name="ServiceInformationPreferenceCode" type="CodeType"/>
 	<xsd:element name="ServiceName" type="xsd:string"/>
 	<xsd:element name="ServiceNumberCalled" type="xsd:string"/>
@@ -705,12 +705,12 @@
 	<xsd:element name="SettlementDiscountPercent" type="xsd:decimal"/>
 	<xsd:element name="SharesNumberQuantity" type="QuantityType"/>
 	<xsd:element name="ShippingMarks" type="xsd:string"/>
-	<xsd:element name="ShippingOrderID" type="IdentifierType"/>
+	<xsd:element name="ShippingOrderID" type="xsd:string"/>
 	<xsd:element name="ShippingPriorityLevelCode" type="CodeType"/>
 	<xsd:element name="ShipsRequirements" type="xsd:string"/>
 	<xsd:element name="ShortQuantity" type="QuantityType"/>
 	<xsd:element name="ShortageActionCode" type="CodeType"/>
-	<xsd:element name="SignatureID" type="IdentifierType"/>
+	<xsd:element name="SignatureID" type="xsd:string"/>
 	<xsd:element name="SignatureMethod" type="xsd:string"/>
 	<xsd:element name="SizeTypeCode" type="CodeType"/>
 	<xsd:element name="SoleProprietorshipIndicator" type="xsd:boolean"/>
@@ -724,7 +724,7 @@
 	<xsd:element name="SpecialServiceInstructions" type="xsd:string"/>
 	<xsd:element name="SpecialTerms" type="xsd:string"/>
 	<xsd:element name="SpecialTransportRequirements" type="xsd:string"/>
-	<xsd:element name="SpecificationID" type="IdentifierType"/>
+	<xsd:element name="SpecificationID" type="xsd:string"/>
 	<xsd:element name="SpecificationTypeCode" type="CodeType"/>
 	<xsd:element name="SplitConsignmentIndicator" type="xsd:boolean"/>
 	<xsd:element name="StartDate" type="xsd:date"/>
@@ -739,13 +739,13 @@
 	<xsd:element name="SubmissionDate" type="xsd:date"/>
 	<xsd:element name="SubmissionDueDate" type="xsd:date"/>
 	<xsd:element name="SubmissionMethodCode" type="CodeType"/>
-	<xsd:element name="SubscriberID" type="IdentifierType"/>
+	<xsd:element name="SubscriberID" type="xsd:string"/>
 	<xsd:element name="SubscriberType" type="xsd:string"/>
 	<xsd:element name="SubscriberTypeCode" type="CodeType"/>
 	<xsd:element name="SubstitutionStatusCode" type="CodeType"/>
-	<xsd:element name="SuccessiveSequenceID" type="IdentifierType"/>
+	<xsd:element name="SuccessiveSequenceID" type="xsd:string"/>
 	<xsd:element name="SummaryDescription" type="xsd:decimal"/>
-	<xsd:element name="SupplierAssignedAccountID" type="IdentifierType"/>
+	<xsd:element name="SupplierAssignedAccountID" type="xsd:string"/>
 	<xsd:element name="SupplyChainActivityTypeCode" type="CodeType"/>
 	<xsd:element name="TareWeightMeasure" type="QuantityType"/>
 	<xsd:element name="TargetCurrencyBaseRate" type="xsd:decimal"/>
@@ -780,7 +780,7 @@
 	<xsd:element name="TelecommunicationsSupplyTypeCode" type="CodeType"/>
 	<xsd:element name="Telefax" type="xsd:string"/>
 	<xsd:element name="Telephone" type="xsd:string"/>
-	<xsd:element name="TenderEnvelopeID" type="IdentifierType"/>
+	<xsd:element name="TenderEnvelopeID" type="xsd:string"/>
 	<xsd:element name="TenderEnvelopeTypeCode" type="CodeType"/>
 	<xsd:element name="TenderResultCode" type="CodeType"/>
 	<xsd:element name="TenderTypeCode" type="CodeType"/>
@@ -817,20 +817,20 @@
 	<xsd:element name="TotalTaskAmount" type="AmountType"/>
 	<xsd:element name="TotalTaxAmount" type="AmountType"/>
 	<xsd:element name="TotalTransportHandlingUnitQuantity" type="QuantityType"/>
-	<xsd:element name="TraceID" type="IdentifierType"/>
+	<xsd:element name="TraceID" type="xsd:string"/>
 	<xsd:element name="TrackingDeviceCode" type="CodeType"/>
-	<xsd:element name="TrackingID" type="IdentifierType"/>
+	<xsd:element name="TrackingID" type="xsd:string"/>
 	<xsd:element name="TradeItemPackingLabelingTypeCode" type="CodeType"/>
 	<xsd:element name="TradeServiceCode" type="CodeType"/>
 	<xsd:element name="TradingRestrictions" type="xsd:string"/>
-	<xsd:element name="TrainID" type="IdentifierType"/>
+	<xsd:element name="TrainID" type="xsd:string"/>
 	<xsd:element name="TransactionCurrencyTaxAmount" type="AmountType"/>
 	<xsd:element name="TransitDirectionCode" type="CodeType"/>
 	<xsd:element name="TransportAuthorizationCode" type="CodeType"/>
 	<xsd:element name="TransportEmergencyCardCode" type="CodeType"/>
 	<xsd:element name="TransportEquipmentTypeCode" type="CodeType"/>
 	<xsd:element name="TransportEventTypeCode" type="CodeType"/>
-	<xsd:element name="TransportExecutionPlanReferenceID" type="IdentifierType"/>
+	<xsd:element name="TransportExecutionPlanReferenceID" type="xsd:string"/>
 	<xsd:element name="TransportExecutionStatusCode" type="CodeType"/>
 	<xsd:element name="TransportHandlingUnitTypeCode" type="CodeType"/>
 	<xsd:element name="TransportMeansTypeCode" type="CodeType"/>
@@ -844,12 +844,12 @@
 	<xsd:element name="TransportationServiceDetailsURI" type="xsd:string"/>
 	<xsd:element name="TransportationStatusTypeCode" type="CodeType"/>
 	<xsd:element name="TypeCode" type="CodeType"/>
-	<xsd:element name="UBLVersionID" type="IdentifierType"/>
+	<xsd:element name="UBLVersionID" type="xsd:string"/>
 	<xsd:element name="UNDGCode" type="CodeType"/>
 	<xsd:element name="URI" type="xsd:string"/>
-	<xsd:element name="UUID" type="IdentifierType"/>
+	<xsd:element name="UUID" type="xsd:string"/>
 	<xsd:element name="UnknownPriceIndicator" type="xsd:boolean"/>
-	<xsd:element name="UpperOrangeHazardPlacardID" type="IdentifierType"/>
+	<xsd:element name="UpperOrangeHazardPlacardID" type="xsd:string"/>
 	<xsd:element name="UrgencyCode" type="CodeType"/>
 	<xsd:element name="UtilityStatementTypeCode" type="CodeType"/>
 	<xsd:element name="ValidateProcess" type="xsd:string"/>
@@ -858,7 +858,7 @@
 	<xsd:element name="ValidationDate" type="xsd:date"/>
 	<xsd:element name="ValidationResultCode" type="CodeType"/>
 	<xsd:element name="ValidationTime" type="xsd:time"/>
-	<xsd:element name="ValidatorID" type="IdentifierType"/>
+	<xsd:element name="ValidatorID" type="xsd:string"/>
 	<xsd:element name="ValidityStartDate" type="xsd:date"/>
 	<xsd:element name="Value" type="xsd:string"/>
 	<xsd:element name="ValueAmount" type="AmountType"/>
@@ -867,9 +867,9 @@
 	<xsd:element name="ValueQuantity" type="QuantityType"/>
 	<xsd:element name="VarianceQuantity" type="QuantityType"/>
 	<xsd:element name="VariantConstraintIndicator" type="xsd:boolean"/>
-	<xsd:element name="VariantID" type="IdentifierType"/>
-	<xsd:element name="VersionID" type="IdentifierType"/>
-	<xsd:element name="VesselID" type="IdentifierType"/>
+	<xsd:element name="VariantID" type="xsd:string"/>
+	<xsd:element name="VersionID" type="xsd:string"/>
+	<xsd:element name="VesselID" type="xsd:string"/>
 	<xsd:element name="VesselName" type="xsd:string"/>
 	<xsd:element name="WarrantyInformation" type="xsd:string"/>
 	<xsd:element name="WebsiteURI" type="xsd:string"/>
@@ -903,13 +903,7 @@
 			</xsd:extension>
 		</xsd:simpleContent>
 	</xsd:complexType>
-	<xsd:complexType name="IdentifierType">
-		<xsd:simpleContent>
-			<xsd:extension base="xsd:normalizedString">
-				<xsd:attribute name="schemeID" type="xsd:normalizedString" use="optional"/>
-			</xsd:extension>
-		</xsd:simpleContent>
-	</xsd:complexType>
+
 	<xsd:complexType name="QuantityType">
 		<xsd:simpleContent>
 			<xsd:extension base="xsd:decimal">

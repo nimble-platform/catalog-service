@@ -730,7 +730,7 @@
 	<xsd:complexType name="AllowanceChargeType">
 		<xsd:sequence>
 			<xsd:element ref="cbc:ChargeIndicator"/>
-			<xsd:element ref="cbc:AllowanceChargeReason" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cbc:AllowanceChargeReason" minOccurs="0"/>
 			<xsd:element ref="cbc:MultiplierFactorNumeric" minOccurs="0"/>
 			<xsd:element ref="cbc:SequenceNumeric" minOccurs="0"/>
 			<xsd:element ref="cbc:Amount"/>
@@ -1901,11 +1901,11 @@
 			<xsd:element ref="cbc:PackSizeNumeric" minOccurs="0"/>
 			<xsd:element ref="cbc:Name" minOccurs="0"/>
 			<xsd:element ref="cbc:HazardousRiskIndicator" minOccurs="0"/>
-			<xsd:element ref="cbc:AdditionalInformation" minOccurs="0" maxOccurs="unbounded"/>
-			<xsd:element ref="cbc:Keyword" minOccurs="0" maxOccurs="unbounded"/>
-			<xsd:element ref="cbc:BrandName" minOccurs="0" maxOccurs="unbounded"/>
-			<xsd:element ref="cbc:ModelName" minOccurs="0" maxOccurs="unbounded"/>
-			<xsd:element ref="cbc:FreeOfChargeIndicator" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cbc:AdditionalInformation" minOccurs="0"/>
+			<xsd:element ref="cbc:Keyword" minOccurs="0"/>
+			<xsd:element ref="cbc:BrandName" minOccurs="0"/>
+			<xsd:element ref="cbc:ModelName" minOccurs="0"/>
+			<xsd:element ref="cbc:FreeOfChargeIndicator" minOccurs="0"/>
 			<!-- TODO remove the demo-specific element -->
 			<xsd:element ref="cbc:ItemConfigurationImages" minOccurs="0">
 				<xsd:annotation>
@@ -2040,7 +2040,7 @@
 		<xsd:sequence>
 			<xsd:element ref="cbc:ID"/>
 			<xsd:element ref="cbc:UUID" minOccurs="0"/>
-			<xsd:element ref="cbc:Note" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cbc:Note" minOccurs="0"/>
 			<xsd:element ref="cbc:Quantity" minOccurs="0"/>
 			<xsd:element ref="cbc:LineExtensionAmount" minOccurs="0"/>
 			<xsd:element ref="cbc:TotalTaxAmount" minOccurs="0"/>
@@ -2400,9 +2400,9 @@
 		<xsd:sequence>
 			<xsd:element ref="cbc:PriceAmount"/>
 			<xsd:element ref="cbc:BaseQuantity" minOccurs="0"/>
-			<xsd:element ref="cbc:PriceChangeReason" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cbc:PriceChangeReason" minOccurs="0"/>
 			<xsd:element ref="cbc:PriceType" minOccurs="0"/>
-			<xsd:element ref="cac:ValidityPeriod" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cac:ValidityPeriod" minOccurs="0"/>
 			<xsd:element ref="cac:AllowanceCharge" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cac:PricingExchangeRate" minOccurs="0"/>
 		</xsd:sequence>
