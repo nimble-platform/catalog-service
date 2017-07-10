@@ -16,7 +16,6 @@ import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
-import eu.nimble.service.model.ubl.commonbasiccomponents.IdentifierType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
@@ -37,6 +36,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.rmi.server.UID;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -86,16 +86,16 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     @Override
     public CatalogueType updateCatalogue(CatalogueType catalogue) {
-        logger.info("Catalogue with uuid: {} will be updated", catalogue.getUUID().getValue());
+        logger.info("Catalogue with uuid: {} will be updated", catalogue.getUUID());
         // merge the hibernate object
         HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
 
         // delete the catalgoue from marmotta and submit once again
-        deleteCatalogueFromMarmotta(catalogue.getUUID().getValue());
+        deleteCatalogueFromMarmotta(catalogue.getUUID());
 
         // submit again
         submitCatalogueDataToMarmotta(catalogue);
-        logger.info("Catalogue with uuid: {} updated", catalogue.getUUID().getValue());
+        logger.info("Catalogue with uuid: {} updated", catalogue.getUUID());
         return catalogue;
     }
 
@@ -107,7 +107,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     @Override
     public void deleteCatalogue(String id, String partyId) {
         CatalogueType catalogue = getCatalogue(id, partyId);
-        deleteCatalogue(catalogue.getUUID().getValue());
+        deleteCatalogue(catalogue.getUUID());
     }
 
     @Override
@@ -130,8 +130,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         if (standard == Configuration.Standard.UBL) {
             // create a globally unique identifier
             CatalogueType ublCatalogue = (CatalogueType) catalogue;
-            IdentifierType uuid = new IdentifierType();
-            uuid.setValue(UUID.randomUUID().toString());
+            String uuid = UUID.randomUUID().toString();
             ublCatalogue.setUUID(uuid);
 
             // persist the catalogue in relational DB
@@ -454,7 +453,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         mapping.setDataTypePropPrefix("");
         mapping.convertXSD2OWL();
 
-            /*FileOutputStream ont;
+            FileOutputStream ont;
             try {
                 File f = new File("ubl_catalogue_ontology.n3");
                 ont = new FileOutputStream(f);
@@ -462,7 +461,7 @@ public class CatalogueServiceImpl implements CatalogueService {
                 ont.close();
             } catch (Exception e) {
                 e.printStackTrace();
-            }*/
+            }
 
 
         XML2OWLMapper generator = new XML2OWLMapper(new ByteArrayInputStream(baos.toByteArray()), mapping);
@@ -482,15 +481,15 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     private void submitCatalogueDataToMarmotta(CatalogueType catalogue) {
-        logger.info("Catalogue with uuid: {} will be submitted to Marmotta.", catalogue.getUUID().getValue());
+        logger.info("Catalogue with uuid: {} will be submitted to Marmotta.", catalogue.getUUID());
         XML2OWLMapper rdfGenerator = transformCatalogueToRDF(catalogue);
-        logger.info("Transformed catalogue with uuid: {} to RDF", catalogue.getUUID().getValue());
+        logger.info("Transformed catalogue with uuid: {} to RDF", catalogue.getUUID());
 
         URL marmottaURL;
         try {
             Properties prop = new Properties();
             prop.load(CatalogueServiceImpl.class.getClassLoader().getResourceAsStream("application.properties"));
-            marmottaURL = new URL(prop.getProperty("marmotta.url") + "/import/upload?context=" + catalogue.getUUID().getValue());
+            marmottaURL = new URL(prop.getProperty("marmotta.url") + "/import/upload?context=" + catalogue.getUUID());
         } catch (MalformedURLException e) {
             throw new CatalogueServiceException("Invalid format for the submitted template", e);
         } catch (IOException e) {
@@ -508,7 +507,7 @@ public class CatalogueServiceImpl implements CatalogueService {
             rdfGenerator.writeModel(os, "N3");
             os.flush();
 
-            logger.info("Catalogue with uuid: {} submitted to Marmotta. Received HTTP response: {}", catalogue.getUUID().getValue(), conn.getResponseCode());
+            logger.info("Catalogue with uuid: {} submitted to Marmotta. Received HTTP response: {}", catalogue.getUUID(), conn.getResponseCode());
 
             conn.disconnect();
         } catch (IOException e) {
