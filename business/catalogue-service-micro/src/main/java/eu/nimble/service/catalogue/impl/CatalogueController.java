@@ -97,7 +97,7 @@ public class CatalogueController {
         }
 
         service.addCatalogue(catalogue);
-        log.info("Request for adding catalogue with uuid: {} completed", catalogue.getUUID().getValue());
+        log.info("Request for adding catalogue with uuid: {} completed", catalogue.getUUID());
 
         URI catalogueURI;
         try {

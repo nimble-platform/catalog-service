@@ -135,7 +135,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
             // persist the catalogue in relational DB
             HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).persist(ublCatalogue);
-            logger.info("Catalogue with uuid: {} persisted in DB", uuid.getValue().toString());
+            logger.info("Catalogue with uuid: {} persisted in DB", uuid.toString());
 
             // persist the catalogue also in Marmotta
             submitCatalogueDataToMarmotta(ublCatalogue);
