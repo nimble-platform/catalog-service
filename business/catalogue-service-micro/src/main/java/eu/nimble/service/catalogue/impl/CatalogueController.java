@@ -93,7 +93,7 @@ public class CatalogueController {
             catalogue = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(catalogueJson, CatalogueType.class);
         } catch (IOException e) {
             log.error("Failed to deserialize catalogue from json string", e);
-            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
 
         service.addCatalogue(catalogue);
@@ -137,17 +137,10 @@ public class CatalogueController {
     @RequestMapping(value = "/catalogue/template",
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public void downloadTemplate(@RequestParam String taxonomyId, @RequestParam String categoryId, HttpServletResponse response) throws IOException {
+    public void downloadTemplate(@RequestParam("taxonomyId") String taxonomyId, @RequestParam("categoryId") String categoryId, HttpServletResponse response) throws IOException {
         Workbook template = service.generateTemplateForCategory(taxonomyId, categoryId);
-
-        FileOutputStream fileOut = null;
-        try {
-            fileOut = new FileOutputStream(categoryId + "-catalogue-template.xlsx");
-            template.write(fileOut);
-            fileOut.close();
-        } catch (java.io.IOException e) {
-            log.error("Failed to create template for category: " + categoryId, e);
-        }
+        String fileName = categoryId + "-catalogue-template.xlsx";
+        response.setHeader("Content-disposition","attachment; filename=" + fileName);
 
         template.write(response.getOutputStream());
         response.flushBuffer();

@@ -185,12 +185,16 @@ public class CatalogueServiceImpl implements CatalogueService {
 
         String query;
         if (standard == Configuration.Standard.UBL) {
-            query = "SELECT catalogue FROM CatalogueType as catalogue "
+            /*query = "SELECT catalogue FROM CatalogueType as catalogue "
                     + " JOIN catalogue.ID as catalogue_id "
                     + " JOIN catalogue.providerParty as catalogue_provider_party"
                     + " JOIN catalogue_provider_party.ID as party_id"
                     + " WHERE catalogue_id.value = '" + id + "'"
-                    + " AND party_id.value = '" + partyId + "'";
+                    + " AND party_id.value = '" + partyId + "'";*/
+            query = "SELECT catalogue FROM CatalogueType as catalogue "
+                    + " JOIN catalogue.providerParty as catalogue_provider_party"
+                    + " WHERE catalogue.id = '" + id + "'"
+                    + " AND catalogue_provider_party.id = '" + partyId + "'";
 
             resultSet = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
                     .loadAll(query);
