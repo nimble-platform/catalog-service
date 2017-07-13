@@ -20,16 +20,16 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 @Controller
+@SuppressWarnings("SpringJavaAutowiringInspection")
 public class CatalogueController {
 
     private static Logger log = LoggerFactory
@@ -88,9 +88,11 @@ public class CatalogueController {
             consumes = {"application/json"},
             produces = {"application/json"},
             method = RequestMethod.POST)
-    public ResponseEntity addCatalogue(@RequestBody String catalogueJson) {
+    public ResponseEntity addCatalogue(@RequestBody String catalogueJson,
+                                       HttpServletRequest request) {
         log.debug("Submitted catalogue: " + catalogueJson);
 
+        String baseUrl = Utils.baseUrl(request);
         CatalogueType catalogue = null;
         try {
             catalogue = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(catalogueJson, CatalogueType.class);
@@ -104,10 +106,8 @@ public class CatalogueController {
 
         URI catalogueURI;
         try {
-            Properties prop = new Properties();
-            prop.load(CatalogueServiceImpl.class.getClassLoader().getResourceAsStream("application.properties"));
-            catalogueURI = new URI(prop.getProperty("catalogue.application.url") + "/" + catalogue.getUUID());
-        } catch (URISyntaxException |IOException e) {
+            catalogueURI = new URI(baseUrl + catalogue.getUUID());
+        } catch (URISyntaxException e) {
             String msg = "Failed to generate a URI for the newly created item";
             log.error(msg, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(msg);
