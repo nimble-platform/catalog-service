@@ -6,7 +6,7 @@ public class Utils {
 
     public static String baseUrl(HttpServletRequest request) {
         String baseUrl = request.getRequestURL().toString();
-        if(!baseUrl.contentEquals("/"))
+        if(!baseUrl.endsWith("/"))
             baseUrl += "/";
         return baseUrl;
     }
