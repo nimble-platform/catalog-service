@@ -19,8 +19,6 @@ spring:
 logstash:
   uri: ${vcap.services.logstash-service.credentials.url:${LOGSTASH_URI:localhost:5000}}
 
-
-
 ---
 
 spring:
