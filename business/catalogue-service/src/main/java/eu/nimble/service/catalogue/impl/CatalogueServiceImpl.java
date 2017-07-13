@@ -218,7 +218,7 @@ public class CatalogueServiceImpl implements CatalogueService {
             // delete catalogue from relational db
             CatalogueType catalogue = getCatalogue(uuid);
 
-            if(catalogue != null) {
+            if (catalogue != null) {
                 Long hjid = catalogue.getHjid();
                 HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).delete(CatalogueType.class, hjid);
 
@@ -408,9 +408,10 @@ public class CatalogueServiceImpl implements CatalogueService {
         try {
             pkg = OPCPackage.open(catalogueTemplate);
             XSSFWorkbook wb = new XSSFWorkbook(pkg);
-            List<CatalogueLineType> products = getCatalogueLines(wb);
+            List<CatalogueLineType> products = getCatalogueLines(wb, party);
             catalogue = new CatalogueType();
             catalogue.setCatalogueLine(products);
+            catalogue.setProviderParty(party);
 
             addCatalogue(catalogue);
 
@@ -457,15 +458,15 @@ public class CatalogueServiceImpl implements CatalogueService {
         mapping.setDataTypePropPrefix("");
         mapping.convertXSD2OWL();
 
-            FileOutputStream ont;
-            try {
-                File f = new File("ubl_catalogue_ontology.n3");
-                ont = new FileOutputStream(f);
-                mapping.writeOntology(ont, "N3");
-                ont.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        FileOutputStream ont;
+        try {
+            File f = new File("ubl_catalogue_ontology.n3");
+            ont = new FileOutputStream(f);
+            mapping.writeOntology(ont, "N3");
+            ont.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
 
         XML2OWLMapper generator = new XML2OWLMapper(new ByteArrayInputStream(baos.toByteArray()), mapping);
@@ -519,17 +520,20 @@ public class CatalogueServiceImpl implements CatalogueService {
         }
     }
 
-    private List<CatalogueLineType> getCatalogueLines(Workbook template) {
+    private List<CatalogueLineType> getCatalogueLines(Workbook template, PartyType party) {
         List<CatalogueLineType> results = new ArrayList<>();
 
         Sheet productPropertiesTab = template.getSheet(TEMPLATE_TAB_PRODUCT_PROPERTIES);
         Sheet propertyDetailsTab = template.getSheet(TEMPLATE_TAB_PROPERTY_DETAILS);
-        int propertyNum = propertyDetailsTab.getLastRowNum();
-        int catalogSize = productPropertiesTab.getLastRowNum();
+        int standardPropertyNum = propertyDetailsTab.getLastRowNum();
         int fixedPropNumber = TemplateConfig.getFixedProperties().size();
+        int customPropertyNum = productPropertiesTab.getRow(0).getLastCellNum() - (standardPropertyNum + fixedPropNumber + 1);
+        int catalogSize = productPropertiesTab.getLastRowNum();
 
         List<Property> properties = new ArrayList<>();
-        for (int i = 1; i <= propertyNum; i++) {
+
+        // properties included in the selected category
+        for (int i = 1; i <= standardPropertyNum; i++) {
             int columnNum = 0;
             Row row = propertyDetailsTab.getRow(i);
             String propertyName = getCellWithMissingCellPolicy(row, columnNum++).getStringCellValue();
@@ -561,11 +565,37 @@ public class CatalogueServiceImpl implements CatalogueService {
             properties.add(property);
         }
 
+        // custom properties
+        int columnNum = fixedPropNumber + standardPropertyNum + 1;
+        for (int i = 0; i < customPropertyNum; i++) {
+            Row row = productPropertiesTab.getRow(0);
+            String propertyName = getCellWithMissingCellPolicy(row, columnNum).getStringCellValue();
+            row = productPropertiesTab.getRow(1);
+            String unit = getCellWithMissingCellPolicy(row, columnNum).getStringCellValue();
+            row = productPropertiesTab.getRow(2);
+            String dataType = getCellWithMissingCellPolicy(row, columnNum).getStringCellValue();
+            if (dataType.contentEquals("")) {
+                dataType = "STRING";
+            }
+
+            Property property = new Property();
+            property.setPreferredName(propertyName);
+            property.setDataType(dataType);
+
+            Unit unitObj = new Unit();
+            unitObj.setShortName(unit);
+            property.setUnit(unitObj);
+
+            properties.add(property);
+            columnNum++;
+        }
+
         // first three rows contains fixed values
         for (int rowNum = 3; rowNum <= catalogSize; rowNum++) {
             CatalogueLineType clt = new CatalogueLineType();
             GoodsItemType goodsItem = new GoodsItemType();
             ItemType item = new ItemType();
+            item.setManufacturerParty(party);
             List<ItemPropertyType> itemProperties = new ArrayList<>();
             goodsItem.setItem(item);
             clt.setGoodsItem(goodsItem);

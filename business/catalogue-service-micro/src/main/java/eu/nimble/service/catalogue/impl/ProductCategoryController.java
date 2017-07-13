@@ -17,7 +17,7 @@ public class ProductCategoryController {
 
     private CategoryServiceManager csm = CategoryServiceManager.getInstance();
 
-    @CrossOrigin(origins = {"${catalogue.cross.origins}"})
+    @CrossOrigin(origins = {"*"})
     @RequestMapping(value = "/catalogue/category/{taxonomyId}/{categoryId}",
             produces = {"application/json"},
             method = RequestMethod.GET)
@@ -26,7 +26,7 @@ public class ProductCategoryController {
         return ResponseEntity.ok(category);
     }
 
-    @CrossOrigin(origins = {"${catalogue.cross.origins}"})
+    @CrossOrigin(origins = {"*"})
     @RequestMapping(value = "/catalogue/category",
             produces = {"application/json"},
             method = RequestMethod.GET)
