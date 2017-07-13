@@ -18,3 +18,14 @@ spring:
       enabled: ${discovery.enabled:${DISCOVERY_ENABLED:false}}
 logstash:
   uri: ${vcap.services.logstash-service.credentials.url:${LOGSTASH_URI:localhost:5000}}
+
+
+
+---
+
+spring:
+  profiles: local_dev
+
+nimble:
+  identity:
+    url: ${IDENTITY_URL:localhost:9096}

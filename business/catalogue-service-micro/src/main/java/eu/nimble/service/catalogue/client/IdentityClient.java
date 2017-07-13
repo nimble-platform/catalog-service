@@ -11,8 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
  * Created by Johannes Innerbichler on 02/05/17.
  * Feign client for identity microservice.
  */
-@FeignClient(name = "identity-service", url = "localhost:9096", fallback = IdentityClientFallback.class)  // for debuging
-//@FeignClient(name = "identity-service") // use this declaration for integration to MS infrastructure
+@FeignClient(name = "identity-service", url = "${nimble.identity.url:}", fallback = IdentityClientFallback.class)  // for debuging
 public interface IdentityClient {
     @RequestMapping(method = RequestMethod.GET, value = "/party/{partyId}", produces = "application/json")
     PartyType getParty(@PathVariable("partyId") String storeId);
