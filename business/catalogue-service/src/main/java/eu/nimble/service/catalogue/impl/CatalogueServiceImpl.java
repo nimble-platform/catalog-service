@@ -237,7 +237,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     private void deleteCatalogueFromMarmotta(String uuid) {
-        logger.info("Catalogue with uuid: {} will be deleted from Marmotta", uuid);
+        /*logger.info("Catalogue with uuid: {} will be deleted from Marmotta", uuid);
 
         URL marmottaURL;
         try {
@@ -263,7 +263,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         } catch (IOException e) {
             throw new CatalogueServiceException("Failed to submit catalogue to Marmotta", e);
         }
-        logger.info("Catalogue with uuid: {} deleted from Marmotta", uuid);
+        logger.info("Catalogue with uuid: {} deleted from Marmotta", uuid);*/
     }
 
     @Override
@@ -486,7 +486,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     private void submitCatalogueDataToMarmotta(CatalogueType catalogue) {
-        logger.info("Catalogue with uuid: {} will be submitted to Marmotta.", catalogue.getUUID());
+        /*logger.info("Catalogue with uuid: {} will be submitted to Marmotta.", catalogue.getUUID());
         XML2OWLMapper rdfGenerator = transformCatalogueToRDF(catalogue);
         logger.info("Transformed catalogue with uuid: {} to RDF", catalogue.getUUID());
 
@@ -517,7 +517,7 @@ public class CatalogueServiceImpl implements CatalogueService {
             conn.disconnect();
         } catch (IOException e) {
             throw new CatalogueServiceException("Failed to submit catalogue to Marmotta", e);
-        }
+        }*/
     }
 
     private List<CatalogueLineType> getCatalogueLines(Workbook template, PartyType party) {
