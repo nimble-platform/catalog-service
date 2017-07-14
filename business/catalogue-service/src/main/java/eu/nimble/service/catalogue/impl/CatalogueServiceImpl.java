@@ -193,8 +193,8 @@ public class CatalogueServiceImpl implements CatalogueService {
                     + " AND party_id.value = '" + partyId + "'";*/
             query = "SELECT catalogue FROM CatalogueType as catalogue "
                     + " JOIN catalogue.providerParty as catalogue_provider_party"
-                    + " WHERE catalogue.id = '" + id + "'"
-                    + " AND catalogue_provider_party.id = '" + partyId + "'";
+                    + " WHERE catalogue.ID = '" + id + "'"
+                    + " AND catalogue_provider_party.ID = '" + partyId + "'";
 
             resultSet = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
                     .loadAll(query);
