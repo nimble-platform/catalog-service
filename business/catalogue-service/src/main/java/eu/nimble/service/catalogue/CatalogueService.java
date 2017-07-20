@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue;
 
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.GoodsItemType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.Configuration;
@@ -54,4 +55,7 @@ public interface CatalogueService {
      * @param party
      */
     public void addCatalogue(InputStream catalogueTemplate, PartyType party);
+
+    // TEST
+    public <T> T getCatalogueLine(String hjid);
 }

@@ -2012,8 +2012,8 @@
 				</xsd:annotation>
 			</xsd:element>
 			<xsd:element ref="cac:UsabilityPeriod" minOccurs="0"/>
-			<xsd:element ref="cac:ItemPropertyGroup" minOccurs="0"/>
-			<xsd:element ref="cac:RangeDimension" minOccurs="0"/>
+            <xsd:element ref="cbc:ItemClassificationCode" minOccurs="0"/>
+            <xsd:element ref="cac:RangeDimension" minOccurs="0"/>
 			<xsd:element ref="cac:ItemPropertyRange" minOccurs="0"/>
 		</xsd:sequence>
 	</xsd:complexType>

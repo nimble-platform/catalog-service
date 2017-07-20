@@ -660,4 +660,26 @@ public class CatalogueServiceImpl implements CatalogueService {
                 return "";
         }
     }
+
+    // TEST
+    @Override
+    public <T> T getCatalogueLine(String hjid)
+    {
+        T catalogueLine = null;
+        List<T> resultSet = null;
+
+        String query;
+        query = "Select catalogue_line FROM CatalogueLineType as catalogue_line "
+                + " JOIN catalogue_line.goodsItem as catalogue_line_goods_item"
+                + " WHERE catalogue_line_goods_item.ID = '" + hjid + "'";
+
+        resultSet = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
+                .loadAll(query);
+        if (resultSet.size() > 0)
+        {
+            catalogueLine = (T) resultSet.get(0);
+        }
+
+        return catalogueLine;
+    }
 }

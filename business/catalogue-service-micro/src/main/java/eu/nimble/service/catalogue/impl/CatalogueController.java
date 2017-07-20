@@ -6,6 +6,7 @@ import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.client.IdentityClient;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyNameType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.Configuration;
@@ -180,5 +181,18 @@ public class CatalogueController {
         service.deleteCatalogue(uuid);
         log.info("Request processed for deleting catalogue with uuid: {}", uuid);
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    // TEST
+    @CrossOrigin(origins = {"*"})
+    @RequestMapping(value = "/catalogue-line/{id}",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity<CatalogueLineType> getCatalogueLine(@PathVariable String id) {
+        CatalogueLineType catalogueLine = service.getCatalogueLine(id);
+        if (catalogueLine == null) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+        }
+        return ResponseEntity.ok(catalogueLine);
     }
 }
