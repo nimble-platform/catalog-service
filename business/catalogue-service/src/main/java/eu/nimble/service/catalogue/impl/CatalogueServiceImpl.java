@@ -8,7 +8,6 @@ package eu.nimble.service.catalogue.impl;
 import eu.nimble.data.transformer.ontmalizer.XML2OWLMapper;
 import eu.nimble.data.transformer.ontmalizer.XSD2OWLMapper;
 import eu.nimble.service.catalogue.CatalogueService;
-import eu.nimble.service.catalogue.ProductCategoryService;
 import eu.nimble.service.catalogue.category.datamodel.Category;
 import eu.nimble.service.catalogue.category.datamodel.Property;
 import eu.nimble.service.catalogue.category.datamodel.Unit;
@@ -17,7 +16,6 @@ import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
-import eu.nimble.service.model.ubl.commonbasiccomponents.IdentifierType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
@@ -38,6 +36,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.rmi.server.UID;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -52,7 +51,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     private static final Logger logger = LoggerFactory.getLogger(CatalogueServiceImpl.class);
     private static CatalogueService instance = null;
-    private static ProductCategoryService pcsInstance = ProductCategoryServiceImpl.getInstance();
+    private static CategoryServiceManager csmInstance = CategoryServiceManager.getInstance();
 
     private CatalogueServiceImpl() {
     }
@@ -87,16 +86,16 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     @Override
     public CatalogueType updateCatalogue(CatalogueType catalogue) {
-        logger.info("Catalogue with uuid: {} will be updated", catalogue.getUUID().getValue());
+        logger.info("Catalogue with uuid: {} will be updated", catalogue.getUUID());
         // merge the hibernate object
         HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
 
         // delete the catalgoue from marmotta and submit once again
-        deleteCatalogueFromMarmotta(catalogue.getUUID().getValue());
+        deleteCatalogueFromMarmotta(catalogue.getUUID());
 
         // submit again
         submitCatalogueDataToMarmotta(catalogue);
-        logger.info("Catalogue with uuid: {} updated", catalogue.getUUID().getValue());
+        logger.info("Catalogue with uuid: {} updated", catalogue.getUUID());
         return catalogue;
     }
 
@@ -108,7 +107,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     @Override
     public void deleteCatalogue(String id, String partyId) {
         CatalogueType catalogue = getCatalogue(id, partyId);
-        deleteCatalogue(catalogue.getUUID().getValue());
+        deleteCatalogue(catalogue.getUUID());
     }
 
     @Override
@@ -131,12 +130,12 @@ public class CatalogueServiceImpl implements CatalogueService {
         if (standard == Configuration.Standard.UBL) {
             // create a globally unique identifier
             CatalogueType ublCatalogue = (CatalogueType) catalogue;
-            IdentifierType uuid = new IdentifierType();
-            uuid.setValue(UUID.randomUUID().toString());
+            String uuid = UUID.randomUUID().toString();
             ublCatalogue.setUUID(uuid);
 
             // persist the catalogue in relational DB
             HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).persist(ublCatalogue);
+            logger.info("Catalogue with uuid: {} persisted in DB", uuid.toString());
 
             // persist the catalogue also in Marmotta
             submitCatalogueDataToMarmotta(ublCatalogue);
@@ -187,11 +186,9 @@ public class CatalogueServiceImpl implements CatalogueService {
         String query;
         if (standard == Configuration.Standard.UBL) {
             query = "SELECT catalogue FROM CatalogueType as catalogue "
-                    + " JOIN catalogue.ID as catalogue_id "
                     + " JOIN catalogue.providerParty as catalogue_provider_party"
-                    + " JOIN catalogue_provider_party.ID as party_id"
-                    + " WHERE catalogue_id.value = '" + id + "'"
-                    + " AND party_id.value = '" + partyId + "'";
+                    + " WHERE catalogue.ID = '" + id + "'"
+                    + " AND catalogue_provider_party.ID = '" + partyId + "'";
 
             resultSet = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
                     .loadAll(query);
@@ -214,11 +211,17 @@ public class CatalogueServiceImpl implements CatalogueService {
             logger.info("Deleting catalogue with uuid: {}", uuid);
             // delete catalogue from relational db
             CatalogueType catalogue = getCatalogue(uuid);
-            Long hjid = catalogue.getHjid();
-            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).delete(CatalogueType.class, hjid);
 
-            // delete catalogue from marmotta
-            deleteCatalogueFromMarmotta(uuid);
+            if (catalogue != null) {
+                Long hjid = catalogue.getHjid();
+                HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).delete(CatalogueType.class, hjid);
+
+                // delete catalogue from marmotta
+                deleteCatalogueFromMarmotta(uuid);
+                logger.info("Deleted catalogue with uuid: {}", uuid);
+            } else {
+                logger.info("No catalogue for uuid: {}", uuid);
+            }
 
         } else if (standard == Configuration.Standard.MODAML) {
             TEXCatalogType catalogue = getCatalogue(uuid, Configuration.Standard.MODAML);
@@ -258,8 +261,8 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public Workbook generateTemplateForCategory(String categoryId) {
-        Category category = pcsInstance.getCategory(categoryId);
+    public Workbook generateTemplateForCategory(String taxonomyId, String categoryId) {
+        Category category = csmInstance.getCategory(taxonomyId, categoryId);
 
         Workbook template = new XSSFWorkbook();
         Sheet infoTab = template.createSheet(TEMPLATE_TAB_INFORMATION);
@@ -399,9 +402,10 @@ public class CatalogueServiceImpl implements CatalogueService {
         try {
             pkg = OPCPackage.open(catalogueTemplate);
             XSSFWorkbook wb = new XSSFWorkbook(pkg);
-            List<CatalogueLineType> products = getCatalogueLines(wb);
+            List<CatalogueLineType> products = getCatalogueLines(wb, party);
             catalogue = new CatalogueType();
             catalogue.setCatalogueLine(products);
+            catalogue.setProviderParty(party);
 
             addCatalogue(catalogue);
 
@@ -448,15 +452,15 @@ public class CatalogueServiceImpl implements CatalogueService {
         mapping.setDataTypePropPrefix("");
         mapping.convertXSD2OWL();
 
-            /*FileOutputStream ont;
-            try {
-                File f = new File("ubl_catalogue_ontology.n3");
-                ont = new FileOutputStream(f);
-                mapping.writeOntology(ont, "N3");
-                ont.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }*/
+        FileOutputStream ont;
+        try {
+            File f = new File("ubl_catalogue_ontology.n3");
+            ont = new FileOutputStream(f);
+            mapping.writeOntology(ont, "N3");
+            ont.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
 
         XML2OWLMapper generator = new XML2OWLMapper(new ByteArrayInputStream(baos.toByteArray()), mapping);
@@ -476,15 +480,15 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     private void submitCatalogueDataToMarmotta(CatalogueType catalogue) {
-        logger.info("Catalogue with uuid: {} will be submitted to Marmotta.", catalogue.getUUID().getValue());
+        logger.info("Catalogue with uuid: {} will be submitted to Marmotta.", catalogue.getUUID());
         XML2OWLMapper rdfGenerator = transformCatalogueToRDF(catalogue);
-        logger.info("Transformed catalogue with uuid: {} to RDF", catalogue.getUUID().getValue());
+        logger.info("Transformed catalogue with uuid: {} to RDF", catalogue.getUUID());
 
         URL marmottaURL;
         try {
             Properties prop = new Properties();
             prop.load(CatalogueServiceImpl.class.getClassLoader().getResourceAsStream("application.properties"));
-            marmottaURL = new URL(prop.getProperty("marmotta.url") + "/import/upload?context=" + catalogue.getUUID().getValue());
+            marmottaURL = new URL(prop.getProperty("marmotta.url") + "/import/upload?context=" + catalogue.getUUID());
         } catch (MalformedURLException e) {
             throw new CatalogueServiceException("Invalid format for the submitted template", e);
         } catch (IOException e) {
@@ -502,7 +506,7 @@ public class CatalogueServiceImpl implements CatalogueService {
             rdfGenerator.writeModel(os, "N3");
             os.flush();
 
-            logger.info("Catalogue with uuid: {} submitted to Marmotta. Received HTTP response: {}", catalogue.getUUID().getValue(), conn.getResponseCode());
+            logger.info("Catalogue with uuid: {} submitted to Marmotta. Received HTTP response: {}", catalogue.getUUID(), conn.getResponseCode());
 
             conn.disconnect();
         } catch (IOException e) {
@@ -510,17 +514,20 @@ public class CatalogueServiceImpl implements CatalogueService {
         }
     }
 
-    private List<CatalogueLineType> getCatalogueLines(Workbook template) {
+    private List<CatalogueLineType> getCatalogueLines(Workbook template, PartyType party) {
         List<CatalogueLineType> results = new ArrayList<>();
 
         Sheet productPropertiesTab = template.getSheet(TEMPLATE_TAB_PRODUCT_PROPERTIES);
         Sheet propertyDetailsTab = template.getSheet(TEMPLATE_TAB_PROPERTY_DETAILS);
-        int propertyNum = propertyDetailsTab.getLastRowNum();
-        int catalogSize = productPropertiesTab.getLastRowNum();
+        int standardPropertyNum = propertyDetailsTab.getLastRowNum();
         int fixedPropNumber = TemplateConfig.getFixedProperties().size();
+        int customPropertyNum = productPropertiesTab.getRow(0).getLastCellNum() - (standardPropertyNum + fixedPropNumber + 1);
+        int catalogSize = productPropertiesTab.getLastRowNum();
 
         List<Property> properties = new ArrayList<>();
-        for (int i = 1; i <= propertyNum; i++) {
+
+        // properties included in the selected category
+        for (int i = 1; i <= standardPropertyNum; i++) {
             int columnNum = 0;
             Row row = propertyDetailsTab.getRow(i);
             String propertyName = getCellWithMissingCellPolicy(row, columnNum++).getStringCellValue();
@@ -552,11 +559,37 @@ public class CatalogueServiceImpl implements CatalogueService {
             properties.add(property);
         }
 
+        // custom properties
+        int columnNum = fixedPropNumber + standardPropertyNum + 1;
+        for (int i = 0; i < customPropertyNum; i++) {
+            Row row = productPropertiesTab.getRow(0);
+            String propertyName = getCellWithMissingCellPolicy(row, columnNum).getStringCellValue();
+            row = productPropertiesTab.getRow(1);
+            String unit = getCellWithMissingCellPolicy(row, columnNum).getStringCellValue();
+            row = productPropertiesTab.getRow(2);
+            String dataType = getCellWithMissingCellPolicy(row, columnNum).getStringCellValue();
+            if (dataType.contentEquals("")) {
+                dataType = "STRING";
+            }
+
+            Property property = new Property();
+            property.setPreferredName(propertyName);
+            property.setDataType(dataType);
+
+            Unit unitObj = new Unit();
+            unitObj.setShortName(unit);
+            property.setUnit(unitObj);
+
+            properties.add(property);
+            columnNum++;
+        }
+
         // first three rows contains fixed values
         for (int rowNum = 3; rowNum <= catalogSize; rowNum++) {
             CatalogueLineType clt = new CatalogueLineType();
             GoodsItemType goodsItem = new GoodsItemType();
             ItemType item = new ItemType();
+            item.setManufacturerParty(party);
             List<ItemPropertyType> itemProperties = new ArrayList<>();
             goodsItem.setItem(item);
             clt.setGoodsItem(goodsItem);

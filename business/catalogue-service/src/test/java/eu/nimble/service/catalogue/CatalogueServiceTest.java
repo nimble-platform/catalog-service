@@ -42,7 +42,7 @@ public class CatalogueServiceTest {
 	public void test2_addCatalogueTest_UBL() {
 		String catalogueXML = FileUtility.readFile("../ubl-data-model/src/test/resources/UBL-CatalogueFullDummy.xml");
 		CatalogueType catalogueType = CatalogueServiceImpl.getInstance().addCatalogue(catalogueXML);
-		addedCatalogueUUID = catalogueType.getUUID().getValue();
+		addedCatalogueUUID = catalogueType.getUUID();
 	}
 
 	@Test
