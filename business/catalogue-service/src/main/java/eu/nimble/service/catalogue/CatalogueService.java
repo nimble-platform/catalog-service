@@ -57,5 +57,7 @@ public interface CatalogueService {
     public void addCatalogue(InputStream catalogueTemplate, PartyType party);
 
     // TEST
-    public <T> T getCatalogueLine(String hjid);
+    public <T> T getCatalogueLine(String goodsItemId);
+    public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine);
+    public void deleteCatalogueLineById(String goodsItemID);
 }

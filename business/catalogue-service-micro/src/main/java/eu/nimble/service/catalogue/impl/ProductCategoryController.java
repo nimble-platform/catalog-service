@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -40,6 +41,24 @@ public class ProductCategoryController {
             method = RequestMethod.GET)
     public ResponseEntity<List<Category>> getSubCategories(@PathVariable String taxonomyId, @PathVariable String parentCategoryId) {
         List<Category> categories = csm.getSubCategories(taxonomyId, parentCategoryId);
+        return ResponseEntity.ok(categories);
+    }
+
+    // Usage: GET request to /catalogue/category/multiple/taxonomyId1,categoryId1,taxonomyId2,categoryId2...
+    @CrossOrigin(origins = {"*"})
+    @RequestMapping(value = "/catalogue/category/multiple/{ids}",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity<List<Category>> getMultipleCategories(@PathVariable String ids) {
+
+        String[] parsedIds = ids.split(",");
+        int numOfCategories = parsedIds.length / 2;
+
+        ArrayList<Category> categories = new ArrayList<>();
+
+        for (int i = 0; i < numOfCategories; i++)
+            categories.add(csm.getCategory(parsedIds[i * 2], parsedIds[i * 2 + 1]));
+
         return ResponseEntity.ok(categories);
     }
 }

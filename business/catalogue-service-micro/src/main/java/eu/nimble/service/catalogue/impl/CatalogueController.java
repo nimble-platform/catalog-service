@@ -184,15 +184,47 @@ public class CatalogueController {
     }
 
     // TEST
+    // TODO CatalogueLine id returns null
     @CrossOrigin(origins = {"*"})
-    @RequestMapping(value = "/catalogue-line/{id}",
+    @RequestMapping(value = "/catalogue-line/{goodsItemId}",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity<CatalogueLineType> getCatalogueLine(@PathVariable String id) {
-        CatalogueLineType catalogueLine = service.getCatalogueLine(id);
+    public ResponseEntity<CatalogueLineType> getCatalogueLine(@PathVariable String goodsItemId) {
+        CatalogueLineType catalogueLine = service.getCatalogueLine(goodsItemId);
         if (catalogueLine == null) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
         }
         return ResponseEntity.ok(catalogueLine);
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @RequestMapping(value = "/catalogue-line",
+            consumes = {"application/json"},
+            produces = {"application/json"},
+            method = RequestMethod.PUT)
+    public ResponseEntity updateCatalogueLine(@RequestBody String catalogueLineJson) {
+
+        CatalogueLineType catalogueLine = null;
+        try {
+            System.out.println(catalogueLineJson);
+            catalogueLine = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                    .readValue(catalogueLineJson, CatalogueLineType.class);
+        } catch (IOException e) {
+            log.error("Failed to deserialize catalogue line from json string", e);
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        service.updateCatalogueLine(catalogueLine);
+
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    // TODO add cascade exception to ManufacturerParty in ItemType
+    @RequestMapping(value = "/catalogue-line/{goodsItemId}",
+            produces = {"application/json"},
+            method = RequestMethod.DELETE)
+    public ResponseEntity deleteCatalogueLineById(@PathVariable String goodsItemId) {
+        service.deleteCatalogueLineById(goodsItemId);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

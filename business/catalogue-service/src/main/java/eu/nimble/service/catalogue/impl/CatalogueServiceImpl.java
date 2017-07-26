@@ -133,6 +133,8 @@ public class CatalogueServiceImpl implements CatalogueService {
             String uuid = UUID.randomUUID().toString();
             ublCatalogue.setUUID(uuid);
 
+
+
             // persist the catalogue in relational DB
             HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).persist(ublCatalogue);
             logger.info("Catalogue with uuid: {} persisted in DB", uuid.toString());
@@ -663,7 +665,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     // TEST
     @Override
-    public <T> T getCatalogueLine(String hjid)
+    public <T> T getCatalogueLine(String goodsItemId)
     {
         T catalogueLine = null;
         List<T> resultSet = null;
@@ -671,7 +673,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         String query;
         query = "Select catalogue_line FROM CatalogueLineType as catalogue_line "
                 + " JOIN catalogue_line.goodsItem as catalogue_line_goods_item"
-                + " WHERE catalogue_line_goods_item.ID = '" + hjid + "'";
+                + " WHERE catalogue_line_goods_item.ID = '" + goodsItemId + "'";
 
         resultSet = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
                 .loadAll(query);
@@ -681,5 +683,38 @@ public class CatalogueServiceImpl implements CatalogueService {
         }
 
         return catalogueLine;
+    }
+
+    @Override
+    public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine)
+    {
+        // merge the hibernate object
+        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueLine);
+
+        // delete the catalgoue from marmotta and submit once again
+        // TODO Why?
+        // deleteCatalogueFromMarmotta(catalogueLine.getUUID());
+
+        // submit again
+        // submitCatalogueDataToMarmotta(catalogue);
+        // logger.info("Catalogue with uuid: {} updated", catalogue.getUUID());
+        return catalogueLine;
+    }
+
+    // TODO org.h2.jdbc.JdbcSQLException: Referential integrity constraint violation
+    @Override
+    public void deleteCatalogueLineById(String goodsItemID)
+    {
+        // delete catalogue from relational db
+        CatalogueLineType catalogueLine = getCatalogueLine(goodsItemID);
+
+        if (catalogueLine != null)
+        {
+            Long hjid = catalogueLine.getHjid();
+            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).delete(CatalogueLineType.class, hjid);
+
+            // delete catalogue from marmotta
+            // deleteCatalogueFromMarmotta(uuid);
+        }
     }
 }

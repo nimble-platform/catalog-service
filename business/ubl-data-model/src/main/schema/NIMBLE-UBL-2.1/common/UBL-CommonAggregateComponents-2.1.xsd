@@ -1927,6 +1927,7 @@
 			<xsd:element ref="cac:HazardousItem" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cac:ClassifiedTaxCategory" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cac:AdditionalItemProperty" minOccurs="0" maxOccurs="unbounded"/>
+			<!--TODO -->
 			<xsd:element ref="cac:ManufacturerParty" minOccurs="0"/>
 			<xsd:element ref="cac:OriginAddress" minOccurs="0"/>
 			<xsd:element ref="cac:ItemInstance" minOccurs="0" maxOccurs="unbounded"/>
@@ -1996,6 +1997,7 @@
 	</xsd:complexType>
 	<xsd:complexType name="ItemPropertyType">
 		<xsd:sequence>
+			<xsd:element ref="cbc:ID"/>
 			<xsd:element ref="cbc:Name"/>
 			<xsd:element ref="cbc:Value" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cbc:ValueQuantity" minOccurs="0" maxOccurs="unbounded"/>
