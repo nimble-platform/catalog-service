@@ -183,18 +183,44 @@ public class CatalogueController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    // TEST
-    // TODO CatalogueLine id returns null
+    /*
+     * Catalogue-line level endpoints
+     */
+
     @CrossOrigin(origins = {"*"})
-    @RequestMapping(value = "/catalogue-line/{goodsItemId}",
+    @RequestMapping(value = "/catalogue-line/{id}",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity<CatalogueLineType> getCatalogueLine(@PathVariable String goodsItemId) {
-        CatalogueLineType catalogueLine = service.getCatalogueLine(goodsItemId);
+    public ResponseEntity<CatalogueLineType> getCatalogueLine(@PathVariable String id) {
+        CatalogueLineType catalogueLine = service.getCatalogueLine(id);
         if (catalogueLine == null) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
         }
         return ResponseEntity.ok(catalogueLine);
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @RequestMapping(value = "/catalogue-line/{catalogueUuid}",
+            consumes = {"application/json"},
+            produces = {"application/json"},
+            method = RequestMethod.POST)
+    public ResponseEntity addCatalogueLine(@PathVariable String catalogueUuid, @RequestBody String catalogueLineJson) {
+
+        CatalogueType catalogue = null;
+        CatalogueLineType catalogueLine = null;
+        try {
+            catalogue = service.getCatalogue(catalogueUuid);
+            catalogueLine = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                    .readValue(catalogueLineJson, CatalogueLineType.class);
+
+            service.addLineToCatalogue(catalogue, catalogueLine);
+
+        } catch (IOException e) {
+            log.error("Failed to deserialize catalogue line from json string", e);
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @CrossOrigin(origins = {"*"})
@@ -219,12 +245,11 @@ public class CatalogueController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    // TODO add cascade exception to ManufacturerParty in ItemType
-    @RequestMapping(value = "/catalogue-line/{goodsItemId}",
+    @RequestMapping(value = "/catalogue-line/{id}",
             produces = {"application/json"},
             method = RequestMethod.DELETE)
-    public ResponseEntity deleteCatalogueLineById(@PathVariable String goodsItemId) {
-        service.deleteCatalogueLineById(goodsItemId);
+    public ResponseEntity deleteCatalogueLineById(@PathVariable String id) {
+        service.deleteCatalogueLineById(id);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

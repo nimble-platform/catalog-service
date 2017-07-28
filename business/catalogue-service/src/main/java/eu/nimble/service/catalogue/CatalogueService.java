@@ -56,8 +56,12 @@ public interface CatalogueService {
      */
     public void addCatalogue(InputStream catalogueTemplate, PartyType party);
 
-    // TEST
+    /*
+     * Catalogue-line level endpoints
+     */
+
     public <T> T getCatalogueLine(String goodsItemId);
+    public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine);
     public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine);
     public void deleteCatalogueLineById(String goodsItemID);
 }

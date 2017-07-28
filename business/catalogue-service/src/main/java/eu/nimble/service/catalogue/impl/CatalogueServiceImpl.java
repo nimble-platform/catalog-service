@@ -87,6 +87,14 @@ public class CatalogueServiceImpl implements CatalogueService {
     @Override
     public CatalogueType updateCatalogue(CatalogueType catalogue) {
         logger.info("Catalogue with uuid: {} will be updated", catalogue.getUUID());
+
+        // Assign IDs to lines that are missing it
+        for (CatalogueLineType catalogueLine : catalogue.getCatalogueLine()) {
+            if (catalogueLine.getID() == null) {
+                catalogueLine.setID(UUID.randomUUID().toString());
+            }
+        }
+
         // merge the hibernate object
         HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
 
@@ -132,8 +140,6 @@ public class CatalogueServiceImpl implements CatalogueService {
             CatalogueType ublCatalogue = (CatalogueType) catalogue;
             String uuid = UUID.randomUUID().toString();
             ublCatalogue.setUUID(uuid);
-
-
 
             // persist the catalogue in relational DB
             HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).persist(ublCatalogue);
@@ -415,6 +421,13 @@ public class CatalogueServiceImpl implements CatalogueService {
             catalogue.setCatalogueLine(products);
             catalogue.setProviderParty(party);
 
+            // Assign IDs to lines that are missing it
+            for (CatalogueLineType catalogueLine : catalogue.getCatalogueLine()) {
+                if (catalogueLine.getID() == null) {
+                    catalogueLine.setID(UUID.randomUUID().toString());
+                }
+            }
+
             addCatalogue(catalogue);
 
         } catch (InvalidFormatException e) {
@@ -663,17 +676,19 @@ public class CatalogueServiceImpl implements CatalogueService {
         }
     }
 
-    // TEST
+    /*
+     * Catalogue-line level endpoints
+     */
+
     @Override
-    public <T> T getCatalogueLine(String goodsItemId)
+    public <T> T getCatalogueLine(String id)
     {
         T catalogueLine = null;
         List<T> resultSet = null;
 
         String query;
         query = "Select catalogue_line FROM CatalogueLineType as catalogue_line "
-                + " JOIN catalogue_line.goodsItem as catalogue_line_goods_item"
-                + " WHERE catalogue_line_goods_item.ID = '" + goodsItemId + "'";
+                + " WHERE catalogue_line.ID = '" + id + "'";
 
         resultSet = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
                 .loadAll(query);
@@ -685,28 +700,32 @@ public class CatalogueServiceImpl implements CatalogueService {
         return catalogueLine;
     }
 
+    // TODO test
     @Override
-    public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine)
+    public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine)
     {
-        // merge the hibernate object
-        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueLine);
+        catalogueLine.setID(UUID.randomUUID().toString());
+        catalogue.getCatalogueLine().add(catalogueLine);
 
-        // delete the catalgoue from marmotta and submit once again
-        // TODO Why?
-        // deleteCatalogueFromMarmotta(catalogueLine.getUUID());
+        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
 
-        // submit again
-        // submitCatalogueDataToMarmotta(catalogue);
-        // logger.info("Catalogue with uuid: {} updated", catalogue.getUUID());
         return catalogueLine;
     }
 
-    // TODO org.h2.jdbc.JdbcSQLException: Referential integrity constraint violation
     @Override
-    public void deleteCatalogueLineById(String goodsItemID)
+    public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine)
+    {
+        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueLine);
+
+        return catalogueLine;
+    }
+
+    // TODO add cascade exception to ManufacturerParty in ItemType
+    @Override
+    public void deleteCatalogueLineById(String id)
     {
         // delete catalogue from relational db
-        CatalogueLineType catalogueLine = getCatalogueLine(goodsItemID);
+        CatalogueLineType catalogueLine = getCatalogueLine(id);
 
         if (catalogueLine != null)
         {
