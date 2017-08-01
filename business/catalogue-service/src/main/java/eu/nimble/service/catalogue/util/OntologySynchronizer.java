@@ -1,9 +1,12 @@
 package eu.nimble.service.catalogue.util;
 
+import jdk.management.resource.ResourceType;
+import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.ontology.*;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 
 import java.io.FileInputStream;
 import java.util.ArrayList;
@@ -133,13 +136,15 @@ public class OntologySynchronizer {
                 }
                 instanceTypeCheckedSubjects.add(subject.toString());
 
-                // check the type of the properties
+                // check the remaining properties associated to the subject
                 List<String> checkedProperties = new ArrayList<>();
                 StmtIterator stmtIt = subject.listProperties();
                 while (stmtIt.hasNext()) {
                     Statement resStmt = stmtIt.next();
                     Resource predicate = resStmt.getPredicate().asResource();
                     if (!checkedProperties.contains(predicate.getLocalName()) && !predicate.equals(RDF.type)) {
+
+                        // check the type of the property
                         RDFNode object = resStmt.getObject();
                         if (object.isResource()) {
                             checkType(predicate, ResourceType.OBJECT_PROPERTY);
@@ -148,10 +153,79 @@ public class OntologySynchronizer {
                         } else {
                             System.out.println("Unknown object for: " + resStmt.getSubject());
                         }
+
+                        // check the linkage of the property by checking the types of domain and range
+                        checkPropertyLinkage(resStmt);
+
                         checkedProperties.add(resStmt.getPredicate().getLocalName());
                     }
                 }
             }
+        }
+    }
+
+    private void checkPropertyLinkage(Statement statement) {
+        Resource subject = statement.getSubject();
+        Property predicate = statement.getPredicate();
+        RDFNode object = statement.getObject();
+
+        // get domain and range of the predicate from the ontology
+        OntProperty predicateInOntology = catalogueOntology.getOntProperty(catalogueOntology.getNsPrefixURI("") + predicate.getLocalName());
+        if (predicateInOntology == null) {
+            System.out.println("No property in ontology for: " + catalogueOntology.getNsPrefixURI("") + predicate.getLocalName());
+            return;
+        }
+
+        List<String> domainClasses = new ArrayList<>();
+        OntClass propDomain = predicateInOntology.getDomain().asClass();
+        if (propDomain.isUnionClass()) {
+            ExtendedIterator<? extends OntClass> operands = propDomain.asUnionClass().listOperands();
+            while (operands.hasNext()) {
+                domainClasses.add(operands.next().getURI());
+            }
+        } else {
+            domainClasses.add(propDomain.getURI());
+        }
+
+        // get range of the predicate
+        OntResource range = predicateInOntology.getRange();
+
+        // get the type of the subject
+        Resource subjectType = subject.getPropertyResourceValue(RDF.type);
+
+        // get type of the object
+        String objectType = null;
+        if (object.isResource()) {
+            objectType = object.asResource().getPropertyResourceValue(RDF.type).getURI();
+        } else if (object.isLiteral()) {
+            objectType = object.asLiteral().getDatatype().getURI();
+        }
+
+        // compare the types of the subject and object with the domain and range of the property
+
+        // check the domain
+        boolean domainsEqual = false;
+        for (String domainClass : domainClasses) {
+            if(getLocalName(domainClass).contentEquals(subjectType.getLocalName())) {
+                domainsEqual = true;
+                break;
+            }
+        }
+        if(!domainsEqual) {
+            System.out.println("Domain of " + predicate + " is inconsistent");
+            System.out.println("Subject: " + subject);
+            System.out.println("Domains: " + domainClasses);
+            System.out.println("Subject type: " + subjectType);
+            System.out.println();
+        }
+
+        // check range
+        if(!getLocalName(range.getURI()).contentEquals(getLocalName(objectType))) {
+            System.out.println("Range of " + predicate + " is inconsistent");
+            System.out.println("Subject: " + subject);
+            System.out.println("Range: " + range);
+            System.out.println("Object type: " + objectType);
+            System.out.println();
         }
     }
 
@@ -250,6 +324,10 @@ public class OntologySynchronizer {
         for (String resourceName : inconsistentResources) {
             System.out.println(resourceName);
         }
+    }
+
+    private String getLocalName(String uri) {
+        return uri.substring(uri.indexOf("#") + 1);
     }
 
     private enum ResourceType {

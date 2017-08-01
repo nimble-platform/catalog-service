@@ -574,6 +574,7 @@ Renamed the item with reference to the individuals in Furniture ontology</rdfs:c
                     <rdf:Description rdf:about="http://www.nimble-project.org/catalogue#GoodsItemType"/>
                     <rdf:Description rdf:about="http://www.nimble-project.org/catalogue#ItemIdentificationType"/>
                     <rdf:Description rdf:about="http://www.nimble-project.org/catalogue#ItemType"/>
+                    <rdf:Description rdf:about="http://www.nimble-project.org/catalogue#PartyType"/>
                     <rdf:Description rdf:about="http://www.nimble-project.org/catalogue#PersonType"/>
                     <rdf:Description rdf:about="http://www.w3.org/2002/07/owl#Thing"/>
                 </owl:unionOf>
@@ -1412,6 +1413,7 @@ Renamed the item with reference to the individuals in Furniture ontology</rdfs:c
             <owl:Class>
                 <owl:unionOf rdf:parseType="Collection">
                     <rdf:Description rdf:about="http://www.nimble-project.org/catalogue#DimensionType"/>
+                    <rdf:Description rdf:about="http://www.nimble-project.org/catalogue#ItemType"/>
                     <rdf:Description rdf:about="http://www.w3.org/2002/07/owl#Thing"/>
                 </owl:unionOf>
             </owl:Class>
@@ -1670,6 +1672,7 @@ Renamed the item with reference to the individuals in Furniture ontology</rdfs:c
                     <rdf:Description rdf:about="http://www.nimble-project.org/catalogue#ItemPropertyGroupType"/>
                     <rdf:Description rdf:about="http://www.nimble-project.org/catalogue#ItemPropertyType"/>
                     <rdf:Description rdf:about="http://www.nimble-project.org/catalogue#ItemType"/>
+                    <rdf:Description rdf:about="http://www.nimble-project.org/catalogue#PartyType"/>
                     <rdf:Description rdf:about="http://www.nimble-project.org/catalogue#TaxSchemeType"/>
                     <rdf:Description rdf:about="http://www.w3.org/2002/07/owl#Thing"/>
                 </owl:unionOf>
@@ -1927,7 +1930,7 @@ Renamed the item with reference to the individuals in Furniture ontology</rdfs:c
     <owl:DatatypeProperty rdf:about="http://www.nimble-project.org/catalogue#fileName">
         <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
         <rdfs:domain rdf:resource="http://www.nimble-project.org/catalogue#BinaryObjectType"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#normalizedString"/>
     </owl:DatatypeProperty>
 
 
@@ -1935,7 +1938,14 @@ Renamed the item with reference to the individuals in Furniture ontology</rdfs:c
 
     <owl:DatatypeProperty rdf:about="http://www.nimble-project.org/catalogue#ValueDecimal">
         <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
-        <rdfs:domain rdf:resource="http://www.nimble-project.org/catalogue#QuantityType"/>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://www.nimble-project.org/catalogue#AmountType"/>
+                    <rdf:Description rdf:about="http://www.nimble-project.org/catalogue#QuantityType"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
     </owl:DatatypeProperty>
 
@@ -1984,7 +1994,7 @@ Renamed the item with reference to the individuals in Furniture ontology</rdfs:c
     <owl:DatatypeProperty rdf:about="http://www.nimble-project.org/catalogue#currencyID">
         <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
         <rdfs:domain rdf:resource="http://www.nimble-project.org/catalogue#AmountType"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#normalizedString"/>
     </owl:DatatypeProperty>
 
 
