@@ -343,7 +343,7 @@ public class XML2OWLMapper {
 
                                 } else {
                                     prop = ontology.createDatatypeProperty(getNamespace(node.getParentNode()) + Constants.ONTMALIZER_STRING_VALUE_PROP_NAME);
-                                    value = model.createTypedLiteral(node.getNodeValue().trim(), XSD.normalizedString.getURI());
+                                    value = model.createTypedLiteral(node.getNodeValue().trim(), XSD.xstring.getURI());
 
                                 }
                                 subject.addLiteral(prop, value);
