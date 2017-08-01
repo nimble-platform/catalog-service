@@ -19,10 +19,10 @@ public class ProductCategoryController {
     private CategoryServiceManager csm = CategoryServiceManager.getInstance();
 
     @CrossOrigin(origins = {"*"})
-    @RequestMapping(value = "/catalogue/category/{taxonomyId}/{categoryId}",
+    @RequestMapping(value = "/catalogue/category/{taxonomyId}",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity<Category> getCategoryById(@PathVariable String taxonomyId, @PathVariable String categoryId) {
+    public ResponseEntity<Category> getCategoryById(@PathVariable("taxonomyId") String taxonomyId, @RequestParam("categoryId") String categoryId) {
         Category category = csm.getCategory(taxonomyId, categoryId);
         return ResponseEntity.ok(category);
     }

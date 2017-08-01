@@ -2221,12 +2221,12 @@
 	<xsd:complexType name="PartyType">
 		<xsd:sequence>
 			<xsd:element ref="cbc:ID"/>
+			<xsd:element ref="cbc:Name"/>
 			<xsd:element ref="cbc:WebsiteURI" minOccurs="0"/>
 			<xsd:element ref="cbc:LogoReferenceID" minOccurs="0"/>
 			<xsd:element ref="cbc:EndpointID" minOccurs="0"/>
 			<xsd:element ref="cbc:IndustryClassificationCode" minOccurs="0"/>
 			<xsd:element ref="cbc:ExternalAward" minOccurs="0"/>
-			<xsd:element ref="cac:PartyName" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cac:Language" minOccurs="0"/>
 			<xsd:element ref="cac:PostalAddress" minOccurs="0"/>
 			<xsd:element ref="cac:PhysicalLocation" minOccurs="0"/>

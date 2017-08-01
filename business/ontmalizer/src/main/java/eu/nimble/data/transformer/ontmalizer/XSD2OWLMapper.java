@@ -243,6 +243,7 @@ public class XSD2OWLMapper {
             }
 
             createDefaultTextPropertyForMixedClasses();
+            createDefaultDatatypesForBaseXSDTypes();
         }
     }
 
@@ -459,8 +460,8 @@ public class XSD2OWLMapper {
             complexClass = ontology.createClass(getURI(complex));
             if (parentURI != null) {
                 OntClass element = ontology.createClass(parentURI);
-                //element.addSuperClass(complexClass);
-                element.addRDFType(complexClass);
+                element.addSuperClass(complexClass);
+                //element.addRDFType(complexClass);
 
                 addTextAnnotation(complex, complexClass);
                 return complexClass;
@@ -770,6 +771,12 @@ public class XSD2OWLMapper {
             ontology.createAllValuesFromRestriction(null, prop, XSD.xstring).addSubClass(mixedClass);
             ontology.createMaxCardinalityRestriction(null, prop, 1).addSubClass(mixedClass);
         }
+    }
+
+    private void createDefaultDatatypesForBaseXSDTypes() {
+        ontology.createDatatypeProperty(Constants.NS_CBC + "#" + Constants.ONTMALIZER_STRING_VALUE_PROP_NAME);
+        ontology.createDatatypeProperty(Constants.NS_CBC + "#" + Constants.ONTMALIZER_DECIMAL_VALUE_PROP_NAME);
+        ontology.createDatatypeProperty(Constants.NS_CBC + "#" + Constants.ONTMALIZER_BINARY_VALUE_PROP_NAME);
     }
 
     private void addTextAnnotation(XSType xsType, OntClass ontClass) {
