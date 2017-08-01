@@ -10,6 +10,9 @@ import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.util.iterator.ExtendedIterator;
+import org.apache.jena.vocabulary.OWL;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.XSD;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.*;
@@ -199,15 +202,29 @@ public class XML2OWLMapper {
             setNSPrefix(root);
         }*/
 
+        // TODO fetching the root type will be updated once the subsumption hiearchy of the ontology is fixed
         OntClass rootType = ontology.getOntClass(getNamespace(root) + root.getLocalName());
+        ExtendedIterator<Resource> rootTypes = rootType.listRDFTypes(true);
+        Resource type = null;
+        while (rootTypes.hasNext()) {
+            type = rootTypes.next();
+            if(!type.getURI().contentEquals(OWL.Class.getURI())) {
+                break;
+            }
+        }
+        if(type == null) {
+            LOGGER.error("No type for the root element");
+            return;
+        }
+
         Resource modelRoot = model.createResource(baseURI
                 + Constants.ONTMALIZER_INSTANCE_NAME_PREFIX
                 + no
                 + "_"
                 + root.getLocalName()
                 + "_"
-                + count.get(rootType.getURI()), rootType);
-        count.put(rootType.getURI(), count.get(rootType.getURI()) + 1);
+                + count.get(type.getURI()), type);
+        count.put(type.getURI(), count.get(type.getURI()) + 1);
 
         // First traverse the attributes of the root element
         traverseAttributes(root, modelRoot, rootType);
@@ -304,16 +321,60 @@ public class XML2OWLMapper {
             while (it.hasNext()) {
                 OntClass mixed = (OntClass) it.next();
                 if (mixed.getURI().equals(subjectType.getURI())) {
-                    break;
+                    Property hasTextContent = model.createProperty(getNamespace(node.getParentNode()) + NamingUtil.createPropertyName(dtpprefix, Constants.MIXED_CLASS_DEFAULT_PROP_NAME));
+                    subject.addProperty(hasTextContent, node.getNodeValue().trim(), XSDDatatype.XSDstring);
+                    return;
                 }
                 if (!it.hasNext()) {
                     return;
                 }
             }
 
-            Property hasTextContent = model.createProperty(getNamespace(node.getParentNode()) + NamingUtil.createPropertyName(dtpprefix, Constants.MIXED_CLASS_DEFAULT_PROP_NAME));
-            subject.addProperty(hasTextContent, node.getNodeValue().trim(), XSDDatatype.XSDstring);
+            Resource typeForText = ontology.getResource(node.getParentNode().getNamespaceURI() + "#" + node.getParentNode().getLocalName());
+            // ex type for text: urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#PriceAmount
+            if (typeForText != null) {
+                NodeIterator types = ontology.listObjectsOfProperty(typeForText, RDF.type);
+                // ex types : [owl:Class , ns3:AmountType , owl:ObjectProperty]
+                // trying to find restriction in AmountType on hasValue property
+                while (types.hasNext()) {
+                    RDFNode type = types.next();
+                    OntClass typeClass = ontology.getOntClass(type.asResource().getURI());
+                    if(typeClass == null) {
+                        LOGGER.debug("No class for: " + type.asResource());
+                        continue;
+                    }
+                    Iterator<OntClass> superClasses = typeClass.listSuperClasses(true);
+                    while (superClasses.hasNext()) {
+                        OntClass superClass = superClasses.next();
 
+                        if (superClass.isRestriction()) {
+                            if (superClass.asRestriction().isAllValuesFromRestriction()) {
+                                AllValuesFromRestriction avfRes = superClass.asRestriction().asAllValuesFromRestriction();
+                                Property hasValueProp = ontology.getDatatypeProperty(Constants.ONTMALIZER_VALUE_PROP_NAME);
+                                if (avfRes.getOnProperty().equals(hasValueProp)) {
+
+                                    Property prop;
+                                    Literal value;
+                                    if(avfRes.getAllValuesFrom().equals(XSD.decimal)) {
+                                        prop = ontology.createDatatypeProperty(getNamespace(node.getParentNode()) + Constants.ONTMALIZER_DECIMAL_VALUE_PROP_NAME);
+                                        value = model.createTypedLiteral(node.getNodeValue().trim(), XSD.decimal.getURI());
+
+                                    } else if(avfRes.getAllValuesFrom().equals(XSD.base64Binary)) {
+                                        prop = ontology.createDatatypeProperty(getNamespace(node.getParentNode()) + Constants.ONTMALIZER_BINARY_VALUE_PROP_NAME);
+                                        value = model.createTypedLiteral(node.getNodeValue().trim(), XSD.base64Binary.getURI());
+
+                                    } else {
+                                        prop = ontology.createDatatypeProperty(getNamespace(node.getParentNode()) + Constants.ONTMALIZER_STRING_VALUE_PROP_NAME);
+                                        value = model.createTypedLiteral(node.getNodeValue().trim(), XSD.normalizedString.getURI());
+
+                                    }
+                                    subject.addLiteral(prop, value);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         if (object != null) {
@@ -413,6 +474,8 @@ public class XML2OWLMapper {
 
         return result;
     }
+
+//    private Property get
 
     /**
      * @param out    - Output stream to write the model to.

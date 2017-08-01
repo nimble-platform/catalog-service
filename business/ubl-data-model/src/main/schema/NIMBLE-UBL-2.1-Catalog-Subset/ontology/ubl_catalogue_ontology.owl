@@ -191,12 +191,11 @@ Renamed the item with reference to the individuals in Furniture ontology</rdfs:c
 
     <!-- http://www.nimble-project.org/catalogue#AttributeID -->
 
-    <owl:ObjectProperty rdf:about="http://www.nimble-project.org/catalogue#AttributeID">
-        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
-        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <owl:DatatypeProperty rdf:about="http://www.nimble-project.org/catalogue#AttributeID">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
         <rdfs:domain rdf:resource="http://www.nimble-project.org/catalogue#DimensionType"/>
-        <rdfs:range rdf:resource="http://www.nimble-project.org/catalogue#IdentifierType"/>
-    </owl:ObjectProperty>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
 
 
 
@@ -280,9 +279,8 @@ Renamed the item with reference to the individuals in Furniture ontology</rdfs:c
 
     <!-- http://www.nimble-project.org/catalogue#CompanyID -->
 
-    <owl:ObjectProperty rdf:about="http://www.nimble-project.org/catalogue#CompanyID">
-        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
-        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+    <owl:DatatypeProperty rdf:about="http://www.nimble-project.org/catalogue#CompanyID">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
         <rdfs:domain>
             <owl:Class>
                 <owl:unionOf rdf:parseType="Collection">
@@ -291,8 +289,8 @@ Renamed the item with reference to the individuals in Furniture ontology</rdfs:c
                 </owl:unionOf>
             </owl:Class>
         </rdfs:domain>
-        <rdfs:range rdf:resource="http://www.nimble-project.org/catalogue#IdentifierType"/>
-    </owl:ObjectProperty>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
 
 
 
@@ -560,7 +558,7 @@ Renamed the item with reference to the individuals in Furniture ontology</rdfs:c
 
     <!-- http://www.nimble-project.org/catalogue#ID -->
 
-    <owl:ObjectProperty rdf:about="http://www.nimble-project.org/catalogue#ID">
+    <owl:DatatypeProperty rdf:about="http://www.nimble-project.org/catalogue#ID">
         <rdfs:domain>
             <owl:Class>
                 <owl:unionOf rdf:parseType="Collection">
@@ -581,9 +579,17 @@ Renamed the item with reference to the individuals in Furniture ontology</rdfs:c
                 </owl:unionOf>
             </owl:Class>
         </rdfs:domain>
-        <rdfs:range rdf:resource="http://www.nimble-project.org/catalogue#IdentifierType"/>
-    </owl:ObjectProperty>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
 
+
+    <!-- http://www.nimble-project.org/catalogue#UUID -->
+
+    <owl:DatatypeProperty rdf:about="http://www.nimble-project.org/catalogue#UUID">
+        <rdfs:subPropertyOf rdf:resource="http://www.nimble-project.org/catalogue#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.nimble-project.org/catalogue#CatalogueType"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
 
 
     <!-- http://www.nimble-project.org/catalogue#IdentificationCode -->
@@ -814,11 +820,11 @@ Renamed the item with reference to the individuals in Furniture ontology</rdfs:c
 
     <!-- http://www.nimble-project.org/catalogue#NationalityID -->
 
-    <owl:ObjectProperty rdf:about="http://www.nimble-project.org/catalogue#NationalityID">
-        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+    <owl:DatatypeProperty rdf:about="http://www.nimble-project.org/catalogue#NationalityID">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
         <rdfs:domain rdf:resource="http://www.nimble-project.org/catalogue#PersonType"/>
-        <rdfs:range rdf:resource="http://www.nimble-project.org/catalogue#IdentifierType"/>
-    </owl:ObjectProperty>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
 
 
 
@@ -870,16 +876,6 @@ Renamed the item with reference to the individuals in Furniture ontology</rdfs:c
         <owl:inverseOf rdf:resource="http://www.nimble-project.org/catalogue#Person"/>
         <rdfs:domain rdf:resource="http://www.nimble-project.org/catalogue#PersonType"/>
         <rdfs:range rdf:resource="http://www.nimble-project.org/catalogue#PartyType"/>
-    </owl:ObjectProperty>
-
-
-
-    <!-- http://www.nimble-project.org/catalogue#PartyIdentification -->
-
-    <owl:ObjectProperty rdf:about="http://www.nimble-project.org/catalogue#PartyIdentification">
-        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
-        <rdfs:domain rdf:resource="http://www.nimble-project.org/catalogue#PartyType"/>
-        <rdfs:range rdf:resource="http://www.nimble-project.org/catalogue#IdentifierType"/>
     </owl:ObjectProperty>
 
 
@@ -972,7 +968,7 @@ Renamed the item with reference to the individuals in Furniture ontology</rdfs:c
                 </owl:unionOf>
             </owl:Class>
         </rdfs:domain>
-        <rdfs:range rdf:resource="http://www.nimble-project.org/catalogue#PriceAmountType"/>
+        <rdfs:range rdf:resource="http://www.nimble-project.org/catalogue#AmountType"/>
     </owl:ObjectProperty>
 
 
@@ -1908,7 +1904,6 @@ Renamed the item with reference to the individuals in Furniture ontology</rdfs:c
             <owl:Class>
                 <owl:unionOf rdf:parseType="Collection">
                     <rdf:Description rdf:about="http://www.nimble-project.org/catalogue#CodeType"/>
-                    <rdf:Description rdf:about="http://www.nimble-project.org/catalogue#IdentifierType"/>
                     <rdf:Description rdf:about="http://www.nimble-project.org/catalogue#ItemPropertyType"/>
                 </owl:unionOf>
             </owl:Class>
@@ -1926,6 +1921,14 @@ Renamed the item with reference to the individuals in Furniture ontology</rdfs:c
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#base64Binary"/>
     </owl:DatatypeProperty>
 
+
+    <!-- http://www.nimble-project.org/catalogue#fileName -->
+
+    <owl:DatatypeProperty rdf:about="http://www.nimble-project.org/catalogue#fileName">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="http://www.nimble-project.org/catalogue#BinaryObjectType"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
 
 
     <!-- http://www.nimble-project.org/catalogue#ValueDecimal -->
@@ -1980,7 +1983,7 @@ Renamed the item with reference to the individuals in Furniture ontology</rdfs:c
 
     <owl:DatatypeProperty rdf:about="http://www.nimble-project.org/catalogue#currencyID">
         <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
-        <rdfs:domain rdf:resource="http://www.nimble-project.org/catalogue#PriceAmountType"/>
+        <rdfs:domain rdf:resource="http://www.nimble-project.org/catalogue#AmountType"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
     </owl:DatatypeProperty>
 
@@ -2011,6 +2014,13 @@ Renamed the item with reference to the individuals in Furniture ontology</rdfs:c
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#normalizedString"/>
     </owl:DatatypeProperty>
 
+    <!-- http://www.nimble-project.org/catalogue#name -->
+
+    <owl:DatatypeProperty rdf:about="http://www.nimble-project.org/catalogue#name">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://www.nimble-project.org/catalogue#CodeType"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#normalizedString"/>
+    </owl:DatatypeProperty>
 
 
     <!-- http://www.nimble-project.org/catalogue#listURI -->
@@ -2028,16 +2038,6 @@ Renamed the item with reference to the individuals in Furniture ontology</rdfs:c
     <owl:DatatypeProperty rdf:about="http://www.nimble-project.org/catalogue#mimeCode">
         <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
         <rdfs:domain rdf:resource="http://www.nimble-project.org/catalogue#BinaryObjectType"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#normalizedString"/>
-    </owl:DatatypeProperty>
-
-
-
-    <!-- http://www.nimble-project.org/catalogue#schemaID -->
-
-    <owl:DatatypeProperty rdf:about="http://www.nimble-project.org/catalogue#schemaID">
-        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
-        <rdfs:domain rdf:resource="http://www.nimble-project.org/catalogue#IdentifierType"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#normalizedString"/>
     </owl:DatatypeProperty>
 
@@ -2335,14 +2335,6 @@ Renamed the item with reference to the individuals in Furniture ontology</rdfs:c
 
 
 
-    <!-- http://www.nimble-project.org/catalogue#IdentifierType -->
-
-    <owl:Class rdf:about="http://www.nimble-project.org/catalogue#IdentifierType">
-        <rdfs:subClassOf rdf:resource="http://www.nimble-project.org/catalogue#ResourceFeature"/>
-    </owl:Class>
-
-
-
     <!-- http://www.nimble-project.org/catalogue#ItemIdentificationType -->
 
     <owl:Class rdf:about="http://www.nimble-project.org/catalogue#ItemIdentificationType">
@@ -2471,9 +2463,9 @@ Renamed the item with reference to the individuals in Furniture ontology</rdfs:c
 
 
 
-    <!-- http://www.nimble-project.org/catalogue#PriceAmountType -->
+    <!-- http://www.nimble-project.org/catalogue#AmountType -->
 
-    <owl:Class rdf:about="http://www.nimble-project.org/catalogue#PriceAmountType">
+    <owl:Class rdf:about="http://www.nimble-project.org/catalogue#AmountType">
         <rdfs:subClassOf rdf:resource="http://www.nimble-project.org/catalogue#QuantityType"/>
     </owl:Class>
 
@@ -2685,15 +2677,6 @@ Option 2: Create an individual in product domain ontology and let it have also p
 
 
 
-    <!-- http://www.nimble-project.org/catalogue#ItemIDG44208 -->
-
-    <owl:NamedIndividual rdf:about="http://www.nimble-project.org/catalogue#ItemIDG44208">
-        <rdf:type rdf:resource="http://www.nimble-project.org/catalogue#IdentifierType"/>
-        <Value rdf:datatype="http://www.w3.org/2001/XMLSchema#string">G44208</Value>
-    </owl:NamedIndividual>
-
-
-
     <!-- http://www.nimble-project.org/catalogue#aidimaFurnitureBabyCradle -->
 
     <owl:NamedIndividual rdf:about="http://www.nimble-project.org/catalogue#aidimaFurnitureBabyCradle">
@@ -2784,10 +2767,10 @@ Option 2: Create an individual in product domain ontology and let it have also p
         <Certificate rdf:resource="http://www.nimble-project.org/catalogue#micunaISO90012000"/>
         <Certificate rdf:resource="http://www.nimble-project.org/catalogue#micunaOHSAS18001"/>
         <Contact rdf:resource="http://www.nimble-project.org/catalogue#micunaContact"/>
+        <ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">B46191094</ID>
         <DeliveryTerms rdf:resource="http://www.nimble-project.org/catalogue#micunaDeliveryTerms"/>
         <IndustryClassificationCode rdf:resource="http://www.nimble-project.org/catalogue#micunaClassificationCode"/>
         <IndustryClassificationCode rdf:resource="http://www.nimble-project.org/catalogue#micunaInternalCode"/>
-        <PartyIdentification rdf:resource="http://www.nimble-project.org/catalogue#micunaIdentification"/>
         <PaymentTerms rdf:resource="http://www.nimble-project.org/catalogue#micunaPaymentTerms"/>
         <Person rdf:resource="http://www.nimble-project.org/catalogue#oscar"/>
         <PostalAddress rdf:resource="http://www.nimble-project.org/catalogue#micunaPostalAddress"/>
@@ -2925,17 +2908,8 @@ Option 2: Create an individual in product domain ontology and let it have also p
     <owl:NamedIndividual rdf:about="http://www.nimble-project.org/catalogue#micunaFinancialAccount">
         <rdf:type rdf:resource="http://www.nimble-project.org/catalogue#FinancialAccountType"/>
         <FinancialInstitutionBranch rdf:resource="http://www.nimble-project.org/catalogue#FiancialBranchDeutchbank"/>
-        <ID rdf:resource="http://www.nimble-project.org/catalogue#micunaFinancialAccountID"/>
+        <ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ES7620770024003102575766</ID>
         <Name rdf:datatype="http://www.w3.org/2001/XMLSchema#string">MICUNA Deutschbank Account</Name>
-    </owl:NamedIndividual>
-
-
-
-    <!-- http://www.nimble-project.org/catalogue#micunaFinancialAccountID -->
-
-    <owl:NamedIndividual rdf:about="http://www.nimble-project.org/catalogue#micunaFinancialAccountID">
-        <rdf:type rdf:resource="http://www.nimble-project.org/catalogue#IdentifierType"/>
-        <Value rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ES7620770024003102575766</Value>
     </owl:NamedIndividual>
 
 
@@ -3101,7 +3075,7 @@ Option 2: Create an individual in product domain ontology and let it have also p
     <!-- http://www.nimble-project.org/catalogue#micunaGlobitoPriceAmount -->
 
     <owl:NamedIndividual rdf:about="http://www.nimble-project.org/catalogue#micunaGlobitoPriceAmount">
-        <rdf:type rdf:resource="http://www.nimble-project.org/catalogue#PriceAmountType"/>
+        <rdf:type rdf:resource="http://www.nimble-project.org/catalogue#AmountType"/>
         <ValueDecimal rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">187.49</ValueDecimal>
         <currencyID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">EUR</currencyID>
     </owl:NamedIndividual>
@@ -3111,7 +3085,7 @@ Option 2: Create an individual in product domain ontology and let it have also p
     <!-- http://www.nimble-project.org/catalogue#micunaGlobitoPriceAmount2 -->
 
     <owl:NamedIndividual rdf:about="http://www.nimble-project.org/catalogue#micunaGlobitoPriceAmount2">
-        <rdf:type rdf:resource="http://www.nimble-project.org/catalogue#PriceAmountType"/>
+        <rdf:type rdf:resource="http://www.nimble-project.org/catalogue#AmountType"/>
         <ValueDecimal rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">150</ValueDecimal>
         <currencyID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">EUR</currencyID>
     </owl:NamedIndividual>
@@ -3168,7 +3142,7 @@ Option 2: Create an individual in product domain ontology and let it have also p
 
     <owl:NamedIndividual rdf:about="http://www.nimble-project.org/catalogue#micunaGlobitoSellerID">
         <rdf:type rdf:resource="http://www.nimble-project.org/catalogue#ItemIdentificationType"/>
-        <ID rdf:resource="http://www.nimble-project.org/catalogue#ItemIDG44208"/>
+        <ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">G44208</ID>
     </owl:NamedIndividual>
 
 
@@ -3187,16 +3161,6 @@ Option 2: Create an individual in product domain ontology and let it have also p
     <owl:NamedIndividual rdf:about="http://www.nimble-project.org/catalogue#micunaISO90012000">
         <rdf:type rdf:resource="http://www.nimble-project.org/catalogue#CertificateType"/>
         <CertificateType rdf:datatype="http://www.w3.org/2001/XMLSchema#string">IDIN EN ISO 9001:2008</CertificateType>
-    </owl:NamedIndividual>
-
-
-
-    <!-- http://www.nimble-project.org/catalogue#micunaIdentification -->
-
-    <owl:NamedIndividual rdf:about="http://www.nimble-project.org/catalogue#micunaIdentification">
-        <rdf:type rdf:resource="http://www.nimble-project.org/catalogue#IdentifierType"/>
-        <Value rdf:datatype="http://www.w3.org/2001/XMLSchema#string">B46191094</Value>
-        <schemaID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">UUID</schemaID>
     </owl:NamedIndividual>
 
 
