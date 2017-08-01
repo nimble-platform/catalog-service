@@ -460,8 +460,8 @@ public class XSD2OWLMapper {
             complexClass = ontology.createClass(getURI(complex));
             if (parentURI != null) {
                 OntClass element = ontology.createClass(parentURI);
-                //element.addSuperClass(complexClass);
-                element.addRDFType(complexClass);
+                element.addSuperClass(complexClass);
+                //element.addRDFType(complexClass);
 
                 addTextAnnotation(complex, complexClass);
                 return complexClass;

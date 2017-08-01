@@ -197,34 +197,19 @@ public class XML2OWLMapper {
     public void convertXML2OWL() {
         Element root = document.getDocumentElement();
 
-        // Set namespace and its prefix if it is not set before.
-        /*if (NS == null) {
-            setNSPrefix(root);
-        }*/
-
-        // TODO fetching the root type will be updated once the subsumption hiearchy of the ontology is fixed
-        OntClass rootType = ontology.getOntClass(getNamespace(root) + root.getLocalName());
-        ExtendedIterator<Resource> rootTypes = rootType.listRDFTypes(true);
-        Resource type = null;
-        while (rootTypes.hasNext()) {
-            type = rootTypes.next();
-            if(!type.getURI().contentEquals(OWL.Class.getURI())) {
-                break;
-            }
-        }
-        if(type == null) {
-            LOGGER.error("No type for the root element");
-            return;
-        }
-
+        // TODO check identification of the type of the root element
+        // As the root of the catalogue is a global element referring to a complex type, the type should be "CatalogueType"
+        // instead of "Catalogue" to be consistent with the mechanism associating the type of other similar cases. Therefore,
+        // we provide the type manually.
+        OntClass rootType = ontology.getOntClass(getNamespace(root) + "CatalogueType");
         Resource modelRoot = model.createResource(baseURI
                 + Constants.ONTMALIZER_INSTANCE_NAME_PREFIX
                 + no
                 + "_"
                 + root.getLocalName()
                 + "_"
-                + count.get(type.getURI()), type);
-        count.put(type.getURI(), count.get(type.getURI()) + 1);
+                + count.get(rootType.getURI()), rootType);
+        count.put(rootType.getURI(), count.get(rootType.getURI()) + 1);
 
         // First traverse the attributes of the root element
         traverseAttributes(root, modelRoot, rootType);
@@ -330,46 +315,38 @@ public class XML2OWLMapper {
                 }
             }
 
-            Resource typeForText = ontology.getResource(node.getParentNode().getNamespaceURI() + "#" + node.getParentNode().getLocalName());
-            // ex type for text: urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#PriceAmount
+            OntClass typeForText = ontology.getOntClass(node.getParentNode().getNamespaceURI() + "#" + node.getParentNode().getLocalName());
+            // Example typeForText: urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#PriceAmount
+            // Superclass of PriceAmount: rdfs:subClassOf ns3:AmountType
+            // trying to find restriction in AmountType on hasValue property
             if (typeForText != null) {
-                NodeIterator types = ontology.listObjectsOfProperty(typeForText, RDF.type);
-                // ex types : [owl:Class , ns3:AmountType , owl:ObjectProperty]
-                // trying to find restriction in AmountType on hasValue property
-                while (types.hasNext()) {
-                    RDFNode type = types.next();
-                    OntClass typeClass = ontology.getOntClass(type.asResource().getURI());
-                    if(typeClass == null) {
-                        LOGGER.debug("No class for: " + type.asResource());
-                        continue;
-                    }
-                    Iterator<OntClass> superClasses = typeClass.listSuperClasses(true);
-                    while (superClasses.hasNext()) {
-                        OntClass superClass = superClasses.next();
+                OntClass typeClass = typeForText.getSuperClass();
+                Iterator<OntClass> superClasses = typeClass.listSuperClasses(true);
+                while (superClasses.hasNext()) {
+                    OntClass superClass = superClasses.next();
 
-                        if (superClass.isRestriction()) {
-                            if (superClass.asRestriction().isAllValuesFromRestriction()) {
-                                AllValuesFromRestriction avfRes = superClass.asRestriction().asAllValuesFromRestriction();
-                                Property hasValueProp = ontology.getDatatypeProperty(Constants.ONTMALIZER_VALUE_PROP_NAME);
-                                if (avfRes.getOnProperty().equals(hasValueProp)) {
+                    if (superClass.isRestriction()) {
+                        if (superClass.asRestriction().isAllValuesFromRestriction()) {
+                            AllValuesFromRestriction avfRes = superClass.asRestriction().asAllValuesFromRestriction();
+                            Property hasValueProp = ontology.getDatatypeProperty(Constants.ONTMALIZER_VALUE_PROP_NAME);
+                            if (avfRes.getOnProperty().equals(hasValueProp)) {
 
-                                    Property prop;
-                                    Literal value;
-                                    if(avfRes.getAllValuesFrom().equals(XSD.decimal)) {
-                                        prop = ontology.createDatatypeProperty(getNamespace(node.getParentNode()) + Constants.ONTMALIZER_DECIMAL_VALUE_PROP_NAME);
-                                        value = model.createTypedLiteral(node.getNodeValue().trim(), XSD.decimal.getURI());
+                                Property prop;
+                                Literal value;
+                                if (avfRes.getAllValuesFrom().equals(XSD.decimal)) {
+                                    prop = ontology.createDatatypeProperty(getNamespace(node.getParentNode()) + Constants.ONTMALIZER_DECIMAL_VALUE_PROP_NAME);
+                                    value = model.createTypedLiteral(node.getNodeValue().trim(), XSD.decimal.getURI());
 
-                                    } else if(avfRes.getAllValuesFrom().equals(XSD.base64Binary)) {
-                                        prop = ontology.createDatatypeProperty(getNamespace(node.getParentNode()) + Constants.ONTMALIZER_BINARY_VALUE_PROP_NAME);
-                                        value = model.createTypedLiteral(node.getNodeValue().trim(), XSD.base64Binary.getURI());
+                                } else if (avfRes.getAllValuesFrom().equals(XSD.base64Binary)) {
+                                    prop = ontology.createDatatypeProperty(getNamespace(node.getParentNode()) + Constants.ONTMALIZER_BINARY_VALUE_PROP_NAME);
+                                    value = model.createTypedLiteral(node.getNodeValue().trim(), XSD.base64Binary.getURI());
 
-                                    } else {
-                                        prop = ontology.createDatatypeProperty(getNamespace(node.getParentNode()) + Constants.ONTMALIZER_STRING_VALUE_PROP_NAME);
-                                        value = model.createTypedLiteral(node.getNodeValue().trim(), XSD.normalizedString.getURI());
+                                } else {
+                                    prop = ontology.createDatatypeProperty(getNamespace(node.getParentNode()) + Constants.ONTMALIZER_STRING_VALUE_PROP_NAME);
+                                    value = model.createTypedLiteral(node.getNodeValue().trim(), XSD.normalizedString.getURI());
 
-                                    }
-                                    subject.addLiteral(prop, value);
                                 }
+                                subject.addLiteral(prop, value);
                             }
                         }
                     }
@@ -430,11 +407,10 @@ public class XML2OWLMapper {
                 }
             }
 
-            ExtendedIterator<Resource> rit = temp.listRDFTypes(false);
-            while (rit.hasNext()) {
-                Resource res = rit.next();
-                OntClass superCl = temp.getOntModel().getOntClass(res.getURI());
-                if (superCl != null) {
+            ExtendedIterator<OntClass> it = temp.listSuperClasses();
+            while (it.hasNext()) {
+                OntClass superCl = it.next();
+                if (!superCl.isRestriction() && !superCl.isEnumeratedClass()) {
                     queue.add(superCl);
                 }
             }
