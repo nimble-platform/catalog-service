@@ -1,2 +1,2 @@
-eu.nimble.service.catalogue.impl.FurnitureOntologyCategoryServiceImpl
+#eu.nimble.service.catalogue.impl.FurnitureOntologyCategoryServiceImpl
 eu.nimble.service.catalogue.impl.ProductCategoryServiceImpl

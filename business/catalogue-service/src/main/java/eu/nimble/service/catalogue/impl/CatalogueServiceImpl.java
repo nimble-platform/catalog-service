@@ -452,7 +452,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         }
 
         // log the catalogue to be transformed
-        logger.debug("Catalogue to be transformed:\n {}", serializedCatalogueWriter.toString());
+        logger.debug("Catalogue to be transformed:\n{}", serializedCatalogueWriter.toString());
         serializedCatalogueWriter.flush();
 
         try {
@@ -466,7 +466,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
             StringWriter catalogueRDFWriter = new StringWriter();
             generator.writeModel(catalogueRDFWriter, "N3");
-            logger.debug("Transformed RDF data: {}", catalogueRDFWriter.toString());
+            logger.debug("Transformed RDF data:\n{}", catalogueRDFWriter.toString());
             catalogueRDFWriter.flush();
 
             return generator;
@@ -486,22 +486,28 @@ public class CatalogueServiceImpl implements CatalogueService {
         // log the ontology generated based on the XSD schema
         StringWriter serializedOntology = new StringWriter();
         mapping.writeOntology(serializedOntology, "N3");
-        //logger.debug("Serialized ontology: {}", serializedOntology.toString());
+        logger.debug("Serialized ontology:\n{}", serializedOntology.toString());
         //serializedOntology.flush();
 
         return mapping;
     }
 
     private void submitCatalogueDataToMarmotta(CatalogueType catalogue) {
+//        boolean indexToMarmotta = Boolean.valueOf(ConfigUtil.getInstance().getConfig(CONFIG_CATALOGUE_PERSISTENCE_MARMOTTA_INDEX));
+//        if(indexToMarmotta == false) {
+//            logger.info("Index to Marmotta is set to false");
+//            return;
+//        }
+
+        logger.info("Catalogue with uuid: {} will be submitted to Marmotta.", catalogue.getUUID());
+        XML2OWLMapper rdfGenerator = transformCatalogueToRDF(catalogue);
+        logger.info("Transformed catalogue with uuid: {} to RDF", catalogue.getUUID());
+
         boolean indexToMarmotta = Boolean.valueOf(ConfigUtil.getInstance().getConfig(CONFIG_CATALOGUE_PERSISTENCE_MARMOTTA_INDEX));
         if(indexToMarmotta == false) {
             logger.info("Index to Marmotta is set to false");
             return;
         }
-
-        logger.info("Catalogue with uuid: {} will be submitted to Marmotta.", catalogue.getUUID());
-        XML2OWLMapper rdfGenerator = transformCatalogueToRDF(catalogue);
-        logger.info("Transformed catalogue with uuid: {} to RDF", catalogue.getUUID());
 
         URL marmottaURL;
         try {

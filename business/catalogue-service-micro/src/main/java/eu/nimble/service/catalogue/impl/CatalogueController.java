@@ -156,15 +156,12 @@ public class CatalogueController {
             @RequestParam("companyId") String partyId,
             @RequestParam("companyName") String partyName) {
         try {
+            //TODO retrieve the party from the identity service
             /*PartyType party = identityClient.getParty(partyId);
             log.debug("Fetched party with Id {0}", party.getHjid());*/
             PartyType party = new PartyType();
-            List<PartyNameType> names = new ArrayList<>();
-            PartyNameType name = new PartyNameType();
-            name.setName(partyName);
-            names.add(name);
+            party.setName(partyName);
             party.setID(partyId);
-            party.setPartyName(names);
             service.addCatalogue(file.getInputStream(), party);
         } catch (IOException e) {
             e.printStackTrace();
