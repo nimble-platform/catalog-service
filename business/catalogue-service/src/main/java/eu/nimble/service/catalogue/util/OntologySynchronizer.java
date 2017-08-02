@@ -1,6 +1,5 @@
 package eu.nimble.service.catalogue.util;
 
-import jdk.management.resource.ResourceType;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.ontology.*;
 import org.apache.jena.rdf.model.*;
