@@ -3,14 +3,14 @@ package eu.nimble.service.catalogue.impl;
 import eu.nimble.service.catalogue.ProductCategoryService;
 import eu.nimble.service.catalogue.category.datamodel.Category;
 import eu.nimble.service.catalogue.category.datamodel.Property;
-import eu.nimble.service.catalogue.exception.ProductCategoryServiceException;
-import org.apache.log4j.Logger;
 import org.apache.marmotta.client.ClientConfiguration;
 import org.apache.marmotta.client.MarmottaClient;
 import org.apache.marmotta.client.clients.SPARQLClient;
 import org.apache.marmotta.client.exception.MarmottaClientException;
 import org.apache.marmotta.client.model.rdf.RDFNode;
 import org.apache.marmotta.client.model.sparql.SPARQLResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
     private static final String FURNITURE_NS = "http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#";
     private static final String XSD_NS = "http://www.w3.org/2001/XMLSchema#";
 
-    private static final Logger log = Logger.getLogger(FurnitureOntologyCategoryServiceImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(FurnitureOntologyCategoryServiceImpl.class);
 
     private MarmottaClient client;
 
@@ -111,13 +111,13 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
             return new ArrayList<>();
         }*/
         List<Category> result = new ArrayList<>();
-        SPARQLResult sparqlResult = null;
+        SPARQLResult sparqlResult;
         try {
             String categoriesSparql = getCategoriesSparqlByName(categoryName.toLowerCase());
             sparqlResult = client.getSPARQLClient().select(categoriesSparql);
         } catch (IOException | MarmottaClientException e) {
-            e.printStackTrace();
-            throw new ProductCategoryServiceException("Failed to retrieve category results for query: " + categoryName + " from Marmotta", e);
+            log.error("Failed to retrieve categories for category name: " + categoryName, e);
+            return new ArrayList<>();
         }
 
         if (sparqlResult != null) {

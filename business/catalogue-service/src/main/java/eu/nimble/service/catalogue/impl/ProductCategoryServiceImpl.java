@@ -1,14 +1,13 @@
 package eu.nimble.service.catalogue.impl;
 
-import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.ProductCategoryService;
 import eu.nimble.service.catalogue.category.datamodel.Category;
 import eu.nimble.service.catalogue.exception.CategoryDatabaseException;
-import eu.nimble.service.catalogue.exception.ProductCategoryServiceException;
 import eu.nimble.service.catalogue.impl.database.EClassCategoryDatabaseAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,7 +24,8 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             category = eClassCategoryDatabaseAdapter.getCategoryById(categoryId);
             category.setProperties(eClassCategoryDatabaseAdapter.getPropertiesForCategory(categoryId));
         } catch (CategoryDatabaseException e) {
-            throw new ProductCategoryServiceException("Failed to retrieve product category", e);
+            logger.error("Failed to retrieve product category", e);
+            return null;
         }
         return category;
     }
@@ -37,7 +37,8 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
         try {
             categories = eClassCategoryDatabaseAdapter.getClassificationClassesByName(categoryName);
         } catch (CategoryDatabaseException e) {
-            throw new ProductCategoryServiceException("Failed to retrieve product categories", e);
+            logger.error("Failed to retrieve product categories", e);
+            return new ArrayList<>();
         }
         return categories;
     }
@@ -49,7 +50,8 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
         try {
             categories = eClassCategoryDatabaseAdapter.getSubCategories(categoryId);
         } catch (CategoryDatabaseException e) {
-            throw new ProductCategoryServiceException("Failed to retrieve product sub-categories", e);
+            logger.error("Failed to retrieve product sub-categories", e);
+            return new ArrayList<>();
         }
         return categories;
     }

@@ -37,6 +37,7 @@ public class Constants {
 
 	public static final String NS_CAC = "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2";
 	public static final String NS_CBC = "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2";
+	public static final String NS_NIMBLE_CATALOGUE = "http://www.nimble-project.org/catalogue";
 
 	static {
 		ONTMALIZER_VALUE_PROP_NAME = ONTMALIZER_BASE_URI + "hasValue";

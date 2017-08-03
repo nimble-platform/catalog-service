@@ -1,12 +1,9 @@
 package eu.nimble.service.catalogue.util;
 
-import jdk.management.resource.ResourceType;
-import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.ontology.*;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.RDFS;
 
 import java.io.FileInputStream;
 import java.util.ArrayList;

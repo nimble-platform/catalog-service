@@ -274,6 +274,7 @@
 	<xsd:element name="Extension" type="xsd:string"/>
 	<xsd:element name="ExternalAward" type="xsd:string"/>
 	<xsd:element name="FaceValueAmount" type="AmountType"/>
+	<xsd:element name="FacilityDetails" type="xsd:string"/>	
 	<xsd:element name="FamilyName" type="xsd:string"/>
 	<xsd:element name="FeatureTacticTypeCode" type="CodeType"/>
 	<xsd:element name="FeeAmount" type="AmountType"/>
@@ -329,6 +330,7 @@
 	<xsd:element name="IdentificationID" type="xsd:string"/>
 	<xsd:element name="ImmobilizationCertificateID" type="xsd:string"/>
 	<xsd:element name="ImportanceCode" type="CodeType"/>
+	<xsd:element name="Incoterms" type="xsd:string"/>	
 	<xsd:element name="IndicationIndicator" type="xsd:boolean"/>
 	<xsd:element name="IndustryClassificationCode" type="CodeType"/>
 	<xsd:element name="Information" type="xsd:string"/>
@@ -532,7 +534,9 @@
 	<xsd:element name="PayerReference" type="xsd:string"/>
 	<xsd:element name="PaymentAlternativeCurrencyCode" type="CodeType"/>
 	<xsd:element name="PaymentChannelCode" type="CodeType"/>
+	<xsd:element name="PaymentConditions" type="xsd:string"/>
 	<xsd:element name="PaymentCurrencyCode" type="CodeType"/>
+	<xsd:element name="PaymentDates" type="xsd:string"/>
 	<xsd:element name="PaymentDescription" type="xsd:decimal"/>
 	<xsd:element name="PaymentDueDate" type="xsd:date"/>
 	<xsd:element name="PaymentFrequencyCode" type="CodeType"/>
@@ -595,6 +599,7 @@
 	<xsd:element name="ProcessReasonCode" type="CodeType"/>
 	<xsd:element name="ProcurementSubTypeCode" type="CodeType"/>
 	<xsd:element name="ProcurementTypeCode" type="CodeType"/>
+	<xsd:element name="ProductImage" type="BinaryObjectType"/>
 	<xsd:element name="ProductTraceID" type="xsd:string"/>
 	<xsd:element name="ProfileExecutionID" type="xsd:string"/>
 	<xsd:element name="ProfileID" type="xsd:string"/>
@@ -683,6 +688,7 @@
 	<xsd:element name="RoleDescription" type="xsd:decimal"/>
 	<xsd:element name="Room" type="xsd:string"/>
 	<xsd:element name="RoundingAmount" type="AmountType"/>
+	<xsd:element name="SafetyDataSheet" type="BinaryObjectType"/>
 	<xsd:element name="SalesOrderID" type="xsd:string"/>
 	<xsd:element name="SalesOrderLineID" type="xsd:string"/>
 	<xsd:element name="SchemeURI" type="xsd:string"/>
@@ -770,7 +776,8 @@
 	<xsd:element name="TaxPointDate" type="xsd:date"/>
 	<xsd:element name="TaxTypeCode" type="CodeType"/>
 	<xsd:element name="TaxableAmount" type="AmountType"/>
-	<xsd:element name="TechnicalCommitteeDescription" type="xsd:decimal"/>
+	<xsd:element name="TechnicalAdviceSupport" type="xsd:boolean"/>
+	<xsd:element name="TechnicalCommitteeDescription" type="xsd:decimal"/>	
 	<xsd:element name="TechnicalName" type="xsd:string"/>
 	<xsd:element name="TelecommunicationsServiceCall" type="xsd:string"/>
 	<xsd:element name="TelecommunicationsServiceCallCode" type="CodeType"/>
@@ -862,6 +869,8 @@
 	<xsd:element name="ValidityStartDate" type="xsd:date"/>
 	<xsd:element name="Value" type="xsd:string"/>
 	<xsd:element name="ValueAmount" type="AmountType"/>
+	<xsd:element name="ValueBinary" type="BinaryObjectType"/>
+	<xsd:element name="ValueDecimal" type="xsd:decimal"/>
 	<xsd:element name="ValueMeasure" type="QuantityType"/>
 	<xsd:element name="ValueQualifier" type="xsd:string"/>
 	<xsd:element name="ValueQuantity" type="QuantityType"/>
