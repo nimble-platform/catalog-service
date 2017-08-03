@@ -334,15 +334,15 @@ public class XML2OWLMapper {
                                 Property prop;
                                 Literal value;
                                 if (avfRes.getAllValuesFrom().equals(XSD.decimal)) {
-                                    prop = ontology.createDatatypeProperty(getNamespace(node.getParentNode()) + Constants.ONTMALIZER_DECIMAL_VALUE_PROP_NAME);
+                                    prop = ontology.createDatatypeProperty(Constants.NS_CBC + "#" + Constants.ONTMALIZER_DECIMAL_VALUE_PROP_NAME);
                                     value = model.createTypedLiteral(node.getNodeValue().trim(), XSD.decimal.getURI());
 
                                 } else if (avfRes.getAllValuesFrom().equals(XSD.base64Binary)) {
-                                    prop = ontology.createDatatypeProperty(getNamespace(node.getParentNode()) + Constants.ONTMALIZER_BINARY_VALUE_PROP_NAME);
+                                    prop = ontology.createDatatypeProperty(Constants.NS_CBC + "#" + Constants.ONTMALIZER_BINARY_VALUE_PROP_NAME);
                                     value = model.createTypedLiteral(node.getNodeValue().trim(), XSD.base64Binary.getURI());
 
                                 } else {
-                                    prop = ontology.createDatatypeProperty(getNamespace(node.getParentNode()) + Constants.ONTMALIZER_STRING_VALUE_PROP_NAME);
+                                    prop = ontology.createDatatypeProperty(Constants.NS_CBC + "#" + Constants.ONTMALIZER_STRING_VALUE_PROP_NAME);
                                     value = model.createTypedLiteral(node.getNodeValue().trim(), XSD.xstring.getURI());
 
                                 }
