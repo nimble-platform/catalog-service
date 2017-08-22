@@ -508,21 +508,15 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     private void submitCatalogueDataToMarmotta(CatalogueType catalogue) {
-//        boolean indexToMarmotta = Boolean.valueOf(ConfigUtil.getInstance().getConfig(CONFIG_CATALOGUE_PERSISTENCE_MARMOTTA_INDEX));
-//        if(indexToMarmotta == false) {
-//            logger.info("Index to Marmotta is set to false");
-//            return;
-//        }
-
-        logger.info("Catalogue with uuid: {} will be submitted to Marmotta.", catalogue.getUUID());
-        XML2OWLMapper rdfGenerator = transformCatalogueToRDF(catalogue);
-        logger.info("Transformed catalogue with uuid: {} to RDF", catalogue.getUUID());
-
         boolean indexToMarmotta = Boolean.valueOf(ConfigUtil.getInstance().getConfig(CONFIG_CATALOGUE_PERSISTENCE_MARMOTTA_INDEX));
         if(indexToMarmotta == false) {
             logger.info("Index to Marmotta is set to false");
             return;
         }
+
+        logger.info("Catalogue with uuid: {} will be submitted to Marmotta.", catalogue.getUUID());
+        XML2OWLMapper rdfGenerator = transformCatalogueToRDF(catalogue);
+        logger.info("Transformed catalogue with uuid: {} to RDF", catalogue.getUUID());
 
         URL marmottaURL;
         try {
