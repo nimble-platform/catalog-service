@@ -27,12 +27,29 @@ public class ProductCategoryController {
         return ResponseEntity.ok(category);
     }
 
+    // Usage for ids parameter: GET request to /catalogue/category/multiple/taxonomyId1,categoryId1,taxonomyId2,categoryId2...
     @CrossOrigin(origins = {"*"})
     @RequestMapping(value = "/catalogue/category",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getCategoriesByName(@RequestParam(required = false) String categoryName) {
-        List<Category> categories = csm.getProductCategories(categoryName);
+    public ResponseEntity getCategoriesByName(@RequestParam(required = false) String categoryName, @RequestParam(required = false) String ids) {
+        List<Category> categories;
+        if(categoryName != null) {
+            log.debug("Getting categories for name: {}", categoryName);
+            categories = csm.getProductCategories(categoryName);
+
+        } else {
+            log.debug("Getting categories for ids: {}", ids);
+            String[] parsedIds = ids.split(",");
+            int numOfCategories = parsedIds.length / 2;
+
+            categories = new ArrayList<>();
+            for (int i = 0; i < numOfCategories; i++) {
+                categories.add(csm.getCategory(parsedIds[i * 2], parsedIds[i * 2 + 1]));
+            }
+        }
+
+        log.debug("Returning categories: " + categories.toString());
         return ResponseEntity.ok(categories);
     }
 
@@ -41,24 +58,6 @@ public class ProductCategoryController {
             method = RequestMethod.GET)
     public ResponseEntity<List<Category>> getSubCategories(@PathVariable String taxonomyId, @PathVariable String parentCategoryId) {
         List<Category> categories = csm.getSubCategories(taxonomyId, parentCategoryId);
-        return ResponseEntity.ok(categories);
-    }
-
-    // Usage: GET request to /catalogue/category/multiple/taxonomyId1,categoryId1,taxonomyId2,categoryId2...
-    @CrossOrigin(origins = {"*"})
-    @RequestMapping(value = "/catalogue/category/multiple/{ids}",
-            produces = {"application/json"},
-            method = RequestMethod.GET)
-    public ResponseEntity<List<Category>> getMultipleCategories(@PathVariable String ids) {
-
-        String[] parsedIds = ids.split(",");
-        int numOfCategories = parsedIds.length / 2;
-
-        ArrayList<Category> categories = new ArrayList<>();
-
-        for (int i = 0; i < numOfCategories; i++)
-            categories.add(csm.getCategory(parsedIds[i * 2], parsedIds[i * 2 + 1]));
-
         return ResponseEntity.ok(categories);
     }
 }
