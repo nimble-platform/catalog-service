@@ -51,7 +51,7 @@ public class XML2OWLMapper {
     private OntModel ontology = null;
 
     // Variables to uniquely name resources
-    private int no = 0;    // This is a random value between 0 and 9999999 for each instance of this class.
+    private String no;    // This is a uuid for each instance of this class.
     private Map<String, Integer> count = null; // This map holds how many times a resource has been used while naming.
 
     // Property prefixes
@@ -161,7 +161,7 @@ public class XML2OWLMapper {
         model = ModelFactory.createDefaultModel();
 
         Random random = new Random();
-        no = random.nextInt(9999999);
+        no = UUID.randomUUID().toString();
 
         // Get all the named resources the count map
         count = new HashMap<>();
