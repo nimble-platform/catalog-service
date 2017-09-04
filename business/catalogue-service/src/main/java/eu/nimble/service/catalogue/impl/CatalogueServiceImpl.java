@@ -508,15 +508,17 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     private void submitCatalogueDataToMarmotta(CatalogueType catalogue) {
+
+
+        logger.info("Catalogue with uuid: {} will be submitted to Marmotta.", catalogue.getUUID());
+        XML2OWLMapper rdfGenerator = transformCatalogueToRDF(catalogue);
+        logger.info("Transformed catalogue with uuid: {} to RDF", catalogue.getUUID());
+
         boolean indexToMarmotta = Boolean.valueOf(ConfigUtil.getInstance().getConfig(CONFIG_CATALOGUE_PERSISTENCE_MARMOTTA_INDEX));
         if(indexToMarmotta == false) {
             logger.info("Index to Marmotta is set to false");
             return;
         }
-
-        logger.info("Catalogue with uuid: {} will be submitted to Marmotta.", catalogue.getUUID());
-        XML2OWLMapper rdfGenerator = transformCatalogueToRDF(catalogue);
-        logger.info("Transformed catalogue with uuid: {} to RDF", catalogue.getUUID());
 
         URL marmottaURL;
         try {
@@ -728,13 +730,18 @@ public class CatalogueServiceImpl implements CatalogueService {
     public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine)
     {
         HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueLine);
+/*
+        // delete the catalgoue from marmotta and submit once again
+        deleteCatalogueFromMarmotta(catalogue.getUUID());
+
+        // submit again
+        submitCatalogueDataToMarmotta(catalogue);*/
 
         return catalogueLine;
     }
 
-    // TODO add cascade exception to ManufacturerParty in ItemType
     @Override
-    public void deleteCatalogueLineById(String id)
+    public void deleteCatalogueLineById(String catalogueId, String id)
     {
         // delete catalogue from relational db
         CatalogueLineType catalogueLine = getCatalogueLine(id);
@@ -744,8 +751,11 @@ public class CatalogueServiceImpl implements CatalogueService {
             Long hjid = catalogueLine.getHjid();
             HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).delete(CatalogueLineType.class, hjid);
 
+            CatalogueType catalogue = getCatalogue(catalogueId);
             // delete catalogue from marmotta
-            // deleteCatalogueFromMarmotta(uuid);
+            deleteCatalogueFromMarmotta(catalogueId);
+            // submit again
+            submitCatalogueDataToMarmotta(catalogue);
         }
     }
 }

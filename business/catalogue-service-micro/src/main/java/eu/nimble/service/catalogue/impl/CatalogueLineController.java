@@ -18,7 +18,7 @@ import java.io.IOException;
  * Created by suat on 22-Aug-17.
  */
 @Controller
-@RequestMapping(value = "/catalogueline")
+@RequestMapping(value = "/{catalogueId}/catalogueline")
 public class CatalogueLineController {
     private static Logger log = LoggerFactory.getLogger(CatalogueLineController.class);
 
@@ -89,9 +89,10 @@ public class CatalogueLineController {
     @RequestMapping(value = "/{id}",
             produces = {"application/json"},
             method = RequestMethod.DELETE)
-    public ResponseEntity deleteCatalogueLineById(@PathVariable String id) {
+    public ResponseEntity deleteCatalogueLineById(@PathVariable String catalogueId, @PathVariable String id) {
+        System.out.println("cat id : " + catalogueId);
         log.info("Deleting catalogue line: {}", id);
-        service.deleteCatalogueLineById(id);
+        service.deleteCatalogueLineById(catalogueId, id);
         log.info("Deleted catalogue line: {}", id);
         return ResponseEntity.status(HttpStatus.OK).build();
     }

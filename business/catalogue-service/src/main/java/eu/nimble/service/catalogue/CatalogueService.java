@@ -63,5 +63,5 @@ public interface CatalogueService {
     public <T> T getCatalogueLine(String goodsItemId);
     public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine);
     public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine);
-    public void deleteCatalogueLineById(String goodsItemID);
+    public void deleteCatalogueLineById(String catalogueId, String lineId);
 }
