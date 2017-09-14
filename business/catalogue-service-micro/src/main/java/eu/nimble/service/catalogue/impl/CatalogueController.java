@@ -6,6 +6,8 @@ import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.client.IdentityClient;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyNameType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.Configuration;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -24,6 +26,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 @Controller
@@ -45,7 +49,7 @@ public class CatalogueController {
         return ResponseEntity.ok(catalogue);
     }
 
-    @CrossOrigin(origins = {"${catalogue.cross.origins}"})
+    @CrossOrigin(origins = {"*"})
     @RequestMapping(value = "/catalogue/{partyId}/default",
             produces = {"application/json"},
             method = RequestMethod.GET)
@@ -80,7 +84,7 @@ public class CatalogueController {
         return ResponseEntity.ok(null);
     }
 
-    @CrossOrigin(origins = {"${catalogue.cross.origins}"})
+    @CrossOrigin(origins = {"*"})
     @RequestMapping(value = "/catalogue",
             consumes = {"application/json"},
             produces = {"application/json"},
@@ -112,7 +116,7 @@ public class CatalogueController {
         return ResponseEntity.created(catalogueURI).body(catalogue);
     }
 
-    @CrossOrigin(origins = {"${catalogue.cross.origins}"})
+    @CrossOrigin(origins = {"*"})
     @RequestMapping(value = "/catalogue",
             consumes = {"application/json"},
             produces = {"application/json"},
@@ -133,7 +137,7 @@ public class CatalogueController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @CrossOrigin(origins = {"${catalogue.cross.origins}"})
+    @CrossOrigin(origins = {"*"})
     @RequestMapping(value = "/catalogue/template",
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
@@ -146,15 +150,19 @@ public class CatalogueController {
         response.flushBuffer();
     }
 
-    @CrossOrigin(origins = {"${catalogue.cross.origins}"})
+    @CrossOrigin(origins = {"*"})
     @RequestMapping(value = "/catalogue/template/upload", method = RequestMethod.POST)
     public ResponseEntity uploadTemplate(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("companyId") String partyId) {
+            @RequestParam("companyId") String partyId,
+            @RequestParam("companyName") String partyName) {
         try {
-            PartyType party = identityClient.getParty(partyId);
-            log.debug("Fetched party with Id {0}", party.getHjid());
-
+            //TODO retrieve the party from the identity service
+            /*PartyType party = identityClient.getParty(partyId);
+            log.debug("Fetched party with Id {0}", party.getHjid());*/
+            PartyType party = new PartyType();
+            party.setName(partyName);
+            party.setID(partyId);
             service.addCatalogue(file.getInputStream(), party);
         } catch (IOException e) {
             e.printStackTrace();
@@ -171,4 +179,7 @@ public class CatalogueController {
         log.info("Request processed for deleting catalogue with uuid: {}", uuid);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
+
+
+
 }

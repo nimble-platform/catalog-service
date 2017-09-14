@@ -437,6 +437,7 @@
 	<xsd:element name="ProcurementLegislationDocumentReference" type="DocumentReferenceType"/>
 	<xsd:element name="ProcurementProject" type="ProcurementProjectType"/>
 	<xsd:element name="ProcurementProjectLot" type="ProcurementProjectLotType"/>
+	<xsd:element name="ProductDataSheet" type="DocumentReferenceType"/>
 	<xsd:element name="ProjectReference" type="ProjectReferenceType"/>
 	<xsd:element name="PromisedDeliveryPeriod" type="PeriodType"/>
 	<xsd:element name="PromotionalEvent" type="PromotionalEventType"/>
@@ -518,6 +519,7 @@
 	<xsd:element name="RetailerCustomerParty" type="CustomerPartyType"/>
 	<xsd:element name="ReturnAddress" type="AddressType"/>
 	<xsd:element name="RoadTransport" type="RoadTransportType"/>
+	<xsd:element name="SafetyDataSheet" type="DocumentReferenceType"/>
 	<xsd:element name="SalesItem" type="SalesItemType"/>
 	<xsd:element name="ScheduledServiceFrequency" type="ServiceFrequencyType"/>
 	<xsd:element name="SecondaryHazard" type="SecondaryHazardType"/>
@@ -1417,6 +1419,7 @@
 	<xsd:complexType name="DeliveryTermsType">
 		<xsd:sequence>
 			<xsd:element ref="cbc:ID" minOccurs="0"/>
+			<xsd:element ref="cbc:Incoterms" minOccurs="0"/>
 			<xsd:element ref="cbc:SpecialTerms" minOccurs="0"/>
 			<xsd:element ref="cbc:Amount" minOccurs="0"/>
 			<xsd:element ref="cac:Delivery" minOccurs="0"/>
@@ -1914,11 +1917,14 @@
 			<xsd:element ref="cac:StandardItemIdentification" minOccurs="0"/>
 			<xsd:element ref="cac:AdditionalItemIdentification" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cac:ItemSpecificationDocumentReference" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cbc:ProductImage" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cac:OriginCountry" minOccurs="0"/>
 			<xsd:element ref="cac:CommodityClassification" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cac:HazardousItem" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cac:ClassifiedTaxCategory" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cac:AdditionalItemProperty" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cac:ProductDataSheet" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cac:SafetyDataSheet" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cac:ManufacturerParty" minOccurs="0"/>
 			<xsd:element ref="cac:OriginAddress" minOccurs="0"/>
 			<xsd:element ref="cac:ItemInstance" minOccurs="0" maxOccurs="unbounded"/>
@@ -1988,16 +1994,18 @@
 	</xsd:complexType>
 	<xsd:complexType name="ItemPropertyType">
 		<xsd:sequence>
+			<xsd:element ref="cbc:ID"/>
 			<xsd:element ref="cbc:Name"/>
 			<xsd:element ref="cbc:Value" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cbc:ValueQuantity" minOccurs="0" maxOccurs="unbounded"/>
-			<xsd:element ref="cbc:EmbeddedDocumentBinaryObject" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cbc:ValueDecimal" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cbc:ValueBinary" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cbc:ValueQualifier" minOccurs="0"/>
 			<!-- TODO remove the demo-specific element -->
 			<xsd:element ref="cbc:DemoSpecificMultipleContent" minOccurs="0"/>
 			<xsd:element ref="cac:UsabilityPeriod" minOccurs="0"/>
-			<xsd:element ref="cac:ItemPropertyGroup" minOccurs="0"/>
-			<xsd:element ref="cac:RangeDimension" minOccurs="0"/>
+            <xsd:element ref="cbc:ItemClassificationCode" minOccurs="0"/>
+            <xsd:element ref="cac:RangeDimension" minOccurs="0"/>
 			<xsd:element ref="cac:ItemPropertyRange" minOccurs="0"/>
 		</xsd:sequence>
 	</xsd:complexType>
@@ -2203,12 +2211,12 @@
 	<xsd:complexType name="PartyType">
 		<xsd:sequence>
 			<xsd:element ref="cbc:ID"/>
+			<xsd:element ref="cbc:Name"/>
 			<xsd:element ref="cbc:WebsiteURI" minOccurs="0"/>
 			<xsd:element ref="cbc:LogoReferenceID" minOccurs="0"/>
 			<xsd:element ref="cbc:EndpointID" minOccurs="0"/>
 			<xsd:element ref="cbc:IndustryClassificationCode" minOccurs="0"/>
 			<xsd:element ref="cbc:ExternalAward" minOccurs="0"/>
-			<xsd:element ref="cac:PartyName" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cac:Language" minOccurs="0"/>
 			<xsd:element ref="cac:PostalAddress" minOccurs="0"/>
 			<xsd:element ref="cac:PhysicalLocation" minOccurs="0"/>
@@ -2298,11 +2306,13 @@
 	<xsd:complexType name="PaymentTermsType">
 		<xsd:sequence>
 			<xsd:element ref="cbc:Note" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cbc:PaymentConditions" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cbc:SettlementDiscountPercent" minOccurs="0"/>
 			<xsd:element ref="cbc:PenaltySurchargePercent" minOccurs="0"/>
 			<xsd:element ref="cbc:PaymentPercent" minOccurs="0"/>
 			<xsd:element ref="cbc:SettlementDiscountAmount" minOccurs="0"/>
 			<xsd:element ref="cbc:PenaltyAmount" minOccurs="0"/>
+			<xsd:element ref="cbc:PaymentDates" minOccurs="0"/>
 			<xsd:element ref="cbc:PaymentDueDate" minOccurs="0"/>
 			<xsd:element ref="cac:SettlementPeriod" minOccurs="0"/>
 		</xsd:sequence>

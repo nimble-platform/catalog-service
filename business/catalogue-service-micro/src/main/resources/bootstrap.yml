@@ -16,5 +16,6 @@ spring:
       # service discovery is disabled by default and should be enabled (set to true) for the "cloud mode".
       # it can be set via an environment variable or the config server
       enabled: ${discovery.enabled:${DISCOVERY_ENABLED:false}}
+
 logstash:
   uri: ${vcap.services.logstash-service.credentials.url:${LOGSTASH_URI:localhost:5000}}
