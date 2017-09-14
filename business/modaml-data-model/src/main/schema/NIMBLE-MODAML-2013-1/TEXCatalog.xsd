@@ -510,7 +510,7 @@
         <xsd:simpleContent>
           <xsd:extension base="sub_person_Type">
             <xsd:annotation><xsd:documentation>contact person name - name of the contact person within a Party</xsd:documentation></xsd:annotation>
-        <xsd:attribute name="email" type="email_Type" use="optional"/>
+        <xsd:attribute name="username" type="email_Type" use="optional"/>
         <xsd:attribute name="phone" type="phone_Type" use="optional"/>
         <xsd:attribute name="fax" type="fax_Type" use="optional"/>
           </xsd:extension>
