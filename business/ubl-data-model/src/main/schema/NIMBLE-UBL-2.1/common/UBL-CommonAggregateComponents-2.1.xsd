@@ -1911,15 +1911,7 @@
 			<xsd:element ref="cbc:BrandName" minOccurs="0"/>
 			<xsd:element ref="cbc:ModelName" minOccurs="0"/>
 			<!-- TODO remove the demo-specific element -->
-			<xsd:element ref="cbc:ItemConfigurationImages" minOccurs="0">
-				<xsd:annotation>
-					<xsd:appinfo>
-						<hj:basic>
-							<orm:column length="2147483647"/>
-						</hj:basic>
-					</xsd:appinfo>
-				</xsd:annotation>
-			</xsd:element>
+			<xsd:element ref="cbc:ItemConfigurationImages" minOccurs="0"/>
 			<xsd:element ref="cac:BuyersItemIdentification" minOccurs="0"/>
 			<xsd:element ref="cac:SellersItemIdentification" minOccurs="0"/>
 			<xsd:element ref="cac:ManufacturersItemIdentification" minOccurs="0"/>
@@ -2011,15 +2003,7 @@
 			<xsd:element ref="cbc:ValueBinary" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cbc:ValueQualifier" minOccurs="0"/>
 			<!-- TODO remove the demo-specific element -->
-			<xsd:element ref="cbc:DemoSpecificMultipleContent" minOccurs="0">
-				<xsd:annotation>
-					<xsd:appinfo>
-						<hj:basic>
-							<orm:column length="2147483647"/>
-						</hj:basic>
-					</xsd:appinfo>
-				</xsd:annotation>
-			</xsd:element>
+			<xsd:element ref="cbc:DemoSpecificMultipleContent" minOccurs="0"/>
 			<xsd:element ref="cac:UsabilityPeriod" minOccurs="0"/>
 			<xsd:element ref="cbc:ItemClassificationCode" minOccurs="0"/>
 			<xsd:element ref="cac:RangeDimension" minOccurs="0"/>

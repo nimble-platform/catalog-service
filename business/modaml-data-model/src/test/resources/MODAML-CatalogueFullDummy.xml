@@ -12,7 +12,7 @@
 			<id numberingOrg="CL">aaaaaaaaaaaaaaa</id>
 			<legalName>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</legalName>
 			<dept>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</dept>
-			<person email="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" phone="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" fax="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</person>
+			<person username="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" phone="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" fax="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</person>
 			<street>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</street>
 			<city>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</city>
 			<subCountry>aaaaaaaaa</subCountry>
@@ -23,7 +23,7 @@
 			<id numberingOrg="CL">aaaaaaaaaaaaaaa</id>
 			<legalName>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</legalName>
 			<dept>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</dept>
-			<person email="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" phone="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" fax="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</person>
+			<person username="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" phone="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" fax="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</person>
 			<street>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</street>
 			<city>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</city>
 			<subCountry>aaaaaaaaa</subCountry>
