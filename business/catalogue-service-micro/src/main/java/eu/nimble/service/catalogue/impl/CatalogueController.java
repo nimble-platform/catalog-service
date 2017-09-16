@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue.impl;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
+import eu.nimble.service.catalogue.category.datamodel.Category;
 import eu.nimble.service.catalogue.client.IdentityClient;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
@@ -137,13 +138,31 @@ public class CatalogueController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @CrossOrigin(origins = {"*"})
+    /*@CrossOrigin(origins = {"*"})
     @RequestMapping(value = "/catalogue/template",
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public void downloadTemplate(@RequestParam("taxonomyId") String taxonomyId, @RequestParam("categoryId") String categoryId, HttpServletResponse response) throws IOException {
         Workbook template = service.generateTemplateForCategory(taxonomyId, categoryId);
         String fileName = categoryId + "-catalogue-template.xlsx";
+        response.setHeader("Content-disposition","attachment; filename=" + fileName);
+
+        template.write(response.getOutputStream());
+        response.flushBuffer();
+    }*/
+
+    @CrossOrigin(origins = {"*"})
+    @RequestMapping(value = "/catalogue/template",
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public void downloadTemplate(
+            @RequestParam("categoryIds") List<String> categoryIds,
+            @RequestParam("taxonomyIds") List<String> taxonomyIds,
+            @RequestParam("partyId") String partyId,
+            @RequestParam("partyName") String partyName,
+            HttpServletResponse response) throws IOException {
+        Workbook template = service.generateTemplateForCategory(categoryIds, taxonomyIds);
+        String fileName = "mult-catalogue-template.xlsx";
         response.setHeader("Content-disposition","attachment; filename=" + fileName);
 
         template.write(response.getOutputStream());
@@ -156,6 +175,7 @@ public class CatalogueController {
             @RequestParam("file") MultipartFile file,
             @RequestParam("companyId") String partyId,
             @RequestParam("companyName") String partyName) {
+        CatalogueType catalogue = null;
         try {
             //TODO retrieve the party from the identity service
             /*PartyType party = identityClient.getParty(partyId);
@@ -163,11 +183,23 @@ public class CatalogueController {
             PartyType party = new PartyType();
             party.setName(partyName);
             party.setID(partyId);
-            service.addCatalogue(file.getInputStream(), party);
+            catalogue = service.addCatalogue(file.getInputStream(), party);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Failed to retrieve the template", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to retrieve the template");
         }
-        return ResponseEntity.ok().build();
+
+        URI catalogueURI;
+        try {
+            Properties prop = new Properties();
+            prop.load(CatalogueServiceImpl.class.getClassLoader().getResourceAsStream("application.properties"));
+            catalogueURI = new URI(prop.getProperty("catalogue.application.url") + "/" + catalogue.getUUID());
+        } catch (URISyntaxException | IOException e) {
+            String msg = "Failed to generate a URI for the newly created item";
+            log.error(msg, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(msg);
+        }
+        return ResponseEntity.created(catalogueURI).body(catalogue);
     }
 
     @RequestMapping(value = "/catalogue/{uuid}",

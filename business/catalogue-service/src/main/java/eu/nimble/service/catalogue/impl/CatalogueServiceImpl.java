@@ -9,10 +9,10 @@ import eu.nimble.data.transformer.ontmalizer.XML2OWLMapper;
 import eu.nimble.data.transformer.ontmalizer.XSD2OWLMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.category.datamodel.Category;
-import eu.nimble.service.catalogue.category.datamodel.Property;
-import eu.nimble.service.catalogue.category.datamodel.Unit;
-import eu.nimble.service.catalogue.category.datamodel.Value;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
+import eu.nimble.service.catalogue.exception.TemplateParseException;
+import eu.nimble.service.catalogue.impl.template.TemplateGenerator;
+import eu.nimble.service.catalogue.impl.template.TemplateParser;
 import eu.nimble.service.catalogue.util.ConfigUtil;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
@@ -20,10 +20,8 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -39,10 +37,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.UUID;
 
-import static eu.nimble.service.catalogue.impl.TemplateConfig.*;
 import static eu.nimble.service.catalogue.util.ConfigUtil.*;
 
 /**
@@ -63,6 +59,30 @@ public class CatalogueServiceImpl implements CatalogueService {
         } else {
             return instance;
         }
+    }
+
+    public static void main(String[] args) throws IOException {
+        CatalogueServiceImpl csi = new CatalogueServiceImpl();
+
+        String filePath = "C:\\Users\\suat\\Desktop\\multtemp" + System.currentTimeMillis() + ".xlsx";
+        List<String> categoryIds = new ArrayList<>();
+        categoryIds.add("0173-1#01-AKJ052#013");
+        //categoryIds.add("http://www.semanticweb.org/ontologies/2017/8/FurnitureSectorOntology.owl#Glue");
+        categoryIds.add("http://www.semanticweb.org/ontologies/2017/8/FurnitureSectorOntology.owl#MDFBoard");
+        //categoryIds.add("0173-1#01-BAC439#012");
+        List<String> taxonomyIds = new ArrayList<>();
+        taxonomyIds.add("eClass");
+        taxonomyIds.add("FurnitureOntology");
+        //taxonomyIds.add("eClass");
+        Workbook wb = csi.generateTemplateForCategory(categoryIds, taxonomyIds);
+        wb.write(new FileOutputStream(filePath));
+        wb.close();
+
+//        String filePath = "C:\\Users\\suat\\Desktop\\multtemp.xlsx";
+//        InputStream is = new FileInputStream(filePath);
+//        PartyType party = new PartyType();
+//        CatalogueType catalogue = csi.addCatalogue(is, party);
+//        System.out.println(catalogue.getCatalogueLine().size());
     }
 
     @Override
@@ -241,7 +261,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     private void deleteCatalogueFromMarmotta(String uuid) {
         boolean indexToMarmotta = Boolean.valueOf(ConfigUtil.getInstance().getConfig(CONFIG_CATALOGUE_PERSISTENCE_MARMOTTA_INDEX));
-        if(indexToMarmotta == false) {
+        if (indexToMarmotta == false) {
             logger.info("Index to Marmotta is set to false");
             return;
         }
@@ -275,46 +295,46 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public Workbook generateTemplateForCategory(String taxonomyId, String categoryId) {
-        Category category = csmInstance.getCategory(taxonomyId, categoryId);
-        TemplateParser templateParser = new TemplateParser();
-        Workbook template = templateParser.generateTemplateForCategory(category);
+    public Workbook generateTemplateForCategory(List<String> categoryIds, List<String> taxonomyIds) {
+        List<Category> categories = new ArrayList<>();
+        for (int i = 0; i < categoryIds.size(); i++) {
+            Category category = csmInstance.getCategory(taxonomyIds.get(i), categoryIds.get(i));
+            categories.add(category);
+        }
+
+        TemplateGenerator templateGenerator = new TemplateGenerator();
+        Workbook template = templateGenerator.generateTemplateForCategory(categories);
         return template;
     }
 
     @Override
-    public void addCatalogue(InputStream catalogueTemplate, PartyType party) {
-        CatalogueType catalogue;
-        OPCPackage pkg = null;
+    public CatalogueType addCatalogue(InputStream catalogueTemplate, PartyType party) {
+        TemplateParser templateParser = new TemplateParser(party);
+        List<CatalogueLineType> catalogueLines = null;
         try {
-            pkg = OPCPackage.open(catalogueTemplate);
-            XSSFWorkbook wb = new XSSFWorkbook(pkg);
-            List<CatalogueLineType> products = getCatalogueLines(wb, party);
+            catalogueLines = templateParser.getCatalogueLines(catalogueTemplate);
+        } catch (TemplateParseException e) {
+            throw new CatalogueServiceException("Failed to parse the template", e);
+        }
+
+        // Assign IDs to lines that are missing it
+        for (CatalogueLineType catalogueLine : catalogueLines) {
+            if (catalogueLine.getID() == null) {
+                catalogueLine.setID(UUID.randomUUID().toString());
+            }
+        }
+
+        CatalogueType catalogue = getCatalogue("default", party.getID());
+
+        if(catalogue == null) {
             catalogue = new CatalogueType();
-            catalogue.setCatalogueLine(products);
+            catalogue.setID("default");
             catalogue.setProviderParty(party);
-
-            // Assign IDs to lines that are missing it
-            for (CatalogueLineType catalogueLine : catalogue.getCatalogueLine()) {
-                if (catalogueLine.getID() == null) {
-                    catalogueLine.setID(UUID.randomUUID().toString());
-                }
-            }
-
-            addCatalogue(catalogue);
-
-        } catch (InvalidFormatException e) {
-            throw new CatalogueServiceException("Invalid format for the submitted template", e);
-        } catch (IOException e) {
-            throw new CatalogueServiceException("Failed to read the submitted template", e);
-        } finally {
-            if (pkg != null) {
-                try {
-                    pkg.close();
-                } catch (IOException e) {
-                    logger.warn("Failed to close the OPC Package", e);
-                }
-            }
+            catalogue.setCatalogueLine(catalogueLines);
+            return addCatalogue(catalogue);
+        } else {
+            catalogue.getCatalogueLine().addAll(catalogueLines);
+            return updateCatalogue(catalogue);
         }
     }
 
@@ -388,7 +408,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         logger.info("Transformed catalogue with uuid: {} to RDF", catalogue.getUUID());
 
         boolean indexToMarmotta = Boolean.valueOf(ConfigUtil.getInstance().getConfig(CONFIG_CATALOGUE_PERSISTENCE_MARMOTTA_INDEX));
-        if(indexToMarmotta == false) {
+        if (indexToMarmotta == false) {
             logger.info("Index to Marmotta is set to false");
             return;
         }
@@ -422,154 +442,12 @@ public class CatalogueServiceImpl implements CatalogueService {
         }
     }
 
-    private List<CatalogueLineType> getCatalogueLines(Workbook template, PartyType party) {
-        List<CatalogueLineType> results = new ArrayList<>();
-
-        Sheet productPropertiesTab = template.getSheet(TEMPLATE_TAB_PRODUCT_PROPERTIES);
-        Sheet propertyDetailsTab = template.getSheet(TEMPLATE_TAB_PROPERTY_DETAILS);
-        int standardPropertyNum = propertyDetailsTab.getLastRowNum();
-        int fixedPropNumber = TemplateConfig.getFixedProperties().size();
-        int customPropertyNum = productPropertiesTab.getRow(0).getLastCellNum() - (standardPropertyNum + fixedPropNumber + 1);
-        int catalogSize = productPropertiesTab.getLastRowNum();
-
-        List<Property> properties = new ArrayList<>();
-
-        // properties included in the selected category
-        for (int i = 1; i <= standardPropertyNum; i++) {
-            int columnNum = 0;
-            Row row = propertyDetailsTab.getRow(i);
-            String propertyName = getCellWithMissingCellPolicy(row, columnNum++).getStringCellValue();
-            String shortName = getCellWithMissingCellPolicy(row, columnNum++).getStringCellValue();
-            String definition = getCellWithMissingCellPolicy(row, columnNum++).getStringCellValue();
-            String note = getCellWithMissingCellPolicy(row, columnNum++).getStringCellValue();
-            String remark = getCellWithMissingCellPolicy(row, columnNum++).getStringCellValue();
-            String preferredSymbol = getCellWithMissingCellPolicy(row, columnNum++).getStringCellValue();
-            String unit = getCellWithMissingCellPolicy(row, columnNum++).getStringCellValue();
-            String iecCategory = getCellWithMissingCellPolicy(row, columnNum++).getStringCellValue();
-            String attributeType = getCellWithMissingCellPolicy(row, columnNum++).getStringCellValue();
-            String dataType = getCellWithMissingCellPolicy(row, columnNum++).getStringCellValue();
-
-            Property property = new Property();
-            property.setPreferredName(propertyName);
-            property.setShortName(shortName);
-            property.setDefinition(definition);
-            property.setNote(note);
-            property.setRemark(remark);
-            property.setPreferredSymbol(preferredSymbol);
-            property.setIecCategory(iecCategory);
-            property.setAttributeType(attributeType);
-            property.setDataType(dataType);
-
-            Unit unitObj = new Unit();
-            unitObj.setShortName(unit);
-            property.setUnit(unitObj);
-
-            properties.add(property);
-        }
-
-        // custom properties
-        int columnNum = fixedPropNumber + standardPropertyNum + 1;
-        for (int i = 0; i < customPropertyNum; i++) {
-            Row row = productPropertiesTab.getRow(0);
-            String propertyName = getCellWithMissingCellPolicy(row, columnNum).getStringCellValue();
-            row = productPropertiesTab.getRow(1);
-            String unit = getCellWithMissingCellPolicy(row, columnNum).getStringCellValue();
-            row = productPropertiesTab.getRow(2);
-            String dataType = getCellWithMissingCellPolicy(row, columnNum).getStringCellValue();
-            if (dataType.contentEquals("")) {
-                dataType = "STRING";
-            }
-
-            Property property = new Property();
-            property.setPreferredName(propertyName);
-            property.setDataType(dataType);
-
-            Unit unitObj = new Unit();
-            unitObj.setShortName(unit);
-            property.setUnit(unitObj);
-
-            properties.add(property);
-            columnNum++;
-        }
-
-        // first three rows contains fixed values
-        for (int rowNum = 3; rowNum <= catalogSize; rowNum++) {
-            CatalogueLineType clt = new CatalogueLineType();
-            GoodsItemType goodsItem = new GoodsItemType();
-            ItemType item = new ItemType();
-            item.setManufacturerParty(party);
-            List<ItemPropertyType> itemProperties = new ArrayList<>();
-            goodsItem.setItem(item);
-            clt.setGoodsItem(goodsItem);
-            item.setAdditionalItemProperty(itemProperties);
-            results.add(clt);
-
-            Row row = productPropertiesTab.getRow(rowNum);
-            parseFixedProperties(row, item);
-            for (int i = 0; i < properties.size(); i++) {
-                Cell cell = getCellWithMissingCellPolicy(row, i + fixedPropNumber + 1);
-                ItemPropertyType itemProp = new ItemPropertyType();
-                List<String> values = new ArrayList<>();
-                String value = getCellStringValue(cell);
-                values.add(value);
-                if (value.equals("")) {
-                    continue;
-                }
-
-                itemProp.setValue(values);
-                itemProp.setName(properties.get(i).getPreferredName());
-                itemProp.setValueQualifier(properties.get(i).getDataType());
-                itemProperties.add(itemProp);
-            }
-        }
-        return results;
-    }
-
-    /**
-     * Parses the properties fixed in the common data model
-     *
-     * @param propertiesRow
-     * @param item
-     */
-    private void parseFixedProperties(Row propertiesRow, ItemType item) {
-        List<Property> properties = TemplateConfig.getFixedProperties();
-        for (int i = 0; i < properties.size(); i++) {
-            Property property = properties.get(i);
-            Cell cell = getCellWithMissingCellPolicy(propertiesRow, i + 1);
-            if (property.getPreferredName().equals(TEMPLATE_FIXED_PROPERTY_NAME)) {
-                item.setName(getCellStringValue(cell));
-            } else if (property.getPreferredName().equals(TEMPLATE_FIXED_PROPERTY_DESCRIPTION)) {
-                item.setDescription(getCellStringValue(cell));
-            }
-        }
-    }
-
-    private Cell getCellWithMissingCellPolicy(Row row, int cellNum) {
-        return row.getCell(cellNum, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
-    }
-
-    private String getCellStringValue(Cell cell) {
-        switch (cell.getCellTypeEnum()) {
-            case STRING:
-                return cell.getStringCellValue();
-            case NUMERIC:
-                if (DateUtil.isCellDateFormatted(cell)) {
-                    return cell.getDateCellValue().toString();
-                } else {
-                    return cell.getNumericCellValue() + "";
-                }
-            default:
-                return "";
-        }
-    }
-
     /*
      * Catalogue-line level endpoints
      */
 
     @Override
-    public <T> T getCatalogueLine(String id)
-    {
+    public <T> T getCatalogueLine(String id) {
         T catalogueLine = null;
         List<T> resultSet = null;
 
@@ -579,8 +457,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
         resultSet = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
                 .loadAll(query);
-        if (resultSet.size() > 0)
-        {
+        if (resultSet.size() > 0) {
             catalogueLine = (T) resultSet.get(0);
         }
 
@@ -589,8 +466,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     // TODO test
     @Override
-    public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine)
-    {
+    public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine) {
         catalogueLine.setID(UUID.randomUUID().toString());
         catalogue.getCatalogueLine().add(catalogueLine);
 
@@ -600,8 +476,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine)
-    {
+    public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine) {
         HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueLine);
 /*
         // delete the catalgoue from marmotta and submit once again
@@ -614,13 +489,11 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public void deleteCatalogueLineById(String catalogueId, String id)
-    {
+    public void deleteCatalogueLineById(String catalogueId, String id) {
         // delete catalogue from relational db
         CatalogueLineType catalogueLine = getCatalogueLine(id);
 
-        if (catalogueLine != null)
-        {
+        if (catalogueLine != null) {
             Long hjid = catalogueLine.getHjid();
             HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).delete(CatalogueLineType.class, hjid);
 

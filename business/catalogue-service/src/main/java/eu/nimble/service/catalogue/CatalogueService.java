@@ -11,6 +11,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 
 public interface CatalogueService {
 
@@ -39,14 +40,10 @@ public interface CatalogueService {
     public void deleteCatalogue(String uuid, Configuration.Standard standard);
 
     /**
-     * Generates the template for the given {@code categoryId}. The template includes the details about the
-     * properties
      *
-     * @param taxonomyId
-     * @param categoryId
      * @return
      */
-    public Workbook generateTemplateForCategory(String taxonomyId, String categoryId);
+    public Workbook generateTemplateForCategory(List<String> categoryId, List<String> taxonomyIds);
 
     /**
      * Adds the catalogue given through the NIMBLE-specific, Excel-based template.
@@ -54,7 +51,7 @@ public interface CatalogueService {
      * @param catalogueTemplate
      * @param party
      */
-    public void addCatalogue(InputStream catalogueTemplate, PartyType party);
+    public CatalogueType addCatalogue(InputStream catalogueTemplate, PartyType party);
 
     /*
      * Catalogue-line level endpoints
