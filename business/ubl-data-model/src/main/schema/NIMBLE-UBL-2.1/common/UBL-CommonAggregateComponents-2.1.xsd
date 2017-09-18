@@ -2047,6 +2047,7 @@
 			<xsd:element ref="cac:Item"/>
 			<xsd:element ref="cac:WarrantyValidityPeriod" minOccurs="0"/>
 			<xsd:element ref="cac:TaxTotal" minOccurs="0"/>
+			<xsd:element ref="cac:LineReference" minOccurs="0" maxOccurs="unbounded"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="LineReferenceType">

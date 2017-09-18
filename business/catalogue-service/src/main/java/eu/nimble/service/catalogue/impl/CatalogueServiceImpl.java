@@ -20,6 +20,7 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
+import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.usermodel.*;
 import org.slf4j.Logger;
@@ -435,6 +436,10 @@ public class CatalogueServiceImpl implements CatalogueService {
             os.flush();
 
             logger.info("Catalogue with uuid: {} submitted to Marmotta. Received HTTP response: {}", catalogue.getUUID(), conn.getResponseCode());
+            if(conn.getResponseCode() == 500) {
+                InputStream error = conn.getErrorStream();
+                logger.error("Error from Marmotta: " + IOUtils.toString(error));
+            }
 
             conn.disconnect();
         } catch (IOException e) {
