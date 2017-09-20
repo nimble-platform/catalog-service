@@ -56,5 +56,4 @@ public class CatalogueServiceTest {
 	public void test4_deleteCatalogueTest_MODAML() {
 		CatalogueServiceImpl.getInstance().deleteCatalogue("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", Configuration.Standard.MODAML);
 	}
-
 }

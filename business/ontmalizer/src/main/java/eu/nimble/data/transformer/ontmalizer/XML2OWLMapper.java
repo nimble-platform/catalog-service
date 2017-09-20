@@ -10,6 +10,9 @@ import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.util.iterator.ExtendedIterator;
+import org.apache.jena.vocabulary.OWL;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.XSD;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.*;
@@ -48,7 +51,7 @@ public class XML2OWLMapper {
     private OntModel ontology = null;
 
     // Variables to uniquely name resources
-    private int no = 0;    // This is a random value between 0 and 9999999 for each instance of this class.
+    private String no;    // This is a uuid for each instance of this class.
     private Map<String, Integer> count = null; // This map holds how many times a resource has been used while naming.
 
     // Property prefixes
@@ -158,7 +161,7 @@ public class XML2OWLMapper {
         model = ModelFactory.createDefaultModel();
 
         Random random = new Random();
-        no = random.nextInt(9999999);
+        no = UUID.randomUUID().toString();
 
         // Get all the named resources the count map
         count = new HashMap<>();
@@ -194,12 +197,11 @@ public class XML2OWLMapper {
     public void convertXML2OWL() {
         Element root = document.getDocumentElement();
 
-        // Set namespace and its prefix if it is not set before.
-        /*if (NS == null) {
-            setNSPrefix(root);
-        }*/
-
-        OntClass rootType = ontology.getOntClass(getNamespace(root) + root.getLocalName());
+        // TODO check identification of the type of the root element
+        // As the root of the catalogue is a global element referring to a complex type, the type should be "CatalogueType"
+        // instead of "Catalogue" to be consistent with the mechanism associating the type of other similar cases. Therefore,
+        // we provide the type manually.
+        OntClass rootType = ontology.getOntClass(getNamespace(root) + "CatalogueType");
         Resource modelRoot = model.createResource(baseURI
                 + Constants.ONTMALIZER_INSTANCE_NAME_PREFIX
                 + no
@@ -304,16 +306,52 @@ public class XML2OWLMapper {
             while (it.hasNext()) {
                 OntClass mixed = (OntClass) it.next();
                 if (mixed.getURI().equals(subjectType.getURI())) {
-                    break;
+                    Property hasTextContent = model.createProperty(getNamespace(node.getParentNode()) + NamingUtil.createPropertyName(dtpprefix, Constants.MIXED_CLASS_DEFAULT_PROP_NAME));
+                    subject.addProperty(hasTextContent, node.getNodeValue().trim(), XSDDatatype.XSDstring);
+                    return;
                 }
                 if (!it.hasNext()) {
                     return;
                 }
             }
 
-            Property hasTextContent = model.createProperty(getNamespace(node.getParentNode()) + NamingUtil.createPropertyName(dtpprefix, Constants.MIXED_CLASS_DEFAULT_PROP_NAME));
-            subject.addProperty(hasTextContent, node.getNodeValue().trim(), XSDDatatype.XSDstring);
+            OntClass typeForText = ontology.getOntClass(node.getParentNode().getNamespaceURI() + "#" + node.getParentNode().getLocalName());
+            // Example typeForText: urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#PriceAmount
+            // Superclass of PriceAmount: rdfs:subClassOf ns3:AmountType
+            // trying to find restriction in AmountType on hasValue property
+            if (typeForText != null) {
+                OntClass typeClass = typeForText.getSuperClass();
+                Iterator<OntClass> superClasses = typeClass.listSuperClasses(true);
+                while (superClasses.hasNext()) {
+                    OntClass superClass = superClasses.next();
 
+                    if (superClass.isRestriction()) {
+                        if (superClass.asRestriction().isAllValuesFromRestriction()) {
+                            AllValuesFromRestriction avfRes = superClass.asRestriction().asAllValuesFromRestriction();
+                            Property hasValueProp = ontology.getDatatypeProperty(Constants.ONTMALIZER_VALUE_PROP_NAME);
+                            if (avfRes.getOnProperty().equals(hasValueProp)) {
+
+                                Property prop;
+                                Literal value;
+                                if (avfRes.getAllValuesFrom().equals(XSD.decimal)) {
+                                    prop = ontology.createDatatypeProperty(Constants.NS_CBC + "#" + Constants.ONTMALIZER_DECIMAL_VALUE_PROP_NAME);
+                                    value = model.createTypedLiteral(node.getNodeValue().trim(), XSD.decimal.getURI());
+
+                                } else if (avfRes.getAllValuesFrom().equals(XSD.base64Binary)) {
+                                    prop = ontology.createDatatypeProperty(Constants.NS_CBC + "#" + Constants.ONTMALIZER_BINARY_VALUE_PROP_NAME);
+                                    value = model.createTypedLiteral(node.getNodeValue().trim(), XSD.base64Binary.getURI());
+
+                                } else {
+                                    prop = ontology.createDatatypeProperty(Constants.NS_CBC + "#" + Constants.ONTMALIZER_STRING_VALUE_PROP_NAME);
+                                    value = model.createTypedLiteral(node.getNodeValue().trim(), XSD.xstring.getURI());
+
+                                }
+                                subject.addLiteral(prop, value);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         if (object != null) {
@@ -369,11 +407,10 @@ public class XML2OWLMapper {
                 }
             }
 
-            ExtendedIterator<Resource> rit = temp.listRDFTypes(false);
-            while (rit.hasNext()) {
-                Resource res = rit.next();
-                OntClass superCl = temp.getOntModel().getOntClass(res.getURI());
-                if (superCl != null) {
+            ExtendedIterator<OntClass> it = temp.listSuperClasses();
+            while (it.hasNext()) {
+                OntClass superCl = it.next();
+                if (!superCl.isRestriction() && !superCl.isEnumeratedClass()) {
                     queue.add(superCl);
                 }
             }
@@ -413,6 +450,8 @@ public class XML2OWLMapper {
 
         return result;
     }
+
+//    private Property get
 
     /**
      * @param out    - Output stream to write the model to.

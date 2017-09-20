@@ -11,6 +11,7 @@
 			<xsd:element ref="cbc:IssueTime" minOccurs="0"/>
 			<xsd:element ref="cbc:Note" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cbc:PricingCurrencyCode" minOccurs="0"/>
+			<xsd:element ref="cbc:LineCountNumeric" minOccurs="0"/>
 			<xsd:element ref="cac:ValidityPeriod" minOccurs="0"/>
 			<xsd:element ref="cac:RequestForQuotationDocumentReference" minOccurs="0"/>
 			<xsd:element ref="cac:AdditionalDocumentReference" minOccurs="0" maxOccurs="unbounded"/>
