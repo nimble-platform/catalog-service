@@ -139,7 +139,7 @@ public class TemplateParser {
         CodeType associatedClassificationCode = new CodeType();
         itemProp.setItemClassificationCode(associatedClassificationCode);
         itemProp.setName(property.getPreferredName());
-        String valueQualifier = property.getDataType().toUpperCase();
+        String valueQualifier = TemplateGenerator.normalizeDataTypeForTemplate(property.getDataType().toUpperCase());
         itemProp.setValueQualifier(property.getDataType());
 
         if (category != null) {
@@ -352,7 +352,7 @@ public class TemplateParser {
                 if (cell == null) {
                     continue;
                 } else {
-                    if (cell.getStringCellValue().contentEquals(item.getManufacturersItemIdentification().getID())) {
+                    if (getCellStringValue(cell).contentEquals(item.getManufacturersItemIdentification().getID())) {
                         break;
                     } else {
                         row = null;
@@ -511,7 +511,7 @@ public class TemplateParser {
             } else if (normalizedDataType.compareToIgnoreCase("NUMBER") == 0) {
                 results.add(new BigDecimal(value));
             } else if (normalizedDataType.compareToIgnoreCase("QUANTITY") == 0) {
-                results.add(parseQuantity(cell));
+                results.add(parseQuantity(value, cell));
             } else if (normalizedDataType.compareToIgnoreCase("FILE") == 0) {
                 results.add(parseBinaryObject(value));
             }
@@ -540,21 +540,19 @@ public class TemplateParser {
         return new Boolean(value);
     }
 
-    private QuantityType parseQuantity(Cell cell) throws TemplateParseException {
+    private QuantityType parseQuantity(String value, Cell cell) throws TemplateParseException {
         QuantityType quantity = new QuantityType();
-        Row row = cell.getRow();
 
-        // parse base quantity
         if (cell == null) {
             return null;
         }
 
-        quantity.setValue(new BigDecimal(cell.getNumericCellValue()));
+        Row row = cell.getRow();
+        quantity.setValue(new BigDecimal(value));
 
         // parse unit
         row = row.getSheet().getRow(3);
         cell = getCellWithMissingCellPolicy(row, cell.getColumnIndex());
-        String value;
         if (cell == null) {
             throw new TemplateParseException("Both value and unit must be provided for quantity values");
         } else {

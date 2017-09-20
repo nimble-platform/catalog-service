@@ -217,7 +217,7 @@ public class TemplateGenerator {
                 cell = secondRow.createCell(columnOffset);
                 cell.setCellValue(property.getPreferredName());
                 cell.setCellStyle(boldCellStyle);
-                thirdRow.createCell(columnOffset).setCellValue(property.getDataType());
+                thirdRow.createCell(columnOffset).setCellValue(normalizeDataTypeForTemplate(property));
                 fourthRow.createCell(columnOffset).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
                 columnOffset++;
             }

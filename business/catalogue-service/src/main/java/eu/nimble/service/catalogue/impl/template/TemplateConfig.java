@@ -238,7 +238,7 @@ public class TemplateConfig {
         // estimated delivery period
         prop = new Property();
         prop.setPreferredName(TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD);
-        prop.setDataType("NUMBER");
+        prop.setDataType("QUANTITY");
         properties.add(prop);
 
         // transport mode
@@ -256,7 +256,7 @@ public class TemplateConfig {
         // packaging quantity
         prop = new Property();
         prop.setPreferredName(TEMPLATE_TRADING_DELIVERY_PACKAGE_QUANTITY);
-        prop.setDataType("NUMBER");
+        prop.setDataType("QUANTITY");
         properties.add(prop);
 
         return properties;
