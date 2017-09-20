@@ -3,12 +3,9 @@ package eu.nimble.service.catalogue.impl;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
-import eu.nimble.service.catalogue.category.datamodel.Category;
 import eu.nimble.service.catalogue.client.IdentityClient;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyNameType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.Configuration;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -27,7 +24,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -174,7 +170,8 @@ public class CatalogueController {
     public ResponseEntity uploadTemplate(
             @RequestParam("file") MultipartFile file,
             @RequestParam("companyId") String partyId,
-            @RequestParam("companyName") String partyName) {
+            @RequestParam("companyName") String partyName,
+            HttpServletRequest request) {
         CatalogueType catalogue = null;
         try {
             //TODO retrieve the party from the identity service
@@ -191,10 +188,8 @@ public class CatalogueController {
 
         URI catalogueURI;
         try {
-            Properties prop = new Properties();
-            prop.load(CatalogueServiceImpl.class.getClassLoader().getResourceAsStream("application.properties"));
-            catalogueURI = new URI(prop.getProperty("catalogue.application.url") + "/" + catalogue.getUUID());
-        } catch (URISyntaxException | IOException e) {
+            catalogueURI = new URI(Utils.baseUrl(request) + "/" + catalogue.getUUID());
+        } catch (URISyntaxException e) {
             String msg = "Failed to generate a URI for the newly created item";
             log.error(msg, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(msg);
