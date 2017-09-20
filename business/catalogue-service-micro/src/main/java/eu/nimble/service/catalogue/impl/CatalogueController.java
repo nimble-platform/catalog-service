@@ -188,7 +188,7 @@ public class CatalogueController {
 
         URI catalogueURI;
         try {
-            catalogueURI = new URI(Utils.baseUrl(request) + "/" + catalogue.getUUID());
+            catalogueURI = new URI(Utils.baseUrl(request) + catalogue.getUUID());
         } catch (URISyntaxException e) {
             String msg = "Failed to generate a URI for the newly created item";
             log.error(msg, e);
