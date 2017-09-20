@@ -22,8 +22,8 @@ import java.util.Map;
  */
 public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryService {
     private static final String MARMOTTA_URI = "http://134.168.33.237:8080/marmotta";
-    private static final String GRAPH_URI = "http://134.168.33.237:8080/marmotta/context/furnituresectorontology";
-    private static final String FURNITURE_NS = "http://www.semanticweb.org/ontologies/2017/8/FurnitureSectorOntology.owl#";
+    private static final String GRAPH_URI = "http://134.168.33.237:8080/marmotta/context/furnituresectortaxonomy";
+    private static final String FURNITURE_NS = "http://www.aidimme.es/FurnitureSectorOntology.owl#";
     private static final String XSD_NS = "http://www.w3.org/2001/XMLSchema#";
 
     private static final Logger log = LoggerFactory.getLogger(FurnitureOntologyCategoryServiceImpl.class);
