@@ -53,6 +53,7 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
 
         // TODO: take the marmotta base uri form a parameter
         ClientConfiguration config = new ClientConfiguration(MARMOTTA_URI);
+        config.setConnectionTimeout(900000);
         client = new MarmottaClient(config);
     }
 
