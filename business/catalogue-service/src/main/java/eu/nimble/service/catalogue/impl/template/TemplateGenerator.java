@@ -11,6 +11,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static eu.nimble.service.catalogue.impl.template.TemplateConfig.*;
+import static eu.nimble.service.catalogue.impl.template.TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN;
+import static eu.nimble.service.catalogue.impl.template.TemplateConfig.TEMPLATE_DATA_TYPE_STRING;
+
 /**
  * Created by suat on 12-Sep-17.
  */
@@ -514,19 +518,37 @@ public class TemplateGenerator {
 
     public static String normalizeDataTypeForTemplate(String dataType) {
         String normalizedType;
-        if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_INT) == 0 ||
-                dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_REAL_MEASURE) == 0 ||
-                dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_FLOAT) == 0 ||
-                dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_DOUBLE) == 0) {
+        if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_REAL_MEASURE) == 0) {
             normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_NUMBER;
 
-        } else if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_STRING_TRANSLATABLE) == 0 ||
-                dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_STRING) == 0) {
+        } else if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_STRING) == 0) {
             normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_TEXT;
 
         } else {
             normalizedType = dataType;
         }
         return normalizedType;
+    }
+
+
+    public static String denormalizeDataTypeFromTemplate(String datatypeStr) {
+        String denormalizedDatatype;
+        if (datatypeStr.compareToIgnoreCase(TEMPLATE_DATA_TYPE_NUMBER) == 0) {
+            denormalizedDatatype = TEMPLATE_DATA_TYPE_REAL_MEASURE;
+
+        } else if (datatypeStr.compareToIgnoreCase(TEMPLATE_DATA_TYPE_FILE) == 0) {
+            denormalizedDatatype = TEMPLATE_DATA_TYPE_BINARY;
+
+        } else if (datatypeStr.compareToIgnoreCase(TEMPLATE_DATA_TYPE_QUANTITY) == 0) {
+            denormalizedDatatype = TEMPLATE_DATA_TYPE_QUANTITY;
+
+        } else if (datatypeStr.compareToIgnoreCase(TEMPLATE_DATA_TYPE_BOOLEAN) == 0) {
+            denormalizedDatatype = TEMPLATE_DATA_TYPE_BOOLEAN;
+
+        }else {
+            // for text or other unknown properties
+            denormalizedDatatype = TEMPLATE_DATA_TYPE_STRING;
+        }
+        return denormalizedDatatype;
     }
 }
