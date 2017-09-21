@@ -184,8 +184,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         String query;
         if (standard == Configuration.Standard.UBL) {
             query = "SELECT catalogue FROM CatalogueType catalogue "
-                    + " JOIN catalogue.UUID as catalogue_uuid "
-                    + " WHERE catalogue_uuid.value = '" + uuid + "'";
+                    + " WHERE catalogue.UUID = '" + uuid + "'";
 
             resultSet = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
                     .loadAll(query);
@@ -282,6 +281,8 @@ public class CatalogueServiceImpl implements CatalogueService {
             conn = (HttpURLConnection) marmottaURL.openConnection();
             conn.setRequestMethod("DELETE");
             conn.setDoOutput(true);
+            conn.setConnectTimeout(18000);
+            conn.setReadTimeout(18000);
 
             OutputStream os = conn.getOutputStream();
             os.flush();
@@ -395,7 +396,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         // log the ontology generated based on the XSD schema
         StringWriter serializedOntology = new StringWriter();
         mapping.writeOntology(serializedOntology, "N3");
-        logger.debug("Serialized ontology:\n{}", serializedOntology.toString());
+        //logger.debug("Serialized ontology:\n{}", serializedOntology.toString());
         //serializedOntology.flush();
 
         return mapping;
@@ -430,6 +431,8 @@ public class CatalogueServiceImpl implements CatalogueService {
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "text/n3");
             conn.setDoOutput(true);
+            conn.setConnectTimeout(18000);
+            conn.setReadTimeout(18000);
 
             OutputStream os = conn.getOutputStream();
             rdfGenerator.writeModel(os, "N3");
