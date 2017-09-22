@@ -11,6 +11,7 @@ import eu.nimble.service.model.ubl.commonbasiccomponents.AmountType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
+import eu.nimble.utility.HibernateUtility;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.*;
@@ -84,7 +85,7 @@ public class TemplateParser {
             ItemType item = new ItemType();
             List<CommodityClassificationType> classifications = new ArrayList<>();
             List<ItemPropertyType> itemProperties = new ArrayList<>();
-            item.setManufacturerParty(party);
+            item.setManufacturerParty((PartyType) HibernateUtility.getInstance().copySerializableObject(party, PartyType.class));
             goodsItem.setItem(item);
             clt.setGoodsItem(goodsItem);
             item.setCommodityClassification(classifications);
