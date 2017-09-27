@@ -46,4 +46,8 @@ public class CategoryServiceManager {
         ProductCategoryService pcs = services.get(taxonomyId);
         return pcs.getSubCategories(categoryId);
     }
+
+    public List<String> getAvailableTaxonomies() {
+        return new ArrayList<>(services.keySet());
+    }
 }

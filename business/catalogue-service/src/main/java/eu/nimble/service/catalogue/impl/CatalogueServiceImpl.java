@@ -16,13 +16,13 @@ import eu.nimble.service.catalogue.impl.template.TemplateParser;
 import eu.nimble.service.catalogue.util.ConfigUtil;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
 import org.apache.commons.io.IOUtils;
-import org.apache.poi.ss.formula.functions.T;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -37,10 +37,12 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import static eu.nimble.service.catalogue.util.ConfigUtil.*;
+import static eu.nimble.service.catalogue.util.ConfigUtil.CONFIG_CATALOGUE_PERSISTENCE_MARMOTTA_INDEX;
+import static eu.nimble.service.catalogue.util.ConfigUtil.CONFIG_CATALOGUE_PERSISTENCE_MARMOTTA_URL;
 
 /**
  * @author yildiray
@@ -450,18 +452,25 @@ public class CatalogueServiceImpl implements CatalogueService {
         }
     }
 
+    @Override
+    public List<Configuration.Standard> getSupportedStandards() {
+        return Arrays.asList(Configuration.Standard.values());
+    }
+
     /*
      * Catalogue-line level endpoints
      */
 
     @Override
-    public <T> T getCatalogueLine(String id) {
+    public <T> T getCatalogueLine(String catalogueId, String catalogueLineId) {
         T catalogueLine = null;
-        List<T> resultSet = null;
+        List<T> resultSet;
 
-        String query;
-        query = "Select catalogue_line FROM CatalogueLineType as catalogue_line "
-                + " WHERE catalogue_line.ID = '" + id + "'";
+        String query = "SELECT cl FROM CatalogueLineType as cl, CatalogueType as c "
+                + " JOIN c.catalogueLine as clj"
+                + " WHERE c.UUID = '" + catalogueId + "' "
+                + " AND cl.ID = '" + catalogueLineId + "' "
+                + " AND clj.ID = cl.ID ";
 
         resultSet = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
                 .loadAll(query);
@@ -499,7 +508,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     @Override
     public void deleteCatalogueLineById(String catalogueId, String id) {
         // delete catalogue from relational db
-        CatalogueLineType catalogueLine = getCatalogueLine(id);
+        CatalogueLineType catalogueLine = getCatalogueLine(catalogueId, id);
 
         if (catalogueLine != null) {
             Long hjid = catalogueLine.getHjid();

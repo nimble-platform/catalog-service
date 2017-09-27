@@ -40,7 +40,13 @@ public interface CatalogueService {
     public void deleteCatalogue(String uuid, Configuration.Standard standard);
 
     /**
+     * Returns the supported standards by this {@link CatalogueService}
      *
+     * @return
+     */
+    public List<Configuration.Standard> getSupportedStandards();
+
+    /**
      * @return
      */
     public Workbook generateTemplateForCategory(List<String> categoryId, List<String> taxonomyIds);
@@ -57,8 +63,11 @@ public interface CatalogueService {
      * Catalogue-line level endpoints
      */
 
-    public <T> T getCatalogueLine(String goodsItemId);
+    public <T> T getCatalogueLine(String catalogueId, String catalogueLineId);
+
     public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine);
+
     public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine);
+
     public void deleteCatalogueLineById(String catalogueId, String lineId);
 }
