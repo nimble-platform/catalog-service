@@ -8,6 +8,7 @@ import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.Configuration;
+import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -311,6 +313,7 @@ public class CatalogueController {
         try {
             String fileName = "product_data_template.xlsx";
             response.setHeader("Content-disposition", "attachment; filename=" + fileName);
+            response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
             template.write(response.getOutputStream());
             response.flushBuffer();
             log.info("Completing the request to generate template");
@@ -368,6 +371,41 @@ public class CatalogueController {
 
         log.info("Completing the request to upload template. Added catalogue uuid: {}", catalogue.getUUID());
         return ResponseEntity.created(catalogueURI).body(catalogue);
+    }
+
+    /**
+     * Returns the example filled in template
+     *
+     * @return 200 along with the added catalogue
+     */
+    @CrossOrigin(origins = {"*"})
+    @RequestMapping(value = "/catalogue/template/example",
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public void downloadExampleTemplate(HttpServletResponse response) {
+        log.info("Incoming request to get the example filled in template");
+
+        InputStream is = CatalogueController.class.getResourceAsStream("/template/cradle_filled.xlsx");
+
+        try {
+            String fileName = "cradle_filled.xlsx";
+            response.setHeader("Content-disposition", "attachment; filename=" + fileName);
+            response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
+            IOUtils.copy(is, response.getOutputStream());
+            response.flushBuffer();
+            is.close();
+            log.info("Completing the request to get the example template");
+
+        } catch (IOException e) {
+            String msg = "Failed to write the template content to the response output stream\n" + e.getMessage();
+            log.error(msg, e);
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            try {
+                response.getOutputStream().write(msg.getBytes());
+            } catch (IOException e1) {
+                log.error("Failed to write the error message to the output stream", e);
+            }
+        }
     }
 
     /**

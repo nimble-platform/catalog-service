@@ -358,7 +358,7 @@ public class TemplateParser {
                 }
             }
             if (row == null) {
-                throw new TemplateParseException("No trading & delivery terms for item: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
+                throw new TemplateParseException("No trading & delivery terms for item name: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
             }
 
             // parse the terms
@@ -376,7 +376,7 @@ public class TemplateParser {
 
                     // parse price amount
                     if (cell == null) {
-                        throw new TemplateParseException("No price provided for the item: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
+                        throw new TemplateParseException("No price provided for the item name: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
                     }
 
                     amount.setValue((BigDecimal) parseCell(cell, TEMPLATE_DATA_TYPE_NUMBER, false));
@@ -385,7 +385,7 @@ public class TemplateParser {
                     Row unitRow = termsTab.getRow(3);
                     cell = getCellWithMissingCellPolicy(unitRow, columnIndex);
                     if (cell == null) {
-                        throw new TemplateParseException("No currency provided for the price of the item: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
+                        throw new TemplateParseException("No currency provided for the price of the item name: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
                     }
 
                     value = getCellStringValue(cell);
@@ -394,9 +394,9 @@ public class TemplateParser {
                 } else if (property.getPreferredName().contentEquals(TEMPLATE_TRADING_DELIVERY_PRICE_BASE_QUANTITY)) {
                     QuantityType baseQuantity = (QuantityType) parseCell(cell, TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (baseQuantity == null) {
-                        throw new TemplateParseException("A base quantity and an associated unit must be provided for the item: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
+                        throw new TemplateParseException("A base quantity and an associated unit must be provided for the item name: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
                     } else if (baseQuantity.getUnitCode() == null) {
-                        throw new TemplateParseException("A unit must be provided for the base quantity of the item: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
+                        throw new TemplateParseException("A unit must be provided for the base quantity of the item name: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
                     }
                     catalogueLine.getRequiredItemLocationQuantity().getPrice().setBaseQuantity(baseQuantity);
 
@@ -404,7 +404,7 @@ public class TemplateParser {
                     QuantityType minimumOrderQuantity = (QuantityType) parseCell(cell, TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (minimumOrderQuantity != null) {
                         if (minimumOrderQuantity.getUnitCode() == null) {
-                            throw new TemplateParseException("A unit must be provided for the minimum order quantity of the item: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
+                            throw new TemplateParseException("A unit must be provided for the minimum order quantity of the item name: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
                         }
                     } else {
                         minimumOrderQuantity = new QuantityType();
@@ -418,7 +418,7 @@ public class TemplateParser {
                     QuantityType warrantyValidityPeriod = (QuantityType) parseCell(cell, TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (warrantyValidityPeriod != null) {
                         if (warrantyValidityPeriod.getUnitCode() == null) {
-                            throw new TemplateParseException("A unit must be provided for the warranty validity period of the item: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
+                            throw new TemplateParseException("A unit must be provided for the warranty validity period of the item name: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
                         }
                     } else {
                         warrantyValidityPeriod = new QuantityType();
@@ -449,7 +449,7 @@ public class TemplateParser {
                     QuantityType estimatedDeliveryQuantity = (QuantityType) parseCell(cell, TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (estimatedDeliveryQuantity != null) {
                         if (estimatedDeliveryQuantity.getUnitCode() == null) {
-                            throw new TemplateParseException("A unit must be provided for the estimated delivery period of the item: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
+                            throw new TemplateParseException("A unit must be provided for the estimated delivery period of the item name: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
                         }
 
                     } else {
@@ -485,7 +485,7 @@ public class TemplateParser {
                     QuantityType packageQuantity = (QuantityType) parseCell(cell, TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (packageQuantity != null) {
                         if (packageQuantity.getUnitCode() == null) {
-                            throw new TemplateParseException("A unit must be provided for the package quantity of the item: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
+                            throw new TemplateParseException("A unit must be provided for the package quantity of the item name: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
                         }
                     } else {
                         packageQuantity = new QuantityType();

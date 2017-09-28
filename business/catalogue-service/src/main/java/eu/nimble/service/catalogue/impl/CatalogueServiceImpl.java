@@ -318,7 +318,9 @@ public class CatalogueServiceImpl implements CatalogueService {
         try {
             catalogueLines = templateParser.getCatalogueLines(catalogueTemplate);
         } catch (TemplateParseException e) {
-            throw new CatalogueServiceException("Failed to parse the template", e);
+            String msg = e.getMessage();
+            msg = msg != null ? msg : "Failed to parse the template";
+            throw new CatalogueServiceException(msg, e);
         }
 
         // Assign IDs to lines that are missing it

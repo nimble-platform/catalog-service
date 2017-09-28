@@ -430,9 +430,13 @@ public class TemplateGenerator {
 
     private void populateMetadataTab(List<Category> categories, Sheet metadataTab) {
         // category information
+        if(categories.size() == 0) {
+            return;
+        }
         Row firstRow = metadataTab.createRow(0);
         Row secondRow = metadataTab.createRow(1);
         StringBuilder categoryIds = new StringBuilder(""), taxonomyIds = new StringBuilder("");
+
         for (int i = 0; i < categories.size() - 1; i++) {
             // category ids separated by comma
             categoryIds.append(categories.get(i).getId()).append(",");
