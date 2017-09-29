@@ -225,7 +225,11 @@ public class TemplateParser {
 
             // get the values for the custom property
             Cell cell = getCellWithMissingCellPolicy(productPropertiesTab.getRow(rowIndex), columnIndex);
-            Object values = parseCell(cell, property.getDataType(), true);
+            List<Object> values = (List<Object>) parseCell(cell, property.getDataType(), true);
+            if (values.isEmpty()) {
+                columnIndex++;
+                continue;
+            }
             // add the custom property to the beginning of additional item property list
             itemProperties.add(getItemPropertyFromCategoryProperty(null, property, values));
             columnIndex++;
@@ -613,6 +617,7 @@ public class TemplateParser {
     }
 
     private String getCellStringValue(Cell cell) {
+        cell.setCellType(CellType.STRING);
         switch (cell.getCellTypeEnum()) {
             case STRING:
                 return cell.getStringCellValue();
@@ -622,6 +627,8 @@ public class TemplateParser {
                 } else {
                     return cell.getNumericCellValue() + "";
                 }
+            case BOOLEAN:
+                return cell.getBooleanCellValue() ? "True" : "False";
             default:
                 return "";
         }
