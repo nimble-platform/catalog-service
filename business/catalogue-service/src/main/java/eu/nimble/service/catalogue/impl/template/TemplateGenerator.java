@@ -251,14 +251,14 @@ public class TemplateGenerator {
         cell = getCellWithMissingCellPolicy(topRow, 8);
         cell.setCellValue(TemplateConfig.TEMPLATE_TRADING_DELIVERY_DELIVERY_TERMS);
         cell.setCellStyle(boldCellStyle);
-        cra = new CellRangeAddress(0, 0, 8, 11);
+        cra = new CellRangeAddress(0, 0, 8, 12);
         termsTab.addMergedRegion(cra);
 
         // packaging block
-        cell = getCellWithMissingCellPolicy(topRow, 12);
+        cell = getCellWithMissingCellPolicy(topRow, 13);
         cell.setCellValue(TemplateConfig.TEMPLATE_TRADING_DELIVERY_PACKAGING);
         cell.setCellStyle(boldCellStyle);
-        cra = new CellRangeAddress(0, 0, 12, 13);
+        cra = new CellRangeAddress(0, 0, 13, 14);
         termsTab.addMergedRegion(cra);
 
 

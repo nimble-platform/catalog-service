@@ -484,6 +484,24 @@ public class TemplateParser {
                         catalogueLine.getGoodsItem().getDeliveryTerms().setTransportModeCode(transportModeCode);
                     }
 
+                } else if (property.getPreferredName().contentEquals(TEMPLATE_TRADING_DELIVERY_APPLICABLE_ADDRESS_COUNTRY)) {
+                    List<AddressType> applicableAddressList = new ArrayList<>();
+                    cell = getCellWithMissingCellPolicy(row, columnIndex);
+                    List<String> countries = parseMultiValues(cell);
+                    cell = getCellWithMissingCellPolicy(row, columnIndex + 1);
+                    List<String> cities = parseMultiValues(cell);
+                    for(String addr : countries) {
+                        for(String city : cities) {
+                            AddressType address = new AddressType();
+                            applicableAddressList.add(address);
+                            CountryType country = new CountryType();
+                            country.setName(addr);
+                            address.setCountry(country);
+                            address.setCityName(city);
+                        }
+                    }
+                    catalogueLine.getRequiredItemLocationQuantity().setApplicableTerritoryAddress(applicableAddressList);
+
                 } else if (property.getPreferredName().contentEquals(TEMPLATE_TRADING_DELIVERY_PACKAGING_TYPE)) {
                     cell = getCellWithMissingCellPolicy(row, columnIndex);
                     CodeType packagingType = new CodeType();
@@ -628,6 +646,10 @@ public class TemplateParser {
     }
 
     private String getCellStringValue(Cell cell) {
+        if(cell == null) {
+            return "";
+        }
+
         cell.setCellType(CellType.STRING);
         switch (cell.getCellTypeEnum()) {
             case STRING:
@@ -647,12 +669,14 @@ public class TemplateParser {
 
     private List<Category> getTemplateCategories(Sheet metadataTab) {
         List<Category> categories = new ArrayList<>();
+        Row row = metadataTab.getRow(0);
+        // if there is no category
+        if(row == null) {
+            return categories;
+        }
+
         String categoryIdsStr = getCellStringValue(metadataTab.getRow(0).getCell(0));
         String taxonomyIdsStr = getCellStringValue(metadataTab.getRow(1).getCell(0));
-
-        if(categoryIdsStr.contentEquals("")) {
-            return new ArrayList<>();
-        }
 
         List<String> categoryIds = Arrays.asList(categoryIdsStr.split(","));
         List<String> taxonomyIds = Arrays.asList(taxonomyIdsStr.split(","));

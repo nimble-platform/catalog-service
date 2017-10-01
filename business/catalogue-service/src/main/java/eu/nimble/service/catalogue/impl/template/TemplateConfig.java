@@ -81,6 +81,8 @@ public class TemplateConfig {
     public static String TEMPLATE_TRADING_DELIVERY_SPECIAL_TERMS = "Special Terms";
     public static String TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD = "Estimated Delivery Period";
     public static String TEMPLATE_TRADING_DELIVERY_TRANSPORT_MODE = "Transport Mode";
+    public static String TEMPLATE_TRADING_DELIVERY_APPLICABLE_ADDRESS_COUNTRY = "Applicable Address Country";
+    public static String TEMPLATE_TRADING_DELIVERY_APPLICABLE_ADDRESS_CITY = "Applicable Address City";
     public static String TEMPLATE_TRADING_DELIVERY_PACKAGING = "Packaging";
     public static String TEMPLATE_TRADING_DELIVERY_PACKAGING_TYPE = "Packaging Type";
     public static String TEMPLATE_TRADING_DELIVERY_PACKAGE_QUANTITY = "Package Quantity";
@@ -240,6 +242,18 @@ public class TemplateConfig {
         prop.setPreferredName(TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD);
         prop.setDataType("QUANTITY");
         properties.add(prop);
+
+        // applicable address territory country
+        prop = new Property();
+        prop.setPreferredName(TEMPLATE_TRADING_DELIVERY_APPLICABLE_ADDRESS_COUNTRY);
+        prop.setDataType("TEXT");
+        properties.add(prop);
+
+        // applicable address territory city
+        /*prop = new Property();
+        prop.setPreferredName(TEMPLATE_TRADING_DELIVERY_APPLICABLE_ADDRESS_CITY);
+        prop.setDataType("TEXT");
+        properties.add(prop);*/
 
         // transport mode
         prop = new Property();
