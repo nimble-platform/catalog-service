@@ -12,6 +12,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.zip.ZipInputStream;
 
 public interface CatalogueService {
 
@@ -58,6 +59,8 @@ public interface CatalogueService {
      * @param party
      */
     public CatalogueType addCatalogue(InputStream catalogueTemplate, PartyType party);
+
+    public void addImagesToProducts(ZipInputStream imagePackage, String catalogueUuid);
 
     /*
      * Catalogue-line level endpoints

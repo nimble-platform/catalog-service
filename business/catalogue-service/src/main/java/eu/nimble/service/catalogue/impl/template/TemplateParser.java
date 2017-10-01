@@ -266,9 +266,6 @@ public class TemplateParser {
             } else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION)) {
                 item.setDescription((String) parseCell(cell, TEMPLATE_DATA_TYPE_TEXT, false));
 
-            } else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_IMAGES)) {
-                item.setProductImage((List<BinaryObjectType>) parseCell(cell, TEMPLATE_DATA_TYPE_FILE, true));
-
             } else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_CERTIFICATIONS)) {
                 List<String> certificateNames = (List<String>) parseCell(cell, TEMPLATE_DATA_TYPE_TEXT, true);
                 List<CertificateType> certificates = new ArrayList<>();
@@ -586,7 +583,7 @@ public class TemplateParser {
         try {
             quantity.setValue(new BigDecimal(value));
         } catch (NumberFormatException e) {
-            logger.warn("Invalid number passed for quantity: {}", e);
+            logger.warn("Invalid number passed for quantity: {}", value, e);
             return null;
         }
 

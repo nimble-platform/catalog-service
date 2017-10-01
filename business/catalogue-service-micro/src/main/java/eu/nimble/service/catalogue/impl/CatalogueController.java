@@ -22,6 +22,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -29,6 +31,8 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Catalogue level REST services. A catalogue is a collection of products or services on which various business processes
@@ -347,6 +351,7 @@ public class CatalogueController {
             @RequestParam("file") MultipartFile file,
             @RequestParam("partyId") String partyId,
             @RequestParam("partyName") String partyName) {
+        log.info("Incoming request to upload template party id: {}, party name: {}", partyId, partyName);
         CatalogueType catalogue;
         try {
             //TODO retrieve the party from the identity service
@@ -371,6 +376,44 @@ public class CatalogueController {
 
         log.info("Completing the request to upload template. Added catalogue uuid: {}", catalogue.getUUID());
         return ResponseEntity.created(catalogueURI).body(catalogue);
+    }
+
+    /**
+     * Adds the images provided in the {@code pack} package object to relevant products. Each file in the package must start
+     * with the manufacturer item identification of the product for which the image is provided. Otherwise, the image
+     * would be ignored.
+     *
+     * @param pack          The package compressed as a Zip file, including the images
+     * @param catalogueUuid Unique identifier of the catalogue including the products for which the images are provided
+     * @return 200 along with the added catalogue
+     */
+    @CrossOrigin(origins = {"*"})
+    @RequestMapping(value = "/catalogue/image/upload",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            method = RequestMethod.POST)
+    public ResponseEntity uploadImages(
+            @RequestParam("package") MultipartFile pack,
+            @RequestParam("catalogueUuid") String catalogueUuid) {
+        log.info("Incoming request to upload images for catalogue: {}", catalogueUuid);
+
+        InputStream is = null;
+        ZipInputStream zis = null;
+        try {
+            zis = new ZipInputStream(pack.getInputStream());
+            service.addImagesToProducts(zis, catalogueUuid);
+
+        } catch (IOException e) {
+            return createErrorResponseEntity("Failed obtain a Zip package from the provided data", HttpStatus.BAD_REQUEST, e);
+        } finally {
+            try {
+                zis.close();
+            } catch (IOException e) {
+                log.warn("Failed to close Zip stream", e);
+            }
+        }
+
+        log.info("Completing the request to upload images for catalogue: {}", catalogueUuid);
+        return ResponseEntity.ok().build();
     }
 
     /**

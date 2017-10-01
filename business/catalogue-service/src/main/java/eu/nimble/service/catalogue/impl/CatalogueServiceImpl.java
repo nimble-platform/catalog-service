@@ -17,7 +17,9 @@ import eu.nimble.service.catalogue.util.ConfigUtil;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
+import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
@@ -27,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import javax.activation.MimetypesFileTypeMap;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -36,10 +39,14 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import static eu.nimble.service.catalogue.util.ConfigUtil.CONFIG_CATALOGUE_PERSISTENCE_MARMOTTA_INDEX;
 import static eu.nimble.service.catalogue.util.ConfigUtil.CONFIG_CATALOGUE_PERSISTENCE_MARMOTTA_URL;
@@ -332,7 +339,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
         CatalogueType catalogue = getCatalogue("default", party.getID());
 
-        if(catalogue == null) {
+        if (catalogue == null) {
             catalogue = new CatalogueType();
             catalogue.setID("default");
             catalogue.setProviderParty(party);
@@ -341,6 +348,61 @@ public class CatalogueServiceImpl implements CatalogueService {
         } else {
             catalogue.getCatalogueLine().addAll(catalogueLines);
             return updateCatalogue(catalogue);
+        }
+    }
+
+    @Override
+    public void addImagesToProducts(ZipInputStream imagePackage, String catalogueUuid) {
+        try {
+            CatalogueType catalogue = getCatalogue(catalogueUuid);
+            ZipEntry ze = imagePackage.getNextEntry();
+
+            while (ze != null) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                try {
+                    String fileName = ze.getName();
+                    String mimeType = MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(fileName);
+                    String prefix = fileName.split("\\.")[0];
+
+                    // find the item according to the prefix provided in the image name
+                    ItemType item = null;
+                    for(CatalogueLineType line : catalogue.getCatalogueLine()) {
+                        if(line.getGoodsItem().getItem().getManufacturersItemIdentification().getID().contentEquals(prefix)) {
+                            item = line.getGoodsItem().getItem();
+                            break;
+                        }
+                    }
+                    if(item == null) {
+                        logger.warn("No product to assign image with prefix: {}", prefix);
+
+                    } else {
+                        IOUtils.copy(imagePackage, baos);
+                        BinaryObjectType binaryObject = new BinaryObjectType();
+                        binaryObject.setMimeCode(mimeType);
+                        binaryObject.setFileName(ze.getName());
+                        binaryObject.setValue(baos.toByteArray());
+                        item.getProductImage().add(binaryObject);
+                        logger.info("Image {} added to item {}", fileName, item.getManufacturersItemIdentification().getID());
+                    }
+
+                } catch (IOException e) {
+                    logger.warn("Failed to get data from the zip entry: {}", ze.getName(), e);
+                } finally {
+                    try {
+                        baos.close();
+                    } catch (IOException e) {
+                        logger.warn("Failed to close baos", e);
+                    }
+                }
+                imagePackage.closeEntry();
+                ze = imagePackage.getNextEntry();
+            }
+
+            updateCatalogue(catalogue);
+        } catch (IOException e) {
+            String msg = "Failed to get next entry";
+            logger.error(msg, e);
+            throw new CatalogueServiceException(msg, e);
         }
     }
 
@@ -443,7 +505,7 @@ public class CatalogueServiceImpl implements CatalogueService {
             os.flush();
 
             logger.info("Catalogue with uuid: {} submitted to Marmotta. Received HTTP response: {}", catalogue.getUUID(), conn.getResponseCode());
-            if(conn.getResponseCode() == 500) {
+            if (conn.getResponseCode() == 500) {
                 InputStream error = conn.getErrorStream();
                 logger.error("Error from Marmotta: " + IOUtils.toString(error));
             }

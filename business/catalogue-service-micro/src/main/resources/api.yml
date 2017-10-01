@@ -157,6 +157,26 @@ paths:
       responses:
         201:
           description: Returned the generated template
+  /catalogue/image/upload:
+    post:
+      operationId: uploadImages
+      summary: Upload images for products
+      description: Adds the images provided in the package object to relevant products. Each file in the package must start with the manufacturer item identification of the product for which the image is provided. Otherwise, the image would be ignored.
+      consumes: [multipart/form-data]
+      parameters:
+      - in: formData
+        name: package
+        description: The package compressed as a Zip file, including the images
+        required: true
+        type: file
+      - in: query
+        name: catalogueUuid
+        description: Unique identifier of the catalogue including the products for which the images are provided
+        required: true
+        type: string
+      responses:
+        200:
+          description: Added images to products
   /catalogue/standards:
     get:
       operationId: getSupportedStandards
