@@ -1,11 +1,7 @@
-package eu.nimble.service.catalogue.impl.template;
+package eu.nimble.service.catalogue.template;
 
 import eu.nimble.service.catalogue.category.datamodel.Property;
 import eu.nimble.service.catalogue.category.datamodel.Unit;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.VerticalAlignment;
-import org.apache.poi.ss.usermodel.Workbook;
 
 import java.util.ArrayList;
 import java.util.List;

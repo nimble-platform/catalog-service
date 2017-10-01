@@ -1,11 +1,10 @@
-package eu.nimble.service.catalogue.impl.template;
+package eu.nimble.service.catalogue.template;
 
 import eu.nimble.service.catalogue.category.datamodel.Category;
 import eu.nimble.service.catalogue.category.datamodel.Property;
 import eu.nimble.service.catalogue.category.datamodel.Unit;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
-import eu.nimble.service.catalogue.exception.TemplateParseException;
-import eu.nimble.service.catalogue.impl.CategoryServiceManager;
+import eu.nimble.service.catalogue.CategoryServiceManager;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.model.ubl.commonbasiccomponents.AmountType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
@@ -16,7 +15,6 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.omg.CORBA.DynAnyPackage.Invalid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import static eu.nimble.service.catalogue.impl.template.TemplateConfig.*;
+import static eu.nimble.service.catalogue.template.TemplateConfig.*;
 
 /**
  * Created by suat on 04-Sep-17.

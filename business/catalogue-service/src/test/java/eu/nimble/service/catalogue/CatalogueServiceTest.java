@@ -5,7 +5,6 @@
  */
 package eu.nimble.service.catalogue;
 
-import eu.nimble.service.catalogue.impl.CatalogueServiceImpl;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.FileUtility;

@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue.impl;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
+import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.client.IdentityClient;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
@@ -22,8 +23,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -31,7 +30,6 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 /**

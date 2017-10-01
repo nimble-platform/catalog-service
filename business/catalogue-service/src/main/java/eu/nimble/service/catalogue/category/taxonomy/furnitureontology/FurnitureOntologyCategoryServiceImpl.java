@@ -1,16 +1,15 @@
-package eu.nimble.service.catalogue.impl;
+package eu.nimble.service.catalogue.category.taxonomy.furnitureontology;
 
 import eu.nimble.service.catalogue.ProductCategoryService;
 import eu.nimble.service.catalogue.category.datamodel.Category;
 import eu.nimble.service.catalogue.category.datamodel.Property;
-import eu.nimble.service.catalogue.impl.template.TemplateConfig;
+import eu.nimble.service.catalogue.template.TemplateConfig;
 import org.apache.marmotta.client.ClientConfiguration;
 import org.apache.marmotta.client.MarmottaClient;
 import org.apache.marmotta.client.clients.SPARQLClient;
 import org.apache.marmotta.client.exception.MarmottaClientException;
 import org.apache.marmotta.client.model.rdf.RDFNode;
 import org.apache.marmotta.client.model.sparql.SPARQLResult;
-import org.hibernate.sql.Template;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

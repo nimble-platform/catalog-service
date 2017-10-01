@@ -1,6 +1,5 @@
-package eu.nimble.service.catalogue.impl;
+package eu.nimble.service.catalogue;
 
-import eu.nimble.service.catalogue.ProductCategoryService;
 import eu.nimble.service.catalogue.category.datamodel.Category;
 
 import java.util.*;

@@ -1,23 +1,19 @@
-package eu.nimble.service.catalogue.impl.database;
+package eu.nimble.service.catalogue.category.taxonomy.eclass.database;
 
 import eu.nimble.service.catalogue.category.datamodel.Category;
 import eu.nimble.service.catalogue.category.datamodel.Property;
 import eu.nimble.service.catalogue.category.datamodel.Unit;
 import eu.nimble.service.catalogue.category.datamodel.Value;
 import eu.nimble.service.catalogue.exception.CategoryDatabaseException;
-import eu.nimble.service.catalogue.impl.template.TemplateConfig;
-import org.apache.commons.io.IOUtils;
-import org.hibernate.sql.Template;
-import org.postgresql.copy.CopyManager;
+import eu.nimble.service.catalogue.template.TemplateConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.sql.*;
 import java.util.*;
 
-import static eu.nimble.service.catalogue.impl.database.EClassCategoryDatabaseConfig.*;
+import static eu.nimble.service.catalogue.category.taxonomy.eclass.database.EClassCategoryDatabaseConfig.*;
 
 /**
  * Created by suat on 03-Mar-17.

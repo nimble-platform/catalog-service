@@ -3,16 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package eu.nimble.service.catalogue.impl;
+package eu.nimble.service.catalogue;
 
 import eu.nimble.data.transformer.ontmalizer.XML2OWLMapper;
 import eu.nimble.data.transformer.ontmalizer.XSD2OWLMapper;
-import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.category.datamodel.Category;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
-import eu.nimble.service.catalogue.impl.template.TemplateGenerator;
-import eu.nimble.service.catalogue.impl.template.TemplateParser;
+import eu.nimble.service.catalogue.template.TemplateGenerator;
+import eu.nimble.service.catalogue.template.TemplateParser;
 import eu.nimble.service.catalogue.util.ConfigUtil;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
@@ -39,8 +38,6 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

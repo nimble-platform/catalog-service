@@ -1,4 +1,4 @@
-package eu.nimble.service.catalogue.impl.template;
+package eu.nimble.service.catalogue.template;
 
 import eu.nimble.service.catalogue.category.datamodel.Category;
 import eu.nimble.service.catalogue.category.datamodel.Property;
@@ -11,9 +11,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static eu.nimble.service.catalogue.impl.template.TemplateConfig.*;
-import static eu.nimble.service.catalogue.impl.template.TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN;
-import static eu.nimble.service.catalogue.impl.template.TemplateConfig.TEMPLATE_DATA_TYPE_STRING;
+import static eu.nimble.service.catalogue.template.TemplateConfig.*;
+import static eu.nimble.service.catalogue.template.TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN;
+import static eu.nimble.service.catalogue.template.TemplateConfig.TEMPLATE_DATA_TYPE_STRING;
 
 /**
  * Created by suat on 12-Sep-17.

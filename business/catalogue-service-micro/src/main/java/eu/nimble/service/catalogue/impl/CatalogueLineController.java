@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue.impl;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
+import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import org.slf4j.Logger;

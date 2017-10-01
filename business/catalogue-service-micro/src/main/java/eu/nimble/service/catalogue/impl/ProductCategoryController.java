@@ -1,5 +1,6 @@
 package eu.nimble.service.catalogue.impl;
 
+import eu.nimble.service.catalogue.CategoryServiceManager;
 import eu.nimble.service.catalogue.category.datamodel.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
