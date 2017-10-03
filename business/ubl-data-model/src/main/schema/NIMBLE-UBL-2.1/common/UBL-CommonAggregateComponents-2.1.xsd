@@ -1917,6 +1917,7 @@
 			<xsd:element ref="cac:ManufacturersItemIdentification" minOccurs="0"/>
 			<xsd:element ref="cac:StandardItemIdentification" minOccurs="0"/>
 			<xsd:element ref="cac:AdditionalItemIdentification" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cac:CatalogueDocumentReference" minOccurs="0"/>
 			<xsd:element ref="cac:ItemSpecificationDocumentReference" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cbc:ProductImage" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cac:OriginCountry" minOccurs="0"/>

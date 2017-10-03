@@ -394,7 +394,6 @@ public class CatalogueController {
             @RequestParam("catalogueUuid") String catalogueUuid) {
         log.info("Incoming request to upload images for catalogue: {}", catalogueUuid);
 
-        InputStream is = null;
         ZipInputStream zis = null;
         try {
             zis = new ZipInputStream(pack.getInputStream());
