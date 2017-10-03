@@ -74,7 +74,7 @@ public class CatalogueController {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
         }
 
-        log.info("Completing request to get default catalogue for party: {}", partyId);
+        log.info("Completed request to get default catalogue for party: {}", partyId);
         return ResponseEntity.ok(catalogue);
     }
 
@@ -112,7 +112,7 @@ public class CatalogueController {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
         }
 
-        log.info("Completing request to get catalogue for standard: {}, uuid: {}", standard, uuid);
+        log.info("Completed request to get catalogue for standard: {}, uuid: {}", standard, uuid);
         return ResponseEntity.ok(catalogue);
     }
 
@@ -199,13 +199,13 @@ public class CatalogueController {
             String msg = "Failed to generate a URI for the newly created item";
             log.warn(msg, e);
             try {
-                log.info("Completing request to add catalogue with an empty URI, uuid: {}", uuid);
+                log.info("Completed request to add catalogue with an empty URI, uuid: {}", uuid);
                 return ResponseEntity.created(new URI("")).body(catalogue);
             } catch (URISyntaxException e1) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("WTF");
             }
         }
-        log.info("Completing request to add catalogue, uuid: {}", uuid);
+        log.info("Completed request to add catalogue, uuid: {}", uuid);
         return ResponseEntity.created(catalogueURI).body(catalogue);
     }
 
@@ -251,7 +251,7 @@ public class CatalogueController {
             return createErrorResponseEntity("Failed to update the catalogue", HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
 
-        log.info("Completing request to update the catalogue. uuid: {}", catalogue.getUUID());
+        log.info("Completed request to update the catalogue. uuid: {}", catalogue.getUUID());
         return ResponseEntity.ok(catalogue);
     }
 
@@ -274,7 +274,7 @@ public class CatalogueController {
             return createErrorResponseEntity("Failed to delete catalogue", HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
 
-        log.info("Completing request to delete catalogue with uuid: {}", uuid);
+        log.info("Completed request to delete catalogue with uuid: {}", uuid);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -318,7 +318,7 @@ public class CatalogueController {
             response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
             template.write(response.getOutputStream());
             response.flushBuffer();
-            log.info("Completing the request to generate template");
+            log.info("Completed the request to generate template");
         } catch (IOException e) {
             String msg = "Failed to write the template content to the response output stream\n" + e.getMessage();
             log.error(msg, e);
@@ -333,11 +333,15 @@ public class CatalogueController {
 
     /**
      * Adds the catalogue specified with the provided template. The created catalogue is compliant with the default
-     * standard, which is UBL
+     * standard, which is UBL. If there is a published catalogue already, the type of update is realized according to
+     * the update mode. There are two update modes: append and replace. In the former mode, if some of the products were
+     * already published, they are replaced with the new ones; furthermore, the brand new ones are appended to the
+     * existing product list. In the latter mode, all previously published products are deleted, the new list of products is set as it is.
      *
-     * @param file      The filled in excel-based template
-     * @param partyId   Identifier of the party submitting the template
-     * @param partyName Name of the party submitting the template
+     * @param file       Filled in excel-based template
+     * @param uploadMode Upload mode. Default value is "append"
+     * @param partyId    Identifier of the party submitting the template
+     * @param partyName  Name of the party submitting the template
      * @return 200 along with the added catalogue
      * @see @link downloadTemplate method to download an empty template
      */
@@ -347,9 +351,10 @@ public class CatalogueController {
             method = RequestMethod.POST)
     public ResponseEntity uploadTemplate(
             @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "uploadMode", defaultValue = "append") String uploadMode,
             @RequestParam("partyId") String partyId,
             @RequestParam("partyName") String partyName) {
-        log.info("Incoming request to upload template party id: {}, party name: {}", partyId, partyName);
+        log.info("Incoming request to upload template upload mode: {}, party id: {}, party name: {}", uploadMode, partyId, partyName);
         CatalogueType catalogue;
         try {
             //TODO retrieve the party from the identity service
@@ -358,7 +363,7 @@ public class CatalogueController {
             PartyType party = new PartyType();
             party.setName(partyName);
             party.setID(partyId);
-            catalogue = service.addCatalogue(file.getInputStream(), party);
+            catalogue = service.addCatalogue(file.getInputStream(), uploadMode, party);
         } catch (IOException e) {
             return createErrorResponseEntity("Failed to retrieve the template", HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
@@ -372,7 +377,7 @@ public class CatalogueController {
             return createErrorResponseEntity("Failed to generate a URI for the newly created item", HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
 
-        log.info("Completing the request to upload template. Added catalogue uuid: {}", catalogue.getUUID());
+        log.info("Completed the request to upload template. Added catalogue uuid: {}", catalogue.getUUID());
         return ResponseEntity.created(catalogueURI).body(catalogue);
     }
 
@@ -409,7 +414,7 @@ public class CatalogueController {
             }
         }
 
-        log.info("Completing the request to upload images for catalogue: {}", catalogueUuid);
+        log.info("Completed the request to upload images for catalogue: {}", catalogueUuid);
         return ResponseEntity.ok().build();
     }
 
@@ -434,7 +439,7 @@ public class CatalogueController {
             IOUtils.copy(is, response.getOutputStream());
             response.flushBuffer();
             is.close();
-            log.info("Completing the request to get the example template");
+            log.info("Completed the request to get the example template");
 
         } catch (IOException e) {
             String msg = "Failed to write the template content to the response output stream\n" + e.getMessage();
@@ -467,7 +472,7 @@ public class CatalogueController {
             return createErrorResponseEntity("Failed to get supported standards", HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
 
-        log.info("Completing request to retrieve the supported standards");
+        log.info("Completed request to retrieve the supported standards");
         return ResponseEntity.ok(standards);
     }
 

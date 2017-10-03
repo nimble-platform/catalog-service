@@ -136,7 +136,7 @@ paths:
     post:
       operationId: uploadTemplate
       summary: Upload template
-      description: Adds the catalogue specified with the provided template. The created catalogue is compliant with the default standard, which is UBL
+      description: Adds the catalogue specified with the provided template. The created catalogue is compliant with the default standard, which is UBL. If there is a published catalogue already, the type of update is realized according to the update mode. There are two update modes: append and replace. In the former mode, if some of the products were already published, they are replaced with the new ones; furthermore, the brand new ones are appended to the existing product list. In the latter mode, all previously published products are deleted, the new list of products is set as it is.
       consumes: [multipart/form-data]
       parameters:
       - in: formData
@@ -144,6 +144,11 @@ paths:
         description: Filled in excel-based template
         required: true
         type: file
+      - in: query
+        name: uploadMode
+        description: Upload mode. The default mode is append.
+        required: false
+        type: string
       - in: query
         name: partyId
         description: Identifier of the party submitting the template

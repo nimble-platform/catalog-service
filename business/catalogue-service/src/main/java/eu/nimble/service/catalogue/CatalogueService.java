@@ -58,7 +58,7 @@ public interface CatalogueService {
      * @param catalogueTemplate
      * @param party
      */
-    public CatalogueType addCatalogue(InputStream catalogueTemplate, PartyType party);
+    public CatalogueType addCatalogue(InputStream catalogueTemplate, String uploadMode, PartyType party);
 
     public void addImagesToProducts(ZipInputStream imagePackage, String catalogueUuid);
 

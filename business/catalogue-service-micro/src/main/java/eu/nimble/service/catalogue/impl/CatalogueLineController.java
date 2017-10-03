@@ -57,7 +57,7 @@ public class CatalogueLineController {
         if (catalogueLine == null) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
         }
-        log.info("Completing the request to get catalogue line with lineId: {}", lineId);
+        log.info("Completed the request to get catalogue line with lineId: {}", lineId);
         return ResponseEntity.ok(catalogueLine);
     }
 
@@ -104,13 +104,13 @@ public class CatalogueLineController {
             String msg = "Failed to generate a URI for the newly created item";
             log.warn(msg, e);
             try {
-                log.info("Completing request to add catalogue line with an empty URI, catalogue uuid: {}, lineId: {}", catalogueUuid, line.getID());
+                log.info("Completed request to add catalogue line with an empty URI, catalogue uuid: {}, lineId: {}", catalogueUuid, line.getID());
                 return ResponseEntity.created(new URI("")).body(line);
             } catch (URISyntaxException e1) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("WTF");
             }
         }
-        log.info("Completing request to add catalogue, catalogue uuid: {}, lineId: {}", catalogueUuid, line.getID());
+        log.info("Completed request to add catalogue, catalogue uuid: {}, lineId: {}", catalogueUuid, line.getID());
         return ResponseEntity.created(lineURI).body(line);
     }
 
@@ -141,7 +141,7 @@ public class CatalogueLineController {
         }
 
 
-        log.info("Completing the request to add catalogue line catalogue uuid, line lineId: {}", catalogueUuid, catalogueLine.getID());
+        log.info("Completed the request to add catalogue line catalogue uuid, line lineId: {}", catalogueUuid, catalogueLine.getID());
         return ResponseEntity.ok(catalogueLine);
     }
 
@@ -163,7 +163,7 @@ public class CatalogueLineController {
         } catch (Exception e) {
             return createErrorResponseEntity("Failed to delete the catalogue line. catalogue uuid: " + catalogueUuid + " line id: " + lineId, HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
-        log.info("Completing the request to delete catalogue line: catalogue uuid: {}, lineId: {}", catalogueUuid, lineId);
+        log.info("Completed the request to delete catalogue line: catalogue uuid: {}, lineId: {}", catalogueUuid, lineId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

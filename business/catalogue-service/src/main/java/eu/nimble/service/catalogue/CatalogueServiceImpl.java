@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.activation.MimetypesFileTypeMap;
-import javax.swing.text.Document;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -282,7 +281,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public CatalogueType addCatalogue(InputStream catalogueTemplate, PartyType party) {
+    public CatalogueType addCatalogue(InputStream catalogueTemplate, String uploadMode, PartyType party) {
         CatalogueType catalogue = getCatalogue("default", party.getID());
         boolean newCatalogue = false;
         if (catalogue == null) {
@@ -314,9 +313,50 @@ public class CatalogueServiceImpl implements CatalogueService {
             catalogue.setCatalogueLine(catalogueLines);
             return addCatalogue(catalogue);
         } else {
-            catalogue.getCatalogueLine().addAll(catalogueLines);
+            updateLinesForUploadMode(catalogue, uploadMode, catalogueLines);
             return updateCatalogue(catalogue);
         }
+    }
+
+    /**
+     * Populates catalogue line list of the catalogue based on the given update mode.
+     */
+    private void updateLinesForUploadMode(CatalogueType catalogue, String uploadMode, List<CatalogueLineType> newLines) {
+        List<CatalogueLineType> mergedList = new ArrayList<>();
+        if(uploadMode.compareToIgnoreCase("replace") == 0) {
+            mergedList = newLines;
+
+        } else {
+
+            // first process the existing list by also considering potential new versions
+            for (int i = 0; i < catalogue.getCatalogueLine().size(); i++) {
+                CatalogueLineType lineToMerge = catalogue.getCatalogueLine().get(i);
+                for (int j = 0; j < newLines.size(); j++) {
+                    if (newLines.get(j).getGoodsItem().getItem().getManufacturersItemIdentification().getID().equals(
+                            catalogue.getCatalogueLine().get(i).getGoodsItem().getItem().getManufacturersItemIdentification().getID())) {
+                        lineToMerge = newLines.get(j);
+                        break;
+                    }
+                }
+                mergedList.add(lineToMerge);
+
+                // insert new items
+                for (CatalogueLineType newLine : newLines) {
+                    boolean alreadyMerged = false;
+                    for (CatalogueLineType mergedLine : mergedList) {
+                        if (newLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID().equals(
+                                mergedLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID())) {
+                            alreadyMerged = true;
+                            break;
+                        }
+                    }
+                    if (!alreadyMerged) {
+                        mergedList.add(newLine);
+                    }
+                }
+            }
+        }
+        catalogue.setCatalogueLine(mergedList);
     }
 
     @Override
