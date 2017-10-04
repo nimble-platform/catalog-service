@@ -131,21 +131,22 @@ public class CatalogueController {
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
             method = RequestMethod.POST)
-    public ResponseEntity addXMLCatalogue(@PathVariable String standard, @RequestBody String serializedCatalogue, HttpServletRequest request) {
+    public ResponseEntity addXMLCatalogue(@PathVariable String standard,
+                                          @RequestBody String serializedCatalogue, HttpServletRequest request) {
         log.info("Incoming request to post catalogue with standard: {} standard", standard);
         log.debug("Catalogue content: {}", serializedCatalogue);
 
         String contentType = request.getContentType();
         if (contentType.contentEquals(MediaType.APPLICATION_JSON_VALUE)) {
-            return addJSONCatalogue(serializedCatalogue);
+            return addJSONCatalogue(serializedCatalogue, request);
         } else if (contentType.contentEquals(MediaType.APPLICATION_XML_VALUE)) {
-            return addXMLCatalogue(serializedCatalogue, standard);
+            return addXMLCatalogue(serializedCatalogue, standard, Utils.baseUrl(request));
         } else {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid content type: " + contentType);
         }
     }
 
-    private ResponseEntity addXMLCatalogue(String catalogueXML, String standard) {
+    private ResponseEntity addXMLCatalogue(String catalogueXML, String standard, String baseUrl) {
         Configuration.Standard std;
         try {
             std = getStandardEnum(standard);
@@ -160,10 +161,10 @@ public class CatalogueController {
             return createErrorResponseEntity("Failed to post catalogue for standard: " + standard, HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
 
-        return createCreatedCatalogueResponse(catalogue);
+        return createCreatedCatalogueResponse(catalogue, baseUrl);
     }
 
-    private ResponseEntity addJSONCatalogue(@RequestBody String catalogueJson) {
+    private ResponseEntity addJSONCatalogue(@RequestBody String catalogueJson, HttpServletRequest request) {
         log.info("Incoming request to post catalogue");
         log.debug("Catalogue content: {}", catalogueJson);
 
@@ -181,10 +182,10 @@ public class CatalogueController {
         }
         log.info("Catalogue add with uuid: {} completed", catalogue.getUUID());
 
-        return createCreatedCatalogueResponse(catalogue);
+        return createCreatedCatalogueResponse(catalogue, Utils.baseUrl(request));
     }
 
-    private ResponseEntity createCreatedCatalogueResponse(Object catalogue) {
+    private ResponseEntity createCreatedCatalogueResponse(Object catalogue, String baseUrl) {
         String uuid;
         if (catalogue instanceof CatalogueType) {
             uuid = ((CatalogueType) catalogue).getUUID().toString();
