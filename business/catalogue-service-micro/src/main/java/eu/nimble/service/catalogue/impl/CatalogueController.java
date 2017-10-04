@@ -36,9 +36,7 @@ import java.util.zip.ZipInputStream;
  * Catalogue level REST services. A catalogue is a collection of products or services on which various business processes
  * can be executed. A catalogue contains contains catalogue lines each of which corresponds to a product or service.
  */
-@SuppressWarnings("Duplicates")
 @Controller
-@SuppressWarnings("SpringJavaAutowiringInspection")
 public class CatalogueController {
 
     private static Logger log = LoggerFactory
@@ -354,7 +352,8 @@ public class CatalogueController {
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "uploadMode", defaultValue = "append") String uploadMode,
             @RequestParam("partyId") String partyId,
-            @RequestParam("partyName") String partyName) {
+            @RequestParam("partyName") String partyName,
+            HttpServletRequest request) {
         log.info("Incoming request to upload template upload mode: {}, party id: {}, party name: {}", uploadMode, partyId, partyName);
         CatalogueType catalogue;
         try {
