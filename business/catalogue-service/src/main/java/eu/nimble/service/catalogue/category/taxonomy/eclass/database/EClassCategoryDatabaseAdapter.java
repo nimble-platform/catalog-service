@@ -1,21 +1,19 @@
-package eu.nimble.service.catalogue.impl.database;
+package eu.nimble.service.catalogue.category.taxonomy.eclass.database;
 
 import eu.nimble.service.catalogue.category.datamodel.Category;
 import eu.nimble.service.catalogue.category.datamodel.Property;
 import eu.nimble.service.catalogue.category.datamodel.Unit;
 import eu.nimble.service.catalogue.category.datamodel.Value;
 import eu.nimble.service.catalogue.exception.CategoryDatabaseException;
-import org.apache.commons.io.IOUtils;
-import org.postgresql.copy.CopyManager;
+import eu.nimble.service.catalogue.template.TemplateConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.sql.*;
 import java.util.*;
 
-import static eu.nimble.service.catalogue.impl.database.EClassCategoryDatabaseConfig.*;
+import static eu.nimble.service.catalogue.category.taxonomy.eclass.database.EClassCategoryDatabaseConfig.*;
 
 /**
  * Created by suat on 03-Mar-17.
@@ -302,7 +300,7 @@ public class EClassCategoryDatabaseAdapter {
             prop.setPreferredSymbol(rs.getString(COLUMN_PROPERTY_PREFERRED_SYMBOL));
             prop.setIecCategory(rs.getString(COLUMN_PROPERTY_CATEGORY));
             prop.setAttributeType(rs.getString(COLUMN_PROPERTY_ATTRIBUTE_TYPE));
-            prop.setDataType(rs.getString(COLUMN_PROPERTY_DATA_TYPE));
+            prop.setDataType(getNormalizedDatatype(rs.getString(COLUMN_PROPERTY_DATA_TYPE)));
             results.put(prop.getId(), prop);
         }
         return results;
@@ -315,7 +313,7 @@ public class EClassCategoryDatabaseAdapter {
 
             Value value = new Value();
             value.setId(rs.getString(COLUMN_ECLASS_VALUE_IRDI_VA));
-            value.setDataType(rs.getString(COLUMN_ECLASS_VALUE_DATA_TYPE));
+            value.setDataType(getNormalizedDatatype(rs.getString(COLUMN_ECLASS_VALUE_DATA_TYPE)));
             value.setShortName(rs.getString(COLUMN_ECLASS_VALUE_SHORT_NAME));
             value.setPreferredName(rs.getString(COLUMN_ECLASS_VALUE_PREFERRED_NAME));
             value.setDefinition(rs.getString(COLUMN_ECLASS_VALUE_DEFINITION));
@@ -345,7 +343,35 @@ public class EClassCategoryDatabaseAdapter {
             unit.setSiNotation(rs.getString(COLUMN_UNIT_SI_NOTATION));
             unit.setSource(rs.getString(COLUMN_UNIT_SOURCE));
 
+            prop.setDataType("QUANTITY");
             prop.setUnit(unit);
         }
+    }
+
+    private String getNormalizedDatatype(String dataType) {
+
+            String normalizedType;
+            if (dataType.compareToIgnoreCase("INTEGER_COUNT") == 0 ||
+                    dataType.compareToIgnoreCase("INTEGER_MEASURE") == 0 ||
+                    dataType.compareToIgnoreCase("INTEGER_CURRENCY") == 0 ||
+                    dataType.compareToIgnoreCase("REAL_COUNT") == 0 ||
+                    dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_REAL_MEASURE) == 0 ||
+                    dataType.compareToIgnoreCase("REAL_CURRENCY") == 0 ||
+                    dataType.compareToIgnoreCase("RATIONAL") == 0 ||
+                    dataType.compareToIgnoreCase("RATIONAL_MEASURE") == 0) {
+                normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_REAL_MEASURE;
+
+            } else if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_STRING) == 0 ||
+                    dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_STRING_TRANSLATABLE) == 0) {
+                normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_STRING;
+
+            } else if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN) == 0) {
+                normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN;
+
+            } else {
+                logger.warn("Unknown data type encountered: {}", dataType);
+                normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_STRING;
+            }
+            return normalizedType;
     }
 }

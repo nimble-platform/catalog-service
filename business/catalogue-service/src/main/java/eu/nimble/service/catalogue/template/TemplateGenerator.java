@@ -1,4 +1,4 @@
-package eu.nimble.service.catalogue.impl.template;
+package eu.nimble.service.catalogue.template;
 
 import eu.nimble.service.catalogue.category.datamodel.Category;
 import eu.nimble.service.catalogue.category.datamodel.Property;
@@ -10,6 +10,10 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import static eu.nimble.service.catalogue.template.TemplateConfig.*;
+import static eu.nimble.service.catalogue.template.TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN;
+import static eu.nimble.service.catalogue.template.TemplateConfig.TEMPLATE_DATA_TYPE_STRING;
 
 /**
  * Created by suat on 12-Sep-17.
@@ -163,10 +167,10 @@ public class TemplateGenerator {
         // create the top row containing the category names and ids on top of the corresponding properties
         // create the dimension tab
         Row topRow = productPropertiesTab.createRow(0);
-        Cell cell = getCellWithMissingCellPolicy(topRow, 8);
+        Cell cell = getCellWithMissingCellPolicy(topRow, 7);
         cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_DIMENSIONS);
         cell.setCellStyle(headerCellStyle);
-        CellRangeAddress cra = new CellRangeAddress(0, 0, 8, 10);
+        CellRangeAddress cra = new CellRangeAddress(0, 0, 7, 9);
         productPropertiesTab.addMergedRegion(cra);
 
         // create the titles for categories
@@ -247,14 +251,14 @@ public class TemplateGenerator {
         cell = getCellWithMissingCellPolicy(topRow, 8);
         cell.setCellValue(TemplateConfig.TEMPLATE_TRADING_DELIVERY_DELIVERY_TERMS);
         cell.setCellStyle(boldCellStyle);
-        cra = new CellRangeAddress(0, 0, 8, 11);
+        cra = new CellRangeAddress(0, 0, 8, 12);
         termsTab.addMergedRegion(cra);
 
         // packaging block
-        cell = getCellWithMissingCellPolicy(topRow, 12);
+        cell = getCellWithMissingCellPolicy(topRow, 13);
         cell.setCellValue(TemplateConfig.TEMPLATE_TRADING_DELIVERY_PACKAGING);
         cell.setCellStyle(boldCellStyle);
-        cra = new CellRangeAddress(0, 0, 12, 13);
+        cra = new CellRangeAddress(0, 0, 13, 14);
         termsTab.addMergedRegion(cra);
 
 
@@ -426,9 +430,13 @@ public class TemplateGenerator {
 
     private void populateMetadataTab(List<Category> categories, Sheet metadataTab) {
         // category information
+        if(categories.size() == 0) {
+            return;
+        }
         Row firstRow = metadataTab.createRow(0);
         Row secondRow = metadataTab.createRow(1);
         StringBuilder categoryIds = new StringBuilder(""), taxonomyIds = new StringBuilder("");
+
         for (int i = 0; i < categories.size() - 1; i++) {
             // category ids separated by comma
             categoryIds.append(categories.get(i).getId()).append(",");
@@ -514,19 +522,37 @@ public class TemplateGenerator {
 
     public static String normalizeDataTypeForTemplate(String dataType) {
         String normalizedType;
-        if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_INT) == 0 ||
-                dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_REAL_MEASURE) == 0 ||
-                dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_FLOAT) == 0 ||
-                dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_DOUBLE) == 0) {
+        if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_REAL_MEASURE) == 0) {
             normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_NUMBER;
 
-        } else if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_STRING_TRANSLATABLE) == 0 ||
-                dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_STRING) == 0) {
+        } else if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_STRING) == 0) {
             normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_TEXT;
 
         } else {
             normalizedType = dataType;
         }
         return normalizedType;
+    }
+
+
+    public static String denormalizeDataTypeFromTemplate(String datatypeStr) {
+        String denormalizedDatatype;
+        if (datatypeStr.compareToIgnoreCase(TEMPLATE_DATA_TYPE_NUMBER) == 0) {
+            denormalizedDatatype = TEMPLATE_DATA_TYPE_REAL_MEASURE;
+
+        } else if (datatypeStr.compareToIgnoreCase(TEMPLATE_DATA_TYPE_FILE) == 0) {
+            denormalizedDatatype = TEMPLATE_DATA_TYPE_BINARY;
+
+        } else if (datatypeStr.compareToIgnoreCase(TEMPLATE_DATA_TYPE_QUANTITY) == 0) {
+            denormalizedDatatype = TEMPLATE_DATA_TYPE_QUANTITY;
+
+        } else if (datatypeStr.compareToIgnoreCase(TEMPLATE_DATA_TYPE_BOOLEAN) == 0) {
+            denormalizedDatatype = TEMPLATE_DATA_TYPE_BOOLEAN;
+
+        }else {
+            // for text or other unknown properties
+            denormalizedDatatype = TEMPLATE_DATA_TYPE_STRING;
+        }
+        return denormalizedDatatype;
     }
 }

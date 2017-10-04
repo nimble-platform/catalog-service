@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue.impl;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
+import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import org.slf4j.Logger;
@@ -13,87 +14,162 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Properties;
 
 /**
  * Created by suat on 22-Aug-17.
+ * <p>
+ * Catalogue line-level REST services. All services defined in this class are prefixed with the
+ * "/catalogue/{catalogueUuid}/catalogueline" path where the {@catalogueId} is the unique identifier of the specified
+ * catalogue. All services in this class work only on the UBL based catalogues.
  */
 @Controller
-@RequestMapping(value = "/{catalogueId}/catalogueline")
+@RequestMapping(value = "/catalogue/{catalogueUuid}/catalogueline")
 public class CatalogueLineController {
     private static Logger log = LoggerFactory.getLogger(CatalogueLineController.class);
 
     private CatalogueService service = CatalogueServiceImpl.getInstance();
 
+    /**
+     * Retrieves the catalogue line specified with the {@code lineId} parameter
+     *
+     * @param catalogueUuid
+     * @param lineId
+     * @return <li>200 along with the requested catalogue line</li>
+     * <li>204 if there does not exists a catalogue line with the given lineId</li>
+     */
     @CrossOrigin(origins = {"*"})
-    @RequestMapping(value = "/{id}",
+    @RequestMapping(value = "/{lineId}",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity<CatalogueLineType> getCatalogueLine(@PathVariable String id) {
-        log.info("Getting catalogue line with id: {}", id);
-        CatalogueLineType catalogueLine = service.getCatalogueLine(id);
+    public ResponseEntity<CatalogueLineType> getCatalogueLine(@PathVariable String catalogueUuid, @PathVariable String lineId) {
+        log.info("Incoming request to get catalogue line with lineId: {}", lineId);
+
+        CatalogueLineType catalogueLine;
+        try {
+            catalogueLine = service.getCatalogueLine(catalogueUuid, lineId);
+        } catch (Exception e) {
+            return createErrorResponseEntity("Failed to get catalogue line", HttpStatus.BAD_REQUEST, e);
+        }
+
         if (catalogueLine == null) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
         }
-        log.info("Returning catalogue line with id: {}", id);
+        log.info("Completed the request to get catalogue line with lineId: {}", lineId);
         return ResponseEntity.ok(catalogueLine);
     }
 
+    /**
+     * Adds the provided line
+     *
+     * @param catalogueUuid
+     * @param catalogueLineJson
+     * @return
+     */
     @CrossOrigin(origins = {"*"})
     @RequestMapping(value = "/{catalogueUuid}",
             consumes = {"application/json"},
             produces = {"application/json"},
             method = RequestMethod.POST)
     public ResponseEntity addCatalogueLine(@PathVariable String catalogueUuid, @RequestBody String catalogueLineJson) {
-        log.info("Adding catalogue line to catalogue: {}", catalogueUuid);
-        log.debug("Adding catalogue line to catalog: {}. Catalogue line: {}", catalogueLineJson);
-        CatalogueType catalogue = null;
-        CatalogueLineType catalogueLine = null;
+        log.info("Incoming request to add catalogue line to catalogue: {}", catalogueUuid);
+        log.debug("Catalogue line content: {}", catalogueLineJson);
+        CatalogueType catalogue;
+        CatalogueLineType catalogueLine;
         try {
             catalogue = service.getCatalogue(catalogueUuid);
             catalogueLine = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                     .readValue(catalogueLineJson, CatalogueLineType.class);
 
-            service.addLineToCatalogue(catalogue, catalogueLine);
+            catalogueLine = service.addLineToCatalogue(catalogue, catalogueLine);
 
         } catch (IOException e) {
-            log.error("Failed to deserialize catalogue line from json string", e);
-            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return createErrorResponseEntity("Failed to deserialize catalogue line from json string", HttpStatus.BAD_REQUEST, e);
+        } catch (Exception e) {
+            return createErrorResponseEntity("Failed to add the provided catalogue line", HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
 
-        log.info("Added catalogue line to catalogue: {}", catalogueUuid);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return createCreatedCatalogueLineResponse(catalogueUuid, catalogueLine);
     }
 
+    private ResponseEntity createCreatedCatalogueLineResponse(String catalogueUuid, CatalogueLineType line) {
+        URI lineURI;
+        try {
+            Properties prop = new Properties();
+            prop.load(CatalogueServiceImpl.class.getClassLoader().getResourceAsStream("application.properties"));
+            lineURI = new URI(prop.getProperty("catalogue.application.url") + "/catalogue/" + catalogueUuid + "/" + line.getID());
+        } catch (URISyntaxException | IOException e) {
+            String msg = "Failed to generate a URI for the newly created item";
+            log.warn(msg, e);
+            try {
+                log.info("Completed request to add catalogue line with an empty URI, catalogue uuid: {}, lineId: {}", catalogueUuid, line.getID());
+                return ResponseEntity.created(new URI("")).body(line);
+            } catch (URISyntaxException e1) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("WTF");
+            }
+        }
+        log.info("Completed request to add catalogue, catalogue uuid: {}, lineId: {}", catalogueUuid, line.getID());
+        return ResponseEntity.created(lineURI).body(line);
+    }
+
+    /**
+     * Updates the catalogue line
+     *
+     * @param catalogueUuid
+     * @param catalogueLineJson updated catalogue line information
+     * @return
+     */
     @CrossOrigin(origins = {"*"})
     @RequestMapping(consumes = {"application/json"},
             produces = {"application/json"},
             method = RequestMethod.PUT)
-    public ResponseEntity updateCatalogueLine(@RequestBody String catalogueLineJson) {
-        log.info("Updating catalogue line");
+    public ResponseEntity updateCatalogueLine(@PathVariable String catalogueUuid, @RequestBody String catalogueLineJson) {
+        log.info("Incoming request to update catalogue line. Catalogue uuid: {}", catalogueUuid);
         CatalogueLineType catalogueLine = null;
         try {
             catalogueLine = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                     .readValue(catalogueLineJson, CatalogueLineType.class);
-            log.info("Catalogue line id: {}", catalogueLine.getID());
+
+            service.updateCatalogueLine(catalogueLine);
+
         } catch (IOException e) {
-            log.error("Failed to deserialize catalogue line from json string", e);
-            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return createErrorResponseEntity("Failed to deserialize catalogue line from json string", HttpStatus.BAD_REQUEST, e);
+        } catch (Exception e) {
+            return createErrorResponseEntity("Failed to add the provided catalogue line", HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
 
-        service.updateCatalogueLine(catalogueLine);
-        log.info("Updated catalogue line: {}", catalogueLine.getID());
+
+        log.info("Completed the request to add catalogue line catalogue uuid, line lineId: {}", catalogueUuid, catalogueLine.getID());
+        return ResponseEntity.ok(catalogueLine);
+    }
+
+    /**
+     * Deletes the specified catalogue line
+     *
+     * @param catalogueUuid
+     * @param lineId
+     * @return
+     */
+    @CrossOrigin(origins = {"*"})
+    @RequestMapping(value = "/{lineId}",
+            produces = {"application/json"},
+            method = RequestMethod.DELETE)
+    public ResponseEntity deleteCatalogueLineById(@PathVariable String catalogueUuid, @PathVariable String lineId) {
+        log.info("Incoming request to delete catalogue line. catalogue uuid: {}: line lineId {}", catalogueUuid, lineId);
+        try {
+            service.deleteCatalogueLineById(catalogueUuid, lineId);
+        } catch (Exception e) {
+            return createErrorResponseEntity("Failed to delete the catalogue line. catalogue uuid: " + catalogueUuid + " line id: " + lineId, HttpStatus.INTERNAL_SERVER_ERROR, e);
+        }
+        log.info("Completed the request to delete catalogue line: catalogue uuid: {}, lineId: {}", catalogueUuid, lineId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @CrossOrigin(origins = {"*"})
-    @RequestMapping(value = "/{id}",
-            produces = {"application/json"},
-            method = RequestMethod.DELETE)
-    public ResponseEntity deleteCatalogueLineById(@PathVariable String catalogueId, @PathVariable String id) {
-        System.out.println("cat id : " + catalogueId);
-        log.info("Deleting catalogue line: {}", id);
-        service.deleteCatalogueLineById(catalogueId, id);
-        log.info("Deleted catalogue line: {}", id);
-        return ResponseEntity.status(HttpStatus.OK).build();
+    private ResponseEntity createErrorResponseEntity(String msg, HttpStatus status, Exception e) {
+        msg = msg + e.getMessage();
+        log.error(msg, e);
+        return ResponseEntity.status(status).body(msg);
     }
 }

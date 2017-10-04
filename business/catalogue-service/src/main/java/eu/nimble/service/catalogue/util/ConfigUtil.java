@@ -10,7 +10,6 @@ import java.util.Properties;
  */
 public class ConfigUtil {
     public static final String CONFIG_CATALOGUE_PERSISTENCE_MARMOTTA_URL = "catalogue.persistence.marmotta.url";
-    public static final String CONFIG_CATALOGUE_PERSISTENCE_MARMOTTA_INDEX = "catalogue.persistence.marmotta.index";
 
     private static ConfigUtil configUtil = null;
     private static Properties props = null;

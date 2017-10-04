@@ -1,4 +1,4 @@
-package eu.nimble.service.catalogue.impl.database;
+package eu.nimble.service.catalogue.category.taxonomy.eclass.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

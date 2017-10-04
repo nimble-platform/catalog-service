@@ -9,6 +9,9 @@ import java.util.Properties;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hibernate.Hibernate;
 import org.slf4j.LoggerFactory;
 
@@ -197,7 +200,26 @@ public class HibernateUtility {
 		}
 		return result.get(0);
 	}
-	
+
+	public static Object copySerializableObject(Object object, Class clazz) {
+		ObjectMapper om = new ObjectMapper();
+		String serializedObject;
+		try {
+			serializedObject = om.writeValueAsString(object);
+		} catch (JsonProcessingException e) {
+			throw new RuntimeException("Failed to serialize the object for class: " + clazz.getName(), e);
+		}
+
+		Object copy;
+		try {
+			copy = om.readValue(serializedObject, clazz);
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to deserizalize the object for class: " + clazz.getName() + "\nSerialization: " + serializedObject, e);
+		}
+
+		return  copy;
+	}
+
 	public static void main(String argv[]) {
 		try {
 			 org.h2.tools.Server server = org.h2.tools.Server.createTcpServer(

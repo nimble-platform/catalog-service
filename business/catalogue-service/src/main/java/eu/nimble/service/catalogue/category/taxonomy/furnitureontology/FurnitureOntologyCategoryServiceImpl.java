@@ -1,8 +1,9 @@
-package eu.nimble.service.catalogue.impl;
+package eu.nimble.service.catalogue.category.taxonomy.furnitureontology;
 
 import eu.nimble.service.catalogue.ProductCategoryService;
 import eu.nimble.service.catalogue.category.datamodel.Category;
 import eu.nimble.service.catalogue.category.datamodel.Property;
+import eu.nimble.service.catalogue.template.TemplateConfig;
 import org.apache.marmotta.client.ClientConfiguration;
 import org.apache.marmotta.client.MarmottaClient;
 import org.apache.marmotta.client.clients.SPARQLClient;
@@ -79,8 +80,8 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
             if (dataTypes != null) {
                 for (Map<String, RDFNode> dataType : dataTypes) {
                     String dtUri = getRemainder(dataType.get("prop").toString(), FURNITURE_NS);
-                    String unit = getRemainder(dataType.get("range").toString(), XSD_NS);
-                    Property property = createProperty(dtUri, unit);
+                    String dtStr = getRemainder(dataType.get("range").toString(), XSD_NS);
+                    Property property = createProperty(dtUri, dtStr);
                     properties.add(property);
                 }
             }
@@ -126,7 +127,7 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
         Property property = new Property();
         property.setId(uri);
         property.setPreferredName(getRemainder(uri, FURNITURE_NS));
-        property.setDataType(getRemainder(range, FURNITURE_NS).toUpperCase());
+        property.setDataType(getNormalizedDatatype(getRemainder(range, FURNITURE_NS).toUpperCase()));
         return property;
     }
 
@@ -155,6 +156,26 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
     @Override
     public String getTaxonomyId() {
         return "FurnitureOntology";
+    }
+
+    public String getNormalizedDatatype(String dataType) {
+        String normalizedType;
+        if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_INT) == 0 ||
+                dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_FLOAT) == 0 ||
+                dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_DOUBLE) == 0) {
+            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_REAL_MEASURE;
+
+        } else if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_STRING) == 0) {
+            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_STRING;
+
+        } else if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN) == 0) {
+            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN;
+
+        } else {
+            log.warn("Unknown data type encountered: {}", dataType);
+            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_STRING;
+        }
+        return normalizedType;
     }
 
     private String getDatatypePropertySparql(String uri) {

@@ -12,6 +12,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.zip.ZipInputStream;
 
 public interface CatalogueService {
 
@@ -40,7 +41,13 @@ public interface CatalogueService {
     public void deleteCatalogue(String uuid, Configuration.Standard standard);
 
     /**
+     * Returns the supported standards by this {@link CatalogueService}
      *
+     * @return
+     */
+    public List<Configuration.Standard> getSupportedStandards();
+
+    /**
      * @return
      */
     public Workbook generateTemplateForCategory(List<String> categoryId, List<String> taxonomyIds);
@@ -51,14 +58,19 @@ public interface CatalogueService {
      * @param catalogueTemplate
      * @param party
      */
-    public CatalogueType addCatalogue(InputStream catalogueTemplate, PartyType party);
+    public CatalogueType addCatalogue(InputStream catalogueTemplate, String uploadMode, PartyType party);
+
+    public void addImagesToProducts(ZipInputStream imagePackage, String catalogueUuid);
 
     /*
      * Catalogue-line level endpoints
      */
 
-    public <T> T getCatalogueLine(String goodsItemId);
+    public <T> T getCatalogueLine(String catalogueId, String catalogueLineId);
+
     public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine);
+
     public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine);
+
     public void deleteCatalogueLineById(String catalogueId, String lineId);
 }
