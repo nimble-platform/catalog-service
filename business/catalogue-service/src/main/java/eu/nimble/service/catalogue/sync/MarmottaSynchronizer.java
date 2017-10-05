@@ -86,26 +86,30 @@ public class MarmottaSynchronizer {
                 long interval = Long.valueOf(props.getProperty("syncdb.updatecheck.interval", "10000"));
 
                 while (sync) {
-                    List<SyncStatusRecord> records = getStatusRecords();
-                    for (SyncStatusRecord record : records) {
-                        if (record.getSyncStatus().equals(SyncStatus.ADD)) {
-                            CatalogueType catalogue = catalogueService.getCatalogue(record.getCatalogueUuid());
-                            marmottaClient.submitCatalogueDataToMarmotta(catalogue);
-                            logger.info("Processed add sync status for catalogue: {}", record.getCatalogueUuid());
+                    try {
+                        List<SyncStatusRecord> records = getStatusRecords();
+                        for (SyncStatusRecord record : records) {
+                            if (record.getSyncStatus().equals(SyncStatus.ADD)) {
+                                CatalogueType catalogue = catalogueService.getCatalogue(record.getCatalogueUuid());
+                                marmottaClient.submitCatalogueDataToMarmotta(catalogue);
+                                logger.info("Processed add sync status for catalogue: {}", record.getCatalogueUuid());
 
-                        } else if (record.getSyncStatus().equals(SyncStatus.UPDATE)) {
-                            CatalogueType catalogue = catalogueService.getCatalogue(record.getCatalogueUuid());
-                            marmottaClient.deleteCatalogueFromMarmotta(catalogue.getUUID());
-                            marmottaClient.submitCatalogueDataToMarmotta(catalogue);
-                            logger.info("Processed update sync status for catalogue: {}", record.getCatalogueUuid());
+                            } else if (record.getSyncStatus().equals(SyncStatus.UPDATE)) {
+                                CatalogueType catalogue = catalogueService.getCatalogue(record.getCatalogueUuid());
+                                marmottaClient.deleteCatalogueFromMarmotta(catalogue.getUUID());
+                                marmottaClient.submitCatalogueDataToMarmotta(catalogue);
+                                logger.info("Processed update sync status for catalogue: {}", record.getCatalogueUuid());
 
-                        } else if (record.getSyncStatus().equals(SyncStatus.DELETE)) {
-                            marmottaClient.deleteCatalogueFromMarmotta(record.getCatalogueUuid());
-                            logger.info("Processed delete sync status for catalogue: {}", record.getCatalogueUuid());
+                            } else if (record.getSyncStatus().equals(SyncStatus.DELETE)) {
+                                marmottaClient.deleteCatalogueFromMarmotta(record.getCatalogueUuid());
+                                logger.info("Processed delete sync status for catalogue: {}", record.getCatalogueUuid());
+                            }
+                            deleteStatusRecords(record.getCatalogueUuid());
                         }
-                        deleteStatusRecords(record.getCatalogueUuid());
+                        logger.debug("Processed sync status updates. Size: {}", records.size());
+                    } catch (Exception e) {
+                        logger.error("An error occurred during the synchronization", e);
                     }
-                    logger.debug("Processed sync status updates. Size: {}", records.size());
 
                     try {
                         Thread.sleep(interval);
