@@ -119,7 +119,7 @@ public class EClassCategoryDatabaseConfig {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM ").append(TABLE_NAME_CLASSIFICATION_CLASS)
                 .append(" WHERE ")
-                .append(COLUMN_CLASSIFICATION_CLASS_PREFERRED_NAME).append(" LIKE ?");
+                .append(COLUMN_CLASSIFICATION_CLASS_PREFERRED_NAME).append(" ILIKE ?");
         return sb.toString();
     }
 
@@ -148,7 +148,7 @@ public class EClassCategoryDatabaseConfig {
         sb.append("SELECT * FROM ").append(TABLE_NAME_CLASSIFICATION_CLASS)
                 .append(" WHERE ")
                 .append(COLUMN_CLASSIFICATION_CLASS_LEVEL).append(" = ? AND ")
-                .append(COLUMN_CLASSIFICATION_CLASS_CODED_NAME).append(" LIKE ?");
+                .append(COLUMN_CLASSIFICATION_CLASS_CODED_NAME).append(" ILIKE ?");
         return sb.toString();
     }
 
@@ -159,7 +159,7 @@ public class EClassCategoryDatabaseConfig {
                 .append(" FROM ").append(TABLE_NAME_KEYWORD_SYNONYM)
                 .append(" WHERE ")
                 .append(COLUMN_KEYWORD_SYNONYM_TYPE_OF_SE).append(" = 'KW' AND ")
-                .append(COLUMN_KEYWORD_SYNONYM_KEYWORD_VALUE_SYNONYM_VALUE).append(" LIKE ?");
+                .append(COLUMN_KEYWORD_SYNONYM_KEYWORD_VALUE_SYNONYM_VALUE).append(" ILIKE ?");
         return sb.toString();
     }
 
