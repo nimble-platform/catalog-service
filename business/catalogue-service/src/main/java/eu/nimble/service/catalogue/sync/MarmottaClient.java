@@ -8,6 +8,7 @@ import eu.nimble.service.catalogue.util.ConfigUtil;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.utility.Configuration;
 import org.apache.commons.io.IOUtils;
+import org.apache.marmotta.client.exception.MarmottaClientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +30,7 @@ import static eu.nimble.service.catalogue.util.ConfigUtil.CONFIG_CATALOGUE_PERSI
 public class MarmottaClient {
     private static final Logger logger = LoggerFactory.getLogger(MarmottaClient.class);
 
-    public void submitCatalogueDataToMarmotta(CatalogueType catalogue) {
+    public void submitCatalogueDataToMarmotta(CatalogueType catalogue) throws MarmottaSynchronizationException {
         logger.info("Catalogue with uuid: {} will be submitted to Marmotta.", catalogue.getUUID());
         XML2OWLMapper rdfGenerator = transformCatalogueToRDF(catalogue);
         logger.info("Transformed catalogue with uuid: {} to RDF", catalogue.getUUID());
@@ -39,9 +40,9 @@ public class MarmottaClient {
             String marmottaBaseUrl = ConfigUtil.getInstance().getConfig(CONFIG_CATALOGUE_PERSISTENCE_MARMOTTA_URL);
             marmottaURL = new URL(marmottaBaseUrl + "/import/upload?context=" + catalogue.getUUID());
         } catch (MalformedURLException e) {
-            throw new CatalogueServiceException("Invalid format for the submitted template", e);
+            throw new MarmottaSynchronizationException("Invalid URL while submitting template", e);
         } catch (IOException e) {
-            throw new CatalogueServiceException("Failed to read Marmotta URL from config file", e);
+            throw new MarmottaSynchronizationException("Failed to read Marmotta URL from config file", e);
         }
 
         HttpURLConnection conn = null;
@@ -58,18 +59,20 @@ public class MarmottaClient {
             os.flush();
 
             logger.info("Catalogue with uuid: {} submitted to Marmotta. Received HTTP response: {}", catalogue.getUUID(), conn.getResponseCode());
-            if (conn.getResponseCode() == 500) {
+            if (conn.getResponseCode() != 200) {
                 InputStream error = conn.getErrorStream();
-                logger.error("Error from Marmotta: " + IOUtils.toString(error));
+                String msg = IOUtils.toString(error);
+                logger.error("Error from Marmotta upon submitting the catalogue: {}, error: {}", catalogue.getUUID(), msg);
+                throw new MarmottaClientException(msg);
             }
 
             conn.disconnect();
-        } catch (IOException e) {
-            throw new CatalogueServiceException("Failed to submit catalogue to Marmotta", e);
+        } catch (IOException | MarmottaClientException e) {
+            throw new MarmottaSynchronizationException("Failed to submit catalogue to Marmotta", e);
         }
     }
 
-    public void deleteCatalogueFromMarmotta(String uuid) {
+    public void deleteCatalogueFromMarmotta(String uuid) throws MarmottaSynchronizationException {
         logger.info("Catalogue with uuid: {} will be deleted from Marmotta", uuid);
 
         URL marmottaURL;
@@ -77,7 +80,7 @@ public class MarmottaClient {
             String marmottaBaseUrl = ConfigUtil.getInstance().getConfig(CONFIG_CATALOGUE_PERSISTENCE_MARMOTTA_URL);
             marmottaURL = new URL(marmottaBaseUrl + "/context/" + uuid);
         } catch (IOException e) {
-            throw new CatalogueServiceException("Failed to read Marmotta URL from config file", e);
+            throw new MarmottaSynchronizationException("Failed to read Marmotta URL from config file", e);
         }
 
         HttpURLConnection conn;
@@ -92,15 +95,21 @@ public class MarmottaClient {
             os.flush();
 
             logger.info("Marmotta response for deleting catalogue with uuid: {}: {}", uuid, conn.getResponseCode());
+            if (conn.getResponseCode() != 200) {
+                InputStream error = conn.getErrorStream();
+                String msg = IOUtils.toString(error);
+                logger.error("Error from Marmotta upon deleting the catalogue: {}, error: {}", uuid, msg);
+                throw new MarmottaClientException(msg);
+            }
 
             conn.disconnect();
-        } catch (IOException e) {
-            throw new CatalogueServiceException("Failed to submit catalogue to Marmotta", e);
+        } catch (IOException | MarmottaClientException e) {
+            throw new MarmottaSynchronizationException("Failed to submit catalogue to Marmotta", e);
         }
         logger.info("Catalogue with uuid: {} deleted from Marmotta", uuid);
     }
 
-    private XML2OWLMapper transformCatalogueToRDF(CatalogueType catalogue) {
+    private XML2OWLMapper transformCatalogueToRDF(CatalogueType catalogue) throws MarmottaSynchronizationException {
         // TODO generate the ontology once, once the data model is finalized
         XSD2OWLMapper mapping = getXSDToOWLMapping();
 
@@ -118,7 +127,7 @@ public class MarmottaClient {
             marsh.marshal(element, serializedCatalogueWriter);
 
         } catch (JAXBException e) {
-            throw new CatalogueServiceException("Failed to serialize the catalogue instance to XML", e);
+            throw new MarmottaSynchronizationException("Failed to serialize the catalogue instance to XML", e);
         }
 
         // log the catalogue to be transformed
@@ -142,7 +151,7 @@ public class MarmottaClient {
             return generator;
 
         } catch (IOException e) {
-            throw new CatalogueServiceException("Failed to convert catalogue with uuid " + catalogue.getUUID() + " to RDF", e);
+            throw new MarmottaSynchronizationException("Failed to convert catalogue with uuid " + catalogue.getUUID() + " to RDF", e);
         }
     }
 
