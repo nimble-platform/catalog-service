@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 @EnableFeignClients
 @RestController
 @SpringBootApplication
-@ComponentScan(basePackages = "eu.nimble.service.catalogue")
 public class CatalogueApp implements CommandLineRunner {
 
     @Override

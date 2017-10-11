@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
+import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import org.slf4j.Logger;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Properties;
 
 /**
  * Created by suat on 22-Aug-17.
@@ -97,10 +97,9 @@ public class CatalogueLineController {
     private ResponseEntity createCreatedCatalogueLineResponse(String catalogueUuid, CatalogueLineType line) {
         URI lineURI;
         try {
-            Properties prop = new Properties();
-            prop.load(CatalogueServiceImpl.class.getClassLoader().getResourceAsStream("application.properties"));
-            lineURI = new URI(prop.getProperty("catalogue.application.url") + "/catalogue/" + catalogueUuid + "/" + line.getID());
-        } catch (URISyntaxException | IOException e) {
+            String applicationUrl = CatalogueServiceConfig.getInstance().getSpringApplicationUrl();
+            lineURI = new URI(applicationUrl + "/catalogue/" + catalogueUuid + "/" + line.getID());
+        } catch (URISyntaxException e) {
             String msg = "Failed to generate a URI for the newly created item";
             log.warn(msg, e);
             try {

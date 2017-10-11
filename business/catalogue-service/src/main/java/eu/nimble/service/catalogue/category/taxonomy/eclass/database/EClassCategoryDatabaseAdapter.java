@@ -4,12 +4,12 @@ import eu.nimble.service.catalogue.category.datamodel.Category;
 import eu.nimble.service.catalogue.category.datamodel.Property;
 import eu.nimble.service.catalogue.category.datamodel.Unit;
 import eu.nimble.service.catalogue.category.datamodel.Value;
+import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.exception.CategoryDatabaseException;
 import eu.nimble.service.catalogue.template.TemplateConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
@@ -35,19 +35,18 @@ public class EClassCategoryDatabaseAdapter {
 
     private Connection getConnection() throws CategoryDatabaseException {
         try {
-            Properties props = new Properties();
-            props.load(EClassCategoryDatabaseAdapter.class.getClassLoader().getResourceAsStream("application.properties"));
+            CatalogueServiceConfig config = CatalogueServiceConfig.getInstance();
 
-            Class.forName(props.getProperty("category.db.driver"));
+            Class.forName(config.getCategoryDbDriver());
             Connection connection = DriverManager
-                    .getConnection(props.getProperty("category.db.url"), props.getProperty("category.db.user"), props.getProperty("category.db.password"));
+                    .getConnection(config.getCategoryDbConnectionUrl(), config.getCategoryDbUsername(), config.getCategoryDbPassword());
 
-            PreparedStatement preparedStatement = connection.prepareStatement(eClassQuerySetPostgresDatabaseSchema(props.getProperty("category.db.schema")));
+            PreparedStatement preparedStatement = connection.prepareStatement(eClassQuerySetPostgresDatabaseSchema(config.getCategoryDbScheme()));
             preparedStatement.execute();
 
             return connection;
 
-        } catch (IOException | SQLException | ClassNotFoundException e) {
+        } catch (SQLException | ClassNotFoundException e) {
             throw new CategoryDatabaseException("Failed to get connection", e);
         }
 

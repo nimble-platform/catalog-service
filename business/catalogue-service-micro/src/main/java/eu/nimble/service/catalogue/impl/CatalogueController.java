@@ -5,15 +5,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.client.IdentityClient;
+import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.Configuration;
+import eu.nimble.utility.config.PersistenceConfig;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +32,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 import java.util.zip.ZipInputStream;
 
 /**
@@ -37,12 +39,19 @@ import java.util.zip.ZipInputStream;
  * can be executed. A catalogue contains contains catalogue lines each of which corresponds to a product or service.
  */
 @Controller
+@ComponentScan(basePackages = "eu")
 public class CatalogueController {
 
     private static Logger log = LoggerFactory
             .getLogger(CatalogueController.class);
 
     private CatalogueService service = CatalogueServiceImpl.getInstance();
+
+    @Autowired
+    CatalogueServiceConfig conf;
+
+    @Autowired
+    PersistenceConfig ublConf;
 
     @Autowired
     private IdentityClient identityClient;

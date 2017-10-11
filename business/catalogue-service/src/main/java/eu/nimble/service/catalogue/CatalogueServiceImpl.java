@@ -6,6 +6,7 @@
 package eu.nimble.service.catalogue;
 
 import eu.nimble.service.catalogue.category.datamodel.Category;
+import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
@@ -47,6 +48,8 @@ public class CatalogueServiceImpl implements CatalogueService {
     private static final Logger logger = LoggerFactory.getLogger(CatalogueServiceImpl.class);
     private static CatalogueService instance = null;
     private static CategoryServiceManager csmInstance = CategoryServiceManager.getInstance();
+
+    private CatalogueServiceConfig config = CatalogueServiceConfig.getInstance();
 
     private CatalogueServiceImpl() {
     }

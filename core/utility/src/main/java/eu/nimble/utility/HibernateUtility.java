@@ -1,19 +1,19 @@
 package eu.nimble.utility;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.nimble.utility.config.PersistenceConfig;
+import org.hibernate.Hibernate;
+import org.slf4j.LoggerFactory;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hibernate.Hibernate;
-import org.slf4j.LoggerFactory;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class HibernateUtility {
 
@@ -42,28 +42,15 @@ public class HibernateUtility {
 
 	@SuppressWarnings("unchecked")
 	private HibernateUtility(String persistenceUnitName) {
-		String persistencePropertiesFileName = specifyPersistencePropertiesFileName(persistenceUnitName);
-		
-		Properties persistenceProperties = new Properties();
-		InputStream is = null;
-		try {
-			is = getClass().getClassLoader().getResourceAsStream(
-				persistencePropertiesFileName);
-			persistenceProperties.load(is);
-			persistenceProperties.setProperty("hibernate.event.merge.entity_copy_observer", "allow");
-		} catch (Exception ex) {
-			log.error("", ex);
-		} finally {
-			if (is != null) {
-				try {
-					is.close();
-				} catch (IOException ignored) {
-				}
-			}
+		this(persistenceUnitName, null);
+	}
+
+	private HibernateUtility(String persistenceUnitName, Map persistenceProperties) {
+		if(persistenceProperties == null) {
+			persistenceProperties = PersistenceConfig.getInstance().getPersistenceParameters(persistenceUnitName);
 		}
 
 		entityManagerFactory = Persistence.createEntityManagerFactory(persistenceUnitName, persistenceProperties);
-
 		log.info(" $$$ HibernateUtility is initialized");
 	}
 
@@ -74,6 +61,15 @@ public class HibernateUtility {
 	public static HibernateUtility getInstance(String persistenceUnitName) {
 		if (engineInstances.get(persistenceUnitName) == null) {
 			HibernateUtility engineInstance = new HibernateUtility(persistenceUnitName);
+			engineInstances.put(persistenceUnitName, engineInstance);
+		}
+
+		return engineInstances.get(persistenceUnitName);
+	}
+
+	public static HibernateUtility getInstance(String persistenceUnitName, Map<String, String> persistenceProperties) {
+		if (engineInstances.get(persistenceUnitName) == null) {
+			HibernateUtility engineInstance = new HibernateUtility(persistenceUnitName, persistenceProperties);
 			engineInstances.put(persistenceUnitName, engineInstance);
 		}
 

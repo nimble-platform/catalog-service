@@ -2,16 +2,14 @@ package eu.nimble.service.catalogue.sync;
 
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
-import eu.nimble.service.catalogue.category.taxonomy.eclass.database.EClassCategoryDatabaseAdapter;
+import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * Created by suat on 01-Oct-17.
@@ -48,6 +46,10 @@ public class MarmottaSynchronizer {
     private Thread syncThread = null;
     private boolean sync = true;
 
+    private MarmottaSynchronizer() {
+
+    }
+
     public static void main(String[] args) throws SQLException, InterruptedException {
         MarmottaSynchronizer sync = new MarmottaSynchronizer();
         /*sync.createStatusTable();
@@ -61,12 +63,8 @@ public class MarmottaSynchronizer {
         System.out.println("done");*/
     }
 
-    private MarmottaSynchronizer() {
-
-    }
-
     public static MarmottaSynchronizer getInstance() {
-        if(instance == null) {
+        if (instance == null) {
             instance = new MarmottaSynchronizer();
         }
         return instance;
@@ -80,54 +78,47 @@ public class MarmottaSynchronizer {
     public void startSynchronization() {
         createStatusTable();
         syncThread = new Thread(() -> {
-            Properties props = new Properties();
-            try {
-                props.load(EClassCategoryDatabaseAdapter.class.getClassLoader().getResourceAsStream("application.properties"));
-                long interval = Long.valueOf(props.getProperty("syncdb.updatecheck.interval", "10000"));
+            long interval = CatalogueServiceConfig.getInstance().getSyncDbUpdateCheckInterval();
+            while (sync) {
+                try {
+                    List<SyncStatusRecord> records = getStatusRecords();
+                    for (SyncStatusRecord record : records) {
+                        if (record.getSyncStatus().equals(SyncStatus.ADD)) {
+                            CatalogueType catalogue = catalogueService.getCatalogue(record.getCatalogueUuid());
+                            marmottaClient.submitCatalogueDataToMarmotta(catalogue);
+                            logger.info("Processed add sync status for catalogue: {}", record.getCatalogueUuid());
 
-                while (sync) {
-                    try {
-                        List<SyncStatusRecord> records = getStatusRecords();
-                        for (SyncStatusRecord record : records) {
-                            if (record.getSyncStatus().equals(SyncStatus.ADD)) {
-                                CatalogueType catalogue = catalogueService.getCatalogue(record.getCatalogueUuid());
-                                marmottaClient.submitCatalogueDataToMarmotta(catalogue);
-                                logger.info("Processed add sync status for catalogue: {}", record.getCatalogueUuid());
+                        } else if (record.getSyncStatus().equals(SyncStatus.UPDATE)) {
+                            CatalogueType catalogue = catalogueService.getCatalogue(record.getCatalogueUuid());
+                            marmottaClient.deleteCatalogueFromMarmotta(catalogue.getUUID());
+                            marmottaClient.submitCatalogueDataToMarmotta(catalogue);
+                            logger.info("Processed update sync status for catalogue: {}", record.getCatalogueUuid());
 
-                            } else if (record.getSyncStatus().equals(SyncStatus.UPDATE)) {
-                                CatalogueType catalogue = catalogueService.getCatalogue(record.getCatalogueUuid());
-                                marmottaClient.deleteCatalogueFromMarmotta(catalogue.getUUID());
-                                marmottaClient.submitCatalogueDataToMarmotta(catalogue);
-                                logger.info("Processed update sync status for catalogue: {}", record.getCatalogueUuid());
-
-                            } else if (record.getSyncStatus().equals(SyncStatus.DELETE)) {
-                                marmottaClient.deleteCatalogueFromMarmotta(record.getCatalogueUuid());
-                                logger.info("Processed delete sync status for catalogue: {}", record.getCatalogueUuid());
-                            }
-                            deleteStatusRecords(record.getCatalogueUuid());
+                        } else if (record.getSyncStatus().equals(SyncStatus.DELETE)) {
+                            marmottaClient.deleteCatalogueFromMarmotta(record.getCatalogueUuid());
+                            logger.info("Processed delete sync status for catalogue: {}", record.getCatalogueUuid());
                         }
-                        logger.debug("Processed sync status updates. Size: {}", records.size());
-                    } catch (Exception e) {
-                        logger.error("An error occurred during the synchronization", e);
+                        deleteStatusRecords(record.getCatalogueUuid());
                     }
-
-                    try {
-                        Thread.sleep(interval);
-                    } catch (InterruptedException e) {
-                        logger.info("Wake up. Interrupted Marmotta Synchronizer thread", e);
-                        break;
-                    }
-
-                    if(Thread.currentThread().isInterrupted()) {
-                        logger.info("Interrupted Marmotta Synchronizer thread");
-                        break;
-                    }
+                    logger.debug("Processed sync status updates. Size: {}", records.size());
+                } catch (Exception e) {
+                    logger.error("An error occurred during the synchronization", e);
                 }
 
-                logger.info("Marmotta synchronization has been stopped");
-            } catch (IOException e) {
-                logger.error("Failed to retrieve update interval from properties");
+                try {
+                    Thread.sleep(interval);
+                } catch (InterruptedException e) {
+                    logger.info("Wake up. Interrupted Marmotta Synchronizer thread", e);
+                    break;
+                }
+
+                if (Thread.currentThread().isInterrupted()) {
+                    logger.info("Interrupted Marmotta Synchronizer thread");
+                    break;
+                }
             }
+
+            logger.info("Marmotta synchronization has been stopped");
         });
         syncThread.start();
         logger.info("Synchronization thread started");
@@ -244,16 +235,14 @@ public class MarmottaSynchronizer {
 
     private Connection getConnection() {
         try {
-            Properties props = new Properties();
-            props.load(EClassCategoryDatabaseAdapter.class.getClassLoader().getResourceAsStream("application.properties"));
-
-            Class.forName(props.getProperty("syncdb.connection.driver"));
+            CatalogueServiceConfig config = CatalogueServiceConfig.getInstance();
+            Class.forName(config.getSyncDbDriver());
             Connection connection = DriverManager
-                    .getConnection(props.getProperty("syncdb.connection.url"), props.getProperty("syncdb.connection.username"), props.getProperty("syncdb.connection.password"));
+                    .getConnection(config.getSyncdbConnectionUrl(), config.getSyncDbUsername(), config.getSyncDbPassword());
 
             return connection;
 
-        } catch (IOException | SQLException | ClassNotFoundException e) {
+        } catch (SQLException | ClassNotFoundException e) {
             String msg = "Failed to get DB connection";
             logger.error(msg, e);
             throw new RuntimeException(msg, e);

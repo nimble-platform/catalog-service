@@ -7,16 +7,23 @@ package eu.nimble.service.catalogue;
 
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.utility.Configuration;
-import eu.nimble.utility.FileUtility;
 import eu.nimble.utility.HibernateUtility;
+import eu.nimble.utility.config.CatalogueServiceConfig;
+import eu.nimble.utility.config.PersistenceConfig;
+import org.apache.commons.io.IOUtils;
 import org.junit.*;
+import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  *
  * @author yildiray
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = {PersistenceConfig.class, CatalogueServiceConfig.class})
 public class CatalogueServiceTest {
 
 	private static String addedCatalogueUUID;
@@ -32,14 +39,14 @@ public class CatalogueServiceTest {
 	}
 
 	@Test
-	public void test1_addCatalogueTest_MODAML() {
-		String catalogueXML = FileUtility.readFile("../modaml-data-model/src/test/resources/MODAML-CatalogueFullDummy.xml");
+	public void test1_addCatalogueTest_MODAML() throws Exception {
+		String catalogueXML = IOUtils.toString(CatalogueServiceTest.class.getResourceAsStream("/MODAML-CatalogueFullDummy.xml"));
 		CatalogueServiceImpl.getInstance().addCatalogue(catalogueXML, Configuration.Standard.MODAML);
 	}
 
 	@Test
-	public void test2_addCatalogueTest_UBL() {
-		String catalogueXML = FileUtility.readFile("../ubl-data-model/src/test/resources/UBL-CatalogueFullDummy.xml");
+	public void test2_addCatalogueTest_UBL() throws Exception {
+		String catalogueXML = IOUtils.toString(CatalogueServiceTest.class.getResourceAsStream("/UBL-CatalogueFullDummy.xml"));
 		CatalogueType catalogueType = CatalogueServiceImpl.getInstance().addCatalogue(catalogueXML);
 		addedCatalogueUUID = catalogueType.getUUID();
 	}
