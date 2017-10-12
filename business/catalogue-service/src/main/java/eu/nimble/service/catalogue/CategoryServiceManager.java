@@ -1,6 +1,5 @@
-package eu.nimble.service.catalogue.impl;
+package eu.nimble.service.catalogue;
 
-import eu.nimble.service.catalogue.ProductCategoryService;
 import eu.nimble.service.catalogue.category.datamodel.Category;
 
 import java.util.*;
@@ -45,5 +44,9 @@ public class CategoryServiceManager {
     public List<Category> getSubCategories(String taxonomyId, String categoryId) {
         ProductCategoryService pcs = services.get(taxonomyId);
         return pcs.getSubCategories(categoryId);
+    }
+
+    public List<String> getAvailableTaxonomies() {
+        return new ArrayList<>(services.keySet());
     }
 }

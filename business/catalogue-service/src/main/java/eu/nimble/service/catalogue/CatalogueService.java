@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue;
 
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.GoodsItemType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.Configuration;
@@ -10,6 +11,8 @@ import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
+import java.util.zip.ZipInputStream;
 
 public interface CatalogueService {
 
@@ -38,14 +41,16 @@ public interface CatalogueService {
     public void deleteCatalogue(String uuid, Configuration.Standard standard);
 
     /**
-     * Generates the template for the given {@code categoryId}. The template includes the details about the
-     * properties
+     * Returns the supported standards by this {@link CatalogueService}
      *
-     * @param taxonomyId
-     * @param categoryId
      * @return
      */
-    public Workbook generateTemplateForCategory(String taxonomyId, String categoryId);
+    public List<Configuration.Standard> getSupportedStandards();
+
+    /**
+     * @return
+     */
+    public Workbook generateTemplateForCategory(List<String> categoryId, List<String> taxonomyIds);
 
     /**
      * Adds the catalogue given through the NIMBLE-specific, Excel-based template.
@@ -53,5 +58,19 @@ public interface CatalogueService {
      * @param catalogueTemplate
      * @param party
      */
-    public void addCatalogue(InputStream catalogueTemplate, PartyType party);
+    public CatalogueType addCatalogue(InputStream catalogueTemplate, String uploadMode, PartyType party);
+
+    public void addImagesToProducts(ZipInputStream imagePackage, String catalogueUuid);
+
+    /*
+     * Catalogue-line level endpoints
+     */
+
+    public <T> T getCatalogueLine(String catalogueId, String catalogueLineId);
+
+    public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine);
+
+    public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine);
+
+    public void deleteCatalogueLineById(String catalogueId, String lineId);
 }

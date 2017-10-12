@@ -893,6 +893,7 @@
 			<xsd:element ref="cbc:OrderQuantityIncrementNumeric" minOccurs="0"/>
 			<xsd:element ref="cbc:MinimumOrderQuantity" minOccurs="0"/>
 			<xsd:element ref="cbc:MaximumOrderQuantity" minOccurs="0"/>
+			<xsd:element ref="cbc:FreeOfChargeIndicator" minOccurs="0"/>
 			<xsd:element ref="cbc:WarrantyInformation" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cac:WarrantyParty" minOccurs="0"/>
 			<xsd:element ref="cac:WarrantyValidityPeriod" minOccurs="0"/>
@@ -1422,7 +1423,8 @@
 			<xsd:element ref="cbc:Incoterms" minOccurs="0"/>
 			<xsd:element ref="cbc:SpecialTerms" minOccurs="0"/>
 			<xsd:element ref="cbc:Amount" minOccurs="0"/>
-			<xsd:element ref="cac:Delivery" minOccurs="0"/>
+			<xsd:element ref="cbc:TransportModeCode" minOccurs="0"/>
+			<xsd:element ref="cac:EstimatedDeliveryPeriod" minOccurs="0"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="DeliveryUnitType">
@@ -1787,7 +1789,7 @@
 			<xsd:element ref="cbc:TraceID" minOccurs="0"/>
 			<xsd:element ref="cac:Item" minOccurs="0"/>
 			<xsd:element ref="cac:ContainingPackage" minOccurs="0"/>
-			<xsd:element ref="cac:Delivery" minOccurs="0"/>
+			<xsd:element ref="cac:DeliveryTerms" minOccurs="0"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="GoodsItemContainerType">
@@ -1908,22 +1910,14 @@
 			<xsd:element ref="cbc:Keyword" minOccurs="0"/>
 			<xsd:element ref="cbc:BrandName" minOccurs="0"/>
 			<xsd:element ref="cbc:ModelName" minOccurs="0"/>
-			<xsd:element ref="cbc:FreeOfChargeIndicator" minOccurs="0"/>
 			<!-- TODO remove the demo-specific element -->
-			<xsd:element ref="cbc:ItemConfigurationImages" minOccurs="0">
-				<xsd:annotation>
-					<xsd:appinfo>
-						<hj:basic>
-							<orm:column length="2147483647"/>
-						</hj:basic>
-					</xsd:appinfo>
-				</xsd:annotation>
-			</xsd:element>
+			<xsd:element ref="cbc:ItemConfigurationImages" minOccurs="0"/>
 			<xsd:element ref="cac:BuyersItemIdentification" minOccurs="0"/>
 			<xsd:element ref="cac:SellersItemIdentification" minOccurs="0"/>
 			<xsd:element ref="cac:ManufacturersItemIdentification" minOccurs="0"/>
 			<xsd:element ref="cac:StandardItemIdentification" minOccurs="0"/>
 			<xsd:element ref="cac:AdditionalItemIdentification" minOccurs="0" maxOccurs="unbounded"/>
+			<xsd:element ref="cac:CatalogueDocumentReference" minOccurs="0"/>
 			<xsd:element ref="cac:ItemSpecificationDocumentReference" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cbc:ProductImage" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cac:OriginCountry" minOccurs="0"/>
@@ -2002,6 +1996,7 @@
 	</xsd:complexType>
 	<xsd:complexType name="ItemPropertyType">
 		<xsd:sequence>
+			<xsd:element ref="cbc:ID"/>
 			<xsd:element ref="cbc:Name"/>
 			<xsd:element ref="cbc:Value" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cbc:ValueQuantity" minOccurs="0" maxOccurs="unbounded"/>
@@ -2009,17 +2004,9 @@
 			<xsd:element ref="cbc:ValueBinary" minOccurs="0" maxOccurs="unbounded"/>
 			<xsd:element ref="cbc:ValueQualifier" minOccurs="0"/>
 			<!-- TODO remove the demo-specific element -->
-			<xsd:element ref="cbc:DemoSpecificMultipleContent" minOccurs="0">
-				<xsd:annotation>
-					<xsd:appinfo>
-						<hj:basic>
-							<orm:column length="2147483647"/>
-						</hj:basic>
-					</xsd:appinfo>
-				</xsd:annotation>
-			</xsd:element>
+			<xsd:element ref="cbc:DemoSpecificMultipleContent" minOccurs="0"/>
 			<xsd:element ref="cac:UsabilityPeriod" minOccurs="0"/>
-			<xsd:element ref="cac:ItemPropertyGroup" minOccurs="0"/>
+			<xsd:element ref="cbc:ItemClassificationCode" minOccurs="0"/>
 			<xsd:element ref="cac:RangeDimension" minOccurs="0"/>
 			<xsd:element ref="cac:ItemPropertyRange" minOccurs="0"/>
 		</xsd:sequence>
@@ -2061,6 +2048,7 @@
 			<xsd:element ref="cac:Item"/>
 			<xsd:element ref="cac:WarrantyValidityPeriod" minOccurs="0"/>
 			<xsd:element ref="cac:TaxTotal" minOccurs="0"/>
+			<xsd:element ref="cac:LineReference" minOccurs="0" maxOccurs="unbounded"/>
 		</xsd:sequence>
 	</xsd:complexType>
 	<xsd:complexType name="LineReferenceType">

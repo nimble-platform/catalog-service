@@ -1,8 +1,9 @@
-package eu.nimble.service.catalogue.impl;
+package eu.nimble.service.catalogue.category.taxonomy.furnitureontology;
 
 import eu.nimble.service.catalogue.ProductCategoryService;
 import eu.nimble.service.catalogue.category.datamodel.Category;
 import eu.nimble.service.catalogue.category.datamodel.Property;
+import eu.nimble.service.catalogue.template.TemplateConfig;
 import org.apache.marmotta.client.ClientConfiguration;
 import org.apache.marmotta.client.MarmottaClient;
 import org.apache.marmotta.client.clients.SPARQLClient;
@@ -22,8 +23,8 @@ import java.util.Map;
  */
 public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryService {
     private static final String MARMOTTA_URI = "http://134.168.33.237:8080/marmotta";
-    private static final String GRAPH_URI = "http://134.168.33.237:8080/marmotta/context/micuna";
-    private static final String FURNITURE_NS = "http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#";
+    private static final String GRAPH_URI = "http://134.168.33.237:8080/marmotta/context/furnituresectortaxonomy";
+    private static final String FURNITURE_NS = "http://www.aidimme.es/FurnitureSectorOntology.owl#";
     private static final String XSD_NS = "http://www.w3.org/2001/XMLSchema#";
 
     private static final Logger log = LoggerFactory.getLogger(FurnitureOntologyCategoryServiceImpl.class);
@@ -53,6 +54,7 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
 
         // TODO: take the marmotta base uri form a parameter
         ClientConfiguration config = new ClientConfiguration(MARMOTTA_URI);
+        config.setConnectionTimeout(900000);
         client = new MarmottaClient(config);
     }
 
@@ -66,38 +68,25 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
 
     @Override
     public Category getCategory(String categoryId) {
-        /*if (categoryId.equals(categories.get(0).getId())) {
-            return categories.get(0);
-        } else {
-            return null;
-        }*/
         // create category from the uri
         Category category = createCategory(categoryId);
         List<Property> properties = new ArrayList<>();
         category.setProperties(properties);
 
-        // find parent categories
-        List<String> parents = new ArrayList<>();
-        parents.add(categoryId);
-        getParentCategories(parents, categoryId);
-
-        // create properties contained
-        for (String parent : parents) {
-            String datatypeSparql = getDatatypePropertySparql(parent);
-            SPARQLClient sparqlClient = client.getSPARQLClient();
-            try {
-                SPARQLResult dataTypes = sparqlClient.select(datatypeSparql);
-                if (dataTypes != null) {
-                    for (Map<String, RDFNode> dataType : dataTypes) {
-                        String dtUri = getRemainder(dataType.get("dtp").toString(), FURNITURE_NS);
-                        String unit = getRemainder(dataType.get("range").toString(), XSD_NS);
-                        Property property = createProperty(dtUri, unit);
-                        properties.add(property);
-                    }
+        String datatypeSparql = getDatatypePropertySparql(categoryId);
+        SPARQLClient sparqlClient = client.getSPARQLClient();
+        try {
+            SPARQLResult dataTypes = sparqlClient.select(datatypeSparql);
+            if (dataTypes != null) {
+                for (Map<String, RDFNode> dataType : dataTypes) {
+                    String dtUri = getRemainder(dataType.get("prop").toString(), FURNITURE_NS);
+                    String dtStr = getRemainder(dataType.get("range").toString(), XSD_NS);
+                    Property property = createProperty(dtUri, dtStr);
+                    properties.add(property);
                 }
-            } catch (IOException | MarmottaClientException e) {
-                log.warn("Failed to get datatype properties for category: " + parent, e);
             }
+        } catch (IOException | MarmottaClientException e) {
+            log.warn("Failed to get datatype properties for category: " + categoryId, e);
         }
 
         return category;
@@ -138,7 +127,7 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
         Property property = new Property();
         property.setId(uri);
         property.setPreferredName(getRemainder(uri, FURNITURE_NS));
-        property.setDataType(getRemainder(range, FURNITURE_NS).toUpperCase());
+        property.setDataType(getNormalizedDatatype(getRemainder(range, FURNITURE_NS).toUpperCase()));
         return property;
     }
 
@@ -164,41 +153,83 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
         throw new IllegalStateException("Not implemented yet");
     }
 
-    public void getParentCategories(List<String> parents, String categoryUri) {
-        String parentSparql = getParentClassSparql(categoryUri);
-        SPARQLClient sparqlClient = client.getSPARQLClient();
-        try {
-            SPARQLResult results = sparqlClient.select(parentSparql);
-            if (results != null) {
-                for (Map<String, RDFNode> result : results) {
-                    String uri = result.get("parent").toString();
-                    parents.add(uri);
-                    getParentCategories(parents, uri);
-                }
-            }
-        } catch (IOException | MarmottaClientException e) {
-            log.warn("Failed to retrieve parent classes for: " + categoryUri, e);
-        }
-    }
-
     @Override
     public String getTaxonomyId() {
         return "FurnitureOntology";
     }
 
+    public String getNormalizedDatatype(String dataType) {
+        String normalizedType;
+        if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_INT) == 0 ||
+                dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_FLOAT) == 0 ||
+                dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_DOUBLE) == 0) {
+            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_REAL_MEASURE;
+
+        } else if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_STRING) == 0) {
+            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_STRING;
+
+        } else if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN) == 0) {
+            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN;
+
+        } else {
+            log.warn("Unknown data type encountered: {}", dataType);
+            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_STRING;
+        }
+        return normalizedType;
+    }
+
     private String getDatatypePropertySparql(String uri) {
         StringBuilder sb = new StringBuilder("");
-        sb.append("PREFIX owl: <http://www.w3.org/2002/07/owl#>").append(System.lineSeparator())
-                .append("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>").append(System.lineSeparator())
-                .append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ").append(System.lineSeparator())
-                .append("PREFIX mic: <http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#>").append(System.lineSeparator())
-                .append(System.lineSeparator())
-                .append("SELECT ?dtp ?range WHERE {").append(System.lineSeparator())
-                .append("  GRAPH <").append(GRAPH_URI).append("> {").append(System.lineSeparator())
-                .append("    ?dtp rdfs:domain <").append(uri).append(">.").append(System.lineSeparator())
-                .append("    ?dtp rdfs:range ?range.").append(System.lineSeparator())
-                .append("	}").append(System.lineSeparator())
-                .append("}");
+        sb.append("PREFIX owl: <http://www.w3.org/2002/07/owl#>\n").
+                append("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n").
+                append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n").
+                append("PREFIX mic:<").append(FURNITURE_NS).append(">\n").
+                append("\n").
+                append("SELECT DISTINCT ?prop ?range WHERE { \n").
+                append("  {\n").
+                append("    GRAPH <").append(GRAPH_URI).append("> {\n").
+                append("      ?cl rdf:type owl:Class .\n").
+                append("      FILTER (?cl IN (<").append(uri).append(">)).\n").
+                append("      ?cl rdfs:subClassOf*/rdfs:subClassOf ?parents .\n").
+                append("      ?prop rdf:type owl:DatatypeProperty . \n").
+                append("      ?prop rdfs:domain ?domain .\n").
+                append("      ?prop rdfs:range ?range .\n").
+                append("      ?domain owl:unionOf ?list .\n").
+                append("      FILTER (! isIRI(?domain)) .\n").
+                append("      ?list rdf:rest*/rdf:first ?definedIn .\n").
+                append("      FILTER (?definedIn IN (?parents) ) .\n").
+                append("    }\n").
+                append("  } \n").
+                append("  UNION {\n").
+                append("    GRAPH <").append(GRAPH_URI).append("> {\n").
+                append("      ?cl rdf:type owl:Class .\n").
+                append("      ?cl rdfs:subClassOf*/rdfs:subClassOf ?parents .\n").
+                append("      FILTER (?cl IN (<").append(uri).append(">)).\n").
+                append("      ?prop rdf:type owl:DatatypeProperty . \n").
+                append("      ?prop rdfs:domain ?definedIn .\n").
+                append("      ?prop rdfs:range ?range .\n").
+                append("      FILTER ( isIRI(?definedIn)) .\n").
+                append("      FILTER (?definedIn IN (?parents) ) .\n").
+                append("    }\n").
+                append("  }\n").
+                append("  UNION {\n").
+                append("    GRAPH <").append(GRAPH_URI).append("> {\n").
+                append("      ?prop rdfs:domain <").append(uri).append("> .\n").
+                append("      ?prop rdfs:range ?range .\n").
+                append("    }\n").
+                append("  }\n").
+                append("  UNION {\n").
+                append("    GRAPH <").append(GRAPH_URI).append("> {\n").
+                append("      ?prop rdf:type owl:DatatypeProperty . \n").
+                append("      ?prop rdfs:domain ?domain .\n").
+                append("      ?prop rdfs:range ?range .\n").
+                append("      ?domain owl:unionOf ?list .\n").
+                append("      ?list rdf:rest*/rdf:first ?member .\n").
+                append("      FILTER (! isIRI(?domain)) .\n").
+                append("      FILTER (?member IN (<").append(uri).append(">)) .\n").
+                append("    }\n").
+                append("  } \n").
+                append("}");
         return sb.toString();
     }
 
@@ -207,7 +238,7 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
         sb.append("PREFIX owl: <http://www.w3.org/2002/07/owl#>").append(System.lineSeparator())
                 .append("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>").append(System.lineSeparator())
                 .append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ").append(System.lineSeparator())
-                .append("PREFIX mic: <http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#>").append(System.lineSeparator())
+                .append("PREFIX mic: <").append(FURNITURE_NS).append(">").append(System.lineSeparator())
                 .append(System.lineSeparator())
                 .append("SELECT ?parent WHERE {").append(System.lineSeparator())
                 .append("  GRAPH <").append(GRAPH_URI).append("> {").append(System.lineSeparator())
@@ -222,7 +253,7 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
         sb.append("PREFIX owl: <http://www.w3.org/2002/07/owl#>").append(System.lineSeparator())
                 .append("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>").append(System.lineSeparator())
                 .append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ").append(System.lineSeparator())
-                .append("PREFIX mic: <http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#>").append(System.lineSeparator())
+                .append("PREFIX mic: <").append(FURNITURE_NS).append(">").append(System.lineSeparator())
                 .append(System.lineSeparator())
                 .append("SELECT ?uri WHERE {").append(System.lineSeparator())
                 .append("  GRAPH <").append(GRAPH_URI).append("> {").append(System.lineSeparator())

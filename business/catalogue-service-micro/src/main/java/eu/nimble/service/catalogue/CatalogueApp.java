@@ -1,5 +1,6 @@
 package eu.nimble.service.catalogue;
 
+import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
@@ -10,6 +11,9 @@ import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.web.bind.annotation.RestController;
 
 @Configuration
@@ -19,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 @EnableFeignClients
 @RestController
 @SpringBootApplication
-@ComponentScan(basePackages = "eu.nimble.service.catalogue")
 public class CatalogueApp implements CommandLineRunner {
 
     @Override
@@ -41,5 +44,15 @@ public class CatalogueApp implements CommandLineRunner {
             return 10;
         }
 
+    }
+
+    @EventListener({ContextRefreshedEvent.class})
+    void contextRefreshedEvent() {
+        MarmottaSynchronizer.getInstance().startSynchronization();
+    }
+
+    @EventListener({ContextClosedEvent.class})
+    void contextClosedEvent() {
+        MarmottaSynchronizer.getInstance().stopSynchronization();
     }
 }
