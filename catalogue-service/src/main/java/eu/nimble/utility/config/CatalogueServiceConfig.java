@@ -53,11 +53,16 @@ public class CatalogueServiceConfig {
     private static CatalogueServiceConfig instance;
 
     private CatalogueServiceConfig() {
+        // as the instance of this class is created by Spring, if set the instance in the constructor
         instance = this;
-        instance.setupDBConnections();
     }
 
+    private static boolean dbInitialized = false;
     public static CatalogueServiceConfig getInstance() {
+        if(dbInitialized == false && instance != null) {
+            instance.setupDBConnections();
+            dbInitialized = true;
+        }
         return instance;
     }
 
@@ -73,7 +78,7 @@ public class CatalogueServiceConfig {
                 setCategoryDbUsername(categoryDBconfig.getUsername());
                 setCategoryDbPassword(categoryDBconfig.getPassword());
                 setCategoryDbDriver(categoryDBconfig.getDriver());
-                setCategoryDbDriver(categoryDBconfig.getSchema());
+                setCategoryDbScheme(categoryDBconfig.getSchema());
             }
         } else {
             logger.warn("Environment not initialised!");
