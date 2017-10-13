@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 # Created by https://www.gitignore.io/api/java,maven,osx,windows,intellij,eclipse,linux
 
@@ -199,3 +200,73 @@ hs_err_pid*
 .idea
 .gradle
 LICENSE
+=======
+*.n3
+
+.DS_Store
+logs
+*.log
+
+target/
+
+*.class
+
+#idea
+.idea/
+*.iml
+*.ipr
+*.iws
+
+#Eclipse
+.metadata/
+.settings/
+.classpath
+.project
+
+#scala
+lib_managed/
+project/boot/
+project/build/target/
+project/plugins/project/build.properties
+src_managed/
+
+#vim,vm
+*.swp
+
+#Windows related
+Thumbs.db
+Desktop.ini
+*.bak
+*.bk
+
+
+#MAC OS related resources
+.DS_STORE
+
+# Linux related
+*~
+
+# netbeans specific files
+# in this file (profiles.xml)  placed on the top level project directroy are stored different machine specific informations (e.g. the Application Server) 
+profiles.xml
+nb-configuration.xml
+nbactions.xml
+jboss4-netbeans-destinations-service.xml
+jboss-ds.xml
+jboss-web
+
+
+#intelij
+.idea
+*.iml
+
+# Configurations for testing and development.
+# This filter allows developers to create them own configuration files that are not persited in
+# the versioning control.
+*-test.xml
+*-developing.xml
+
+file-repository
+
+
+>>>>>>> catalogue-service-srdc/master

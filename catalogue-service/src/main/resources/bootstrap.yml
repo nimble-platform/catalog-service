@@ -1,0 +1,140 @@
+server:
+  port: ${PORT:8095}
+spring:
+  application:
+    # the name of the application represents the global identifier of this microservice.
+    name: catalogue-service-srdc
+    url: http://localhost:8095
+  cloud:
+    config:
+      uri: ${vcap.services.config-service.credentials.url:${CONFIG_SERVER_URI:http://localhost:8888}}
+      # failFast is disabled per default, so that the service can start standalone without config server.
+      # failFast should be enabled in production environments.
+      # it can be set via an environment variable or the config server
+      failFast: ${vcap.services.config-service.failFast:${CONFIG_SERVER_FAILFAST:false}}
+    discovery:
+      # by disabling the service discovery the application/service can be started in "standalone mode".
+      # service discovery is disabled by default and should be enabled (set to true) for the "cloud mode".
+      # it can be set via an environment variable or the config server
+      enabled: ${discovery.enabled:${DISCOVERY_ENABLED:false}}
+  jackson:
+    mapper:
+      PROPAGATE_TRANSIENT_MARKER: true
+
+logstash:
+  uri: ${vcap.services.logstash-service.credentials.url:${LOGSTASH_URI:localhost:5000}}
+
+persistence:
+  syncdb:
+    driver: org.h2.Driver
+    connection:
+      url: jdbc:h2:file:~/nimble/syncdb;AUTO_SERVER=TRUE;MVCC=TRUE;AUTO_RECONNECT=TRUE;DB_CLOSE_DELAY=10;INIT=create schema IF NOT EXISTS APPS
+    username: sa
+    password:
+    update_check_interval: 10000
+
+  categorydb:
+    driver: org.postgresql.Driver
+    connection:
+      url: jdbc:postgresql://qdjjtnkv.db.elephantsql.com:5432/mnocjzwc
+    username: mnocjzwc
+    password: bkryPYM3rj651059qZ73Q_oOvbgg3MDV
+    schema: public
+
+    # valid only for kubernetes deployment
+    bluemix:
+      connection:
+        #TODO check the environment variable name for this config
+        uri: ${BLUEMIX_CATEGORY_DB_JSON_URI:}
+
+  marmotta:
+    url: http://134.168.33.237:8080/marmotta
+
+  orm:
+    ubl:
+      hibernate:
+        connection:
+          url: jdbc:h2:file:${user.home}/nimble/ubl;AUTO_SERVER=TRUE;MVCC=TRUE;AUTO_RECONNECT=TRUE;DB_CLOSE_DELAY=10;INIT=create schema IF NOT EXISTS APPS
+          username: sa
+          password:
+          driver_class: org.h2.Driver
+        dialect: org.hibernate.dialect.H2Dialect
+        show_sql: false
+        hbm2ddl:
+          auto: update
+        cache:
+          provider_class: org.hibernate.cache.HashtableCacheProvider
+        jdbc:
+          batch_size: 0
+        c3p0:
+          acquire_increment: 2
+          idle_test_period: 60
+          min_size: 10
+          max_size: 100
+          maxStatements: 0
+          maxStatementsPerConnection: 100
+          timeout: 300
+          acquireRetryAttempts: 1
+          acquireRetryDelay: 250
+          numHelperThreads: 10
+        use_sql_comments: true
+        transaction:
+          factory_class: org.hibernate.transaction.JDBCTransactionFactory
+        current_session_context_class: thread
+        event:
+          merge:
+            entity_copy_observer: allow
+
+      # valid only for kubernetes deployment
+      bluemix:
+        connection:
+          #TODO check the environment variable name for this config
+          uri: ${BLUEMIX_UBL_DB_JSON_URI:}
+
+    modaml:
+      hibernate:
+        connection:
+          url: jdbc:h2:file://${user.home}/nimble/modaml;AUTO_SERVER=TRUE;MVCC=TRUE;AUTO_RECONNECT=TRUE;DB_CLOSE_DELAY=10;INIT=create schema IF NOT EXISTS APPS
+          username: sa
+          password:
+          driver_class: org.h2.Driver
+        dialect: org.hibernate.dialect.H2Dialect
+        show_sql: false
+        hbm2ddl:
+          auto: update
+        cache:
+          provider_class: org.hibernate.cache.HashtableCacheProvider
+        jdbc:
+          batch_size: 0
+        c3p0:
+          acquire_increment: 2
+          idle_test_period: 60
+          min_size: 10
+          max_size: 100
+          maxStatements: 0
+          maxStatementsPerConnection: 100
+          timeout: 300
+          acquireRetryAttempts: 1
+          acquireRetryDelay: 250
+          numHelperThreads: 10
+        use_sql_comments: true
+        transaction:
+          factory_class: org.hibernate.transaction.JDBCTransactionFactory
+        current_session_context_class: thread
+        event:
+          merge:
+            entity_copy_observer: allow
+      # valid only for kubernetes deployment
+      bluemix:
+        connection:
+          #TODO check the environment variable name for this config
+          uri: ${BLUEMIX_MODAML_DB_JSON_URI:}
+
+---
+
+spring:
+  profiles: local_dev
+
+nimble:
+  identity:
+    url: ${IDENTITY_URL:localhost:9096}

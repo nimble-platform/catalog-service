@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ml:TEXCatalog msgfunction="OR" useProfile="String" version="2013-1" xsi:schemaLocation="urn:moda-ml:repository:schema:TEXCatalog ../../main/schema/NIMBLE-MODAML-2013-1/TEXCatalog.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ml="urn:moda-ml:repository:schema:TEXCatalog">
+	<TCheader>
+		<msgN>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</msgN>
+		<msgID>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</msgID>
+		<msgDate dateForm="D">1900-00</msgDate>
+		<msgCurrency>ADP</msgCurrency>
+		<season>aaaaaaaaaaaaaaa</season>
+		<validityStart dateForm="D">1900-00</validityStart>
+		<validityEnd dateForm="D">1900-00</validityEnd>
+		<buyer sender="true" logo="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">
+			<id numberingOrg="CL">aaaaaaaaaaaaaaa</id>
+			<legalName>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</legalName>
+			<dept>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</dept>
+			<person username="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" phone="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" fax="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</person>
+			<street>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</street>
+			<city>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</city>
+			<subCountry>aaaaaaaaa</subCountry>
+			<country>AD</country>
+			<postCode>aaaaaaaaaa</postCode>
+		</buyer>
+		<supplier sender="true" logo="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">
+			<id numberingOrg="CL">aaaaaaaaaaaaaaa</id>
+			<legalName>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</legalName>
+			<dept>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</dept>
+			<person username="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" phone="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" fax="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</person>
+			<street>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</street>
+			<city>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</city>
+			<subCountry>aaaaaaaaa</subCountry>
+			<country>AD</country>
+			<postCode>aaaaaaaaaa</postCode>
+		</supplier>
+		<note codeList="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" numberingOrg="CL" noteLabel="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</note>
+	</TCheader>
+	<TCbody>
+		<TCgroup>
+			<artGroup listVersion="aaaaaa" codeList="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" numberingOrg="CL" listName="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</artGroup>
+			<artGroupName>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</artGroupName>
+			<TCitem>
+				<lineN VAT="001">1</lineN>
+				<fabricNameSupplier>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</fabricNameSupplier>
+				<art listVersion="aaaaaa" codeList="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" numberingOrg="CL" listName="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">aaaaaaaaaaaaaaaaaaaaaaaaa</art>
+				<pattern listVersion="aaaaaa" codeList="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" numberingOrg="CL" listName="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">aaaaaaaaaaaaaaa</pattern>
+				<color listVersion="aaaaaa" codeList="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" numberingOrg="CL" listName="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">aaaaaaaaaaaaaaa</color>
+				<added addType="CC" numberingOrg="CL">aaaaaaaaaaaaaaa</added>
+				<catalogPrice um="CMT" minQty="0" garmentMarket="00">1.12</catalogPrice>
+				<generalChar>
+					<fabricNameSupplier>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</fabricNameSupplier>
+					<fabricNameBuyer>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</fabricNameBuyer>
+					<season>aaaaaaaaaaaaaaa</season>
+					<tradeMark>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</tradeMark>
+					<customsStat>aaaaaaaaaaaaaaa</customsStat>
+					<fabricCompos>
+						<percCompos fibre="AC">0</percCompos>
+					</fabricCompos>
+					<dyeProcess>CP</dyeProcess>
+					<dyeStuff>AC</dyeStuff>
+					<careLabel>aaaaa</careLabel>
+					<minLot um="CMT">0</minLot>
+					<minLotExclusive um="CMT">0</minLotExclusive>
+					<avgDeliveryDD>P1Y2M3DT10H30M0S</avgDeliveryDD>
+					<estFaultiness>0</estFaultiness>
+					<note codeList="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" numberingOrg="CL" noteLabel="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</note>
+				</generalChar>
+				<construction>
+					<fabricWeightM um="GRM">0</fabricWeightM>
+					<fabricWeightM2 um="GRM">0</fabricWeightM2>
+					<fabricWidth um="CMT">0</fabricWidth>
+					<fabricCutWidth um="CMT">0</fabricCutWidth>
+					<pieceLength um="MTR">0</pieceLength>
+					<weave>BA</weave>
+					<warpCount method="ISO-2060" fibre="AC">aaaaaaaaaa</warpCount>
+					<weftCount method="ISO-2060" fibre="AC">aaaaaaaaaa</weftCount>
+					<warpEndsN>0</warpEndsN>
+					<weftEndsN>0</weftEndsN>
+					<bowingWarp method="aaaaaaaaaaaaaaaaaaaaaaaaa">0</bowingWarp>
+					<bowingWeft method="aaaaaaaaaaaaaaaaaaaaaaaaa">0</bowingWeft>
+					<checksFlaw method="aaaaaaaaaaaaaaaaaaaaaaaaa">0</checksFlaw>
+					<weftDev method="aaaaaaaaaaaaaaaaaaaaaaaaa">0</weftDev>
+					<resin>0</resin>
+				</construction>
+				<note codeList="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" numberingOrg="CL" noteLabel="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</note>
+			</TCitem>
+		</TCgroup>
+	</TCbody>
+</ml:TEXCatalog>
