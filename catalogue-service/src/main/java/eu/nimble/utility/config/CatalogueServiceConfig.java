@@ -54,11 +54,10 @@ public class CatalogueServiceConfig {
 
     private CatalogueServiceConfig() {
         instance = this;
+        instance.setupDBConnections();
     }
 
     public static CatalogueServiceConfig getInstance() {
-        if (instance != null)
-            instance.setupDBConnections();
         return instance;
     }
 
@@ -75,16 +74,6 @@ public class CatalogueServiceConfig {
                 setCategoryDbPassword(categoryDBconfig.getPassword());
                 setCategoryDbDriver(categoryDBconfig.getDriver());
                 setCategoryDbDriver(categoryDBconfig.getSchema());
-
-                // setup ubl database
-                String UblDBCredentialsJson = environment.getProperty("persistence.orm.ubl.bluemix.credentials_json");
-                BluemixDatabaseConfig UblDBconfig = new BluemixDatabaseConfig(UblDBCredentialsJson);
-                // ToDo set configuration to UBL database connection
-
-                // setup ubl database
-                String modaMlDBCredentialsJson = environment.getProperty("persistence.orm.modaml.bluemix.credentials_json");
-                BluemixDatabaseConfig modaMlDBconfig = new BluemixDatabaseConfig(modaMlDBCredentialsJson);
-                // ToDo set configuration to ModaML database connection
             }
         } else {
             logger.warn("Environment not initialised!");
