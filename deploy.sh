@@ -3,13 +3,13 @@
 set -e    # Exit immediately if a command exits with a non-zero status.
 
 
-if [ "$1" == "docker-build" ]; then
+if [ "$1" == "java-build" ]; then
 
-    # build project
     mvn clean install -DskipTests
 
-    # create docker image
-    mvn -f business/catalogue-service-micro/pom.xml docker:build -P docker
+if [ "$1" == "docker-build" ]; then
+
+    mvn -f catalogue-service-micro/pom.xml docker:build -P docker
 
 elif [ "$1" == "docker-run" ]; then
 

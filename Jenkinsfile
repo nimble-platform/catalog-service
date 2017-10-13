@@ -11,7 +11,11 @@ node ('nimble-jenkins-slave') {
         }
     }
 
-    stage ('Build Docker Image') {
+    stage ('Build Java') {
+        sh '/bin/bash -xe deploy.sh java-build'
+    }
+
+    stage ('Build Docker') {
         sh '/bin/bash -xe deploy.sh docker-build'
     }
 
