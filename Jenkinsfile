@@ -1,7 +1,7 @@
 node ('nimble-jenkins-slave') {
 
     stage('Clone and Update') {
-        git(url: 'https://github.com/nimble-platform/catalog-service-srdc.git', branch: env.BRANCH_NAME)
+        git(url: 'https://github.com/nimble-platform/catalog-service.git', branch: env.BRANCH_NAME)
     }
 
     stage('Build Dependencies') {
