@@ -5,7 +5,7 @@ node ('nimble-jenkins-slave') {
     }
 
     stage('Build Dependencies') {
-        sh 'rm -rf common'
+        sh 'rm -rf common   '
         sh 'git clone https://github.com/nimble-platform/common'
         dir ('common') {
             sh 'mvn clean install'
@@ -20,14 +20,16 @@ node ('nimble-jenkins-slave') {
         sh '/bin/bash -xe deploy.sh docker-build'
     }
 
-    stage ('Push Docker image') {
-        withDockerRegistry([credentialsId: 'NimbleDocker']) {
-            sh '/bin/bash -xe deploy.sh docker-push'
+    if (env.BRANCH_NAME == 'master') {
+        stage('Push Docker image') {
+            withDockerRegistry([credentialsId: 'NimbleDocker']) {
+                sh '/bin/bash -xe deploy.sh docker-push'
+            }
         }
-    }
 
-    stage ('Apply to Cluster') {
-        // disabled for now...cluster is down
-//        sh 'kubectl apply -f kubernetes/deploy.yml -n prod --validate=false'
+        stage('Apply to Cluster') {
+            // disabled for now...cluster is down
+            //        sh 'kubectl apply -f kubernetes/deploy.yml -n prod --validate=false'
+        }
     }
 }
