@@ -26,5 +26,3 @@ elif [ "$1" == "docker-push" ]; then
     docker push nimbleplatform/catalogue-service-micro-srdc
 
 fi
-
-
