@@ -41,12 +41,6 @@ persistence:
     password: bkryPYM3rj651059qZ73Q_oOvbgg3MDV
     schema: public
 
-    # valid only for kubernetes deployment
-    bluemix:
-      connection:
-        #TODO check the environment variable name for this config
-        uri: ${BLUEMIX_CATEGORY_DB_JSON_URI:}
-
   marmotta:
     url: http://134.168.33.237:8080/marmotta
 
@@ -85,12 +79,6 @@ persistence:
           merge:
             entity_copy_observer: allow
 
-      # valid only for kubernetes deployment
-      bluemix:
-        connection:
-          #TODO check the environment variable name for this config
-          uri: ${BLUEMIX_UBL_DB_JSON_URI:}
-
     modaml:
       hibernate:
         connection:
@@ -124,11 +112,51 @@ persistence:
         event:
           merge:
             entity_copy_observer: allow
-      # valid only for kubernetes deployment
-      bluemix:
+
+################################################################################################
+################################## KUBERNETES CONFIG ###########################################
+################################################################################################
+
+---
+
+spring:
+  profiles: kubernetes
+
+persistence:
+  categorydb:
+    driver: org.postgresql.Driver
+    connection:
+      url: # set in eu.nimble.utility.config.CatalogueServiceConfig
+    username: # set in eu.nimble.utility.config.CatalogueServiceConfig
+    password: # set in eu.nimble.utility.config.CatalogueServiceConfig
+    bluemix:
+      credentials_json: ${BLUEMIX_CATEGORY_DB_JSON:}
+  orm:
+    ubl:
+      hibernate:
         connection:
-          #TODO check the environment variable name for this config
-          uri: ${BLUEMIX_MODAML_DB_JSON_URI:}
+          url: # set in eu.nimble.utility.config.CatalogueServiceConfig
+          username: # set in eu.nimble.utility.config.CatalogueServiceConfig
+          password: # set in eu.nimble.utility.config.CatalogueServiceConfig
+          driver_class: org.postgresql.Driver
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+      bluemix:
+        credentials_json: ${BLUEMIX_UBL_DB_JSON:}
+    modaml:
+      hibernate:
+        connection:
+          url: # set in eu.nimble.utility.config.CatalogueServiceConfig
+          username: # set in eu.nimble.utility.config.CatalogueServiceConfig
+          password: # set in eu.nimble.utility.config.CatalogueServiceConfig
+          driver_class: org.postgresql.Driver
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+      bluemix:
+        credentials_json: ${BLUEMIX_MODAML_DB_JSON:}
+
+
+################################################################################################
+################################### LOCAL DEV CONFIG ###########################################
+################################################################################################
 
 ---
 

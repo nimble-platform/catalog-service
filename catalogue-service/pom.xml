@@ -76,5 +76,10 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.jvnet.jaxb2_commons</groupId>
+			<artifactId>jaxb2-commons-lang</artifactId>
+			<version>2.4</version>
+		</dependency>
 	</dependencies>
 </project>

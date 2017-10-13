@@ -1,5 +1,7 @@
 package eu.nimble.utility.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
@@ -15,11 +17,10 @@ import java.util.Arrays;
 @PropertySource("classpath:bootstrap.yml")
 public class CatalogueServiceConfig {
 
+    private static final Logger logger = LoggerFactory.getLogger(CatalogueServiceConfig.class);
+
     @Autowired
     private Environment environment;
-
-    @Value("${persistence.categorydb.bluemix.connection.uri}")
-    private String categoryDbBluemixConnectionUri;
 
     @Value("${spring.application.url}")
     private String springApplicationUrl;
@@ -56,23 +57,37 @@ public class CatalogueServiceConfig {
     }
 
     public static CatalogueServiceConfig getInstance() {
+        if (instance != null)
+            instance.setupDBConnections();
         return instance;
     }
 
-    public String getCategoryDbBluemixConnectionUri() {
-        return categoryDbBluemixConnectionUri;
-    }
+    private void setupDBConnections() {
+        if (environment != null) {
+            // check for "kubernetes" profile
+            if (Arrays.stream(environment.getActiveProfiles()).anyMatch(profile -> profile.contentEquals("kubernetes"))) {
 
-    public void setCategoryDbBluemixConnectionUri(String categoryDbBluemixConnectionUri) {
-        this.categoryDbBluemixConnectionUri = categoryDbBluemixConnectionUri;
-        // update persistence properties if kubernetes profile is active
-        if(Arrays.stream(environment.getActiveProfiles()).anyMatch(profile -> profile.contentEquals("kubernetes"))) {
-            BluemixDatabaseConfig config = new BluemixDatabaseConfig(categoryDbBluemixConnectionUri);
-            setCategoryDbConnectionUrl(config.getUrl());
-            setCategoryDbUsername(config.getUsername());
-            setCategoryDbPassword(config.getPassword());
-            setCategoryDbDriver(config.getDriver());
-            setCategoryDbDriver(config.getSchema());
+                // setup category database
+                String categoryDBCredentialsJson = environment.getProperty("persistence.categorydb.bluemix.credentials_json");
+                BluemixDatabaseConfig categoryDBconfig = new BluemixDatabaseConfig(categoryDBCredentialsJson);
+                setCategoryDbConnectionUrl(categoryDBconfig.getUrl());
+                setCategoryDbUsername(categoryDBconfig.getUsername());
+                setCategoryDbPassword(categoryDBconfig.getPassword());
+                setCategoryDbDriver(categoryDBconfig.getDriver());
+                setCategoryDbDriver(categoryDBconfig.getSchema());
+
+                // setup ubl database
+                String UblDBCredentialsJson = environment.getProperty("persistence.orm.ubl.bluemix.credentials_json");
+                BluemixDatabaseConfig UblDBconfig = new BluemixDatabaseConfig(UblDBCredentialsJson);
+                // ToDo set configuration to UBL database connection
+
+                // setup ubl database
+                String modaMlDBCredentialsJson = environment.getProperty("persistence.orm.modaml.bluemix.credentials_json");
+                BluemixDatabaseConfig modaMlDBconfig = new BluemixDatabaseConfig(modaMlDBCredentialsJson);
+                // ToDo set configuration to ModaML database connection
+            }
+        } else {
+            logger.warn("Environment not initialised!");
         }
     }
 
