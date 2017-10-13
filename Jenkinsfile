@@ -1,8 +1,14 @@
 node ('nimble-jenkins-slave') {
-    def app
+
     stage('Clone and Update') {
-        // slackSend 'Started build no. ${env.BUILD_ID} of ${env.JOB_NAME}'
-        git(url: 'https://github.com/nimble-platform/catalog-service-srdc.git', branch: 'master')
+        git(url: 'https://github.com/nimble-platform/catalog-service-srdc.git', branch: env.BRANCH_NAME)
+    }
+
+    stage('Build Dependencies') {
+        sh 'git clone https://github.com/nimble-platform/common'
+        dir ('common') {
+            sh 'mvn clean install'
+        }
     }
 
     stage ('Build Docker Image') {
