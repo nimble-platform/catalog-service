@@ -28,8 +28,7 @@ node ('nimble-jenkins-slave') {
         }
 
         stage('Apply to Cluster') {
-            // disabled for now...cluster is down
-            //        sh 'kubectl apply -f kubernetes/deploy.yml -n prod --validate=false'
+            sh 'kubectl apply -f kubernetes/deploy.yml -n prod --validate=false'
         }
     }
 }
