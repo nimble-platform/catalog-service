@@ -135,21 +135,71 @@ persistence:
     ubl:
       hibernate:
         connection:
-          url: # set in eu.nimble.utility.config.CatalogueServiceConfig
-          username: # set in eu.nimble.utility.config.CatalogueServiceConfig
-          password: # set in eu.nimble.utility.config.CatalogueServiceConfig
+          url: #set in eu.nimble.utility.config.PersistenceConfig
+          username: #set in eu.nimble.utility.config.PersistenceConfig
+          password: #set in eu.nimble.utility.config.PersistenceConfig
           driver_class: org.postgresql.Driver
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        show_sql: false
+        hbm2ddl:
+          auto: update
+        cache:
+          provider_class: org.hibernate.cache.HashtableCacheProvider
+        jdbc:
+          batch_size: 0
+        c3p0:
+          acquire_increment: 2
+          idle_test_period: 60
+          min_size: 10
+          max_size: 100
+          maxStatements: 0
+          maxStatementsPerConnection: 100
+          timeout: 300
+          acquireRetryAttempts: 1
+          acquireRetryDelay: 250
+          numHelperThreads: 10
+        use_sql_comments: true
+        transaction:
+          factory_class: org.hibernate.transaction.JDBCTransactionFactory
+        current_session_context_class: thread
+        event:
+          merge:
+            entity_copy_observer: allow
       bluemix:
         credentials_json: ${BLUEMIX_UBL_DB_JSON:}
     modaml:
       hibernate:
         connection:
-          url: # set in eu.nimble.utility.config.CatalogueServiceConfig
-          username: # set in eu.nimble.utility.config.CatalogueServiceConfig
-          password: # set in eu.nimble.utility.config.CatalogueServiceConfig
+          url: #set in eu.nimble.utility.config.PersistenceConfig
+          username: #set in eu.nimble.utility.config.PersistenceConfig
+          password: #set in eu.nimble.utility.config.PersistenceConfig
           driver_class: org.postgresql.Driver
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        show_sql: false
+        hbm2ddl:
+          auto: update
+        cache:
+          provider_class: org.hibernate.cache.HashtableCacheProvider
+        jdbc:
+          batch_size: 0
+        c3p0:
+          acquire_increment: 2
+          idle_test_period: 60
+          min_size: 10
+          max_size: 100
+          maxStatements: 0
+          maxStatementsPerConnection: 100
+          timeout: 300
+          acquireRetryAttempts: 1
+          acquireRetryDelay: 250
+          numHelperThreads: 10
+        use_sql_comments: true
+        transaction:
+          factory_class: org.hibernate.transaction.JDBCTransactionFactory
+        current_session_context_class: thread
+        event:
+          merge:
+            entity_copy_observer: allow
       bluemix:
         credentials_json: ${BLUEMIX_MODAML_DB_JSON:}
 
