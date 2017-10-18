@@ -40,6 +40,21 @@ spec:
             value: kubernetes
           - name: DISCOVERY_ENABLED
             value: "false"
+          - name: BLUEMIX_CATEGORY_DB_JSON
+            valueFrom:
+              secretKeyRef:
+                name: binding-nimble-catalog-category-db-prod
+                key: binding
+          - name: BLUEMIX_UBL_DB_JSON
+            valueFrom:
+              secretKeyRef:
+                name: binding-nimble-ubl-db-prod
+                key: binding
+          - name: BLUEMIX_MODAML_DB_JSON
+            valueFrom:
+              secretKeyRef:
+                name: binding-nimble-modaml-db-prod
+                key: binding
 
 ---
 
