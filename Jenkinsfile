@@ -21,11 +21,11 @@ node ('nimble-jenkins-slave') {
     }
 
     if (env.BRANCH_NAME == 'master') {
-        stage('Push Docker') {
-            withDockerRegistry([credentialsId: 'NimbleDocker']) {
-                sh '/bin/bash -xe deploy.sh docker-push'
-            }
-        }
+//        stage('Push Docker') {
+//            withDockerRegistry([credentialsId: 'NimbleDocker']) {
+//                sh '/bin/bash -xe deploy.sh docker-push'
+//            }
+//        }
 
         stage('Apply to Cluster') {
             sh 'ssh nimble "cd /data/nimble_setup/ && sudo ./run-prod.sh restart-single catalog-service-srdc"'
