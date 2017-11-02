@@ -28,7 +28,8 @@ node ('nimble-jenkins-slave') {
         }
 
         stage('Apply to Cluster') {
-            sh 'kubectl apply -f kubernetes/deploy.yml -n prod --validate=false'
+            sh 'ssh nimble "cd /data/nimble_setup/ && sudo ./run-prod.sh restart-single catalog-service-srdc"'
+//            sh 'kubectl apply -f kubernetes/deploy.yml -n prod --validate=false'
         }
     }
 }

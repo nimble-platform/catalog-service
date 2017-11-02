@@ -23,6 +23,6 @@ elif [ "$1" == "docker-run-integrated" ]; then
 
 elif [ "$1" == "docker-push" ]; then
 
-    docker push nimbleplatform/catalogue-service-micro-srdc
+    mvn -f catalogue-service-micro/pom.xml docker:push -P docker
 
 fi
