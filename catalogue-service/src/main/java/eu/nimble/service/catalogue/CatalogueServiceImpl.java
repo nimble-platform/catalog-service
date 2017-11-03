@@ -110,19 +110,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     public CatalogueType updateCatalogue(CatalogueType catalogue) {
         logger.info("Catalogue with uuid: {} will be updated", catalogue.getUUID());
 
-        // Assign IDs to lines that are missing it
-        for (CatalogueLineType catalogueLine : catalogue.getCatalogueLine()) {
-            if (catalogueLine.getID() == null) {
-                catalogueLine.setID(UUID.randomUUID().toString());
-            }
-        }
-
-        // set references from items to the catalogue
-        for(CatalogueLineType line : catalogue.getCatalogueLine()) {
-            DocumentReferenceType docRef = new DocumentReferenceType();
-            docRef.setID(catalogue.getUUID());
-            line.getGoodsItem().getItem().setCatalogueDocumentReference(docRef);
-        }
+        checkReferencesInCatalogue(catalogue);
 
         // merge the hibernate object
         HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
@@ -302,21 +290,19 @@ public class CatalogueServiceImpl implements CatalogueService {
             throw new CatalogueServiceException(msg, e);
         }
 
-        // Assign IDs to lines that are missing it
-        for (CatalogueLineType catalogueLine : catalogueLines) {
-            if (catalogueLine.getID() == null) {
-                catalogueLine.setID(UUID.randomUUID().toString());
-            }
-        }
-
         if (newCatalogue) {
             catalogue = new CatalogueType();
             catalogue.setID("default");
             catalogue.setProviderParty(party);
             catalogue.setCatalogueLine(catalogueLines);
+            checkReferencesInCatalogue(catalogue);
+
             return addCatalogue(catalogue);
+
         } else {
             updateLinesForUploadMode(catalogue, uploadMode, catalogueLines);
+            checkReferencesInCatalogue(catalogue);
+
             return updateCatalogue(catalogue);
         }
     }
@@ -449,8 +435,8 @@ public class CatalogueServiceImpl implements CatalogueService {
     // TODO test
     @Override
     public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine) {
-        catalogueLine.setID(UUID.randomUUID().toString());
         catalogue.getCatalogueLine().add(catalogueLine);
+        checkReferencesInCatalogue(catalogue);
 
         HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
 
@@ -481,6 +467,25 @@ public class CatalogueServiceImpl implements CatalogueService {
 
             // add synchronization record
             MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueId);
+        }
+    }
+
+    private void checkReferencesInCatalogue(CatalogueType catalogue) {
+        for(CatalogueLineType line : catalogue.getCatalogueLine()) {
+            // check catalogue line ids
+            if(line.getID() == null) {
+                String manufacturersItemId = line.getGoodsItem().getItem().getManufacturersItemIdentification().getID();
+                if(manufacturersItemId == null) {
+                    line.setID(UUID.randomUUID().toString());
+                } else {
+                    line.setID(manufacturersItemId);
+                }
+            }
+
+            // set references from items to the catalogue
+            DocumentReferenceType docRef = new DocumentReferenceType();
+            docRef.setID(catalogue.getUUID());
+            line.getGoodsItem().getItem().setCatalogueDocumentReference(docRef);
         }
     }
 }
