@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>eu.nimble.core.service.catalogue</groupId>
-	<artifactId>catalogue-service-micro</artifactId>
+	<artifactId>catalogue-service</artifactId>
 	<version>0.0.1</version>
 	<name>Catalogue Service Spring Boot Rest</name>
 	<packaging>jar</packaging>
@@ -127,7 +127,7 @@
 							</execution>
 						</executions>
 						<configuration>
-							<imageName>${docker.image.prefix}/${project.artifactId}-srdc</imageName>
+							<imageName>${docker.image.prefix}/${project.artifactId}</imageName>
 							<dockerDirectory>${project.basedir}/src/main/docker</dockerDirectory>
 							<buildArgs>
 								<finalName>${project.build.finalName}.jar</finalName>
