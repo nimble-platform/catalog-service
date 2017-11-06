@@ -27,7 +27,8 @@
                         "pid": "${PID:-}",
                         "thread": "%thread",
                         "class": "%logger{40}",
-                        "message": "%message"
+                        "message": "%message",
+                        "exception": "%exception"
                         }
                     </pattern>
                 </pattern>
