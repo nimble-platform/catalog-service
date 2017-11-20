@@ -207,7 +207,7 @@ public class MarmottaSynchronizer {
             logger.info("Sync status table exists");
 
         } catch (SQLException e) {
-            if (e.getSQLState().contentEquals("42S02")) {
+            if (e.getSQLState().contentEquals("42S02") || e.getSQLState().contentEquals("42P01")) {
                 logger.info("Sync status table does not exist");
 
                 try {
