@@ -260,5 +260,6 @@ persistence:
         dialect: org.hibernate.dialect.H2Dialect
 
 nimble:
+  corsEnabled: true
   identity:
     url: ${IDENTITY_URL:localhost:9096}
