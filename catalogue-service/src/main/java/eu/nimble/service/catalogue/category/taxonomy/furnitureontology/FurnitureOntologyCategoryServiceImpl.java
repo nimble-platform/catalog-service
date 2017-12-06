@@ -1,9 +1,11 @@
 package eu.nimble.service.catalogue.category.taxonomy.furnitureontology;
 
+import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.ProductCategoryService;
 import eu.nimble.service.catalogue.category.datamodel.Category;
 import eu.nimble.service.catalogue.category.datamodel.Property;
 import eu.nimble.service.catalogue.template.TemplateConfig;
+import eu.nimble.utility.config.CatalogueServiceConfig;
 import org.apache.marmotta.client.ClientConfiguration;
 import org.apache.marmotta.client.MarmottaClient;
 import org.apache.marmotta.client.clients.SPARQLClient;
@@ -12,6 +14,10 @@ import org.apache.marmotta.client.model.rdf.RDFNode;
 import org.apache.marmotta.client.model.sparql.SPARQLResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowire;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.context.ApplicationContext;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,8 +28,8 @@ import java.util.Map;
  * Created by suat on 07-Jul-17.
  */
 public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryService {
-    private static final String MARMOTTA_URI = "http://134.168.33.237:8080/marmotta";
-    private static final String GRAPH_URI = "http://134.168.33.237:8080/marmotta/context/furnituresectortaxonomy";
+    private static final String MARMOTTA_URI = "https://nimble-platform.salzburgresearch.at/marmotta";
+    private static final String GRAPH_URI = "https://nimble-platform.salzburgresearch.at/marmotta/context/furnituresectortaxonomy";
     private static final String FURNITURE_NS = "http://www.aidimme.es/FurnitureSectorOntology.owl#";
     private static final String XSD_NS = "http://www.w3.org/2001/XMLSchema#";
 
@@ -31,39 +37,11 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
 
     private MarmottaClient client;
 
-    private List<Category> categories;
-
     public FurnitureOntologyCategoryServiceImpl() {
-        categories = new ArrayList<>();
-        Category category = new Category();
-        category.setTaxonomyId(getTaxonomyId());
-        category.setCode("MDFBoard");
-        category.setPreferredName("MDF Board");
-        category.setId("MDFBoard");
-
-        Property property = new Property();
-        property.setId("Material_Composition");
-        property.setPreferredName("Material Composition");
-        property.setDataType("STRING");
-
-        List<Property> properties = new ArrayList<>();
-        properties.add(property);
-        category.setProperties(properties);
-
-        categories.add(category);
-
         // TODO: take the marmotta base uri form a parameter
         ClientConfiguration config = new ClientConfiguration(MARMOTTA_URI);
         config.setConnectionTimeout(900000);
         client = new MarmottaClient(config);
-    }
-
-    public static void main(String[] args) {
-        FurnitureOntologyCategoryServiceImpl f = new FurnitureOntologyCategoryServiceImpl();
-        //f.getProductCategories("MDF");
-        f.getCategory("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#MDFBoard");
-        //f.getParentClassSparql("http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#MDFBoard");
-        //f.getParentCategories(new ArrayList<>(), "http://www.semanticweb.org/ontologies/2013/4/Ontology1367568797694.owl#MDFBoard");
     }
 
     @Override
@@ -94,11 +72,6 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
 
     @Override
     public List<Category> getProductCategories(String categoryName) {
-        /*if (name.toLowerCase().contentEquals("mdf")) {
-            return categories;
-        } else {
-            return new ArrayList<>();
-        }*/
         List<Category> result = new ArrayList<>();
         SPARQLResult sparqlResult;
         try {

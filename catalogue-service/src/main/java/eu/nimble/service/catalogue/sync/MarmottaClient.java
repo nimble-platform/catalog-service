@@ -49,8 +49,8 @@ public class MarmottaClient {
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "text/n3");
             conn.setDoOutput(true);
-            conn.setConnectTimeout(18000);
-            conn.setReadTimeout(18000);
+            conn.setConnectTimeout(60000);
+            conn.setReadTimeout(60000);
 
             OutputStream os = conn.getOutputStream();
             rdfGenerator.writeModel(os, "N3");
@@ -86,8 +86,8 @@ public class MarmottaClient {
             conn = (HttpURLConnection) marmottaURL.openConnection();
             conn.setRequestMethod("DELETE");
             conn.setDoOutput(true);
-            conn.setConnectTimeout(18000);
-            conn.setReadTimeout(18000);
+            conn.setConnectTimeout(60000);
+            conn.setReadTimeout(60000);
 
             OutputStream os = conn.getOutputStream();
             os.flush();
