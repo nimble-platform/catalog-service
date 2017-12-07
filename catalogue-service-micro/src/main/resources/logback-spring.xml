@@ -36,6 +36,7 @@
         </encoder>
     </appender>
 
+
     <root level="INFO">
         <appender-ref ref="logstash"/>
         <appender-ref ref="CONSOLE"/>
