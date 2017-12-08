@@ -134,7 +134,7 @@ public class TemplateConfig {
         properties.add(prop);
 
         // product data sheet
-        prop = new Property();
+        /*prop = new Property();
         prop.setPreferredName(TEMPLATE_PRODUCT_PROPERTIES_PRODUCT_DATA_SHEET);
         prop.setDataType("FILE");
         properties.add(prop);
@@ -143,7 +143,7 @@ public class TemplateConfig {
         prop = new Property();
         prop.setPreferredName(TEMPLATE_PRODUCT_PROPERTIES_PRODUCT_SAFETY_SHEET);
         prop.setDataType("FILE");
-        properties.add(prop);
+        properties.add(prop);*/
 
         // width
         prop = new Property();

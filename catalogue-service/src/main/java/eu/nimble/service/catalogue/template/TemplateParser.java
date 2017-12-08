@@ -274,7 +274,7 @@ public class TemplateParser {
                 }
                 item.setCertificate(certificates);
 
-            } else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PRODUCT_DATA_SHEET)) {
+            } /*else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PRODUCT_DATA_SHEET)) {
                 List<BinaryObjectType> documents = (List<BinaryObjectType>) parseCell(cell, TEMPLATE_DATA_TYPE_FILE, true);
                 List<DocumentReferenceType> docRefs = new ArrayList<>();
                 for (BinaryObjectType document : documents) {
@@ -298,7 +298,7 @@ public class TemplateParser {
                 }
                 item.setSafetyDataSheet(docRefs);
 
-            } else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_WIDTH)) {
+            }*/ else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_WIDTH)) {
                 // just to initialize the dimension array
                 item.getDimension();
                 List<QuantityType> widths;

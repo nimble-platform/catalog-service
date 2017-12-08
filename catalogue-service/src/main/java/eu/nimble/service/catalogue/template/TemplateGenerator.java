@@ -167,10 +167,10 @@ public class TemplateGenerator {
         // create the top row containing the category names and ids on top of the corresponding properties
         // create the dimension tab
         Row topRow = productPropertiesTab.createRow(0);
-        Cell cell = getCellWithMissingCellPolicy(topRow, 7);
+        Cell cell = getCellWithMissingCellPolicy(topRow, 5);
         cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_DIMENSIONS);
         cell.setCellStyle(headerCellStyle);
-        CellRangeAddress cra = new CellRangeAddress(0, 0, 7, 9);
+        CellRangeAddress cra = new CellRangeAddress(0, 0, 5, 7);
         productPropertiesTab.addMergedRegion(cra);
 
         // create the titles for categories
