@@ -437,10 +437,10 @@ public class CatalogueController {
     public void downloadExampleTemplate(HttpServletResponse response) {
         log.info("Incoming request to get the example filled in template");
 
-        InputStream is = CatalogueController.class.getResourceAsStream("/template/cradle_filled.xlsx");
+        InputStream is = CatalogueController.class.getResourceAsStream("/template/wooden_mallet_template.xlsx");
 
         try {
-            String fileName = "cradle_filled.xlsx";
+            String fileName = "wooden_mallet_template.xlsx";
             response.setHeader("Content-disposition", "attachment; filename=" + fileName);
             response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
             IOUtils.copy(is, response.getOutputStream());
