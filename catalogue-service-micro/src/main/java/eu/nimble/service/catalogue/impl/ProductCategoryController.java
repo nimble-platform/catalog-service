@@ -72,7 +72,7 @@ public class ProductCategoryController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(msg);
         }
 
-        log.debug("Completed request to get categories. size: {}", categories.size());
+        log.info("Completed request to get categories. size: {}", categories.size());
         return ResponseEntity.ok(categories);
     }
 

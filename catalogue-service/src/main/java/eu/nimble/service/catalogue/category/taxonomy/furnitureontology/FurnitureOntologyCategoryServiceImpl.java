@@ -6,6 +6,12 @@ import eu.nimble.service.catalogue.category.datamodel.Category;
 import eu.nimble.service.catalogue.category.datamodel.Property;
 import eu.nimble.service.catalogue.template.TemplateConfig;
 import eu.nimble.utility.config.CatalogueServiceConfig;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.marmotta.client.ClientConfiguration;
 import org.apache.marmotta.client.MarmottaClient;
 import org.apache.marmotta.client.clients.SPARQLClient;
@@ -29,7 +35,7 @@ import java.util.Map;
  */
 public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryService {
     private static final String MARMOTTA_URI = "https://nimble-platform.salzburgresearch.at/marmotta";
-    private static final String GRAPH_URI = "https://nimble-platform.salzburgresearch.at/marmotta/context/furnituresectortaxonomy";
+    private static final String GRAPH_URI = "http://nimble-platform.salzburgresearch.at/marmotta/context/furnituresectortaxonomy";
     private static final String FURNITURE_NS = "http://www.aidimme.es/FurnitureSectorOntology.owl#";
     private static final String XSD_NS = "http://www.w3.org/2001/XMLSchema#";
 
@@ -40,7 +46,15 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
     public FurnitureOntologyCategoryServiceImpl() {
         // TODO: take the marmotta base uri form a parameter
         ClientConfiguration config = new ClientConfiguration(MARMOTTA_URI);
-        config.setConnectionTimeout(900000);
+        final Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
+                .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                .register("https", SSLConnectionSocketFactory.getSocketFactory())
+                .build();
+
+        final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(registry);
+        cm.setMaxTotal(100);
+        config.setConectionManager(cm);
+        config.setConnectionTimeout(30000);
         client = new MarmottaClient(config);
     }
 
