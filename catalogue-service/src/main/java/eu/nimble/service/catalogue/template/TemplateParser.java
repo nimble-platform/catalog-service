@@ -11,6 +11,7 @@ import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
 import eu.nimble.utility.HibernateUtility;
+import org.apache.jena.base.Sys;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.*;
@@ -147,7 +148,7 @@ public class TemplateParser {
         return additionalItemProperties;
     }
 
-    private ItemPropertyType getItemPropertyFromCategoryProperty(Category category, Property property, Object values) {
+    private ItemPropertyType getItemPropertyFromCategoryProperty(Category category, Property property, Object values) throws TemplateParseException{
         ItemPropertyType itemProp = new ItemPropertyType();
         CodeType associatedClassificationCode = new CodeType();
         itemProp.setItemClassificationCode(associatedClassificationCode);
@@ -190,7 +191,12 @@ public class TemplateParser {
             itemProp.setValue((List<String>) values);
         }
 
-        valueQualifier = TemplateGenerator.denormalizeDataTypeFromTemplate(valueQualifier);
+
+        try {
+            valueQualifier = TemplateGenerator.denormalizeDataTypeFromTemplate(valueQualifier);
+        } catch (TemplateParseException e) {
+            throw new TemplateParseException(e.getMessage());
+        }
         itemProp.setValueQualifier(valueQualifier);
 
         return itemProp;
@@ -254,11 +260,17 @@ public class TemplateParser {
             Property property = properties.get(i);
             Cell cell = getCellWithMissingCellPolicy(propertiesRow, i + 1);
             if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION)) {
+                if(getCellStringValue(cell).contentEquals("")){
+                    throw new TemplateParseException("No Manufacturer Item Identification provided for the item");
+                }
                 ItemIdentificationType itemId = new ItemIdentificationType();
                 itemId.setID((String) parseCell(cell, TEMPLATE_DATA_TYPE_TEXT, false));
                 item.setManufacturersItemIdentification(itemId);
 
             } else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_NAME)) {
+                if(getCellStringValue(cell).contentEquals("")){
+                    throw new TemplateParseException("No name provided for the item : " + " id: " + item.getManufacturersItemIdentification().getID());
+                }
                 item.setName((String) parseCell(cell, TEMPLATE_DATA_TYPE_TEXT, false));
 
             } else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION)) {
@@ -385,7 +397,7 @@ public class TemplateParser {
                     price.setPriceAmount(amount);
 
                     // parse price amount
-                    if (cell == null) {
+                    if (getCellStringValue(cell).contentEquals("")) {
                         throw new TemplateParseException("No price provided for the item name: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
                     }
 
@@ -538,7 +550,8 @@ public class TemplateParser {
                 try {
                     results.add(new BigDecimal(value));
                 } catch(NumberFormatException e) {
-                    logger.warn("Invalid value passed for number: {}", value);
+                  //  logger.warn("Invalid value passed for number: {}", value);
+                    throw new TemplateParseException("'"+value +"' is not a number");
                 }
             } else if (normalizedDataType.compareToIgnoreCase("QUANTITY") == 0) {
                 results.add(parseQuantity(value, cell));
@@ -581,8 +594,9 @@ public class TemplateParser {
         try {
             quantity.setValue(new BigDecimal(value));
         } catch (NumberFormatException e) {
-            logger.warn("Invalid number passed for quantity: {}", value, e);
-            return null;
+          //  logger.warn("Invalid number passed for quantity: {}", value, e);
+          //  return null;
+            throw new TemplateParseException("'"+value+"' is not a number");
         }
 
         // parse unit

@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue.template;
 import eu.nimble.service.catalogue.category.datamodel.Category;
 import eu.nimble.service.catalogue.category.datamodel.Property;
 import eu.nimble.service.catalogue.category.datamodel.Value;
+import eu.nimble.service.catalogue.exception.TemplateParseException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -132,6 +133,8 @@ public class TemplateGenerator {
         row.createCell(0).setCellValue(TemplateConfig.TEMPLATE_INFO_TRADING_AND_DELIVERY);
         row = infoTab.createRow(++rowIndex);
         row.createCell(0).setCellValue(TemplateConfig.TEMPLATE_INFO_MANUFACTURER_ITEM_IDENTIFICATION);
+        row = infoTab.createRow(++rowIndex);
+        row.createCell(0).setCellValue(TemplateConfig.TEMPLATE_INFO_NOTADDING_CUSTOM_PROPERTIES);
         rowIndex++;
 
         // product details tab info
@@ -535,7 +538,7 @@ public class TemplateGenerator {
     }
 
 
-    public static String denormalizeDataTypeFromTemplate(String datatypeStr) {
+    public static String denormalizeDataTypeFromTemplate(String datatypeStr) throws TemplateParseException{
         String denormalizedDatatype;
         if (datatypeStr.compareToIgnoreCase(TEMPLATE_DATA_TYPE_NUMBER) == 0) {
             denormalizedDatatype = TEMPLATE_DATA_TYPE_REAL_MEASURE;
@@ -549,9 +552,11 @@ public class TemplateGenerator {
         } else if (datatypeStr.compareToIgnoreCase(TEMPLATE_DATA_TYPE_BOOLEAN) == 0) {
             denormalizedDatatype = TEMPLATE_DATA_TYPE_BOOLEAN;
 
-        }else {
-            // for text or other unknown properties
+        } else if(datatypeStr.compareToIgnoreCase(TEMPLATE_DATA_TYPE_TEXT) == 0){
             denormalizedDatatype = TEMPLATE_DATA_TYPE_STRING;
+        } else {
+            // for text or other unknown properties
+            throw new TemplateParseException("The data type of the property can not be '" + datatypeStr+"'" );
         }
         return denormalizedDatatype;
     }

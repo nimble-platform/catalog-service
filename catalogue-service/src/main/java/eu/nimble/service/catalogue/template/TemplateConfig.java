@@ -45,6 +45,7 @@ public class TemplateConfig {
     public static String TEMPLATE_INFO_THE_FIFTH_ROW = "The 5th row onwards, each row corresponds to a product (with potential variations based on the provided values) for the chosen product category";
     public static String TEMPLATE_INFO_TRADING_AND_DELIVERY = "Trading and delivery terms related information should be specified via this tab. Structure of this tab is the same as \"Product Properties\" tab.";
     public static String TEMPLATE_INFO_MANUFACTURER_ITEM_IDENTIFICATION = "*** Manufacturer item identification values must be consistent with the ones used in the \"Product Properties\" tab. In other words, same identifier must be used in the rows representing the same product.";
+    public static String TEMPLATE_INFO_NOTADDING_CUSTOM_PROPERTIES = "*** Note that you can not add any custom properties here.";
     public static String TEMPLATE_INFO_THIS_TAB_CONTAINS = "This tab contains additional information for each property associated with the chosen product category";
     public static String TEMPLATE_INFO_THIS_TAB_CONTAINS_VALUES = "This tab contains values that are allowed to be set for each property starting from the 4th row";
     public static String TEMPLATE_INFO_THIS_TAB_CONTAINS_INFORMATION = "This tab contains information about the publishing process such as selected category metadata, publishing party and so on.";
