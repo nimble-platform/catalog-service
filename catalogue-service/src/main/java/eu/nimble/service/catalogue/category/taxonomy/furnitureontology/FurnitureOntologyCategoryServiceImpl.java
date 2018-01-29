@@ -71,9 +71,7 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
             SPARQLResult dataTypes = sparqlClient.select(datatypeSparql);
             if (dataTypes != null) {
                 for (Map<String, RDFNode> dataType : dataTypes) {
-                    String dtUri = getRemainder(dataType.get("prop").toString(), FURNITURE_NS);
-                    String dtStr = getRemainder(dataType.get("range").toString(), XSD_NS);
-                    Property property = createProperty(dtUri, dtStr);
+                    Property property = createProperty(dataType.get("prop").toString(), dataType.get("range").toString());
                     properties.add(property);
                 }
             }
@@ -114,7 +112,8 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
         Property property = new Property();
         property.setId(uri);
         property.setPreferredName(getRemainder(uri, FURNITURE_NS));
-        property.setDataType(getNormalizedDatatype(getRemainder(range, FURNITURE_NS).toUpperCase()));
+        property.setDataType(getNormalizedDatatype(getRemainder(range, XSD_NS).toUpperCase()));
+        property.setUri(uri);
         return property;
     }
 
