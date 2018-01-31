@@ -107,6 +107,7 @@ public class TemplateParser {
             CodeType classificationCode = new CodeType();
             classificationCode.setValue(category.getId());
             classificationCode.setName(category.getPreferredName());
+            classificationCode.setURI(category.getCategoryUri());
             classificationCode.setListID(category.getTaxonomyId());
             classification.setItemClassificationCode(classificationCode);
             classifications.add(classification);
@@ -153,6 +154,7 @@ public class TemplateParser {
         CodeType associatedClassificationCode = new CodeType();
         itemProp.setItemClassificationCode(associatedClassificationCode);
         itemProp.setName(property.getPreferredName());
+        itemProp.setURI(property.getUri());
         String valueQualifier = TemplateGenerator.normalizeDataTypeForTemplate(property.getDataType().toUpperCase());
         itemProp.setValueQualifier(property.getDataType());
 
