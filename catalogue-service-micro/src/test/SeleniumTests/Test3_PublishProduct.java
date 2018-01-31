@@ -34,8 +34,8 @@ public class Test3_PublishProduct implements SeleniumInterface {
         wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id=\"singleUpload\"]"))).click();
 
         // Set product name,description
-        driver.findElement(By.xpath("/html/body/div/nimble-app/product-publish/div/form/catalogue-line-view/catalogue-line-header/div/div[2]/value-view[2]/div/input")).sendKeys("ExampleProduct");
-        driver.findElement(By.xpath("/html/body/div/nimble-app/product-publish/div/form/catalogue-line-view/catalogue-line-header/div/div[2]/value-view[3]/div/input")).sendKeys("ExampleProductDescription");
+        driver.findElement(By.xpath("/html/body/div/nimble-app/product-publish/div/form/catalogue-line-view/catalogue-line-header/div/div[2]/value-view[2]/div/input")).sendKeys("QuantumExampleProduct");
+        driver.findElement(By.xpath("/html/body/div/nimble-app/product-publish/div/form/catalogue-line-view/catalogue-line-header/div/div[2]/value-view[3]/div/input")).sendKeys("QuantumExampleProductDescription");
 
         // Set price amount and price base quantity
         driver.findElement(By.xpath("/html/body/div/nimble-app/product-publish/div/form/catalogue-line-view/ul/li[2]/a")).click();
