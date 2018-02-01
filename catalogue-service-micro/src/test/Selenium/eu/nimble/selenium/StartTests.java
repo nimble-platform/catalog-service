@@ -1,4 +1,6 @@
+package eu.nimble.selenium;
 
+import eu.nimble.selenium.SeleniumInterface;
 import org.reflections.Reflections;
 
 import java.lang.reflect.Method;
@@ -7,7 +9,7 @@ import java.util.*;
 public class StartTests {
 
     public static void main(String [] args) throws Exception{
-        Reflections reflections = new Reflections();
+        Reflections reflections = new Reflections("eu.nimble.selenium");
 
         List<Class<?>> classes = new ArrayList<Class<?>>(reflections.getSubTypesOf(SeleniumInterface.class));
 

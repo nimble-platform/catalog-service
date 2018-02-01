@@ -1,3 +1,6 @@
+package eu.nimble.selenium;
+
+import eu.nimble.selenium.SeleniumInterface;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -13,7 +16,10 @@ public class Test2_Logout implements SeleniumInterface {
         WebElement email = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id=\"email\"]")));
         WebElement password = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id=\"password\"]")));
 
+        email.clear();
         email.sendKeys(emailAddress);
+
+        password.clear();
         password.sendKeys(userPassword);
 
         // Submit
