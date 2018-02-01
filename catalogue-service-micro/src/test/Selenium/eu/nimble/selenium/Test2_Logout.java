@@ -1,6 +1,5 @@
 package eu.nimble.selenium;
 
-import eu.nimble.selenium.SeleniumInterface;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;

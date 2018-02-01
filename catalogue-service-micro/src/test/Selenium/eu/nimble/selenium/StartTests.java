@@ -1,6 +1,5 @@
 package eu.nimble.selenium;
 
-import eu.nimble.selenium.SeleniumInterface;
 import org.reflections.Reflections;
 
 import java.lang.reflect.Method;
