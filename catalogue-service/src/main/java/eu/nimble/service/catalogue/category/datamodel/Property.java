@@ -20,6 +20,7 @@ public class Property {
     private String dataType;
     private List<KeywordSynonym> synonyms;
     private List<Value> values = new ArrayList<>();
+    private String uri;
 
     public String getId() {
         return id;
@@ -123,5 +124,13 @@ public class Property {
 
     public List<Value> getValues() {
         return values;
+    }
+
+    public String getUri() {
+        return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
     }
 }

@@ -72,6 +72,7 @@ public class EClassCategoryDatabaseConfig {
     public static String COLUMN_CLASSIFICATION_CLASS_PROPERTY_VALUE_IRDI_VA = "IrdiVA";
 
     public static String COLUMN_PROPERTY_IRDI_PR = "IrdiPR";
+    public static String COLUMN_PROPERTY_IDPR = "IdPR";
     public static String COLUMN_PROPERTY_PREFERRED_NAME = "PreferredName";
     public static String COLUMN_PROPERTY_SHORT_NAME = "ShortName";
     public static String COLUMN_PROPERTY_DEFINITION = "Definition";

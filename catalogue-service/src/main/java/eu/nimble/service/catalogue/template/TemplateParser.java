@@ -297,7 +297,6 @@ public class TemplateParser {
                     docRefs.add(docRef);
                 }
                 item.setProductDataSheet(docRefs);
-
             } else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PRODUCT_SAFETY_SHEET)) {
                 List<BinaryObjectType> documents = (List<BinaryObjectType>) parseCell(cell, TEMPLATE_DATA_TYPE_FILE, true);
                 List<DocumentReferenceType> docRefs = new ArrayList<>();
@@ -309,7 +308,6 @@ public class TemplateParser {
                     docRefs.add(docRef);
                 }
                 item.setSafetyDataSheet(docRefs);
-
             }*/ else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_WIDTH)) {
                 // just to initialize the dimension array
                 item.getDimension();
@@ -550,7 +548,7 @@ public class TemplateParser {
                 try {
                     results.add(new BigDecimal(value));
                 } catch(NumberFormatException e) {
-                  //  logger.warn("Invalid value passed for number: {}", value);
+                    //  logger.warn("Invalid value passed for number: {}", value);
                     throw new TemplateParseException("'"+value +"' is not a number");
                 }
             } else if (normalizedDataType.compareToIgnoreCase("QUANTITY") == 0) {
@@ -594,8 +592,8 @@ public class TemplateParser {
         try {
             quantity.setValue(new BigDecimal(value));
         } catch (NumberFormatException e) {
-          //  logger.warn("Invalid number passed for quantity: {}", value, e);
-          //  return null;
+            //  logger.warn("Invalid number passed for quantity: {}", value, e);
+            //  return null;
             throw new TemplateParseException("'"+value+"' is not a number");
         }
 

@@ -23,6 +23,7 @@ import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
 import org.apache.commons.io.IOUtils;
+import org.apache.jena.base.Sys;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -487,5 +488,35 @@ public class CatalogueServiceImpl implements CatalogueService {
             docRef.setID(catalogue.getUUID());
             line.getGoodsItem().getItem().setCatalogueDocumentReference(docRef);
         }
+    }
+
+    @Override
+    public boolean existCatalogueLineById(String catalogueId, String lineId,Long hjid) {
+        List<Long> resultSet;
+
+        String query;
+        // addCatalogueLine
+        if(hjid == null){
+            query = "SELECT COUNT(cl) FROM CatalogueLineType as cl, CatalogueType as c "
+                    + " JOIN c.catalogueLine as clj"
+                    + " WHERE c.UUID = '" + catalogueId + "' "
+                    + " AND cl.ID = '" + lineId + "' "
+                    + " AND clj.ID = cl.ID ";
+        }
+        // updateCatalogueLine
+        else{
+            query = "SELECT COUNT(clj) FROM CatalogueType as c "
+                    + " JOIN c.catalogueLine as clj"
+                    + " WHERE c.UUID = '" + catalogueId + "'"
+                    + " AND clj.hjid <> "+hjid
+                    + " AND clj.ID = '"+lineId+"'";
+        }
+        resultSet = (List<Long>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
+                .loadAll(query);
+        if (resultSet.size() > 0 && resultSet.get(0) > 0) {
+            return true;
+        }
+
+        return false;
     }
 }
