@@ -11,6 +11,10 @@ elif [ "$1" == "docker-build" ]; then
 
     mvn -f catalogue-service-micro/pom.xml docker:build -P docker
 
+elif [ "$1" == "docker-build-staging" ]; then
+
+    mvn -f catalogue-service-micro/pom.xml docker:build -DdockerImageTag=staging -P docker
+
 elif [ "$1" == "docker-run" ]; then
 
     docker run --rm -it -e SPRING_PROFILES_ACTIVE=docker -p "8095:8095" nimbleplatform/catalogue-service-micro-srdc:latest
