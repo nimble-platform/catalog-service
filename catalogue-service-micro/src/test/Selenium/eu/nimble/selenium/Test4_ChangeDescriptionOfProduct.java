@@ -1,5 +1,6 @@
 package eu.nimble.selenium;
 
+import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -32,7 +33,7 @@ public class Test4_ChangeDescriptionOfProduct implements SeleniumInterface {
         driver.findElement(By.xpath("//*[@id=\"dropdownMenuUser\"]")).click();
         driver.findElement(By.xpath("/html/body/div/nimble-app/nav/div/ul[2]/li/div/a[2]")).click();
 
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("/html/body/div/nimble-app/catalogue-view/div[2]/div/catalogue-line-panel[1]/div/div/div[2]/button"))).click();
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("/html/body/div/nimble-app/catalogue-view/div[2]/div/div[2]/div/div/div/div[2]/div[2]/button[1]"))).click();
 
 
         // Select Single Product Tab
@@ -47,7 +48,8 @@ public class Test4_ChangeDescriptionOfProduct implements SeleniumInterface {
         wait.until(ExpectedConditions.elementToBeClickable(By.xpath("/html/body/div/nimble-app/product-publish/div/div/button"))).click();
 
         // Check whether it is saved
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("/html/body/div/nimble-app/catalogue-view/div[1]/button")));
+        String desc = wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("/html/body/div/nimble-app/catalogue-view/div[2]/div/div[2]/div/div/div/div[2]/div[1]/p[2]"))).getText();
+        Assert.assertEquals("Done",desc);
 
         // Logout
         wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id=\"dropdownMenuUser\"]"))).click();
