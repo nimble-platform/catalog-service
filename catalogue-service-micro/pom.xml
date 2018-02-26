@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>eu.nimble.core.service.catalogue</groupId>
-    <artifactId>catalogue-service</artifactId>
+    <artifactId>catalogue-service-micro</artifactId>
     <version>0.0.1</version>
     <name>Catalogue Service Spring Boot Rest</name>
     <packaging>jar</packaging>
