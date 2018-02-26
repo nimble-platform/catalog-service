@@ -181,7 +181,6 @@ public class TemplateConfig {
         prop.setDataType("AMOUNT");
         properties.add(prop);
         Unit unit = new Unit();
-        unit.setShortName("EUR");
         prop.setUnit(unit);
 
 
