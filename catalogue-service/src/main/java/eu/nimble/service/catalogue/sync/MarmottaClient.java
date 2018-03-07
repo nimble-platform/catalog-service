@@ -107,7 +107,7 @@ public class MarmottaClient {
         logger.info("Catalogue with uuid: {} deleted from Marmotta", uuid);
     }
 
-    private XML2OWLMapper transformCatalogueToRDF(CatalogueType catalogue) throws MarmottaSynchronizationException {
+    public XML2OWLMapper transformCatalogueToRDF(CatalogueType catalogue) throws MarmottaSynchronizationException {
         // TODO generate the ontology once, once the data model is finalized
         XSD2OWLMapper mapping = getXSDToOWLMapping();
 
