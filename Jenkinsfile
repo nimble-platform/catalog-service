@@ -22,7 +22,7 @@ node('nimble-jenkins-slave') {
         }
 
         stage('Push Docker') {
-            sh 'docker push nimbleplatform/catalogue-service:staging'
+            sh 'docker push nimbleplatform/catalogue-service-micro:staging'
         }
 
         stage('Deploy') {
