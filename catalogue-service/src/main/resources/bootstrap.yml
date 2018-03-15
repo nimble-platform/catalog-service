@@ -234,7 +234,7 @@ persistence:
   syncdb:
     driver: org.h2.Driver
     connection:
-      url: jdbc:h2:file:~/nimble/syncdb;AUTO_SERVER=TRUE;MVCC=TRUE;AUTO_RECONNECT=TRUE;DB_CLOSE_DELAY=10;INIT=create schema IF NOT EXISTS APPS
+      url: jdbc:h2:mem:db;AUTO_RECONNECT=TRUE;DB_CLOSE_DELAY=-1;INIT=create schema IF NOT EXISTS APPS
     username: sa
     password:
   orm:
@@ -242,7 +242,7 @@ persistence:
       hibernate:
         connection:
           #### H2 Configs
-          url: jdbc:h2:file:${user.home}/nimble/ubl;AUTO_SERVER=TRUE;MVCC=TRUE;AUTO_RECONNECT=TRUE;DB_CLOSE_DELAY=10;INIT=create schema IF NOT EXISTS APPS
+          url: jdbc:h2:mem:db2;AUTO_RECONNECT=TRUE;DB_CLOSE_DELAY=-1;INIT=create schema IF NOT EXISTS APPS
           username: sa
           password:
           driver_class: org.h2.Driver
@@ -251,3 +251,4 @@ persistence:
 nimble:
   identity:
     url: ${IDENTITY_URL:localhost:9096}
+

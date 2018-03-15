@@ -456,9 +456,7 @@ public class TemplateGenerator {
 
     private void checkMandatory(Property property, Cell cell) {
         if (property.getPreferredName().contentEquals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION) ||
-                property.getPreferredName().contentEquals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_NAME) ||
-                property.getPreferredName().contentEquals(TemplateConfig.TEMPLATE_TRADING_DELIVERY_PRICE_AMOUNT) ||
-                property.getPreferredName().contentEquals(TemplateConfig.TEMPLATE_TRADING_DELIVERY_PRICE_BASE_QUANTITY)) {
+                property.getPreferredName().contentEquals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_NAME)) {
             cell.setCellStyle(mandatoryCellStyle);
         }
     }

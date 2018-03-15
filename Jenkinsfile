@@ -1,4 +1,4 @@
-node ('nimble-jenkins-slave') {
+node('nimble-jenkins-slave') {
 
     stage('Clone and Update') {
         git(url: 'https://github.com/nimble-platform/catalog-service.git', branch: env.BRANCH_NAME)
@@ -7,17 +7,31 @@ node ('nimble-jenkins-slave') {
     stage('Build Dependencies') {
         sh 'rm -rf common   '
         sh 'git clone https://github.com/nimble-platform/common'
-        dir ('common') {
+        dir('common') {
             sh 'mvn clean install'
         }
     }
 
-    stage ('Build Java') {
+    stage('Build Java') {
         sh '/bin/bash -xe deploy.sh java-build'
     }
 
-    stage ('Build Docker') {
-        sh '/bin/bash -xe deploy.sh docker-build'
+    if (env.BRANCH_NAME == 'staging') {
+        stage('Build Docker') {
+            sh '/bin/bash -xe deploy.sh docker-build-staging'
+        }
+
+        stage('Push Docker') {
+            sh 'docker push nimbleplatform/catalogue-service-micro:staging'
+        }
+
+        stage('Deploy') {
+            sh 'ssh staging "cd /srv/nimble-staging/ && ./run-staging.sh restart-single catalog-service-srdc"'
+        }
+    } else {
+        stage('Build Docker') {
+            sh '/bin/bash -xe deploy.sh docker-build'
+        }
     }
 
     if (env.BRANCH_NAME == 'master') {

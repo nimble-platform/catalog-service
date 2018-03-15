@@ -83,7 +83,14 @@ public class CatalogueLineController {
             catalogueLine = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                     .readValue(catalogueLineJson, CatalogueLineType.class);
 
-            catalogueLine = service.addLineToCatalogue(catalogue, catalogueLine);
+            boolean tmp = service.existCatalogueLineById(catalogueUuid,catalogueLine.getID(),catalogueLine.getHjid());
+
+            if(!tmp){
+                catalogueLine = service.addLineToCatalogue(catalogue, catalogueLine);
+            }
+            else{
+                return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("You already have a product with the given id.");
+            }
 
         } catch (IOException e) {
             return createErrorResponseEntity("Failed to deserialize catalogue line from json string", HttpStatus.BAD_REQUEST, e);
@@ -131,7 +138,14 @@ public class CatalogueLineController {
             catalogueLine = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                     .readValue(catalogueLineJson, CatalogueLineType.class);
 
-            service.updateCatalogueLine(catalogueLine);
+            boolean tmp = service.existCatalogueLineById(catalogueUuid,catalogueLine.getID(),catalogueLine.getHjid());
+
+            if(!tmp){
+                service.updateCatalogueLine(catalogueLine);
+            }
+            else{
+                return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("You already have a product with the given id.");
+            }
 
         } catch (IOException e) {
             return createErrorResponseEntity("Failed to deserialize catalogue line from json string", HttpStatus.BAD_REQUEST, e);

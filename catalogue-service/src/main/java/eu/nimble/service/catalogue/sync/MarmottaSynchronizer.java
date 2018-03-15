@@ -80,9 +80,10 @@ public class MarmottaSynchronizer {
         syncThread = new Thread(() -> {
             long interval = CatalogueServiceConfig.getInstance().getSyncDbUpdateCheckInterval();
             while (sync) {
-                try {
-                    List<SyncStatusRecord> records = getStatusRecords();
-                    for (SyncStatusRecord record : records) {
+
+                List<SyncStatusRecord> records = getStatusRecords();
+                for (SyncStatusRecord record : records) {
+                    try {
                         if (record.getSyncStatus().equals(SyncStatus.ADD)) {
                             CatalogueType catalogue = catalogueService.getCatalogue(record.getCatalogueUuid());
                             marmottaClient.submitCatalogueDataToMarmotta(catalogue);
@@ -99,11 +100,12 @@ public class MarmottaSynchronizer {
                             logger.info("Processed delete sync status for catalogue: {}", record.getCatalogueUuid());
                         }
                         deleteStatusRecords(record.getCatalogueUuid());
+                    } catch (Exception e) {
+                        logger.error("An error occurred during the synchronization", e);
                     }
-                    logger.debug("Processed sync status updates. Size: {}", records.size());
-                } catch (Exception e) {
-                    logger.error("An error occurred during the synchronization", e);
                 }
+                logger.debug("Processed sync status updates. Size: {}", records.size());
+
 
                 try {
                     Thread.sleep(interval);
