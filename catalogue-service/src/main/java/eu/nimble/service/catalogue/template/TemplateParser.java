@@ -11,7 +11,6 @@ import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
 import eu.nimble.utility.HibernateUtility;
-import org.apache.jena.base.Sys;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.*;
@@ -297,7 +296,6 @@ public class TemplateParser {
                     docRefs.add(docRef);
                 }
                 item.setProductDataSheet(docRefs);
-
             } else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PRODUCT_SAFETY_SHEET)) {
                 List<BinaryObjectType> documents = (List<BinaryObjectType>) parseCell(cell, TEMPLATE_DATA_TYPE_FILE, true);
                 List<DocumentReferenceType> docRefs = new ArrayList<>();
@@ -309,7 +307,6 @@ public class TemplateParser {
                     docRefs.add(docRef);
                 }
                 item.setSafetyDataSheet(docRefs);
-
             }*/ else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_WIDTH)) {
                 // just to initialize the dimension array
                 item.getDimension();
@@ -395,30 +392,27 @@ public class TemplateParser {
                     itemLocationQuantity.setPrice(price);
                     AmountType amount = new AmountType();
                     price.setPriceAmount(amount);
-
                     // parse price amount
-                    if (getCellStringValue(cell).contentEquals("")) {
-                        throw new TemplateParseException("No price provided for the item name: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
+                    Boolean priceNotExist = getCellStringValue(cell).contentEquals("");
+
+                    // parse currency
+                    Row unitRow = termsTab.getRow(3);
+                    Cell tmp = getCellWithMissingCellPolicy(unitRow, columnIndex);
+                    Boolean currencyNotExist = (tmp == null || getCellStringValue(tmp).contentEquals(""));
+
+                    if((priceNotExist && !currencyNotExist) || (!priceNotExist && currencyNotExist)){
+                        throw new TemplateParseException("Both amount and currency must be filled for the price of the item name:"+item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
                     }
 
                     amount.setValue((BigDecimal) parseCell(cell, TEMPLATE_DATA_TYPE_NUMBER, false));
 
-                    // parse currency
-                    Row unitRow = termsTab.getRow(3);
-                    cell = getCellWithMissingCellPolicy(unitRow, columnIndex);
-                    if (cell == null) {
-                        throw new TemplateParseException("No currency provided for the price of the item name: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
-                    }
-
-                    value = getCellStringValue(cell);
+                    value = getCellStringValue(tmp);
                     amount.setCurrencyID(value);
 
                 } else if (property.getPreferredName().contentEquals(TEMPLATE_TRADING_DELIVERY_PRICE_BASE_QUANTITY)) {
                     QuantityType baseQuantity = (QuantityType) parseCell(cell, TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (baseQuantity == null) {
-                        throw new TemplateParseException("A base quantity and an associated unit must be provided for the item name: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
-                    } else if (baseQuantity.getUnitCode() == null) {
-                        throw new TemplateParseException("A unit must be provided for the base quantity of the item name: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
+                        baseQuantity = new QuantityType();
                     }
                     catalogueLine.getRequiredItemLocationQuantity().getPrice().setBaseQuantity(baseQuantity);
 
@@ -550,7 +544,7 @@ public class TemplateParser {
                 try {
                     results.add(new BigDecimal(value));
                 } catch(NumberFormatException e) {
-                  //  logger.warn("Invalid value passed for number: {}", value);
+                    //  logger.warn("Invalid value passed for number: {}", value);
                     throw new TemplateParseException("'"+value +"' is not a number");
                 }
             } else if (normalizedDataType.compareToIgnoreCase("QUANTITY") == 0) {
@@ -594,8 +588,8 @@ public class TemplateParser {
         try {
             quantity.setValue(new BigDecimal(value));
         } catch (NumberFormatException e) {
-          //  logger.warn("Invalid number passed for quantity: {}", value, e);
-          //  return null;
+            //  logger.warn("Invalid number passed for quantity: {}", value, e);
+            //  return null;
             throw new TemplateParseException("'"+value+"' is not a number");
         }
 
