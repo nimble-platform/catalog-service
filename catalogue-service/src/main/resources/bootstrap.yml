@@ -139,7 +139,7 @@ security:
 ---
 
 spring:
-  profiles: kubernetes
+  profiles: k8s
 
 persistence:
   categorydb:
