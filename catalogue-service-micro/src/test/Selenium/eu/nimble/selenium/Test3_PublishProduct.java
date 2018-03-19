@@ -53,7 +53,7 @@ public class Test3_PublishProduct implements SeleniumInterface {
         // Add a category
         driver.findElement(By.xpath("/html/body/div/nimble-app/product-publish/div/div/div[1]")).click();
 
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("/html/body/div/nimble-app/category-search/div/div[1]/form/input"))).sendKeys("Die");
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("/html/body/div/nimble-app/category-search/div/div[1]/form/input"))).sendKeys("Bath");
         wait.until(ExpectedConditions.elementToBeClickable(By.xpath("/html/body/div/nimble-app/category-search/div/div[1]/form/button"))).click();
         wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("/html/body/div/nimble-app/category-search/div/ul/li[1]"))).click();
 
