@@ -82,27 +82,35 @@ public class MarmottaSynchronizer {
             while (sync) {
                 try {
                     List<SyncStatusRecord> records = getStatusRecords();
+                    logger.info("Size of catalogue synchronization records: {}", records.size());
+
                     for (SyncStatusRecord record : records) {
-                        if (record.getSyncStatus().equals(SyncStatus.ADD)) {
-                            CatalogueType catalogue = catalogueService.getCatalogue(record.getCatalogueUuid());
-                            marmottaClient.submitCatalogueDataToMarmotta(catalogue);
-                            logger.info("Processed add sync status for catalogue: {}", record.getCatalogueUuid());
+                        logger.info("Processing {} record for catalogue: {}", record.getSyncStatus(), record.getCatalogueUuid());
+                        try {
+                            if (record.getSyncStatus().equals(SyncStatus.ADD)) {
+                                CatalogueType catalogue = catalogueService.getCatalogue(record.getCatalogueUuid());
+                                marmottaClient.submitCatalogueDataToMarmotta(catalogue);
+                                logger.info("Processed add sync status for catalogue: {}", record.getCatalogueUuid());
 
-                        } else if (record.getSyncStatus().equals(SyncStatus.UPDATE)) {
-                            CatalogueType catalogue = catalogueService.getCatalogue(record.getCatalogueUuid());
-                            marmottaClient.deleteCatalogueFromMarmotta(catalogue.getUUID());
-                            marmottaClient.submitCatalogueDataToMarmotta(catalogue);
-                            logger.info("Processed update sync status for catalogue: {}", record.getCatalogueUuid());
+                            } else if (record.getSyncStatus().equals(SyncStatus.UPDATE)) {
+                                CatalogueType catalogue = catalogueService.getCatalogue(record.getCatalogueUuid());
+                                marmottaClient.deleteCatalogueFromMarmotta(catalogue.getUUID());
+                                marmottaClient.submitCatalogueDataToMarmotta(catalogue);
+                                logger.info("Processed update sync status for catalogue: {}", record.getCatalogueUuid());
 
-                        } else if (record.getSyncStatus().equals(SyncStatus.DELETE)) {
-                            marmottaClient.deleteCatalogueFromMarmotta(record.getCatalogueUuid());
-                            logger.info("Processed delete sync status for catalogue: {}", record.getCatalogueUuid());
+                            } else if (record.getSyncStatus().equals(SyncStatus.DELETE)) {
+                                marmottaClient.deleteCatalogueFromMarmotta(record.getCatalogueUuid());
+                                logger.info("Processed delete sync status for catalogue: {}", record.getCatalogueUuid());
+                            }
+                            deleteStatusRecords(record.getCatalogueUuid());
+                        } catch (Exception e) {
+                            logger.error("An error occurred during the synchronization", e);
                         }
-                        deleteStatusRecords(record.getCatalogueUuid());
                     }
                     logger.debug("Processed sync status updates. Size: {}", records.size());
+
                 } catch (Exception e) {
-                    logger.error("An error occurred during the synchronization", e);
+                    logger.error("Failed to get synchronization records", e);
                 }
 
                 try {
@@ -125,13 +133,17 @@ public class MarmottaSynchronizer {
     }
 
     private List<SyncStatusRecord> getStatusRecords() {
-        Connection c = null;
+        Connection c = getConnection();
+        if(c == null) {
+            logger.info("No connection to delete status record");
+            return new ArrayList<>();
+        }
+
         Statement s = null;
         List<SyncStatusRecord> records = new ArrayList<>();
 
         try {
             String query = String.format(SQL_GET_RECORDS);
-            c = getConnection();
             s = c.createStatement();
             ResultSet rs = s.executeQuery(query);
 
@@ -155,13 +167,16 @@ public class MarmottaSynchronizer {
     }
 
     public void addRecord(SyncStatus updateType, String catalogueUuid) {
-        Connection c = null;
+        Connection c = getConnection();
+        if(c == null) {
+            logger.info("No connection to add status record");
+            return;
+        }
         Statement s = null;
 
         try {
             String addQuery = String.format(SQL_ADD_RECORD, catalogueUuid, updateType);
             String deleteQuery = String.format(SQL_DELETE_RECORD, catalogueUuid);
-            c = getConnection();
             s = c.createStatement();
             // first remove the existing record for preventing multiple processing of the same catalogue
             s.addBatch(deleteQuery);
@@ -179,12 +194,16 @@ public class MarmottaSynchronizer {
     }
 
     private void deleteStatusRecords(String catalogueUuid) {
-        Connection c = null;
+        Connection c = getConnection();
+        if(c == null) {
+            logger.info("No connection to delete status record");
+            return;
+        }
+
         Statement s = null;
 
         try {
             String query = String.format(SQL_DELETE_RECORD, catalogueUuid);
-            c = getConnection();
             s = c.createStatement();
             s.execute(query);
             logger.info("Deleted sync record(s) for catalogue: {}", catalogueUuid);
@@ -198,10 +217,14 @@ public class MarmottaSynchronizer {
     }
 
     private void createStatusTable() {
-        Connection c = null;
+        Connection c = getConnection();
+        if(c == null) {
+            logger.info("No connection to create status table");
+            return;
+        }
+
         try {
             // first execute a dummy select query to check whether the table exists
-            c = getConnection();
             Statement stmt = c.createStatement();
             stmt.executeQuery("SELECT * FROM syncStatus LIMIT 1");
             logger.info("Sync status table exists");
@@ -245,7 +268,7 @@ public class MarmottaSynchronizer {
         } catch (SQLException | ClassNotFoundException e) {
             String msg = "Failed to get DB connection";
             logger.error(msg, e);
-            throw new RuntimeException(msg, e);
+            return null;
         }
     }
 
