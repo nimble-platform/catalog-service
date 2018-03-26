@@ -1,11 +1,8 @@
 node ('nimble-jenkins-slave') {
     stage('Clone and Update') {
         git(url: 'https://github.com/nimble-platform/catalog-service.git', branch: 'k8s-integration')
-        git(url: 'https://github.com/nimble-platform/common.git', branch: 'master')
-        sh 'ls -la'
-        dir('common') {
-            sh 'cd common ; mvn clean install'
-        }
+
+        sh 'git clone https://github.com/nimble-platform/common.git ; cd common ; mvn clean install'
     }
 
     stage ('Build docker image') {
