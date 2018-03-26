@@ -108,19 +108,19 @@ spec:
             valueFrom:
               configMapKeyRef:
                 name: catalogue-service-configmap
-                value: CATEGORY_DB_HOST
+                key: CATEGORY_DB_HOST
           - name: CATEGORY_DB_PORT
             valueFrom:
               configMapKeyRef:
                 name: catalogue-service-configmap
-                value: CATEGORY_DB_PORT
+                key: CATEGORY_DB_PORT
           - name: CATEGORY_DB_NAME
             valueFrom:
               configMapKeyRef:
                 name: catalogue-service-configmap
-                value: CATEGORY_DB_NAME
+                key: CATEGORY_DB_NAME
           - name: CATEGORY_DB_USERNAME
             valueFrom:
               configMapKeyRef:
                 name: catalogue-service-configmap
-                value: CATEGORY_DB_USERNAME
+                key: CATEGORY_DB_USERNAME
