@@ -35,10 +35,10 @@ spec:
         resources:
           requests:
             cpu: 300m
-            memory: 512Mi
+            memory: 1024Mi
           limits:
             cpu: 600m
-            memory: 1024Mi
+            memory: 2048Mi
         env:
           - name: SPRING_PROFILES_ACTIVE
             value: "k8s"
