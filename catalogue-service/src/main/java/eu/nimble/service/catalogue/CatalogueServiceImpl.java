@@ -452,7 +452,9 @@ public class CatalogueServiceImpl implements CatalogueService {
         HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueLine);
 
         // add synchronization record
-        MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getUUID());
+        // Not UUID but ID of the document reference should be used.
+        // While UUID is the unique identifier of the reference itself, ID keeps the unique identifier of the catalogue.
+        MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID());
 
         return catalogueLine;
     }
