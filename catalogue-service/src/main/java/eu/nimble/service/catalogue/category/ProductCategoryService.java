@@ -1,4 +1,4 @@
-package eu.nimble.service.catalogue;
+package eu.nimble.service.catalogue.category;
 
 import eu.nimble.service.catalogue.category.datamodel.Category;
 

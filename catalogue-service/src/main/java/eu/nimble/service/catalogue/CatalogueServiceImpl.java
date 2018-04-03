@@ -5,6 +5,7 @@
  */
 package eu.nimble.service.catalogue;
 
+import eu.nimble.service.catalogue.category.CategoryServiceManager;
 import eu.nimble.service.catalogue.category.datamodel.Category;
 import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
@@ -23,7 +24,6 @@ import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
 import org.apache.commons.io.IOUtils;
-import org.apache.jena.base.Sys;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
