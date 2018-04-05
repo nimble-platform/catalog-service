@@ -60,6 +60,7 @@ public class CatalogueServiceConfig {
     private static boolean dbInitialized = false;
     public static CatalogueServiceConfig getInstance() {
         if(dbInitialized == false && instance != null) {
+            logger.info("Using Marmotta: {}", instance.getMarmottaUrl());
             instance.setupDBConnections();
             dbInitialized = true;
         }
@@ -67,6 +68,8 @@ public class CatalogueServiceConfig {
     }
 
     private void setupDBConnections() {
+
+
         if (environment != null) {
             // check for "kubernetes" profile
             if (Arrays.stream(environment.getActiveProfiles()).anyMatch(profile -> profile.contentEquals("kubernetes"))) {
