@@ -5,6 +5,7 @@
  */
 package eu.nimble.service.catalogue;
 
+import eu.nimble.service.catalogue.category.CategoryServiceManager;
 import eu.nimble.service.catalogue.category.datamodel.Category;
 import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
@@ -23,7 +24,6 @@ import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
 import org.apache.commons.io.IOUtils;
-import org.apache.jena.base.Sys;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -452,7 +452,9 @@ public class CatalogueServiceImpl implements CatalogueService {
         HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueLine);
 
         // add synchronization record
-        MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getUUID());
+        // Not UUID but ID of the document reference should be used.
+        // While UUID is the unique identifier of the reference itself, ID keeps the unique identifier of the catalogue.
+        MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID());
 
         return catalogueLine;
     }
