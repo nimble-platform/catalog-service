@@ -54,7 +54,7 @@ persistence:
     schema: public
 
   marmotta:
-    url: https://nimble-platform.salzburgresearch.at/marmotta
+    url: http://nimble-staging.salzburgresearch.at/marmotta
 
   orm:
     ubl:
