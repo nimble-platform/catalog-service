@@ -6,6 +6,9 @@ import eu.nimble.service.catalogue.category.datamodel.Value;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.CellRangeAddressList;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.util.LinkedHashMap;
@@ -288,13 +291,41 @@ public class TemplateGenerator {
         columnIndex = 1;
         List<Property> properties = TemplateConfig.getFixedPropertiesForTermsTab();
         for (Property property : properties) {
-            cell = secondRow.createCell(columnIndex);
-            cell.setCellValue(property.getPreferredName());
-            cell.setCellStyle(boldCellStyle);
-            checkMandatory(property, cell);
-            thirdRow.createCell(columnIndex).setCellValue(property.getDataType());
-            fourthRow.createCell(columnIndex).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
-            columnIndex++;
+            // dropdown menu for incoterms
+            if(property.getPreferredName().equals(TEMPLATE_TRADING_DELIVERY_INCOTERMS)){
+                cell = secondRow.createCell(columnIndex);
+                cell.setCellValue(property.getPreferredName());
+                cell.setCellStyle(boldCellStyle);
+                checkMandatory(property, cell);
+                thirdRow.createCell(columnIndex).setCellValue(property.getDataType());
+
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnIndex,columnIndex);
+                DataValidationHelper dataValidationHelper = new XSSFDataValidationHelper((XSSFSheet) termsTab);
+                DataValidationConstraint dataValidationConstraint =dataValidationHelper.createExplicitListConstraint(new String[]{
+                        "CIF (Cost, Insurance and Freight)","CIP (Carriage and Insurance Paid to)",
+                        "CFR (Cost and Freight)","CPT (Carriage paid to)","DAT (Delivered at Terminal)",
+                        "DAP (Delivered at Place)","DDP (Delivery Duty Paid)","EXW (Ex Works)","FAS (Free Alongside Ship)",
+                        "FCA (Free Carrier)","FOB (Free on Board)"});
+                DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
+                dataValidation.setSuppressDropDownArrow(true);
+                // error box
+                dataValidation.setShowErrorBox(true);
+                dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
+                // empty cell
+                dataValidation.setEmptyCellAllowed(true);
+                termsTab.addValidationData(dataValidation);
+
+                columnIndex++;
+            }
+            else{
+                cell = secondRow.createCell(columnIndex);
+                cell.setCellValue(property.getPreferredName());
+                cell.setCellStyle(boldCellStyle);
+                checkMandatory(property, cell);
+                thirdRow.createCell(columnIndex).setCellValue(property.getDataType());
+                fourthRow.createCell(columnIndex).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
+                columnIndex++;
+            }
         }
 
         autoSizeAllColumns(termsTab);
