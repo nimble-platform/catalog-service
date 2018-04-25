@@ -7,6 +7,8 @@ package eu.nimble.service.catalogue;
 
 import eu.nimble.service.catalogue.category.CategoryServiceManager;
 import eu.nimble.service.catalogue.category.datamodel.Category;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
+import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
 import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
@@ -15,10 +17,6 @@ import eu.nimble.service.catalogue.template.TemplateGenerator;
 import eu.nimble.service.catalogue.template.TemplateParser;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.DocumentReferenceType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
@@ -161,8 +159,28 @@ public class CatalogueServiceImpl implements CatalogueService {
                 DocumentReferenceType docRef = new DocumentReferenceType();
                 docRef.setID(((CatalogueType) catalogue).getUUID());
                 line.getGoodsItem().getItem().setCatalogueDocumentReference(docRef);
-            }
 
+                // Transport Service
+                if(line.getGoodsItem().getItem().getTransportationServiceDetails() != null){
+                    CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
+                    CodeType codeType = new CodeType();
+                    codeType.setListID("Default");
+                    codeType.setName("Transport Service");
+                    codeType.setValue("Transport Service");
+                    commodityClassificationType.setItemClassificationCode(codeType);
+                    line.getGoodsItem().getItem().getCommodityClassification().add(commodityClassificationType);
+                }
+                // Product
+                else{
+                    CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
+                    CodeType codeType = new CodeType();
+                    codeType.setListID("Default");
+                    codeType.setName("Product");
+                    codeType.setValue("Product");
+                    commodityClassificationType.setItemClassificationCode(codeType);
+                    line.getGoodsItem().getItem().getCommodityClassification().add(commodityClassificationType);
+                }
+            }
             // persist the catalogue in relational DB
             HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).persist(ublCatalogue);
             logger.info("Catalogue with uuid: {} persisted in DB", uuid.toString());
@@ -436,6 +454,26 @@ public class CatalogueServiceImpl implements CatalogueService {
     // TODO test
     @Override
     public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine) {
+        // Transport Service
+        if(catalogueLine.getGoodsItem().getItem().getTransportationServiceDetails() != null){
+            CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
+            CodeType codeType = new CodeType();
+            codeType.setListID("Default");
+            codeType.setName("Transport Service");
+            codeType.setValue("Transport Service");
+            commodityClassificationType.setItemClassificationCode(codeType);
+            catalogueLine.getGoodsItem().getItem().getCommodityClassification().add(commodityClassificationType);
+        }
+        // Product
+        else{
+            CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
+            CodeType codeType = new CodeType();
+            codeType.setListID("Default");
+            codeType.setName("Product");
+            codeType.setValue("Product");
+            commodityClassificationType.setItemClassificationCode(codeType);
+            catalogueLine.getGoodsItem().getItem().getCommodityClassification().add(commodityClassificationType);
+        }
         catalogue.getCatalogueLine().add(catalogueLine);
         checkReferencesInCatalogue(catalogue);
 
