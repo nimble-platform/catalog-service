@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
-import eu.nimble.service.catalogue.client.IdentityClient;
 import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
@@ -53,8 +52,8 @@ public class CatalogueController {
     @Autowired
     PersistenceConfig ublConf;
 
-    @Autowired
-    private IdentityClient identityClient;
+//    @Autowired
+//    private IdentityClient identityClient;
 
     /**
      * Retrieves the default catalgoue for the specified party. The catalague is supposed to have and ID field with
