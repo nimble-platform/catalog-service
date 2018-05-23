@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue.category.taxonomy;
 
 import eu.nimble.service.catalogue.category.ProductCategoryService;
 import eu.nimble.service.catalogue.category.datamodel.Category;
+import eu.nimble.service.catalogue.category.datamodel.CategoryTreeResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,5 +34,10 @@ public class CustomCategoryService implements ProductCategoryService {
     @Override
     public String getTaxonomyId() {
         return "Custom";
+    }
+
+    @Override
+    public CategoryTreeResponse getCategoryTree(String categoryId) {
+        return new CategoryTreeResponse();
     }
 }

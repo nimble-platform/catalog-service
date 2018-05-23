@@ -1,9 +1,8 @@
 package eu.nimble.service.catalogue.category.taxonomy.eclass.database;
 
-import eu.nimble.service.catalogue.category.datamodel.Category;
-import eu.nimble.service.catalogue.category.datamodel.Property;
-import eu.nimble.service.catalogue.category.datamodel.Unit;
-import eu.nimble.service.catalogue.category.datamodel.Value;
+import antlr.StringUtils;
+import com.google.common.base.Strings;
+import eu.nimble.service.catalogue.category.datamodel.*;
 import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.exception.CategoryDatabaseException;
 import eu.nimble.service.catalogue.template.TemplateConfig;
@@ -225,6 +224,77 @@ public class EClassCategoryDatabaseAdapter {
             preparedStatement.close();
 
             return results;
+        } catch (SQLException e) {
+            throw new CategoryDatabaseException("Failed to retrieve classification by level", e);
+        } finally {
+            closeConnection(connection);
+        }
+    }
+
+    public CategoryTreeResponse getCategoryTree(String categoryId) throws CategoryDatabaseException{
+        CategoryTreeResponse categoryTreeResponse = new CategoryTreeResponse();
+
+        Connection connection = null;
+        List<Category> results = new ArrayList<>();
+
+        try {
+            connection = getConnection();
+            Category cc = getCategoryById(categoryId);
+
+            PreparedStatement preparedStatement = connection.prepareStatement(eClassQueryGetParentCategoryIds());
+            preparedStatement.setString(1, Integer.toString(cc.getLevel()));
+            preparedStatement.setString(2, cc.getCode().substring(0, 2) + "000000");
+            preparedStatement.setString(3, cc.getCode().substring(0, 4) + "0000");
+            preparedStatement.setString(4, cc.getCode().substring(0, 6) + "00");
+            preparedStatement.setString(5,cc.getCode());
+            ResultSet rs = preparedStatement.executeQuery();
+            results = extractClassificationClassesFromResultSet(rs);
+            rs.close();
+            preparedStatement.close();
+
+            categoryTreeResponse.setParents(results);
+            List<List<Category>> categories = new ArrayList<>();
+            for(int i=1;i<=cc.getLevel()+1;i++){
+                PreparedStatement preparedStatement1 = connection.prepareStatement(eClassQueryGetSubCategoryIds());
+                if(i == 1){
+                    preparedStatement1.setString(1,"1");
+                    preparedStatement1.setString(2,"__000000");
+                    ResultSet rs1 = preparedStatement1.executeQuery();
+                    categories.add(extractClassificationClassesFromResultSet(rs1));
+                    rs1.close();
+                    preparedStatement1.close();
+                }
+                else if(i == 2){
+                    preparedStatement1.setString(1,"2");
+                    preparedStatement1.setString(2,cc.getCode().substring(0,2)+"__0000");
+                    ResultSet rs1 = preparedStatement1.executeQuery();
+                    categories.add(extractClassificationClassesFromResultSet(rs1));
+                    rs1.close();
+                    preparedStatement1.close();
+                }
+                else if(i == 3){
+                    preparedStatement1.setString(1,"3");
+                    preparedStatement1.setString(2,cc.getCode().substring(0,4)+"__00");
+                    ResultSet rs1 = preparedStatement1.executeQuery();
+                    categories.add(extractClassificationClassesFromResultSet(rs1));
+                    rs1.close();
+                    preparedStatement1.close();
+                }
+                else if(i == 4){
+                    preparedStatement1.setString(1,"4");
+                    preparedStatement1.setString(2,cc.getCode().substring(0,6)+"%");
+                    ResultSet rs1 = preparedStatement1.executeQuery();
+                    categories.add(extractClassificationClassesFromResultSet(rs1));
+                    rs1.close();
+                    preparedStatement1.close();
+                }
+                else{
+                    break;
+                }
+            }
+            categoryTreeResponse.setCategories(categories);
+            return categoryTreeResponse;
+
         } catch (SQLException e) {
             throw new CategoryDatabaseException("Failed to retrieve classification by level", e);
         } finally {

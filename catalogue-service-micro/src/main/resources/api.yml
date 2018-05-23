@@ -301,3 +301,16 @@ paths:
       responses:
         200:
           description: Returned available taxonomy ids
+  /catalogue/category/{taxonomyId}/{categoryId}/tree:
+      get:
+        operationId: getCategoryTree
+        produces: [application/json]
+        parameters:
+        - in: path
+          name: taxonomyId
+          required: true
+          type: string
+        - in: path
+          name: categoryId
+          required: true
+          type: string

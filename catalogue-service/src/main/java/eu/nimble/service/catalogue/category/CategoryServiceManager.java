@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.category;
 
 import eu.nimble.service.catalogue.category.datamodel.Category;
+import eu.nimble.service.catalogue.category.datamodel.CategoryTreeResponse;
 
 import java.util.*;
 
@@ -44,6 +45,11 @@ public class CategoryServiceManager {
     public List<Category> getSubCategories(String taxonomyId, String categoryId) {
         ProductCategoryService pcs = services.get(taxonomyId);
         return pcs.getSubCategories(categoryId);
+    }
+
+    public CategoryTreeResponse getCategoryTree(String taxonomyId, String categoryId) {
+        ProductCategoryService pcs = services.get(taxonomyId);
+        return pcs.getCategoryTree(categoryId);
     }
 
     public List<String> getAvailableTaxonomies() {
