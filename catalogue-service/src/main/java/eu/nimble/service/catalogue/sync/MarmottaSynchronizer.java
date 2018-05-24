@@ -82,7 +82,9 @@ public class MarmottaSynchronizer {
             while (sync) {
                 try {
                     List<SyncStatusRecord> records = getStatusRecords();
-                    logger.info("Size of catalogue synchronization records: {}", records.size());
+                    if(records.size() > 0) {
+                        logger.info("Size of catalogue synchronization records: {}", records.size());
+                    }
 
                     for (SyncStatusRecord record : records) {
                         logger.info("Processing {} record for catalogue: {}", record.getSyncStatus(), record.getCatalogueUuid());

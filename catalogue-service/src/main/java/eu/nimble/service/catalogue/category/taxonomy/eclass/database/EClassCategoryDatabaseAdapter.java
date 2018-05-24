@@ -119,7 +119,19 @@ public class EClassCategoryDatabaseAdapter {
             allResults = getClassificationClassesByPreferredName(connection, categoryName);
 
             // then retrieve the results based on the equivalent keywords
-            allResults.addAll(getClassificationClassesByKeywords(connection, categoryName));
+            List<Category> categoriesByKeyword = getClassificationClassesByKeywords(connection, categoryName);
+            for(Category category : categoriesByKeyword) {
+                boolean existsAlready = false;
+                for(Category existingCategory : allResults) {
+                    if(existingCategory.getId().equals(category.getId())) {
+                        existsAlready = true;
+                        break;
+                    }
+                }
+                if(!existsAlready) {
+                    allResults.add(category);
+                }
+            }
 
             // include only the leaf level classes in the result set
             List<Category> results = new ArrayList<>();
