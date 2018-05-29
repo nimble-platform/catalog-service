@@ -75,7 +75,6 @@ public class CatalogueLineController {
             method = RequestMethod.POST)
     public ResponseEntity addCatalogueLine(@PathVariable String catalogueUuid, @RequestBody String catalogueLineJson) {
         log.info("Incoming request to add catalogue line to catalogue: {}", catalogueUuid);
-        log.debug("Catalogue line content: {}", catalogueLineJson);
         CatalogueType catalogue;
         CatalogueLineType catalogueLine;
         try {
@@ -93,11 +92,14 @@ public class CatalogueLineController {
             }
 
         } catch (IOException e) {
+            log.warn("The following catalogue line could not be created: {}", catalogueLineJson);
             return createErrorResponseEntity("Failed to deserialize catalogue line from json string", HttpStatus.BAD_REQUEST, e);
         } catch (Exception e) {
+            log.warn("The following catalogue line could not be created: {}", catalogueLineJson);
             return createErrorResponseEntity("Failed to add the provided catalogue line", HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
 
+        log.info("Completed request to add catalogue line: {} to catalogue: {}", catalogueLine.getID(), catalogue.getUUID());
         return createCreatedCatalogueLineResponse(catalogueUuid, catalogueLine);
     }
 
@@ -148,8 +150,10 @@ public class CatalogueLineController {
             }
 
         } catch (IOException e) {
+            log.warn("The following catalogue line could not be updated: {}", catalogueLineJson);
             return createErrorResponseEntity("Failed to deserialize catalogue line from json string", HttpStatus.BAD_REQUEST, e);
         } catch (Exception e) {
+            log.warn("The following catalogue line could not be updated: {}", catalogueLineJson);
             return createErrorResponseEntity("Failed to add the provided catalogue line", HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
 

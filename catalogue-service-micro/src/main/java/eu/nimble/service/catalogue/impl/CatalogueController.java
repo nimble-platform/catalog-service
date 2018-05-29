@@ -164,6 +164,7 @@ public class CatalogueController {
         try {
             catalogue = service.addCatalogue(catalogueXML, std);
         } catch (Exception e) {
+            log.warn("Failed to add the following catalogue: {}", catalogueXML);
             return createErrorResponseEntity("Failed to post catalogue for standard: " + standard, HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
 
@@ -184,6 +185,7 @@ public class CatalogueController {
         try {
             catalogue = service.addCatalogue(catalogue);
         } catch (Exception e) {
+            log.warn("Failed to add the following catalogue: {}", catalogueJson);
             return createErrorResponseEntity("Failed to add the catalogue", HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
         log.info("Catalogue add with uuid: {} completed", catalogue.getUUID());
@@ -249,12 +251,14 @@ public class CatalogueController {
         try {
             catalogue = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(catalogueJson, CatalogueType.class);
         } catch (IOException e) {
+            log.warn("Failed to update the following catalogue: {}", catalogueJson);
             return createErrorResponseEntity("Failed to deserialize catalogue from json string", HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
 
         try {
             service.updateCatalogue(catalogue);
         } catch (Exception e) {
+            log.warn("Failed to update the following catalogue: {}", catalogueJson);
             return createErrorResponseEntity("Failed to update the catalogue", HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
 
