@@ -1,8 +1,8 @@
 package eu.nimble.service.catalogue.impl;
 
 import eu.nimble.service.catalogue.category.CategoryServiceManager;
-import eu.nimble.service.catalogue.category.datamodel.Category;
-import eu.nimble.service.catalogue.category.datamodel.CategoryTreeResponse;
+import eu.nimble.service.catalogue.model.category.Category;
+import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

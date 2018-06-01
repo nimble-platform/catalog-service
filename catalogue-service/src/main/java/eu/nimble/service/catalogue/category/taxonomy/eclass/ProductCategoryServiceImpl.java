@@ -1,8 +1,8 @@
 package eu.nimble.service.catalogue.category.taxonomy.eclass;
 
 import eu.nimble.service.catalogue.category.ProductCategoryService;
-import eu.nimble.service.catalogue.category.datamodel.Category;
-import eu.nimble.service.catalogue.category.datamodel.CategoryTreeResponse;
+import eu.nimble.service.catalogue.model.category.Category;
+import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
 import eu.nimble.service.catalogue.exception.CategoryDatabaseException;
 import eu.nimble.service.catalogue.category.taxonomy.eclass.database.EClassCategoryDatabaseAdapter;
 import org.slf4j.Logger;

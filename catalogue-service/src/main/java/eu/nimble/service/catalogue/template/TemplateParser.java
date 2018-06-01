@@ -1,8 +1,8 @@
 package eu.nimble.service.catalogue.template;
 
-import eu.nimble.service.catalogue.category.datamodel.Category;
-import eu.nimble.service.catalogue.category.datamodel.Property;
-import eu.nimble.service.catalogue.category.datamodel.Unit;
+import eu.nimble.service.catalogue.model.category.Category;
+import eu.nimble.service.catalogue.model.category.Property;
+import eu.nimble.service.catalogue.model.category.Unit;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
 import eu.nimble.service.catalogue.category.CategoryServiceManager;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
