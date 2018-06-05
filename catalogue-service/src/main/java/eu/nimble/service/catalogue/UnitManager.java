@@ -92,6 +92,22 @@ public class UnitManager {
         quantityType.setUnitCode("box");
         quantityType.setUnitCodeListID("package_quantity");
         HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(quantityType);
+
+        quantityType.setUnitCode("length");
+        quantityType.setUnitCodeListID("dimensions");
+        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(quantityType);
+
+        quantityType.setUnitCode("width");
+        quantityType.setUnitCodeListID("dimensions");
+        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(quantityType);
+
+        quantityType.setUnitCode("height");
+        quantityType.setUnitCodeListID("dimensions");
+        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(quantityType);
+
+        quantityType.setUnitCode("depth");
+        quantityType.setUnitCodeListID("dimensions");
+        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(quantityType);
     }
 
     public List<String> getValues(String unitListId){
