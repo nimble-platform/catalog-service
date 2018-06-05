@@ -1,7 +1,7 @@
 package eu.nimble.service.catalogue.template;
 
-import eu.nimble.service.catalogue.category.datamodel.Property;
-import eu.nimble.service.catalogue.category.datamodel.Unit;
+import eu.nimble.service.catalogue.model.category.Property;
+import eu.nimble.service.catalogue.model.category.Unit;
 
 import java.util.ArrayList;
 import java.util.List;

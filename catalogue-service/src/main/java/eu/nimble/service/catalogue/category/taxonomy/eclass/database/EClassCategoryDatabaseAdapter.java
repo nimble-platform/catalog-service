@@ -1,8 +1,6 @@
 package eu.nimble.service.catalogue.category.taxonomy.eclass.database;
 
-import antlr.StringUtils;
-import com.google.common.base.Strings;
-import eu.nimble.service.catalogue.category.datamodel.*;
+import eu.nimble.service.catalogue.model.category.*;
 import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.exception.CategoryDatabaseException;
 import eu.nimble.service.catalogue.template.TemplateConfig;

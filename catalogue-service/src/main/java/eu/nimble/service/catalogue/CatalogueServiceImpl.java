@@ -6,7 +6,7 @@
 package eu.nimble.service.catalogue;
 
 import eu.nimble.service.catalogue.category.CategoryServiceManager;
-import eu.nimble.service.catalogue.category.datamodel.Category;
+import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
 import eu.nimble.utility.config.CatalogueServiceConfig;

@@ -1,8 +1,8 @@
 package eu.nimble.service.catalogue.template;
 
-import eu.nimble.service.catalogue.category.datamodel.Category;
-import eu.nimble.service.catalogue.category.datamodel.Property;
-import eu.nimble.service.catalogue.category.datamodel.Value;
+import eu.nimble.service.catalogue.model.category.Category;
+import eu.nimble.service.catalogue.model.category.Property;
+import eu.nimble.service.catalogue.model.category.Value;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;

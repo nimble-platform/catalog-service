@@ -1,4 +1,4 @@
-package eu.nimble.service.catalogue.category.datamodel;
+package eu.nimble.service.catalogue.model.category;
 
 import java.util.List;
 

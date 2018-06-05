@@ -1,7 +1,7 @@
 package eu.nimble.service.catalogue.category;
 
-import eu.nimble.service.catalogue.category.datamodel.Category;
-import eu.nimble.service.catalogue.category.datamodel.CategoryTreeResponse;
+import eu.nimble.service.catalogue.model.category.Category;
+import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
 
 import java.util.*;
 

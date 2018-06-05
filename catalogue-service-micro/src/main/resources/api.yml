@@ -314,3 +314,54 @@ paths:
           name: categoryId
           required: true
           type: string
+  /unit-lists:
+      get:
+        operationId: getAllUnitList
+        produces: [application/json]
+      post:
+        operationId: addUnitList
+        produces: [application/json]
+        parameters:
+        - in: query
+          name: unitListId
+          required: true
+          type: string
+        - in: query
+          name: units
+          required: true
+          type: string
+
+  /unit-lists/{unitListId}:
+      get:
+        operationId: getValues
+        produces: [application/json]
+        parameters:
+        - in: path
+          name: unitListId
+          required: true
+          type: string
+      patch:
+        operationId: addUnitToList
+        produces: [application/json]
+        parameters:
+                - in: path
+                  name: unitListId
+                  required: true
+                  type: string
+                - in: query
+                  name: unit
+                  required: true
+                  type: string
+  /unit-lists/{unitListId}/unit/{unit}:
+      delete:
+        operationId: deleteUnitFromList
+        produces: [application/json]
+        paraneter:
+                - in: path
+                  name: unitListId
+                  required: true
+                  type: string
+                - in: path
+                  name: unit
+                  required: true
+                  type: string

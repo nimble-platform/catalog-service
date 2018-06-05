@@ -1,6 +1,6 @@
 package eu.nimble.catalogue.service;
 
-import eu.nimble.service.catalogue.category.datamodel.Category;
+import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.impl.ProductCategoryController;
 import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.utility.config.PersistenceConfig;

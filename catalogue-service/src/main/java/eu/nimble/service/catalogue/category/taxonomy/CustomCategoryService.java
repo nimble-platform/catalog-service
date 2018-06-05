@@ -1,8 +1,8 @@
 package eu.nimble.service.catalogue.category.taxonomy;
 
 import eu.nimble.service.catalogue.category.ProductCategoryService;
-import eu.nimble.service.catalogue.category.datamodel.Category;
-import eu.nimble.service.catalogue.category.datamodel.CategoryTreeResponse;
+import eu.nimble.service.catalogue.model.category.Category;
+import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
 
 import java.util.ArrayList;
 import java.util.List;

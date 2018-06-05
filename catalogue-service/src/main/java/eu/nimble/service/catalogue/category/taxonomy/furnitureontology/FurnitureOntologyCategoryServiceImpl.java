@@ -1,9 +1,9 @@
 package eu.nimble.service.catalogue.category.taxonomy.furnitureontology;
 
 import eu.nimble.service.catalogue.category.ProductCategoryService;
-import eu.nimble.service.catalogue.category.datamodel.Category;
-import eu.nimble.service.catalogue.category.datamodel.CategoryTreeResponse;
-import eu.nimble.service.catalogue.category.datamodel.Property;
+import eu.nimble.service.catalogue.model.category.Category;
+import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
+import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.template.TemplateConfig;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;

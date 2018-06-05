@@ -1,4 +1,4 @@
-package eu.nimble.service.catalogue.category.datamodel;
+package eu.nimble.service.catalogue.model.category;
 
 /**
  * Created by suat on 03-Mar-17.
