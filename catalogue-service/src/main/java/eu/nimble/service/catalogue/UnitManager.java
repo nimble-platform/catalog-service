@@ -4,12 +4,10 @@ import eu.nimble.service.catalogue.model.unit.UnitList;
 import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
 public class UnitManager {
     private static UnitManager instance;
 
@@ -91,6 +89,22 @@ public class UnitManager {
 
         quantityType.setUnitCode("box");
         quantityType.setUnitCodeListID("package_quantity");
+        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(quantityType);
+
+        quantityType.setUnitCode("length");
+        quantityType.setUnitCodeListID("dimensions");
+        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(quantityType);
+
+        quantityType.setUnitCode("width");
+        quantityType.setUnitCodeListID("dimensions");
+        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(quantityType);
+
+        quantityType.setUnitCode("height");
+        quantityType.setUnitCodeListID("dimensions");
+        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(quantityType);
+
+        quantityType.setUnitCode("depth");
+        quantityType.setUnitCodeListID("dimensions");
         HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(quantityType);
     }
 
