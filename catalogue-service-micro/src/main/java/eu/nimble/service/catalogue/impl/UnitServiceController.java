@@ -9,12 +9,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 
 @Controller
 public class UnitServiceController {
     private static final Logger logger = LoggerFactory.getLogger(UnitServiceController.class);
-    private UnitManager unitManager = UnitManager.getInstance();
+    private UnitManager unitManager;
+
+    @PostConstruct
+    private void getInstanceOfUnitManager(){
+        unitManager = UnitManager.getInstance();
+    }
 
     @CrossOrigin(origins = {"*"})
     @RequestMapping(value = "/unit-lists",
