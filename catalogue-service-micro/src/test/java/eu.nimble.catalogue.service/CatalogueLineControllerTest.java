@@ -5,6 +5,7 @@ import eu.nimble.service.catalogue.impl.CatalogueController;
 import eu.nimble.service.catalogue.impl.CatalogueLineController;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
+import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.utility.config.PersistenceConfig;
@@ -22,6 +23,7 @@ import javax.servlet.http.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.security.Principal;
 import java.util.*;
 
@@ -439,7 +441,7 @@ public class CatalogueLineControllerTest {
     public void test2_getCatalogueLine() throws Exception{
         ResponseEntity<CatalogueLineType> responseEntity = catalogueLineController.getCatalogueLine(CatalogueLineControllerTest.UBLcatalogueUUID,"TestX");
 
-        Assert.assertEquals("NotUpdated",responseEntity.getBody().getOrderableUnit());
+        Assert.assertNull(responseEntity.getBody().getMinimumOrderQuantity());
     }
 
     @Test
@@ -448,13 +450,15 @@ public class CatalogueLineControllerTest {
         ResponseEntity<CatalogueLineType> responseEntity = catalogueLineController.getCatalogueLine(CatalogueLineControllerTest.UBLcatalogueUUID,"TestX");
         CatalogueLineType catalogueLineType = responseEntity.getBody();
 
-        catalogueLineType.setOrderableUnit("updated");
+        QuantityType minimumOrderQuantity = new QuantityType();
+        minimumOrderQuantity.setValue(new BigDecimal(413));
+        catalogueLineType.setMinimumOrderQuantity(minimumOrderQuantity);
 
         String catalogueLineTypeAsString = objectMapper.writeValueAsString(catalogueLineType);
 
         ResponseEntity responseEntity1 = catalogueLineController.updateCatalogueLine(CatalogueLineControllerTest.UBLcatalogueUUID,catalogueLineTypeAsString);
 
-        Assert.assertEquals("updated",((CatalogueLineType)responseEntity1.getBody()).getOrderableUnit());
+        Assert.assertEquals(413, ((CatalogueLineType)responseEntity1.getBody()).getMinimumOrderQuantity().getValue().toBigInteger().intValue());
     }
 
     @Test

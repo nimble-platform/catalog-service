@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.impl.CatalogueController;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.utility.config.PersistenceConfig;
@@ -1177,9 +1178,9 @@ public class CatalogueControllerTest {
         CatalogueType catalogueType = (CatalogueType) responseEntity.getBody();
 
         // current versionId = null
-        Assert.assertNull(catalogueType.getVersionID());
-
-        catalogueType.setVersionID("10");
+        PartyType newParty = new PartyType();
+        newParty.setID("newId");
+        catalogueType.setProviderParty(newParty);
 
         // get Json version of the updated catalogue
         ObjectMapper objectMapper = new ObjectMapper();
@@ -1192,7 +1193,7 @@ public class CatalogueControllerTest {
         CatalogueType catalogueType2 = (CatalogueType) responseEntity.getBody();
 
         // check whether it is updated or not
-        Assert.assertEquals("10",catalogueType2.getVersionID());
+        Assert.assertEquals("newId",catalogueType2.getProviderParty().getID());
 
     }
 

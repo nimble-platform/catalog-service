@@ -181,9 +181,6 @@ public class TemplateParser {
 
         } else if (valueQualifier.contentEquals(TEMPLATE_DATA_TYPE_QUANTITY)) {
             List<QuantityType> quantities = (List<QuantityType>) values;
-            for (QuantityType quantity : quantities) {
-                quantity.setUnitID(property.getUnit().getId());
-            }
             itemProp.setValueQuantity(quantities);
 
         } else {
