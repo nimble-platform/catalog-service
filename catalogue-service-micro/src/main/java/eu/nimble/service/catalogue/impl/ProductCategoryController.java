@@ -1,7 +1,8 @@
 package eu.nimble.service.catalogue.impl;
 
-import eu.nimble.service.catalogue.CategoryServiceManager;
-import eu.nimble.service.catalogue.category.datamodel.Category;
+import eu.nimble.service.catalogue.category.CategoryServiceManager;
+import eu.nimble.service.catalogue.model.category.Category;
+import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -102,6 +103,15 @@ public class ProductCategoryController {
             method = RequestMethod.GET)
     public ResponseEntity<List<Category>> getSubCategories(@PathVariable String taxonomyId, @PathVariable String parentCategoryId) {
         List<Category> categories = csm.getSubCategories(taxonomyId, parentCategoryId);
+        return ResponseEntity.ok(categories);
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @RequestMapping(value = "/catalogue/category/{taxonomyId}/{categoryId}/tree",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity<CategoryTreeResponse> getCategoryTree(@PathVariable String taxonomyId, @PathVariable String categoryId) {
+        CategoryTreeResponse categories = csm.getCategoryTree(taxonomyId, categoryId);
         return ResponseEntity.ok(categories);
     }
 }

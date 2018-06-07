@@ -2,15 +2,15 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   labels:
-    app: nimble-platform
-    name: catalog-service
-  name: catalog-service
+    app: catalogue-service
+    name: catalogue-service
+  name: catalogue-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: nimble-platform
-      name: catalog-service
+      app: catalogue-service
+      name: catalogue-service
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -20,13 +20,14 @@ spec:
   template:
     metadata:
       labels:
-        app: nimble-platform
-        name: catalog-service
+        app: catalogue-service
+        name: catalogue-service
     spec:
       containers:
-      - image: nimbleplatform/catalogue-service-micro-srdc
+#      can be overwritten with "-set spec.template.spec.containers[0].image=image_url"
+      - image: nimbleplatform/catalogue-service-micro:test
         imagePullPolicy: Always
-        name: catalog-service
+        name: catalogue-service
         ports:
         - containerPort: 8095
           name: http
@@ -34,36 +35,78 @@ spec:
         resources:
           requests:
             cpu: 200m
-            memory: 256Mi
+            memory: 128Mi
+          limits:
+            cpu: 400m
+            memory: 512Mi
         env:
           - name: SPRING_PROFILES_ACTIVE
-            value: kubernetes
+            value: "k8s"
           - name: DISCOVERY_ENABLED
             value: "false"
-          - name: BLUEMIX_CATEGORY_DB_JSON
+
+          # UBL database
+          - name: UBL_DB_HOST
             valueFrom:
-              secretKeyRef:
-                name: binding-nimble-catalog-category-db-prod
-                key: binding
-          - name: BLUEMIX_UBL_DB_JSON
+              configMapKeyRef:
+                name: catalogue-service-configmap
+                key: ubl_db_host
+          - name: UBL_DB_HOST_PORT
             valueFrom:
-              secretKeyRef:
-                name: binding-nimble-ubl-db-prod
-                key: binding
-          - name: BLUEMIX_MODAML_DB_JSON
+              configMapKeyRef:
+                name: catalogue-service-configmap
+                key: ubl_db_port
+          - name: UBL_DB_NAME
             valueFrom:
-              secretKeyRef:
-                name: binding-nimble-modaml-db-prod
-                key: binding
+              configMapKeyRef:
+                name: catalogue-service-configmap
+                key: ubl_db_name
+          - name: UBL_DB_USERNAME
+            valueFrom:
+              configMapKeyRef:
+                name: catalogue-service-configmap
+                key: ubl_db_username
+          - name: UBL_DB_PASSWORD
+            valueFrom:
+              configMapKeyRef:
+                name: catalogue-service-configmap
+                key: ubl_db_password
+
+          # SyncDB database
+          - name: SYNC_DB_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: catalogue-service-configmap
+                key: sync_db_host
+          - name: SYNC_DB_HOST_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: catalogue-service-configmap
+                key: sync_db_port
+          - name: SYNC_DB_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: catalogue-service-configmap
+                key: sync_db_name
+          - name: SYNC_DB_USERNAME
+            valueFrom:
+              configMapKeyRef:
+                name: catalogue-service-configmap
+                key: sync_db_username
+          - name: SYNC_DB_PASSWORD
+            valueFrom:
+              configMapKeyRef:
+                name: catalogue-service-configmap
+                key: sync_db_password
 
 ---
 
 kind: Service
 metadata:
-  name: catalog-service
+  name: catalogue-service
   labels:
-    app: nimble-platform
-    name: catalog-service
+    app: catalogue-service
+    name: catalogue-service
 spec:
   ports:
     - name: http
@@ -71,5 +114,5 @@ spec:
       port: 8095
       targetPort: 8095
   selector:
-    app: nimble-platform
-    name: catalog-service
+    app: catalogue-service
+    name: catalogue-service

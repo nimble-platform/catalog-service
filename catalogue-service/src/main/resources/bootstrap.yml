@@ -54,7 +54,7 @@ persistence:
     schema: public
 
   marmotta:
-    url: https://nimble-platform.salzburgresearch.at/marmotta
+    url: ${MARMOTTA_URL:http://nimble-staging.salzburgresearch.at/marmotta}
 
   orm:
     ubl:
@@ -68,7 +68,7 @@ persistence:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         show_sql: false
         hbm2ddl:
-          auto: update
+          auto: create
         cache:
           provider_class: org.hibernate.cache.HashtableCacheProvider
         jdbc:
@@ -76,7 +76,7 @@ persistence:
         c3p0:
           acquire_increment: 5
           initialPoolSize: 5
-          max_size: 25
+          max_size: 15
           min_size: 5
           maxStatementsPerConnection: 5
           acquireRetryAttempts: 10
@@ -138,7 +138,7 @@ security:
 ---
 
 spring:
-  profiles: kubernetes
+  profiles: k8s
 
 persistence:
   categorydb:

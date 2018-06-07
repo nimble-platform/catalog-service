@@ -1,11 +1,10 @@
 package eu.nimble.service.catalogue.category.taxonomy.furnitureontology;
 
-import eu.nimble.service.catalogue.CatalogueService;
-import eu.nimble.service.catalogue.ProductCategoryService;
-import eu.nimble.service.catalogue.category.datamodel.Category;
-import eu.nimble.service.catalogue.category.datamodel.Property;
+import eu.nimble.service.catalogue.category.ProductCategoryService;
+import eu.nimble.service.catalogue.model.category.Category;
+import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
+import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.template.TemplateConfig;
-import eu.nimble.utility.config.CatalogueServiceConfig;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
@@ -20,10 +19,6 @@ import org.apache.marmotta.client.model.rdf.RDFNode;
 import org.apache.marmotta.client.model.sparql.SPARQLResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowire;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.context.ApplicationContext;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -136,6 +131,11 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
 
     @Override
     public List<Category> getSubCategories(String categoryUri) {
+        throw new IllegalStateException("Not implemented yet");
+    }
+
+    @Override
+    public CategoryTreeResponse getCategoryTree(String categoryId) {
         throw new IllegalStateException("Not implemented yet");
     }
 

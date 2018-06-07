@@ -1,11 +1,14 @@
 package eu.nimble.service.catalogue.template;
 
-import eu.nimble.service.catalogue.category.datamodel.Category;
-import eu.nimble.service.catalogue.category.datamodel.Property;
-import eu.nimble.service.catalogue.category.datamodel.Value;
+import eu.nimble.service.catalogue.model.category.Category;
+import eu.nimble.service.catalogue.model.category.Property;
+import eu.nimble.service.catalogue.model.category.Value;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.CellRangeAddressList;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.util.LinkedHashMap;
@@ -179,14 +182,16 @@ public class TemplateGenerator {
         // create the titles for categories
         int columnOffset = TemplateConfig.getFixedPropertiesForProductPropertyTab().size() + 1;
         for (int i = 0; i < categories.size(); i++) {
-            int colFrom = columnOffset;
-            int colTo = columnOffset + categories.get(i).getProperties().size() - 1;
-            cell = getCellWithMissingCellPolicy(topRow, colFrom);
-            cell.setCellValue(categories.get(i).getPreferredName());
-            cell.setCellStyle(headerCellStyle);
-            cra = new CellRangeAddress(0, 0, colFrom, colTo);
-            productPropertiesTab.addMergedRegion(cra);
-            columnOffset = colTo + 1;
+            if(categories.get(i).getProperties().size() > 0) {
+                int colFrom = columnOffset;
+                int colTo = columnOffset + categories.get(i).getProperties().size() - 1;
+                cell = getCellWithMissingCellPolicy(topRow, colFrom);
+                cell.setCellValue(categories.get(i).getPreferredName());
+                cell.setCellStyle(headerCellStyle);
+                cra = new CellRangeAddress(0, 0, colFrom, colTo);
+                productPropertiesTab.addMergedRegion(cra);
+                columnOffset = colTo + 1;
+            }
         }
 
         // 2nd, 3rd and 4th rows
@@ -286,13 +291,41 @@ public class TemplateGenerator {
         columnIndex = 1;
         List<Property> properties = TemplateConfig.getFixedPropertiesForTermsTab();
         for (Property property : properties) {
-            cell = secondRow.createCell(columnIndex);
-            cell.setCellValue(property.getPreferredName());
-            cell.setCellStyle(boldCellStyle);
-            checkMandatory(property, cell);
-            thirdRow.createCell(columnIndex).setCellValue(property.getDataType());
-            fourthRow.createCell(columnIndex).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
-            columnIndex++;
+            // dropdown menu for incoterms
+            if(property.getPreferredName().equals(TEMPLATE_TRADING_DELIVERY_INCOTERMS)){
+                cell = secondRow.createCell(columnIndex);
+                cell.setCellValue(property.getPreferredName());
+                cell.setCellStyle(boldCellStyle);
+                checkMandatory(property, cell);
+                thirdRow.createCell(columnIndex).setCellValue(property.getDataType());
+
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnIndex,columnIndex);
+                DataValidationHelper dataValidationHelper = new XSSFDataValidationHelper((XSSFSheet) termsTab);
+                DataValidationConstraint dataValidationConstraint =dataValidationHelper.createExplicitListConstraint(new String[]{
+                        "CIF (Cost, Insurance and Freight)","CIP (Carriage and Insurance Paid to)",
+                        "CFR (Cost and Freight)","CPT (Carriage paid to)","DAT (Delivered at Terminal)",
+                        "DAP (Delivered at Place)","DDP (Delivery Duty Paid)","EXW (Ex Works)","FAS (Free Alongside Ship)",
+                        "FCA (Free Carrier)","FOB (Free on Board)"});
+                DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
+                dataValidation.setSuppressDropDownArrow(true);
+                // error box
+                dataValidation.setShowErrorBox(true);
+                dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
+                // empty cell
+                dataValidation.setEmptyCellAllowed(true);
+                termsTab.addValidationData(dataValidation);
+
+                columnIndex++;
+            }
+            else{
+                cell = secondRow.createCell(columnIndex);
+                cell.setCellValue(property.getPreferredName());
+                cell.setCellStyle(boldCellStyle);
+                checkMandatory(property, cell);
+                thirdRow.createCell(columnIndex).setCellValue(property.getDataType());
+                fourthRow.createCell(columnIndex).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
+                columnIndex++;
+            }
         }
 
         autoSizeAllColumns(termsTab);
@@ -303,15 +336,17 @@ public class TemplateGenerator {
         int rowIndex = 1;
         int columnIndex = 0;
         for (int i = 0; i < categories.size(); i++) {
-            int rowFrom = rowIndex;
-            int rowTo = rowIndex + categories.get(i).getProperties().size() - 1;
-            Row row = propertyDetailsTab.createRow(rowIndex);
-            Cell valueCell = getCellWithMissingCellPolicy(row, 0);
-            valueCell.setCellValue(categories.get(i).getPreferredName());
-            valueCell.setCellStyle(headerCellStyle);
-            CellRangeAddress cra = new CellRangeAddress(rowFrom, rowTo, 0, 0);
-            propertyDetailsTab.addMergedRegion(cra);
-            rowIndex = rowTo + 1;
+            if(categories.get(i).getProperties().size() > 0) {
+                int rowFrom = rowIndex;
+                int rowTo = rowIndex + categories.get(i).getProperties().size() - 1;
+                Row row = propertyDetailsTab.createRow(rowIndex);
+                Cell valueCell = getCellWithMissingCellPolicy(row, 0);
+                valueCell.setCellValue(categories.get(i).getPreferredName());
+                valueCell.setCellStyle(headerCellStyle);
+                CellRangeAddress cra = new CellRangeAddress(rowFrom, rowTo, 0, 0);
+                propertyDetailsTab.addMergedRegion(cra);
+                rowIndex = rowTo + 1;
+            }
         }
         propertyDetailsTab.autoSizeColumn(0, true);
 

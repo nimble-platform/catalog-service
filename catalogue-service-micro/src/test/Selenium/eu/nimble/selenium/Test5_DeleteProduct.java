@@ -29,9 +29,8 @@ public class Test5_DeleteProduct implements SeleniumInterface {
 
         // Go to catalogue
         wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("/html/body/div/nimble-app/nav/button"))).click();
-
-        driver.findElement(By.xpath("//*[@id=\"dropdownMenuUser\"]")).click();
-        driver.findElement(By.xpath("/html/body/div/nimble-app/nav/div/ul[2]/li/div/a[2]")).click();
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id=\"dropdownMenuUser\"]"))).click();
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id=\"navbarNavAltMarkup\"]/ul[3]/li/div/a[2]"))).click();
 
         // Delete the catalogue
         wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("/html/body/div/nimble-app/catalogue-view/div[1]/button"))).click();
@@ -41,7 +40,7 @@ public class Test5_DeleteProduct implements SeleniumInterface {
 
         // Logout
         wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id=\"dropdownMenuUser\"]"))).click();
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id=\"navbarNavAltMarkup\"]/ul[2]/li/div/a[3]"))).click();
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id=\"navbarNavAltMarkup\"]/ul[3]/li/div/a[3]"))).click();
 
         // Close the driver
         driver.quit();

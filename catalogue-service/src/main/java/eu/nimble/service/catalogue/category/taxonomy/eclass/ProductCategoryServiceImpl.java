@@ -1,7 +1,8 @@
 package eu.nimble.service.catalogue.category.taxonomy.eclass;
 
-import eu.nimble.service.catalogue.ProductCategoryService;
-import eu.nimble.service.catalogue.category.datamodel.Category;
+import eu.nimble.service.catalogue.category.ProductCategoryService;
+import eu.nimble.service.catalogue.model.category.Category;
+import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
 import eu.nimble.service.catalogue.exception.CategoryDatabaseException;
 import eu.nimble.service.catalogue.category.taxonomy.eclass.database.EClassCategoryDatabaseAdapter;
 import org.slf4j.Logger;
@@ -52,6 +53,19 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
         } catch (CategoryDatabaseException e) {
             logger.error("Failed to retrieve product sub-categories", e);
             return new ArrayList<>();
+        }
+        return categories;
+    }
+
+    @Override
+    public CategoryTreeResponse getCategoryTree(String categoryId) {
+        EClassCategoryDatabaseAdapter eClassCategoryDatabaseAdapter = new EClassCategoryDatabaseAdapter();
+        CategoryTreeResponse categories;
+        try {
+            categories = eClassCategoryDatabaseAdapter.getCategoryTree(categoryId);
+        } catch (CategoryDatabaseException e) {
+            logger.error("Failed to retrieve category tree", e);
+            return new CategoryTreeResponse();
         }
         return categories;
     }
