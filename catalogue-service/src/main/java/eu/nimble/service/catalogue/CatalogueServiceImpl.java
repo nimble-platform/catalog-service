@@ -111,6 +111,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
         checkReferencesInCatalogue(catalogue);
 
+        catalogue = addParentCategories(catalogue);
         // merge the hibernate object
         HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
 
@@ -154,6 +155,7 @@ public class CatalogueServiceImpl implements CatalogueService {
             String uuid = UUID.randomUUID().toString();
             ublCatalogue.setUUID(uuid);
 
+            ublCatalogue = addParentCategories(ublCatalogue);
             // set references from items to the catalogue
             for(CatalogueLineType line : ublCatalogue.getCatalogueLine()) {
                 DocumentReferenceType docRef = new DocumentReferenceType();
@@ -454,6 +456,30 @@ public class CatalogueServiceImpl implements CatalogueService {
     // TODO test
     @Override
     public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine) {
+        List<CommodityClassificationType> commodityClassificationTypeList = new ArrayList<>();
+        // find parents of the selected categories
+        for(CommodityClassificationType cct : catalogueLine.getGoodsItem().getItem().getCommodityClassification()){
+            CategoryServiceManager csm = CategoryServiceManager.getInstance();
+            List<Category> parentCategories = csm.getParentCategories(cct.getItemClassificationCode().getListID(),cct.getItemClassificationCode().getValue());
+
+            for(int i = 0; i< parentCategories.size()-1;i++){
+                Category category = parentCategories.get(i);
+                CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
+                CodeType codeType = new CodeType();
+                codeType.setValue(category.getId());
+                codeType.setName(category.getPreferredName());
+                codeType.setListID(category.getTaxonomyId());
+                codeType.setURI(category.getCategoryUri());
+                commodityClassificationType.setItemClassificationCode(codeType);
+                if(!commodityClassificationTypeList.contains(commodityClassificationType) && !catalogueLine.getGoodsItem().getItem().getCommodityClassification().contains(commodityClassificationType)){
+                    commodityClassificationTypeList.add(commodityClassificationType);
+                }
+            }
+        }
+        // add parents of the selected category to commodity classifications of the item
+        for(CommodityClassificationType cct : commodityClassificationTypeList){
+            catalogueLine.getGoodsItem().getItem().getCommodityClassification().add(cct);
+        }
         // Transport Service
         if(catalogueLine.getGoodsItem().getItem().getTransportationServiceDetails() != null){
             CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
@@ -487,6 +513,34 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     @Override
     public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine) {
+        List<CommodityClassificationType> commodityClassificationTypeList = new ArrayList<>();
+        // find parents of the selected categories
+        for(CommodityClassificationType cct : catalogueLine.getGoodsItem().getItem().getCommodityClassification()){
+            CategoryServiceManager csm = CategoryServiceManager.getInstance();
+            // Default categories have no parents
+            if(cct.getItemClassificationCode().getListID().contentEquals("Default")){
+                continue;
+            }
+            List<Category> parentCategories = csm.getParentCategories(cct.getItemClassificationCode().getListID(),cct.getItemClassificationCode().getValue());
+
+            for(int i = 0; i< parentCategories.size()-1;i++){
+                Category category = parentCategories.get(i);
+                CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
+                CodeType codeType = new CodeType();
+                codeType.setValue(category.getId());
+                codeType.setName(category.getPreferredName());
+                codeType.setListID(category.getTaxonomyId());
+                codeType.setURI(category.getCategoryUri());
+                commodityClassificationType.setItemClassificationCode(codeType);
+                if(!commodityClassificationTypeList.contains(commodityClassificationType) && !catalogueLine.getGoodsItem().getItem().getCommodityClassification().contains(commodityClassificationType)){
+                    commodityClassificationTypeList.add(commodityClassificationType);
+                }
+            }
+        }
+        // add parents of the selected category to commodity classifications of the item
+        for(CommodityClassificationType cct : commodityClassificationTypeList){
+            catalogueLine.getGoodsItem().getItem().getCommodityClassification().add(cct);
+        }
         HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueLine);
 
         // add synchronization record
@@ -528,6 +582,36 @@ public class CatalogueServiceImpl implements CatalogueService {
             docRef.setID(catalogue.getUUID());
             line.getGoodsItem().getItem().setCatalogueDocumentReference(docRef);
         }
+    }
+
+    private CatalogueType addParentCategories(CatalogueType catalogueType){
+        for(CatalogueLineType line : catalogueType.getCatalogueLine()) {
+            List<CommodityClassificationType> commodityClassificationTypeList = new ArrayList<>();
+            // find parents of the selected categories
+            for(CommodityClassificationType cct : line.getGoodsItem().getItem().getCommodityClassification()){
+                CategoryServiceManager csm = CategoryServiceManager.getInstance();
+                List<Category> parentCategories = csm.getParentCategories(cct.getItemClassificationCode().getListID(),cct.getItemClassificationCode().getValue());
+
+                for(int i = 0; i< parentCategories.size()-1;i++){
+                    Category category = parentCategories.get(i);
+                    CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
+                    CodeType codeType = new CodeType();
+                    codeType.setValue(category.getId());
+                    codeType.setName(category.getPreferredName());
+                    codeType.setListID(category.getTaxonomyId());
+                    codeType.setURI(category.getCategoryUri());
+                    commodityClassificationType.setItemClassificationCode(codeType);
+                    if(!commodityClassificationTypeList.contains(commodityClassificationType) && !line.getGoodsItem().getItem().getCommodityClassification().contains(commodityClassificationType)){
+                        commodityClassificationTypeList.add(commodityClassificationType);
+                    }
+                }
+            }
+            // add parents of the selected category to commodity classifications of the item
+            for(CommodityClassificationType cct : commodityClassificationTypeList){
+                line.getGoodsItem().getItem().getCommodityClassification().add(cct);
+            }
+        }
+        return catalogueType;
     }
 
     @Override
