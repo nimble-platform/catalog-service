@@ -456,28 +456,8 @@ public class CatalogueServiceImpl implements CatalogueService {
     // TODO test
     @Override
     public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine) {
-        List<CommodityClassificationType> commodityClassificationTypeList = new ArrayList<>();
-        // find parents of the selected categories
-        for(CommodityClassificationType cct : catalogueLine.getGoodsItem().getItem().getCommodityClassification()){
-            CategoryServiceManager csm = CategoryServiceManager.getInstance();
-            List<Category> parentCategories = csm.getParentCategories(cct.getItemClassificationCode().getListID(),cct.getItemClassificationCode().getValue());
-
-            for(int i = 0; i< parentCategories.size()-1;i++){
-                Category category = parentCategories.get(i);
-                CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
-                CodeType codeType = new CodeType();
-                codeType.setValue(category.getId());
-                codeType.setName(category.getPreferredName());
-                codeType.setListID(category.getTaxonomyId());
-                codeType.setURI(category.getCategoryUri());
-                commodityClassificationType.setItemClassificationCode(codeType);
-                if(!commodityClassificationTypeList.contains(commodityClassificationType) && !catalogueLine.getGoodsItem().getItem().getCommodityClassification().contains(commodityClassificationType)){
-                    commodityClassificationTypeList.add(commodityClassificationType);
-                }
-            }
-        }
         // add parents of the selected category to commodity classifications of the item
-        for(CommodityClassificationType cct : commodityClassificationTypeList){
+        for(CommodityClassificationType cct : getParentCategories(catalogueLine.getGoodsItem().getItem().getCommodityClassification())){
             catalogueLine.getGoodsItem().getItem().getCommodityClassification().add(cct);
         }
         // Transport Service
@@ -513,32 +493,8 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     @Override
     public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine) {
-        List<CommodityClassificationType> commodityClassificationTypeList = new ArrayList<>();
-        // find parents of the selected categories
-        for(CommodityClassificationType cct : catalogueLine.getGoodsItem().getItem().getCommodityClassification()){
-            CategoryServiceManager csm = CategoryServiceManager.getInstance();
-            // Default categories have no parents
-            if(cct.getItemClassificationCode().getListID().contentEquals("Default")){
-                continue;
-            }
-            List<Category> parentCategories = csm.getParentCategories(cct.getItemClassificationCode().getListID(),cct.getItemClassificationCode().getValue());
-
-            for(int i = 0; i< parentCategories.size()-1;i++){
-                Category category = parentCategories.get(i);
-                CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
-                CodeType codeType = new CodeType();
-                codeType.setValue(category.getId());
-                codeType.setName(category.getPreferredName());
-                codeType.setListID(category.getTaxonomyId());
-                codeType.setURI(category.getCategoryUri());
-                commodityClassificationType.setItemClassificationCode(codeType);
-                if(!commodityClassificationTypeList.contains(commodityClassificationType) && !catalogueLine.getGoodsItem().getItem().getCommodityClassification().contains(commodityClassificationType)){
-                    commodityClassificationTypeList.add(commodityClassificationType);
-                }
-            }
-        }
         // add parents of the selected category to commodity classifications of the item
-        for(CommodityClassificationType cct : commodityClassificationTypeList){
+        for(CommodityClassificationType cct : getParentCategories(catalogueLine.getGoodsItem().getItem().getCommodityClassification())){
             catalogueLine.getGoodsItem().getItem().getCommodityClassification().add(cct);
         }
         HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueLine);
@@ -586,32 +542,40 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     private CatalogueType addParentCategories(CatalogueType catalogueType){
         for(CatalogueLineType line : catalogueType.getCatalogueLine()) {
-            List<CommodityClassificationType> commodityClassificationTypeList = new ArrayList<>();
-            // find parents of the selected categories
-            for(CommodityClassificationType cct : line.getGoodsItem().getItem().getCommodityClassification()){
-                CategoryServiceManager csm = CategoryServiceManager.getInstance();
-                List<Category> parentCategories = csm.getParentCategories(cct.getItemClassificationCode().getListID(),cct.getItemClassificationCode().getValue());
-
-                for(int i = 0; i< parentCategories.size()-1;i++){
-                    Category category = parentCategories.get(i);
-                    CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
-                    CodeType codeType = new CodeType();
-                    codeType.setValue(category.getId());
-                    codeType.setName(category.getPreferredName());
-                    codeType.setListID(category.getTaxonomyId());
-                    codeType.setURI(category.getCategoryUri());
-                    commodityClassificationType.setItemClassificationCode(codeType);
-                    if(!commodityClassificationTypeList.contains(commodityClassificationType) && !line.getGoodsItem().getItem().getCommodityClassification().contains(commodityClassificationType)){
-                        commodityClassificationTypeList.add(commodityClassificationType);
-                    }
-                }
-            }
             // add parents of the selected category to commodity classifications of the item
-            for(CommodityClassificationType cct : commodityClassificationTypeList){
+            for(CommodityClassificationType cct : getParentCategories(line.getGoodsItem().getItem().getCommodityClassification())){
                 line.getGoodsItem().getItem().getCommodityClassification().add(cct);
             }
         }
         return catalogueType;
+    }
+
+    private List<CommodityClassificationType> getParentCategories(List<CommodityClassificationType> commodityClassifications){
+        List<CommodityClassificationType> commodityClassificationTypeList = new ArrayList<>();
+        // find parents of the selected categories
+        for(CommodityClassificationType cct : commodityClassifications){
+            // Default categories have no parents
+            if(cct.getItemClassificationCode().getListID().contentEquals("Default")){
+                continue;
+            }
+            CategoryServiceManager csm = CategoryServiceManager.getInstance();
+            List<Category> parentCategories = csm.getParentCategories(cct.getItemClassificationCode().getListID(),cct.getItemClassificationCode().getValue());
+
+            for(int i = 0; i< parentCategories.size()-1;i++){
+                Category category = parentCategories.get(i);
+                CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
+                CodeType codeType = new CodeType();
+                codeType.setValue(category.getId());
+                codeType.setName(category.getPreferredName());
+                codeType.setListID(category.getTaxonomyId());
+                codeType.setURI(category.getCategoryUri());
+                commodityClassificationType.setItemClassificationCode(codeType);
+                if(!commodityClassificationTypeList.contains(commodityClassificationType) && !commodityClassifications.contains(commodityClassificationType)){
+                    commodityClassificationTypeList.add(commodityClassificationType);
+                }
+            }
+        }
+        return commodityClassificationTypeList;
     }
 
     @Override
