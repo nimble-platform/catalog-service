@@ -113,7 +113,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
         catalogue = addParentCategories(catalogue);
         // merge the hibernate object
-        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
+        catalogue = (CatalogueType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
 
         // add synchronization record
         MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogue.getUUID());
@@ -142,7 +142,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         } else if (standard == Configuration.Standard.MODAML) {
             catalogue = (T) JAXBUtility.deserialize(catalogueXml, Configuration.MODAML_CATALOGUE_PACKAGENAME);
         }
-        addCatalogue(catalogue, standard);
+        catalogue = addCatalogue(catalogue, standard);
 
         return catalogue;
     }
@@ -183,6 +183,9 @@ public class CatalogueServiceImpl implements CatalogueService {
                     line.getGoodsItem().getItem().getCommodityClassification().add(commodityClassificationType);
                 }
             }
+
+            checkReferencesInCatalogue(ublCatalogue);
+
             // persist the catalogue in relational DB
             HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).persist(ublCatalogue);
             logger.info("Catalogue with uuid: {} persisted in DB", uuid.toString());
@@ -483,7 +486,8 @@ public class CatalogueServiceImpl implements CatalogueService {
         catalogue.getCatalogueLine().add(catalogueLine);
         checkReferencesInCatalogue(catalogue);
 
-        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
+        catalogue = (CatalogueType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
+        catalogueLine = catalogue.getCatalogueLine().get(catalogue.getCatalogueLine().size()-1);
 
         // add synchronization record
         MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogue.getUUID());
@@ -497,7 +501,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         for(CommodityClassificationType cct : getParentCategories(catalogueLine.getGoodsItem().getItem().getCommodityClassification())){
             catalogueLine.getGoodsItem().getItem().getCommodityClassification().add(cct);
         }
-        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueLine);
+        catalogueLine = (CatalogueLineType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueLine);
 
         // add synchronization record
         // Not UUID but ID of the document reference should be used.
@@ -524,13 +528,17 @@ public class CatalogueServiceImpl implements CatalogueService {
     private void checkReferencesInCatalogue(CatalogueType catalogue) {
         for(CatalogueLineType line : catalogue.getCatalogueLine()) {
             // check catalogue line ids
-            if(line.getID() == null) {
-                String manufacturersItemId = line.getGoodsItem().getItem().getManufacturersItemIdentification().getID();
-                if(manufacturersItemId == null) {
-                    line.setID(UUID.randomUUID().toString());
-                } else {
-                    line.setID(manufacturersItemId);
-                }
+            // make sure that line IDs and the manufacturer item IDs are the same
+            String manufacturerItemId = line.getGoodsItem().getItem().getManufacturersItemIdentification().getID();
+            if(manufacturerItemId == null && line.getID() == null) {
+                line.setID(UUID.randomUUID().toString());
+                line.getGoodsItem().getItem().getManufacturersItemIdentification().setID(line.getID());
+
+            } else if(line.getID() == null) {
+                line.setID(manufacturerItemId);
+
+            } else if(manufacturerItemId == null) {
+                line.getGoodsItem().getItem().getManufacturersItemIdentification().setID(line.getID());
             }
 
             // set references from items to the catalogue
