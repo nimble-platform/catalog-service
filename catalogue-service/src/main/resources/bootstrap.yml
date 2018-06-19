@@ -20,6 +20,10 @@ spring:
   jackson:
     mapper:
       PROPAGATE_TRANSIENT_MARKER: true
+  http:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 
 logstash:
   uri: ${LOGSTASH_URI:localhost:5000}
@@ -68,7 +72,7 @@ persistence:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         show_sql: false
         hbm2ddl:
-          auto: update
+          auto: validate
         cache:
           provider_class: org.hibernate.cache.HashtableCacheProvider
         jdbc:

@@ -20,4 +20,6 @@ public interface ProductCategoryService {
     public String getTaxonomyId();
 
     public CategoryTreeResponse getCategoryTree(String categoryId);
+
+    public List<Category> getParentCategories(String categoryId);
 }

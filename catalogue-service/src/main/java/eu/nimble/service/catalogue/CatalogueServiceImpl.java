@@ -111,8 +111,9 @@ public class CatalogueServiceImpl implements CatalogueService {
 
         checkReferencesInCatalogue(catalogue);
 
+        catalogue = addParentCategories(catalogue);
         // merge the hibernate object
-        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
+        catalogue = (CatalogueType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
 
         // add synchronization record
         MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogue.getUUID());
@@ -141,7 +142,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         } else if (standard == Configuration.Standard.MODAML) {
             catalogue = (T) JAXBUtility.deserialize(catalogueXml, Configuration.MODAML_CATALOGUE_PACKAGENAME);
         }
-        addCatalogue(catalogue, standard);
+        catalogue = addCatalogue(catalogue, standard);
 
         return catalogue;
     }
@@ -154,6 +155,7 @@ public class CatalogueServiceImpl implements CatalogueService {
             String uuid = UUID.randomUUID().toString();
             ublCatalogue.setUUID(uuid);
 
+            ublCatalogue = addParentCategories(ublCatalogue);
             // set references from items to the catalogue
             for(CatalogueLineType line : ublCatalogue.getCatalogueLine()) {
                 DocumentReferenceType docRef = new DocumentReferenceType();
@@ -181,6 +183,9 @@ public class CatalogueServiceImpl implements CatalogueService {
                     line.getGoodsItem().getItem().getCommodityClassification().add(commodityClassificationType);
                 }
             }
+
+            checkReferencesInCatalogue(ublCatalogue);
+
             // persist the catalogue in relational DB
             HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).persist(ublCatalogue);
             logger.info("Catalogue with uuid: {} persisted in DB", uuid.toString());
@@ -454,6 +459,10 @@ public class CatalogueServiceImpl implements CatalogueService {
     // TODO test
     @Override
     public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine) {
+        // add parents of the selected category to commodity classifications of the item
+        for(CommodityClassificationType cct : getParentCategories(catalogueLine.getGoodsItem().getItem().getCommodityClassification())){
+            catalogueLine.getGoodsItem().getItem().getCommodityClassification().add(cct);
+        }
         // Transport Service
         if(catalogueLine.getGoodsItem().getItem().getTransportationServiceDetails() != null){
             CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
@@ -477,7 +486,8 @@ public class CatalogueServiceImpl implements CatalogueService {
         catalogue.getCatalogueLine().add(catalogueLine);
         checkReferencesInCatalogue(catalogue);
 
-        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
+        catalogue = (CatalogueType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
+        catalogueLine = catalogue.getCatalogueLine().get(catalogue.getCatalogueLine().size()-1);
 
         // add synchronization record
         MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogue.getUUID());
@@ -487,7 +497,11 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     @Override
     public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine) {
-        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueLine);
+        // add parents of the selected category to commodity classifications of the item
+        for(CommodityClassificationType cct : getParentCategories(catalogueLine.getGoodsItem().getItem().getCommodityClassification())){
+            catalogueLine.getGoodsItem().getItem().getCommodityClassification().add(cct);
+        }
+        catalogueLine = (CatalogueLineType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueLine);
 
         // add synchronization record
         // Not UUID but ID of the document reference should be used.
@@ -514,13 +528,17 @@ public class CatalogueServiceImpl implements CatalogueService {
     private void checkReferencesInCatalogue(CatalogueType catalogue) {
         for(CatalogueLineType line : catalogue.getCatalogueLine()) {
             // check catalogue line ids
-            if(line.getID() == null) {
-                String manufacturersItemId = line.getGoodsItem().getItem().getManufacturersItemIdentification().getID();
-                if(manufacturersItemId == null) {
-                    line.setID(UUID.randomUUID().toString());
-                } else {
-                    line.setID(manufacturersItemId);
-                }
+            // make sure that line IDs and the manufacturer item IDs are the same
+            String manufacturerItemId = line.getGoodsItem().getItem().getManufacturersItemIdentification().getID();
+            if(manufacturerItemId == null && line.getID() == null) {
+                line.setID(UUID.randomUUID().toString());
+                line.getGoodsItem().getItem().getManufacturersItemIdentification().setID(line.getID());
+
+            } else if(line.getID() == null) {
+                line.setID(manufacturerItemId);
+
+            } else if(manufacturerItemId == null) {
+                line.getGoodsItem().getItem().getManufacturersItemIdentification().setID(line.getID());
             }
 
             // set references from items to the catalogue
@@ -528,6 +546,44 @@ public class CatalogueServiceImpl implements CatalogueService {
             docRef.setID(catalogue.getUUID());
             line.getGoodsItem().getItem().setCatalogueDocumentReference(docRef);
         }
+    }
+
+    private CatalogueType addParentCategories(CatalogueType catalogueType){
+        for(CatalogueLineType line : catalogueType.getCatalogueLine()) {
+            // add parents of the selected category to commodity classifications of the item
+            for(CommodityClassificationType cct : getParentCategories(line.getGoodsItem().getItem().getCommodityClassification())){
+                line.getGoodsItem().getItem().getCommodityClassification().add(cct);
+            }
+        }
+        return catalogueType;
+    }
+
+    private List<CommodityClassificationType> getParentCategories(List<CommodityClassificationType> commodityClassifications){
+        List<CommodityClassificationType> commodityClassificationTypeList = new ArrayList<>();
+        // find parents of the selected categories
+        for(CommodityClassificationType cct : commodityClassifications){
+            // Default categories have no parents
+            if(cct.getItemClassificationCode().getListID().contentEquals("Default")){
+                continue;
+            }
+            CategoryServiceManager csm = CategoryServiceManager.getInstance();
+            List<Category> parentCategories = csm.getParentCategories(cct.getItemClassificationCode().getListID(),cct.getItemClassificationCode().getValue());
+
+            for(int i = 0; i< parentCategories.size()-1;i++){
+                Category category = parentCategories.get(i);
+                CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
+                CodeType codeType = new CodeType();
+                codeType.setValue(category.getId());
+                codeType.setName(category.getPreferredName());
+                codeType.setListID(category.getTaxonomyId());
+                codeType.setURI(category.getCategoryUri());
+                commodityClassificationType.setItemClassificationCode(codeType);
+                if(!commodityClassificationTypeList.contains(commodityClassificationType) && !commodityClassifications.contains(commodityClassificationType)){
+                    commodityClassificationTypeList.add(commodityClassificationType);
+                }
+            }
+        }
+        return commodityClassificationTypeList;
     }
 
     @Override

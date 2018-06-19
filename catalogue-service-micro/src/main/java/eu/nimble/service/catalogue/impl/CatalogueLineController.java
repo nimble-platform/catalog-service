@@ -69,7 +69,7 @@ public class CatalogueLineController {
      * @return
      */
     @CrossOrigin(origins = {"*"})
-    @RequestMapping(value = "/{catalogueUuid}",
+    @RequestMapping(
             consumes = {"application/json"},
             produces = {"application/json"},
             method = RequestMethod.POST)
