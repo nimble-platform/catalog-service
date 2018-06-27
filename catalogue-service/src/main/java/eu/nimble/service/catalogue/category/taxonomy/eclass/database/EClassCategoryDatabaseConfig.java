@@ -165,6 +165,14 @@ public class EClassCategoryDatabaseConfig {
         return sb.toString();
     }
 
+    public static String eClassQueryGetRootCategories(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT * FROM ").append(TABLE_NAME_CLASSIFICATION_CLASS)
+                .append(" WHERE ")
+                .append(COLUMN_CLASSIFICATION_CLASS_LEVEL).append(" = '1'");
+        return sb.toString();
+    }
+
     public static String eClassQueryGetKeywordByValue() {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ")

@@ -57,6 +57,11 @@ public class CategoryServiceManager {
         return pcs.getParentCategories(categoryId);
     }
 
+    public List<Category> getRootCategories(String taxonomyId){
+        ProductCategoryService pcs = services.get(taxonomyId);
+        return pcs.getRootCategories();
+    }
+
     public List<String> getAvailableTaxonomies() {
         return new ArrayList<>(services.keySet());
     }

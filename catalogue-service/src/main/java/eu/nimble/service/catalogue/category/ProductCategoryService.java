@@ -22,4 +22,6 @@ public interface ProductCategoryService {
     public CategoryTreeResponse getCategoryTree(String categoryId);
 
     public List<Category> getParentCategories(String categoryId);
+
+    public List<Category> getRootCategories();
 }

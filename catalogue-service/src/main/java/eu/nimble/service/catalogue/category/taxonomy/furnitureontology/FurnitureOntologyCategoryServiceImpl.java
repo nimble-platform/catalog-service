@@ -146,6 +146,12 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
     }
 
     @Override
+    public List<Category> getRootCategories() {
+        //throw new IllegalStateException("Not implemented yet");
+        return new ArrayList<>();
+    }
+
+    @Override
     public String getTaxonomyId() {
         return "FurnitureOntology";
     }

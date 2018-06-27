@@ -107,6 +107,15 @@ public class ProductCategoryController {
     }
 
     @CrossOrigin(origins = {"*"})
+    @RequestMapping(value = "/catalogue/category/root/{taxonomyId}",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity<List<Category>> getRootCategories(@PathVariable String taxonomyId){
+        List<Category> categories = csm.getRootCategories(taxonomyId);
+        return ResponseEntity.ok(categories);
+    }
+
+    @CrossOrigin(origins = {"*"})
     @RequestMapping(value = "/catalogue/category/{taxonomyId}/{categoryId}/tree",
             produces = {"application/json"},
             method = RequestMethod.GET)
