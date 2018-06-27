@@ -107,11 +107,20 @@ public class ProductCategoryController {
     }
 
     @CrossOrigin(origins = {"*"})
-    @RequestMapping(value = "/catalogue/category/root/{taxonomyId}",
+    @RequestMapping(value = "/catalogue/category/{taxonomyId}/root-categories",
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity<List<Category>> getRootCategories(@PathVariable String taxonomyId){
         List<Category> categories = csm.getRootCategories(taxonomyId);
+        return ResponseEntity.ok(categories);
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @RequestMapping(value = "/catalogue/category/{taxonomyId}/{categoryId}/children-categories",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity<List<Category>> getChildrenCategories(@PathVariable String taxonomyId,@PathVariable String categoryId){
+        List<Category> categories = csm.getChildrenCategories(taxonomyId,categoryId);
         return ResponseEntity.ok(categories);
     }
 

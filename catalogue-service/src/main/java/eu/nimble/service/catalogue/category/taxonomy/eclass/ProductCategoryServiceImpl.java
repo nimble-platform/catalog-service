@@ -84,6 +84,19 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
     }
 
     @Override
+    public List<Category> getChildrenCategories(String categoryId) {
+        EClassCategoryDatabaseAdapter eClassCategoryDatabaseAdapter = new EClassCategoryDatabaseAdapter();
+        List<Category> categories;
+        try {
+            categories = eClassCategoryDatabaseAdapter.getChildrenCategories(categoryId);
+        }catch (CategoryDatabaseException e){
+            logger.error("Failed to retrieve children categories",e);
+            return new ArrayList<>();
+        }
+        return categories;
+    }
+
+    @Override
     public List<Category> getParentCategories(String categoryId) {
         EClassCategoryDatabaseAdapter eClassCategoryDatabaseAdapter = new EClassCategoryDatabaseAdapter();
         List<Category> categories;
