@@ -241,6 +241,26 @@ public class EClassCategoryDatabaseAdapter {
         }
     }
 
+    public List<Category> getRootCategories() throws CategoryDatabaseException{
+        Connection connection = null;
+        List<Category> results = new ArrayList<>();
+        try {
+            connection = getConnection();
+
+            PreparedStatement preparedStatement = connection.prepareStatement(eClassQueryGetRootCategories());
+            ResultSet rs = preparedStatement.executeQuery();
+            results = extractClassificationClassesFromResultSet(rs);
+            rs.close();
+            preparedStatement.close();
+            return results;
+
+        } catch (SQLException e){
+            throw new CategoryDatabaseException("Failed to retrieve classification by level",e);
+        } finally {
+            closeConnection(connection);
+        }
+    }
+
     public List<Category> getParentCategories(String categoryId) throws CategoryDatabaseException{
         Connection connection = null;
         List<Category> results = new ArrayList<>();

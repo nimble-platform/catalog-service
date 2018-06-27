@@ -45,4 +45,9 @@ public class CustomCategoryService implements ProductCategoryService {
     public List<Category> getParentCategories(String categoryId) {
         return new ArrayList<>();
     }
+
+    @Override
+    public List<Category> getRootCategories() {
+        return new ArrayList<>();
+    }
 }
