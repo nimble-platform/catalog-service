@@ -161,7 +161,9 @@ public class EClassCategoryDatabaseConfig {
                 .append(COLUMN_CLASSIFICATION_CLASS_CODED_NAME).append(" = ? OR ")
                 .append(COLUMN_CLASSIFICATION_CLASS_CODED_NAME).append(" = ? OR ")
                 .append(COLUMN_CLASSIFICATION_CLASS_CODED_NAME).append(" = ? OR ")
-                .append(COLUMN_CLASSIFICATION_CLASS_CODED_NAME).append(" = ?");
+                .append(COLUMN_CLASSIFICATION_CLASS_CODED_NAME).append(" = ?")
+                .append(" ORDER BY ")
+                .append(COLUMN_CLASSIFICATION_CLASS_LEVEL);
         return sb.toString();
     }
 
