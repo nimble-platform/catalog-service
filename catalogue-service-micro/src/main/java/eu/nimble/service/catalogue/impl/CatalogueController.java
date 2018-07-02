@@ -10,6 +10,9 @@ import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.config.PersistenceConfig;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
@@ -56,7 +59,7 @@ public class CatalogueController {
 //    private IdentityClient identityClient;
 
     /**
-     * Retrieves the default catalgoue for the specified party. The catalague is supposed to have and ID field with
+     * Retrieves the default catalogue for the specified party. The catalogue is supposed to have and ID field with
      * "default" value and be compliant with UBL standard.
      *
      * @param partyId
@@ -64,11 +67,18 @@ public class CatalogueController {
      * <li>204 if there is no UBL catalogue with "default" as the id value</li>
      */
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieve the default catalogue for the specified party")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved the default catalogue for the specified party successfully", response = CatalogueType.class),
+            @ApiResponse(code = 204, message = "No default catalogue for the party"),
+            @ApiResponse(code = 500, message = "Failed to get default catalogue for the party")
+    })
     @RequestMapping(value = "/catalogue/{partyId}/default",
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity getDefaultCatalogue(@PathVariable String partyId) {
         log.info("Incoming request to get default catalogue for party: {}", partyId);
+        // TODO : Check whether the given party id is valid or not.
         CatalogueType catalogue;
         try {
             catalogue = service.getCatalogue("default", partyId);
@@ -78,7 +88,7 @@ public class CatalogueController {
 
         if (catalogue == null) {
             log.info("No default catalogue for party: {}", partyId);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(String.format("No default catalogue for party: %s", partyId));
         }
 
         log.info("Completed request to get default catalogue for party: {}", partyId);
@@ -96,6 +106,7 @@ public class CatalogueController {
      * @see @link getSupportedStandards method for supported standards
      */
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieve the catalogue for the given standard and uuid")
     @RequestMapping(value = "/catalogue/{standard}/{uuid}",
             produces = {"application/json"},
             method = RequestMethod.GET)
@@ -116,7 +127,7 @@ public class CatalogueController {
 
         if (catalogue == null) {
             log.info("No default catalogue for uuid: {}", uuid);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(String.format("No default catalogue for uuid: %s", uuid));
         }
 
         log.info("Completed request to get catalogue for standard: {}, uuid: {}", standard, uuid);
@@ -133,6 +144,7 @@ public class CatalogueController {
      * <li>400 if an invalid content type header or standard is provided</li>
      */
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Add the catalogue passed in a serialized form")
     @RequestMapping(value = "/catalogue/{standard}",
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
@@ -204,7 +216,7 @@ public class CatalogueController {
         try {
 
             catalogueURI = new URI(baseUrl + uuid);
-        } catch (URISyntaxException  e) {
+        } catch (URISyntaxException e) {
             String msg = "Failed to generate a URI for the newly created item";
             log.warn(msg, e);
             try {
@@ -227,6 +239,7 @@ public class CatalogueController {
      * <li>501 if a standard than ubl is passed</li>
      */
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Update the catalogue represented in JSON serialization")
     @RequestMapping(value = "/catalogue/{standard}",
             consumes = {"application/json"},
             produces = {"application/json"},
@@ -266,7 +279,14 @@ public class CatalogueController {
         return ResponseEntity.ok(catalogue);
     }
 
+
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Delete the given catalogue")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Deleted the given catalogue successfully"),
+            @ApiResponse(code = 400, message = "Invalid standard"),
+            @ApiResponse(code = 500, message = "Failed to delete catalogue")
+    })
     @RequestMapping(value = "/catalogue/{standard}/{uuid}",
             method = RequestMethod.DELETE)
     public ResponseEntity deleteCatalogue(@PathVariable String standard, @PathVariable String uuid) {
@@ -298,6 +318,7 @@ public class CatalogueController {
      * @param taxonomyIds Example taxonomy ids: FurnitureOntology,eClass
      * @param response
      */
+    @ApiOperation(value = "", notes = "Generate an excel-based template for the specified categories")
     @CrossOrigin(origins = {"*"})
     @RequestMapping(value = "/catalogue/template",
             method = RequestMethod.GET,
@@ -356,6 +377,7 @@ public class CatalogueController {
      * @return 200 along with the added catalogue
      * @see @link downloadTemplate method to download an empty template
      */
+    @ApiOperation(value = "", notes = "Add the catalogue specified with the provided template")
     @CrossOrigin(origins = {"*"})
     @RequestMapping(value = "/catalogue/template/upload",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
@@ -401,6 +423,12 @@ public class CatalogueController {
      * @return 200 along with the added catalogue
      */
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Add the images provided in the package object to relevant products")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Added the images provided in the package object to relevant products successfully"),
+            @ApiResponse(code = 400, message = "Failed obtain a Zip package from the provided data"),
+            @ApiResponse(code = 404, message = "Catalogue with the given uuid does not exist")
+    })
     @RequestMapping(value = "/catalogue/image/upload",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             method = RequestMethod.POST)
@@ -408,6 +436,11 @@ public class CatalogueController {
             @RequestParam("package") MultipartFile pack,
             @RequestParam("catalogueUuid") String catalogueUuid) {
         log.info("Incoming request to upload images for catalogue: {}", catalogueUuid);
+
+        if (service.getCatalogue(catalogueUuid) == null) {
+            log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
+        }
 
         ZipInputStream zis = null;
         try {
@@ -434,6 +467,7 @@ public class CatalogueController {
      * @return 200 along with the added catalogue
      */
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Return the example filled in template")
     @RequestMapping(value = "/catalogue/template/example",
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
@@ -469,6 +503,7 @@ public class CatalogueController {
      * @return
      */
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieve the supported standards")
     @RequestMapping(value = "/catalogue/standards",
             produces = {"application/json"},
             method = RequestMethod.GET)
