@@ -68,6 +68,10 @@ public class ProductCategoryController {
 
             log.info("Getting categories for taxonomyIds: {}, categoryIds: {}", taxonomyIds, categoryIds);
             for (int i = 0; i < taxonomyIds.size(); i++) {
+                if(!taxonomyIdExists(taxonomyIds.get(i))){
+                    log.error("The given taxonomy id : {} is not valid", taxonomyIds.get(i));
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("The given taxonomy id %s is not valid", taxonomyIds.get(i)));
+                }
                 categories.add(csm.getCategory(taxonomyIds.get(i), categoryIds.get(i)));
             }
 

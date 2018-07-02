@@ -107,6 +107,12 @@ public class CatalogueController {
      */
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieve the catalogue for the given standard and uuid")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved the catalogue successfully", response = CatalogueType.class),
+            @ApiResponse(code = 204, message = "No default catalogue for the given uuid"),
+            @ApiResponse(code = 500, message = "Failed to get catalogue for the given standard and uuid"),
+            @ApiResponse(code = 400, message = "Invalid standard"),
+    })
     @RequestMapping(value = "/catalogue/{standard}/{uuid}",
             produces = {"application/json"},
             method = RequestMethod.GET)
@@ -145,6 +151,9 @@ public class CatalogueController {
      */
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Add the catalogue passed in a serialized form")
+    @ApiResponses(value = {
+            @ApiResponse(code = 400, message = "Invalid content type"),
+    })
     @RequestMapping(value = "/catalogue/{standard}",
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
@@ -240,6 +249,12 @@ public class CatalogueController {
      */
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Update the catalogue represented in JSON serialization")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Updated the catalogue successfully", response = CatalogueType.class),
+            @ApiResponse(code = 501, message = "Update operation is not support for the given standard"),
+            @ApiResponse(code = 400, message = "Invalid standard"),
+            @ApiResponse(code = 500, message = "Failed to update the catalogue")
+    })
     @RequestMapping(value = "/catalogue/{standard}",
             consumes = {"application/json"},
             produces = {"application/json"},
@@ -468,6 +483,9 @@ public class CatalogueController {
      */
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Return the example filled in template")
+    @ApiResponses(value = {
+            @ApiResponse(code = 500, message = "Failed to write the template content to the response output stream")
+    })
     @RequestMapping(value = "/catalogue/template/example",
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
@@ -504,6 +522,10 @@ public class CatalogueController {
      */
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieve the supported standards")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieve the supported standards successfully",response = String.class, responseContainer = "List"),
+            @ApiResponse(code = 500, message = "Failed to get supported standards")
+    })
     @RequestMapping(value = "/catalogue/standards",
             produces = {"application/json"},
             method = RequestMethod.GET)
