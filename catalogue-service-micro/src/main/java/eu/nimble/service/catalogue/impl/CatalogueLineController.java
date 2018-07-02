@@ -7,6 +7,9 @@ import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -41,11 +44,23 @@ public class CatalogueLineController {
      * <li>204 if there does not exists a catalogue line with the given lineId</li>
      */
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieve the catalogue line specified with the catalogueUuid and lineId parameters")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved catalogue line successfully", response = CatalogueLineType.class),
+            @ApiResponse(code = 404, message = "Catalogue with the given uuid does not exist"),
+            @ApiResponse(code = 400, message = "Failed to get catalogue line"),
+            @ApiResponse(code = 204, message = "There does not exist a catalogue line with the given lineId")
+    })
     @RequestMapping(value = "/{lineId}",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity<CatalogueLineType> getCatalogueLine(@PathVariable String catalogueUuid, @PathVariable String lineId) {
+    public ResponseEntity getCatalogueLine(@PathVariable String catalogueUuid, @PathVariable String lineId) {
         log.info("Incoming request to get catalogue line with lineId: {}", lineId);
+
+        if (service.getCatalogue(catalogueUuid) == null) {
+            log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
+        }
 
         CatalogueLineType catalogueLine;
         try {
@@ -55,7 +70,8 @@ public class CatalogueLineController {
         }
 
         if (catalogueLine == null) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+            log.error("There does not exist a catalogue line with lineId {}", lineId);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(String.format("There does not exist a catalogue line with lineId %s", lineId));
         }
         log.info("Completed the request to get catalogue line with lineId: {}", lineId);
         return ResponseEntity.ok(catalogueLine);
@@ -69,6 +85,14 @@ public class CatalogueLineController {
      * @return
      */
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Add the provided line")
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Added the catalogue line successfully"),
+            @ApiResponse(code = 404, message = "Catalogue with the given uuid does not exist"),
+            @ApiResponse(code = 406, message = "There already exists a product with the given id"),
+            @ApiResponse(code = 400, message = "Failed to deserialize catalogue line from json string"),
+            @ApiResponse(code = 500, message = "Failed to add the provided catalogue line")
+    })
     @RequestMapping(
             consumes = {"application/json"},
             produces = {"application/json"},
@@ -79,16 +103,19 @@ public class CatalogueLineController {
         CatalogueLineType catalogueLine;
         try {
             catalogue = service.getCatalogue(catalogueUuid);
+            if (catalogue == null) {
+                log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
+            }
             catalogueLine = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                     .readValue(catalogueLineJson, CatalogueLineType.class);
 
-            boolean tmp = service.existCatalogueLineById(catalogueUuid,catalogueLine.getID(),catalogueLine.getHjid());
+            boolean tmp = service.existCatalogueLineById(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid());
 
-            if(!tmp){
+            if (!tmp) {
                 catalogueLine = service.addLineToCatalogue(catalogue, catalogueLine);
-            }
-            else{
-                return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("You already have a product with the given id.");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("There already exists a product with the given id");
             }
 
         } catch (IOException e) {
@@ -130,23 +157,36 @@ public class CatalogueLineController {
      * @return
      */
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Update the catalogue line")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Updated the catalogue line successfully"),
+            @ApiResponse(code = 404, message = "Catalogue with the given uuid does not exist"),
+            @ApiResponse(code = 406, message = "There already exists a product with the given id"),
+            @ApiResponse(code = 400, message = "Failed to deserialize catalogue line from json string"),
+            @ApiResponse(code = 500, message = "Failed to add the provided catalogue line")
+    })
     @RequestMapping(consumes = {"application/json"},
             produces = {"application/json"},
             method = RequestMethod.PUT)
     public ResponseEntity updateCatalogueLine(@PathVariable String catalogueUuid, @RequestBody String catalogueLineJson) {
         log.info("Incoming request to update catalogue line. Catalogue uuid: {}", catalogueUuid);
+
+        if (service.getCatalogue(catalogueUuid) == null) {
+            log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
+        }
+
         CatalogueLineType catalogueLine = null;
         try {
             catalogueLine = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                     .readValue(catalogueLineJson, CatalogueLineType.class);
 
-            boolean tmp = service.existCatalogueLineById(catalogueUuid,catalogueLine.getID(),catalogueLine.getHjid());
+            boolean tmp = service.existCatalogueLineById(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid());
 
-            if(!tmp){
+            if (!tmp) {
                 service.updateCatalogueLine(catalogueLine);
-            }
-            else{
-                return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("You already have a product with the given id.");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("There already exists a product with the given id");
             }
 
         } catch (IOException e) {
@@ -170,11 +210,23 @@ public class CatalogueLineController {
      * @return
      */
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Delete the specified catalogue line")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Deleted the catalogue line successfully"),
+            @ApiResponse(code = 404, message = "Catalogue with the given uuid does not exist"),
+            @ApiResponse(code = 500, message = "Failed to delete the catalogue line")
+    })
     @RequestMapping(value = "/{lineId}",
             produces = {"application/json"},
             method = RequestMethod.DELETE)
     public ResponseEntity deleteCatalogueLineById(@PathVariable String catalogueUuid, @PathVariable String lineId) {
         log.info("Incoming request to delete catalogue line. catalogue uuid: {}: line lineId {}", catalogueUuid, lineId);
+
+        if (service.getCatalogue(catalogueUuid) == null) {
+            log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
+        }
+
         try {
             service.deleteCatalogueLineById(catalogueUuid, lineId);
         } catch (Exception e) {
