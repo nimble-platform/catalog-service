@@ -58,12 +58,12 @@ public class UnitManager {
 
         UnitType unitType4 = new UnitType();
         unitType4.setID("volume_quantity");
-        unitType4.setUnitCode(Collections.singletonList("L"));
+        unitType4.setUnitCode(Arrays.asList("L, m3"));
         hibernateUtility.persist(unitType4);
 
         UnitType unitType5 = new UnitType();
         unitType5.setID("weight_quantity");
-        unitType5.setUnitCode(Arrays.asList("g","kg"));
+        unitType5.setUnitCode(Arrays.asList("g","kg", "ton"));
         hibernateUtility.persist(unitType5);
 
         UnitType unitType6 = new UnitType();
@@ -73,7 +73,7 @@ public class UnitManager {
 
         UnitType unitType7 = new UnitType();
         unitType7.setID("package_quantity");
-        unitType7.setUnitCode(Collections.singletonList("box"));
+        unitType7.setUnitCode(Arrays.asList("box", "unit"));
         hibernateUtility.persist(unitType7);
 
         UnitType unitType8 = new UnitType();
