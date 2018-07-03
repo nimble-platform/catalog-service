@@ -135,6 +135,10 @@ security:
     authorization:
       check-token-access:
 
+nimble:
+  identity:
+    url: ${IDENTITY_SERVICE_URL:https://nimble-platform.salzburgresearch.at/nimble/identity}
+
 ################################################################################################
 ################################## KUBERNETES CONFIG ###########################################
 ################################################################################################

@@ -49,6 +49,8 @@ public class CatalogueServiceConfig {
 
     @Value("${persistence.marmotta.url}")
     private String marmottaUrl;
+    @Value("${nimble.identity.url}")
+    private String identityUrl;
 
     private static CatalogueServiceConfig instance;
 
@@ -182,5 +184,13 @@ public class CatalogueServiceConfig {
 
     public void setMarmottaUrl(String marmottaUrl) {
         this.marmottaUrl = marmottaUrl;
+    }
+
+    public String getIdentityUrl() {
+        return identityUrl;
+    }
+
+    public void setIdentityUrl(String identityUrl) {
+        this.identityUrl = identityUrl;
     }
 }

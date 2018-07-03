@@ -2,16 +2,21 @@ package eu.nimble.service.catalogue.impl;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
-import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.Configuration;
+import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.utility.config.PersistenceConfig;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +58,7 @@ public class CatalogueController {
     PersistenceConfig ublConf;
 
 //    @Autowired
-//    private IdentityClient identityClient;
+//    private IdentityClientTyped identityClient;
 
     /**
      * Retrieves the default catalgoue for the specified party. The catalague is supposed to have and ID field with
@@ -365,6 +370,7 @@ public class CatalogueController {
             @RequestParam(value = "uploadMode", defaultValue = "append") String uploadMode,
             @RequestParam("partyId") String partyId,
             @RequestParam("partyName") String partyName,
+            @RequestHeader(value="Authorization", required=true) String bearerToken,
             HttpServletRequest request) {
         log.info("Incoming request to upload template upload mode: {}, party id: {}, party name: {}", uploadMode, partyId, partyName);
         CatalogueType catalogue;
@@ -375,6 +381,27 @@ public class CatalogueController {
             PartyType party = new PartyType();
             party.setName(partyName);
             party.setID(partyId);
+
+            String dataChannelServiceUrlStr = conf.getIdentityUrl() + "/party/" + partyId;
+
+            HttpResponse<JsonNode> response;
+            try {
+                response = Unirest.get(dataChannelServiceUrlStr)
+                        .header("Authorization", bearerToken).asJson();
+                if(response.getStatus() == 404) {
+                    String msg = "Unauthorized user";
+                    log.warn(msg);
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(msg);
+                }
+                ObjectMapper objectMapper = new ObjectMapper();
+                JSONObject responseObject = response.getBody().getObject();
+                Utils.removeHjidFields(responseObject);
+                party = objectMapper.readValue(responseObject.toString(), PartyType.class);
+
+            } catch (UnirestException e) {
+                return createErrorResponseEntity("Failed to get complete party details", HttpStatus.INTERNAL_SERVER_ERROR, e);
+            }
+
             catalogue = service.addCatalogue(file.getInputStream(), uploadMode, party);
         } catch (IOException e) {
             return createErrorResponseEntity("Failed to retrieve the template", HttpStatus.INTERNAL_SERVER_ERROR, e);
