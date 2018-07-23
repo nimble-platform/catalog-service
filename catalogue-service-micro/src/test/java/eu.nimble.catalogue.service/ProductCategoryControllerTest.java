@@ -44,11 +44,4 @@ public class ProductCategoryControllerTest {
         Assert.assertEquals(200,responseEntity.getStatusCodeValue());
     }
 
-    @Test
-    public void test3_getSubCategories() throws Exception {
-        ResponseEntity<List<Category>> responseEntity = productCategoryController.getSubCategories("eClass","0173-1#01-BAA975#013");
-
-        Assert.assertEquals(200,responseEntity.getStatusCodeValue());
-    }
-
 }

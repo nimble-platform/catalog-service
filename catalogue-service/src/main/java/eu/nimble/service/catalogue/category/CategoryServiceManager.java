@@ -42,11 +42,6 @@ public class CategoryServiceManager {
         return categories;
     }
 
-    public List<Category> getSubCategories(String taxonomyId, String categoryId) {
-        ProductCategoryService pcs = services.get(taxonomyId);
-        return pcs.getSubCategories(categoryId);
-    }
-
     public CategoryTreeResponse getCategoryTree(String taxonomyId, String categoryId) {
         ProductCategoryService pcs = services.get(taxonomyId);
         return pcs.getCategoryTree(categoryId);
