@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
-import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import eu.nimble.utility.config.SpringBridge;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -133,7 +133,7 @@ public class CatalogueLineController {
     private ResponseEntity createCreatedCatalogueLineResponse(String catalogueUuid, CatalogueLineType line) {
         URI lineURI;
         try {
-            String applicationUrl = CatalogueServiceConfig.getInstance().getSpringApplicationUrl();
+            String applicationUrl = SpringBridge.getInstance().getCatalogueServiceConfig().getSpringApplicationUrl();
             lineURI = new URI(applicationUrl + "/catalogue/" + catalogueUuid + "/" + line.getID());
         } catch (URISyntaxException e) {
             String msg = "Failed to generate a URI for the newly created item";

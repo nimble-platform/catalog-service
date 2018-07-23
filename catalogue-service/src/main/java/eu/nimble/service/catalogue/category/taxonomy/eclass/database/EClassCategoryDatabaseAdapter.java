@@ -4,6 +4,7 @@ import eu.nimble.service.catalogue.model.category.*;
 import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.exception.CategoryDatabaseException;
 import eu.nimble.service.catalogue.template.TemplateConfig;
+import eu.nimble.utility.config.SpringBridge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +36,7 @@ public class EClassCategoryDatabaseAdapter {
 
     private Connection getConnection() throws CategoryDatabaseException {
         try {
-            CatalogueServiceConfig config = CatalogueServiceConfig.getInstance();
+            CatalogueServiceConfig config = SpringBridge.getInstance().getCatalogueServiceConfig();
 
             Class.forName(config.getCategoryDbDriver());
             Connection connection = DriverManager

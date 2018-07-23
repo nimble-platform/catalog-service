@@ -9,7 +9,6 @@ import eu.nimble.service.catalogue.category.CategoryServiceManager;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
-import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
@@ -47,8 +46,6 @@ public class CatalogueServiceImpl implements CatalogueService {
     private static final Logger logger = LoggerFactory.getLogger(CatalogueServiceImpl.class);
     private static CatalogueService instance = null;
     private static CategoryServiceManager csmInstance = CategoryServiceManager.getInstance();
-
-    private CatalogueServiceConfig config = CatalogueServiceConfig.getInstance();
 
     private CatalogueServiceImpl() {
     }
