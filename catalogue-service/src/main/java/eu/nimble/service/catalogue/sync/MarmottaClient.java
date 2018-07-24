@@ -3,9 +3,10 @@ package eu.nimble.service.catalogue.sync;
 import eu.nimble.data.transformer.ontmalizer.XML2OWLMapper;
 import eu.nimble.data.transformer.ontmalizer.XSD2OWLMapper;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
-import eu.nimble.utility.config.CatalogueServiceConfig;
+import eu.nimble.service.model.BigDecimalXmlAdapter;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.utility.Configuration;
+import eu.nimble.utility.config.CatalogueServiceConfig;
 import org.apache.commons.io.IOUtils;
 import org.apache.marmotta.client.exception.MarmottaClientException;
 import org.slf4j.Logger;
@@ -121,6 +122,7 @@ public class MarmottaClient {
             marsh.setProperty("jaxb.formatted.output", true);
             JAXBElement element = new JAXBElement(
                     new QName(Configuration.UBL_CATALOGUE_NS, "Catalogue"), catalogue.getClass(), catalogue);
+            marsh.setAdapter(new BigDecimalXmlAdapter());
             marsh.marshal(element, serializedCatalogueBaos);
             marsh.marshal(element, serializedCatalogueWriter);
 
