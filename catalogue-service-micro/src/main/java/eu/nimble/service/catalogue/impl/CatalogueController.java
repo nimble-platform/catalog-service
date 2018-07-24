@@ -412,13 +412,7 @@ public class CatalogueController {
         log.info("Incoming request to upload template upload mode: {}, party id: {}, party name: {}", uploadMode, partyId, partyName);
         CatalogueType catalogue;
         try {
-            //TODO retrieve the party from the identity service
-            /*PartyType party = identityClient.getParty(partyId);
-            log.debug("Fetched party with Id {0}", party.getHjid());*/
-            PartyType party = new PartyType();
-            party.setName(partyName);
-            party.setID(partyId);
-
+            PartyType party;
             String dataChannelServiceUrlStr = conf.getIdentityUrl() + "/party/" + partyId;
 
             HttpResponse<JsonNode> response;
@@ -426,7 +420,7 @@ public class CatalogueController {
                 response = Unirest.get(dataChannelServiceUrlStr)
                         .header("Authorization", bearerToken).asJson();
                 if(response.getStatus() == 404) {
-                    String msg = "Unauthorized user";
+                    String msg = String.format("No party found for partyId: %s", partyId);
                     log.warn(msg);
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(msg);
                 }
