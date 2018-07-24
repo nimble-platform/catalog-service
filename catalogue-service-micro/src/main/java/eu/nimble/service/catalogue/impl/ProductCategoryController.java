@@ -110,32 +110,6 @@ public class ProductCategoryController {
         return ResponseEntity.ok(taxonomies);
     }
 
-
-    @ApiOperation(value = "", notes = "Retrieve subcategories of the given category")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Retrieved subcategories of the given category successfully", response = Category.class, responseContainer = "List"),
-            @ApiResponse(code = 404, message = "The given taxonomy id is not valid"),
-            @ApiResponse(code = 400, message = "There does not exist a category with the given id")
-    })
-    @RequestMapping(value = "/catalogue/category/{taxonomyId}/{parentCategoryId}/subcategories",
-            produces = {"application/json"},
-            method = RequestMethod.GET)
-    public ResponseEntity getSubCategories(@PathVariable String taxonomyId, @PathVariable String parentCategoryId) {
-        if (!taxonomyIdExists(taxonomyId)) {
-            log.error("The given taxonomy id : {} is not valid", taxonomyId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("The given taxonomy id %s is not valid", taxonomyId));
-        }
-
-        if (!categoryExists(taxonomyId, parentCategoryId)) {
-            log.error("There does not exist a category with the id : {}", parentCategoryId);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("There does not exist a category with the id %s", parentCategoryId));
-        }
-
-
-        List<Category> categories = csm.getSubCategories(taxonomyId, parentCategoryId);
-        return ResponseEntity.ok(categories);
-    }
-
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieve root categories")
     @ApiResponses(value = {
@@ -161,10 +135,10 @@ public class ProductCategoryController {
             @ApiResponse(code = 404, message = "The given taxonomy id is not valid"),
             @ApiResponse(code = 400, message = "There does not exist a category with the given id")
     })
-    @RequestMapping(value = "/catalogue/category/{taxonomyId}/{categoryId}/children-categories",
+    @RequestMapping(value = "/catalogue/category/children-categories",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getChildrenCategories(@PathVariable String taxonomyId, @PathVariable String categoryId) {
+    public ResponseEntity getChildrenCategories(@RequestParam("taxonomyId") String taxonomyId, @RequestParam("categoryId") String categoryId) {
         if (!taxonomyIdExists(taxonomyId)) {
             log.error("The given taxonomy id : {} is not valid", taxonomyId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("The given taxonomy id %s is not valid", taxonomyId));
@@ -186,10 +160,10 @@ public class ProductCategoryController {
             @ApiResponse(code = 404, message = "The given taxonomy id is not valid"),
             @ApiResponse(code = 400, message = "There does not exist a category with the given id")
     })
-    @RequestMapping(value = "/catalogue/category/{taxonomyId}/{categoryId}/tree",
+    @RequestMapping(value = "/catalogue/category/tree",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getCategoryTree(@PathVariable String taxonomyId, @PathVariable String categoryId) {
+    public ResponseEntity getCategoryTree(@RequestParam("taxonomyId") String taxonomyId, @RequestParam("categoryId") String categoryId) {
         if (!taxonomyIdExists(taxonomyId)) {
             log.error("The given taxonomy id : {} is not valid", taxonomyId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("The given taxonomy id %s is not valid", taxonomyId));

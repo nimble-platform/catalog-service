@@ -7,6 +7,7 @@ import eu.nimble.service.catalogue.exception.CategoryDatabaseException;
 import eu.nimble.service.catalogue.category.taxonomy.eclass.database.EClassCategoryDatabaseAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.List;
 /**
  * Created by suat on 03-Mar-17.
  */
+@Component
 public class ProductCategoryServiceImpl implements ProductCategoryService {
     private static final Logger logger = LoggerFactory.getLogger(ProductCategoryServiceImpl.class);
 
@@ -39,19 +41,6 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
             categories = eClassCategoryDatabaseAdapter.getClassificationClassesByName(categoryName);
         } catch (CategoryDatabaseException e) {
             logger.error("Failed to retrieve product categories", e);
-            return new ArrayList<>();
-        }
-        return categories;
-    }
-
-    @Override
-    public List<Category> getSubCategories(String categoryId) {
-        EClassCategoryDatabaseAdapter eClassCategoryDatabaseAdapter = new EClassCategoryDatabaseAdapter();
-        List<Category> categories;
-        try {
-            categories = eClassCategoryDatabaseAdapter.getSubCategories(categoryId);
-        } catch (CategoryDatabaseException e) {
-            logger.error("Failed to retrieve product sub-categories", e);
             return new ArrayList<>();
         }
         return categories;

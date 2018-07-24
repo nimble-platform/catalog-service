@@ -55,10 +55,10 @@ public class CatalogueController {
     private CatalogueService service = CatalogueServiceImpl.getInstance();
 
     @Autowired
-    CatalogueServiceConfig conf;
+    private PersistenceConfig ublConf;
 
     @Autowired
-    PersistenceConfig ublConf;
+    private CatalogueServiceConfig catalogueServiceConfig;
 
 //    @Autowired
 //    private IdentityClientTyped identityClient;
@@ -413,7 +413,7 @@ public class CatalogueController {
         CatalogueType catalogue;
         try {
             PartyType party;
-            String dataChannelServiceUrlStr = conf.getIdentityUrl() + "/party/" + partyId;
+            String dataChannelServiceUrlStr = catalogueServiceConfig.getIdentityUrl() + "/party/" + partyId;
 
             HttpResponse<JsonNode> response;
             try {

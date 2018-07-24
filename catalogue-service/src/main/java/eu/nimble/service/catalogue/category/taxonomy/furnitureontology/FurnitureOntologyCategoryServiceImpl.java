@@ -5,6 +5,7 @@ import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.template.TemplateConfig;
+import eu.nimble.utility.config.CatalogueServiceConfig;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
@@ -19,7 +20,10 @@ import org.apache.marmotta.client.model.rdf.RDFNode;
 import org.apache.marmotta.client.model.sparql.SPARQLResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,19 +32,29 @@ import java.util.Map;
 /**
  * Created by suat on 07-Jul-17.
  */
+@Component
 public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryService {
-    private static final String MARMOTTA_URI = "https://nimble-platform.salzburgresearch.at/marmotta";
-    private static final String GRAPH_URI = "http://nimble-platform.salzburgresearch.at/marmotta/context/furnituresectortaxonomy";
+    private static String GRAPH_URI;
+    private static final String CONTEXT = "/context/furnituresectortaxonomy";
     private static final String FURNITURE_NS = "http://www.aidimme.es/FurnitureSectorOntology.owl#";
+    private static final String FURNITURE_NS2 = "http://www.aidima.es/furnitureontology.owl#";
     private static final String XSD_NS = "http://www.w3.org/2001/XMLSchema#";
 
     private static final Logger log = LoggerFactory.getLogger(FurnitureOntologyCategoryServiceImpl.class);
 
     private MarmottaClient client;
 
+    @Autowired
+    CatalogueServiceConfig catalogueServiceConfig;
+
     public FurnitureOntologyCategoryServiceImpl() {
-        // TODO: take the marmotta base uri form a parameter
-        ClientConfiguration config = new ClientConfiguration(MARMOTTA_URI);
+    }
+
+    @PostConstruct
+    public void init(){
+        String marmottaURL = catalogueServiceConfig.getMarmottaUrl();
+        ClientConfiguration config = new ClientConfiguration(marmottaURL);
+        GRAPH_URI = marmottaURL+CONTEXT;
         final Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
                 .register("http", PlainConnectionSocketFactory.getSocketFactory())
                 .register("https", SSLConnectionSocketFactory.getSocketFactory())
@@ -92,7 +106,7 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
         if (sparqlResult != null) {
             for (int i = 0; i < sparqlResult.size(); i++) {
                 Map<String, RDFNode> record = sparqlResult.get(i);
-                String remainder = getRemainder(record.get("uri").toString(), FURNITURE_NS);
+                String remainder = getRemainder(record.get("uri").toString(), FURNITURE_NS,FURNITURE_NS2);
                 if (remainder.toLowerCase().contains(categoryName.toLowerCase())) {
                     String uri = record.get("uri").toString();
                     Category cat = createCategory(uri);
@@ -106,8 +120,8 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
     private Property createProperty(String uri, String range) {
         Property property = new Property();
         property.setId(uri);
-        property.setPreferredName(getRemainder(uri, FURNITURE_NS));
-        property.setDataType(getNormalizedDatatype(getRemainder(range, XSD_NS).toUpperCase()));
+        property.setPreferredName(getRemainder(uri, FURNITURE_NS,FURNITURE_NS2));
+        property.setDataType(getNormalizedDatatype(getRemainder(range, XSD_NS,null).toUpperCase()));
         property.setUri(uri);
         return property;
     }
@@ -117,44 +131,171 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
         cat.setId(uri);
         cat.setCategoryUri(uri);
         cat.setTaxonomyId(getTaxonomyId());
-        cat.setPreferredName(getRemainder(uri, FURNITURE_NS));
-        cat.setCode(getRemainder(uri, FURNITURE_NS));
+        cat.setPreferredName(getRemainder(uri, FURNITURE_NS,FURNITURE_NS2));
+        cat.setCode(getRemainder(uri, FURNITURE_NS,FURNITURE_NS2));
         return cat;
     }
 
-    private String getRemainder(String value, String prefix) {
-        if (value.startsWith(prefix)) {
-            return value.substring(prefix.length());
+    private String getRemainder(String value, String prefix, String optionalPrefix) {
+        if(optionalPrefix == null){
+            if (value.startsWith(prefix)) {
+                return value.substring(prefix.length());
+            }
         }
+        else {
+            if(value.startsWith(prefix)){
+                return value.substring(prefix.length());
+            }
+            else if(value.startsWith(optionalPrefix)){
+                return value.substring(optionalPrefix.length());
+            }
+        }
+
         return value;
     }
 
     @Override
-    public List<Category> getSubCategories(String categoryUri) {
-        throw new IllegalStateException("Not implemented yet");
+    public CategoryTreeResponse getCategoryTree(String categoryURI) {
+        CategoryTreeResponse categoryTreeResponse = new CategoryTreeResponse();
+        // get parents
+        List<Category> parents = new ArrayList<>();
+        SPARQLResult sparqlResult;
+        try {
+            String categoriesSparql = getParentCategoriesSparql(categoryURI);
+            sparqlResult = client.getSPARQLClient().select(categoriesSparql);
+        } catch (IOException | MarmottaClientException e) {
+            log.error("Failed to get parent categories for categoryURI: {}",categoryURI,e);
+            return null;
+        }
+
+        if (sparqlResult != null) {
+            for (int i = sparqlResult.size()-1; i > -1; i--) {
+                Map<String, RDFNode> record = sparqlResult.get(i);
+                String uri = record.get("parent").toString();
+                Category cat = createCategory(uri);
+                parents.add(cat);
+            }
+        }
+        // add categoryURI to parent list
+        parents.add(createCategory(categoryURI));
+        int parentSize = parents.size();
+        // set parents
+        categoryTreeResponse.setParents(parents);
+
+        List<List<Category>> siblings = new ArrayList<>();
+        for (int m=0;m<parentSize+1;m++){
+            siblings.add(new ArrayList<>());
+        }
+        // get root categories
+        try {
+            String categoriesSparql = getRootCategoriesSparql();
+            sparqlResult = client.getSPARQLClient().select(categoriesSparql);
+        } catch (IOException | MarmottaClientException e) {
+            log.error("Failed to get root categories", e);
+            return null;
+        }
+
+        if (sparqlResult != null) {
+            for (int i = 0; i < sparqlResult.size(); i++) {
+                Map<String, RDFNode> record = sparqlResult.get(i);
+                String uri = record.get("uri").toString();
+                Category cat = createCategory(uri);
+                siblings.get(0).add(cat);
+            }
+        }
+
+        int j = 1;
+        for(Category category : parents){
+            try {
+                String categoriesSparql = getChildrenCategoriesSparql(category.getCategoryUri());
+                sparqlResult = client.getSPARQLClient().select(categoriesSparql);
+            } catch (IOException | MarmottaClientException e) {
+                log.error("Failed to get children categories for categoryURI: {}",category.getCategoryUri(), e);
+                return null;
+            }
+
+            if (sparqlResult != null) {
+                for (int i = 0; i < sparqlResult.size(); i++) {
+                    Map<String, RDFNode> record = sparqlResult.get(i);
+                    String uri = record.get("children").toString();
+                    Category cat = createCategory(uri);
+                    siblings.get(j).add(cat);
+                }
+            }
+            j++;
+        }
+        categoryTreeResponse.setCategories(siblings);
+
+        return categoryTreeResponse;
     }
 
     @Override
-    public CategoryTreeResponse getCategoryTree(String categoryId) {
-        throw new IllegalStateException("Not implemented yet");
+    public List<Category> getParentCategories(String categoryURI) {
+        List<Category> result = new ArrayList<>();
+        SPARQLResult sparqlResult;
+        try {
+            String categoriesSparql = getParentCategoriesSparql(categoryURI);
+            sparqlResult = client.getSPARQLClient().select(categoriesSparql);
+        } catch (IOException | MarmottaClientException e) {
+            log.error("Failed to get parent categories for categoryURI: {}",categoryURI, e);
+            return new ArrayList<>();
+        }
+
+        if (sparqlResult != null) {
+            for (int i = 0; i < sparqlResult.size(); i++) {
+                Map<String, RDFNode> record = sparqlResult.get(i);
+                String uri = record.get("parent").toString();
+                Category cat = createCategory(uri);
+                result.add(cat);
+            }
+        }
+        return result;
     }
 
     @Override
-    public List<Category> getParentCategories(String categoryId) {
-        //throw new IllegalStateException("Not implemented yet");
-        return new ArrayList<>();
-    }
+    public List<Category> getChildrenCategories(String categoryURI) {
+        List<Category> result = new ArrayList<>();
+        SPARQLResult sparqlResult;
+        try {
+            String categoriesSparql = getChildrenCategoriesSparql(categoryURI);
+            sparqlResult = client.getSPARQLClient().select(categoriesSparql);
+        } catch (IOException | MarmottaClientException e) {
+            log.error("Failed to get children categories for categoryURI: {}",categoryURI, e);
+            return new ArrayList<>();
+        }
 
-    @Override
-    public List<Category> getChildrenCategories(String categoryId) {
-        //throw new IllegalStateException("Not implemented yet");
-        return new ArrayList<>();
+        if (sparqlResult != null) {
+            for (int i = 0; i < sparqlResult.size(); i++) {
+                Map<String, RDFNode> record = sparqlResult.get(i);
+                String uri = record.get("children").toString();
+                Category cat = createCategory(uri);
+                result.add(cat);
+            }
+        }
+        return result;
     }
 
     @Override
     public List<Category> getRootCategories() {
-        //throw new IllegalStateException("Not implemented yet");
-        return new ArrayList<>();
+        List<Category> result = new ArrayList<>();
+        SPARQLResult sparqlResult;
+        try {
+            String categoriesSparql = getRootCategoriesSparql();
+            sparqlResult = client.getSPARQLClient().select(categoriesSparql);
+        } catch (IOException | MarmottaClientException e) {
+            log.error("Failed to get root categories", e);
+            return new ArrayList<>();
+        }
+
+        if (sparqlResult != null) {
+            for (int i = 0; i < sparqlResult.size(); i++) {
+                Map<String, RDFNode> record = sparqlResult.get(i);
+                String uri = record.get("uri").toString();
+                Category cat = createCategory(uri);
+                result.add(cat);
+            }
+        }
+        return result;
     }
 
     @Override
@@ -263,6 +404,56 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
                 .append("  GRAPH <").append(GRAPH_URI).append("> {").append(System.lineSeparator())
                 .append("    ?uri rdf:type owl:Class.").append(System.lineSeparator())
                 .append("    FILTER regex (lcase(?uri), \"").append(categoryName).append("\") .").append(System.lineSeparator())
+                .append("	}").append(System.lineSeparator())
+                .append("}");
+        return sb.toString();
+    }
+
+    private String getRootCategoriesSparql(){
+        StringBuilder sb = new StringBuilder("");
+        sb.append("PREFIX owl: <http://www.w3.org/2002/07/owl#>").append(System.lineSeparator())
+                .append("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>").append(System.lineSeparator())
+                .append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ").append(System.lineSeparator())
+                .append("PREFIX mic: <").append(FURNITURE_NS).append(">").append(System.lineSeparator())
+                .append(System.lineSeparator())
+                .append("SELECT ?uri WHERE {").append(System.lineSeparator())
+                .append("  GRAPH <").append(GRAPH_URI).append("> {").append(System.lineSeparator())
+                .append("    ?uri rdf:type owl:Class.").append(System.lineSeparator())
+                .append("    FILTER (!isBlank(?uri)).").append(System.lineSeparator())
+                .append("    MINUS { ?uri rdfs:subClassOf ?parent.").append(System.lineSeparator())
+                .append("            FILTER (!isBlank(?parent)).}").append(System.lineSeparator())
+                .append("	}").append(System.lineSeparator())
+                .append("}");
+        return sb.toString();
+    }
+
+    private String getChildrenCategoriesSparql(String categoryURI){
+        StringBuilder sb = new StringBuilder("");
+        sb.append("PREFIX owl: <http://www.w3.org/2002/07/owl#>").append(System.lineSeparator())
+                .append("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>").append(System.lineSeparator())
+                .append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ").append(System.lineSeparator())
+                .append("PREFIX mic: <").append(FURNITURE_NS).append(">").append(System.lineSeparator())
+                .append(System.lineSeparator())
+                .append("SELECT ?children WHERE {").append(System.lineSeparator())
+                .append("  GRAPH <").append(GRAPH_URI).append("> {").append(System.lineSeparator())
+                .append("    ?children rdfs:subClassOf <").append(categoryURI).append(">. ").append(System.lineSeparator())
+                .append("    FILTER (!isBlank(?children)).")
+                .append("	}").append(System.lineSeparator())
+                .append("}");
+        return sb.toString();
+    }
+
+    private String getParentCategoriesSparql(String categoryURI){
+        StringBuilder sb = new StringBuilder("");
+        sb.append("PREFIX owl: <http://www.w3.org/2002/07/owl#>").append(System.lineSeparator())
+                .append("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>").append(System.lineSeparator())
+                .append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ").append(System.lineSeparator())
+                .append("PREFIX mic: <").append(FURNITURE_NS).append(">").append(System.lineSeparator())
+                .append(System.lineSeparator())
+                .append("SELECT ?parent WHERE {").append(System.lineSeparator())
+                .append("  GRAPH <").append(GRAPH_URI).append("> {").append(System.lineSeparator())
+                .append("    <").append(categoryURI).append("> rdfs:subClassOf+ ?parent.").append(System.lineSeparator())
+                .append("    FILTER (!isBlank(?parent)).")
                 .append("	}").append(System.lineSeparator())
                 .append("}");
         return sb.toString();

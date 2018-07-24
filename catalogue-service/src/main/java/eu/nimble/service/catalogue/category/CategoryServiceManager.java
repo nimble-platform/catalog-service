@@ -2,24 +2,29 @@ package eu.nimble.service.catalogue.category;
 
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
 /**
  * Created by suat on 07-Jul-17.
  */
+@Component
 public class CategoryServiceManager {
     private static CategoryServiceManager instance;
 
     private Map<String, ProductCategoryService> services = new LinkedHashMap<>();
 
-    private CategoryServiceManager() {
-        ServiceLoader<ProductCategoryService> loader
-                = ServiceLoader.load(ProductCategoryService.class);
-
-        for (ProductCategoryService cp : loader) {
-            services.put(cp.getTaxonomyId(), cp);
+    @Autowired
+    public CategoryServiceManager(List<ProductCategoryService> productCategoryServices){
+        for (ProductCategoryService cp : productCategoryServices) {
+            instance.services.put(cp.getTaxonomyId(), cp);
         }
+    }
+
+    public CategoryServiceManager(){
+
     }
 
     public static CategoryServiceManager getInstance() {
@@ -40,11 +45,6 @@ public class CategoryServiceManager {
             categories.addAll(pcs.getProductCategories(categoryName));
         }
         return categories;
-    }
-
-    public List<Category> getSubCategories(String taxonomyId, String categoryId) {
-        ProductCategoryService pcs = services.get(taxonomyId);
-        return pcs.getSubCategories(categoryId);
     }
 
     public CategoryTreeResponse getCategoryTree(String taxonomyId, String categoryId) {
