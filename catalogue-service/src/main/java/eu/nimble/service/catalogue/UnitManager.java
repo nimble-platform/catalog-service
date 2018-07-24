@@ -84,7 +84,7 @@ public class UnitManager {
         UnitType unitType9 = new UnitType();
         unitType9.setID("warranty_period");
         unitType9.setUnitCode(Arrays.asList("month","year"));
-        hibernateUtility.persist(unitType8);
+        hibernateUtility.persist(unitType9);
     }
 
 

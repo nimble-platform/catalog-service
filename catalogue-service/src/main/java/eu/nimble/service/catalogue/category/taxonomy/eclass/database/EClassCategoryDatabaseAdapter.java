@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.category.taxonomy.eclass.database;
 
 import eu.nimble.service.catalogue.model.category.*;
+import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.exception.CategoryDatabaseException;
 import eu.nimble.service.catalogue.template.TemplateConfig;
@@ -35,7 +36,7 @@ public class EClassCategoryDatabaseAdapter {
 
     private Connection getConnection() throws CategoryDatabaseException {
         try {
-            CatalogueServiceConfig config = CatalogueServiceConfig.getInstance();
+            CatalogueServiceConfig config = SpringBridge.getInstance().getCatalogueServiceConfig();
 
             Class.forName(config.getCategoryDbDriver());
             Connection connection = DriverManager
