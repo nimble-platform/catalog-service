@@ -425,7 +425,13 @@ public class CatalogueController {
             try {
                 response = Unirest.get(dataChannelServiceUrlStr)
                         .header("Authorization", bearerToken).asJson();
+                if(response.getStatus() == 404) {
+                    String msg = "Unauthorized user";
+                    log.warn(msg);
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(msg);
+                }
                 ObjectMapper objectMapper = new ObjectMapper();
+                objectMapper = objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                 JSONObject responseObject = response.getBody().getObject();
                 Utils.removeHjidFields(responseObject);
                 party = objectMapper.readValue(responseObject.toString(), PartyType.class);
