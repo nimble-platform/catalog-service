@@ -4,7 +4,6 @@ import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
-import eu.nimble.utility.config.SpringBridge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +78,7 @@ public class MarmottaSynchronizer {
     public void startSynchronization() {
         createStatusTable();
         syncThread = new Thread(() -> {
-            long interval = SpringBridge.getInstance().getCatalogueServiceConfig().getSyncDbUpdateCheckInterval();
+            long interval = CatalogueServiceConfig.getInstance().getSyncDbUpdateCheckInterval();
             while (sync) {
                 try {
                     List<SyncStatusRecord> records = getStatusRecords();
@@ -261,7 +260,7 @@ public class MarmottaSynchronizer {
 
     private Connection getConnection() {
         try {
-            CatalogueServiceConfig config = SpringBridge.getInstance().getCatalogueServiceConfig();
+            CatalogueServiceConfig config = CatalogueServiceConfig.getInstance();
             Class.forName(config.getSyncDbDriver());
             Connection connection = DriverManager
                     .getConnection(config.getSyncdbConnectionUrl(), config.getSyncDbUsername(), config.getSyncDbPassword());

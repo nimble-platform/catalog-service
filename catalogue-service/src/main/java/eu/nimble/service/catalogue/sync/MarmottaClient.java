@@ -7,7 +7,6 @@ import eu.nimble.service.model.BigDecimalXmlAdapter;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.config.CatalogueServiceConfig;
-import eu.nimble.utility.config.SpringBridge;
 import org.apache.commons.io.IOUtils;
 import org.apache.marmotta.client.exception.MarmottaClientException;
 import org.slf4j.Logger;
@@ -28,7 +27,7 @@ import java.net.URL;
  */
 public class MarmottaClient {
     private static final Logger logger = LoggerFactory.getLogger(MarmottaClient.class);
-    private CatalogueServiceConfig config = SpringBridge.getInstance().getCatalogueServiceConfig();
+    private CatalogueServiceConfig config = CatalogueServiceConfig.getInstance();
 
     public void submitCatalogueDataToMarmotta(CatalogueType catalogue) throws MarmottaSynchronizationException {
         logger.info("Catalogue with uuid: {} will be submitted to Marmotta.", catalogue.getUUID());

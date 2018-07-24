@@ -53,6 +53,17 @@ public class CatalogueServiceConfig {
     @Value("${nimble.identity.url}")
     private String identityUrl;
 
+    private static CatalogueServiceConfig instance;
+
+    private CatalogueServiceConfig() {
+        // as the instance of this class is created by Spring, if set the instance in the constructor
+        instance = this;
+    }
+
+    public static CatalogueServiceConfig getInstance() {
+        return instance;
+    }
+
     @PostConstruct
     private void setupDBConnections() {
 

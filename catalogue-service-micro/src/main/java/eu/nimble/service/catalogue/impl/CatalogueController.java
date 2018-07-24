@@ -12,8 +12,8 @@ import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.Configuration;
+import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.utility.config.PersistenceConfig;
-import eu.nimble.utility.config.SpringBridge;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -416,7 +416,7 @@ public class CatalogueController {
             party.setName(partyName);
             party.setID(partyId);
 
-            String dataChannelServiceUrlStr = SpringBridge.getInstance().getCatalogueServiceConfig().getIdentityUrl() + "/party/" + partyId;
+            String dataChannelServiceUrlStr = CatalogueServiceConfig.getInstance().getIdentityUrl() + "/party/" + partyId;
 
             HttpResponse<JsonNode> response;
             try {

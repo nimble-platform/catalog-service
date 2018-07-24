@@ -5,6 +5,7 @@ import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.template.TemplateConfig;
+import eu.nimble.utility.config.CatalogueServiceConfig;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
@@ -19,7 +20,10 @@ import org.apache.marmotta.client.model.rdf.RDFNode;
 import org.apache.marmotta.client.model.sparql.SPARQLResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,9 +32,10 @@ import java.util.Map;
 /**
  * Created by suat on 07-Jul-17.
  */
+@Component
 public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryService {
-    private static final String MARMOTTA_URI = "https://nimble-platform.salzburgresearch.at/marmotta";
-    private static final String GRAPH_URI = "http://nimble-platform.salzburgresearch.at/marmotta/context/furnituresectortaxonomy";
+    private static String GRAPH_URI;
+    private static final String CONTEXT = "/context/furnituresectortaxonomy";
     private static final String FURNITURE_NS = "http://www.aidimme.es/FurnitureSectorOntology.owl#";
     private static final String FURNITURE_NS2 = "http://www.aidima.es/furnitureontology.owl#";
     private static final String XSD_NS = "http://www.w3.org/2001/XMLSchema#";
@@ -39,9 +44,17 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
 
     private MarmottaClient client;
 
+    @Autowired
+    CatalogueServiceConfig catalogueServiceConfig;
+
     public FurnitureOntologyCategoryServiceImpl() {
-        // TODO: take the marmotta base uri form a parameter
-        ClientConfiguration config = new ClientConfiguration(MARMOTTA_URI);
+    }
+
+    @PostConstruct
+    public void init(){
+        String marmottaURL = catalogueServiceConfig.getMarmottaUrl();
+        ClientConfiguration config = new ClientConfiguration(marmottaURL);
+        GRAPH_URI = marmottaURL+CONTEXT;
         final Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
                 .register("http", PlainConnectionSocketFactory.getSocketFactory())
                 .register("https", SSLConnectionSocketFactory.getSocketFactory())
