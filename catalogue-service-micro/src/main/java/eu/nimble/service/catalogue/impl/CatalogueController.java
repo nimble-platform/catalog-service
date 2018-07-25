@@ -11,6 +11,7 @@ import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
+import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.utility.config.PersistenceConfig;
@@ -416,15 +417,21 @@ public class CatalogueController {
             /*PartyType party = identityClient.getParty(partyId);
             log.debug("Fetched party with Id {0}", party.getHjid());*/
             PartyType party = new PartyType();
-            party.setName(partyName);
+            TextType textType = new TextType();
+            textType.setValue(partyName);
+            textType.setLanguageID("en");
+            party.setName(textType);
             party.setID(partyId);
 
             String dataChannelServiceUrlStr = conf.getIdentityUrl() + "/party/" + partyId;
 
             HttpResponse<JsonNode> response;
-            try {
+            /*try {
                 response = Unirest.get(dataChannelServiceUrlStr)
                         .header("Authorization", bearerToken).asJson();
+
+                //log.info(" $$$ Data channel URI: {}, response: {}", dataChannelServiceUrlStr, response);
+
                 ObjectMapper objectMapper = new ObjectMapper();
                 JSONObject responseObject = response.getBody().getObject();
                 Utils.removeHjidFields(responseObject);
@@ -432,7 +439,7 @@ public class CatalogueController {
 
             } catch (UnirestException e) {
                 return createErrorResponseEntity("Failed to get complete party details", HttpStatus.INTERNAL_SERVER_ERROR, e);
-            }
+            }*/
 
             catalogue = service.addCatalogue(file.getInputStream(), uploadMode, party);
         } catch (IOException e) {

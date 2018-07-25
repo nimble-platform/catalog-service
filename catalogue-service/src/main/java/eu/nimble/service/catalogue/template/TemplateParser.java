@@ -6,10 +6,7 @@ import eu.nimble.service.catalogue.model.category.Unit;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
 import eu.nimble.service.catalogue.category.CategoryServiceManager;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
-import eu.nimble.service.model.ubl.commonbasiccomponents.AmountType;
-import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
-import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
-import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
+import eu.nimble.service.model.ubl.commonbasiccomponents.*;
 import eu.nimble.utility.HibernateUtility;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
@@ -39,6 +36,7 @@ public class TemplateParser {
 
     private PartyType party;
     private Workbook wb;
+    private String defaultLanguage = "en";
 
     public TemplateParser(PartyType party) {
         this.party = party;
@@ -151,7 +149,10 @@ public class TemplateParser {
         ItemPropertyType itemProp = new ItemPropertyType();
         CodeType associatedClassificationCode = new CodeType();
         itemProp.setItemClassificationCode(associatedClassificationCode);
-        itemProp.setName(property.getPreferredName());
+        TextType textType = new TextType();
+        textType.setLanguageID(defaultLanguage);
+        textType.setValue(property.getPreferredName());
+        itemProp.setName(textType);
         String valueQualifier = TemplateGenerator.normalizeDataTypeForTemplate(property.getDataType().toUpperCase());
         itemProp.setValueQualifier(property.getDataType());
 
@@ -267,10 +268,37 @@ public class TemplateParser {
                 if(getCellStringValue(cell).contentEquals("")){
                     throw new TemplateParseException("No name provided for the item : " + " id: " + item.getManufacturersItemIdentification().getID());
                 }
-                item.setName((String) parseCell(cell,TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_NAME, TEMPLATE_DATA_TYPE_TEXT, false));
+                List<String> productNames = (List<String>) parseCell(cell, TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_NAME, TEMPLATE_DATA_TYPE_TEXT, true);
+
+                for(String productNameValue: productNames) {
+                    String language = defaultLanguage, productName = "";
+                    if(productNameValue.indexOf(":") > 0) {
+                        language = productNameValue.split(":")[0].toLowerCase().trim();
+                        productName = productNameValue.split(":")[1];
+                    } else {
+                        productName = productNameValue;
+                    }
+                    TextType textType = new TextType();
+                    textType.setLanguageID(language);
+                    textType.setValue(productName);
+                    item.getName().add(textType);
+                }
 
             } else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION)) {
-                item.setDescription((String) parseCell(cell,TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION, TEMPLATE_DATA_TYPE_TEXT, false));
+                List<String> productDescriptions = (List<String>) parseCell(cell,TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION, TEMPLATE_DATA_TYPE_TEXT, true);
+                for(String productDescriptionValue: productDescriptions) {
+                    String language = defaultLanguage, productDescription = "";
+                    if(productDescriptionValue.indexOf(":") > 0) {
+                        language = productDescriptionValue.split(":")[0].toLowerCase().trim();
+                        productDescription = productDescriptionValue.split(":")[1];
+                    } else {
+                        productDescription = productDescriptionValue;
+                    }
+                    TextType textType = new TextType();
+                    textType.setLanguageID(language);
+                    textType.setValue(productDescription);
+                    item.getDescription().add(textType);
+                }
 
             } else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_CERTIFICATIONS)) {
                 List<String> certificateNames = (List<String>) parseCell(cell,TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_CERTIFICATIONS, TEMPLATE_DATA_TYPE_TEXT, true);
@@ -455,9 +483,23 @@ public class TemplateParser {
                     catalogueLine.getGoodsItem().getDeliveryTerms().setIncoterms(value);
 
                 } else if (property.getPreferredName().contentEquals(TEMPLATE_TRADING_DELIVERY_SPECIAL_TERMS)) {
-                    value = (String) parseCell(cell,TEMPLATE_TRADING_DELIVERY_SPECIAL_TERMS, TEMPLATE_DATA_TYPE_TEXT, false);
-                    catalogueLine.getGoodsItem().getDeliveryTerms().setSpecialTerms(value);
+                    List<String> values = (List<String>) parseCell(cell,TEMPLATE_TRADING_DELIVERY_SPECIAL_TERMS, TEMPLATE_DATA_TYPE_TEXT, true);
 
+                    for(String stvalue: values) {
+                        String language = defaultLanguage, specialTerm = "";
+                        if(stvalue.indexOf(":") > 0) {
+                            language = stvalue.split(":")[0].toLowerCase().trim();
+                            specialTerm = stvalue.split(":")[1];
+                        } else {
+                            specialTerm = stvalue;
+                        }
+                        TextType textType = new TextType();
+                        textType.setLanguageID(language);
+                        textType.setValue(specialTerm);
+                        item.getName().add(textType);
+
+                        catalogueLine.getGoodsItem().getDeliveryTerms().getSpecialTerms().add(textType);
+                    }
                 } else if (property.getPreferredName().contentEquals(TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD)) {
                     QuantityType estimatedDeliveryQuantity = (QuantityType) parseCell(cell,TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD, TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (estimatedDeliveryQuantity != null) {
@@ -493,7 +535,10 @@ public class TemplateParser {
                             AddressType address = new AddressType();
                             applicableAddressList.add(address);
                             CountryType country = new CountryType();
-                            country.setName(addr);
+                            TextType cName = new TextType();
+                            cName.setLanguageID(defaultLanguage);
+                            cName.setValue(addr);
+                            country.setName(cName);
                             address.setCountry(country);
                             address.setCityName(city);
                         }
@@ -677,6 +722,10 @@ public class TemplateParser {
 
         String categoryIdsStr = getCellStringValue(metadataTab.getRow(0).getCell(0));
         String taxonomyIdsStr = getCellStringValue(metadataTab.getRow(1).getCell(0));
+        defaultLanguage = getCellStringValue(metadataTab.getRow(2).getCell(0));
+        if(defaultLanguage.trim().equals("")) {
+            defaultLanguage = "en";
+        }
 
         List<String> categoryIds = Arrays.asList(categoryIdsStr.split(","));
         List<String> taxonomyIds = Arrays.asList(taxonomyIdsStr.split(","));
