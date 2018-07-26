@@ -117,6 +117,15 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
         return result;
     }
 
+    @Override
+    public List<Category> getProductCategories(String categoryName, boolean forLogistics) {
+        if(!forLogistics) {
+            return getProductCategories(categoryName);
+        } else {
+            return new ArrayList<>();
+        }
+    }
+
     private Property createProperty(String uri, String range) {
         Property property = new Property();
         property.setId(uri);

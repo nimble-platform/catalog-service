@@ -35,13 +35,12 @@ public class ProductCategoryControllerTest {
         List<String> categoryIds = new ArrayList<String>();
         categoryIds.add("0173-1#01-BAA975#013");
 
-        ResponseEntity responseEntity = productCategoryController.getCategories(names,null,null);
+        ResponseEntity responseEntity = productCategoryController.getCategories(names,null,null, null);
 
         Assert.assertEquals(200,responseEntity.getStatusCodeValue());
 
-        responseEntity = productCategoryController.getCategories(null,taxonomyIds,categoryIds);
+        responseEntity = productCategoryController.getCategories(null,taxonomyIds,categoryIds, null);
 
         Assert.assertEquals(200,responseEntity.getStatusCodeValue());
     }
-
 }

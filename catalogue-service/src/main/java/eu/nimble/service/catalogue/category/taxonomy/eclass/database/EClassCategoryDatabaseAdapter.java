@@ -5,11 +5,13 @@ import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.exception.CategoryDatabaseException;
 import eu.nimble.service.catalogue.template.TemplateConfig;
+import org.apache.commons.collections4.ListUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static eu.nimble.service.catalogue.category.taxonomy.eclass.database.EClassCategoryDatabaseConfig.*;
 import static eu.nimble.service.catalogue.category.taxonomy.eclass.database.EClassCategoryDatabaseConfig.eClassQueryGetRootCategories;
@@ -144,6 +146,26 @@ public class EClassCategoryDatabaseAdapter {
             return results;
         } finally {
             closeConnection(connection);
+        }
+    }
+
+    public List<Category> getClassificationClassesByName(String categoryName, boolean forLogistics) throws CategoryDatabaseException {
+        List<Category> allCategories = getClassificationClassesByName(categoryName);
+        List<Category> allCategoriesCopy = allCategories.stream().collect(Collectors.toList());
+        // separate categories for logistics services and regular products
+
+        List<Category> logisticsCategories = new ArrayList<>();
+        for(Category category : allCategoriesCopy) {
+            if(category.getCode().startsWith("14")) {
+                logisticsCategories.add(category);
+                allCategories.remove(category);
+            }
+        }
+
+        if(forLogistics) {
+            return logisticsCategories;
+        } else {
+            return allCategories;
         }
     }
 
