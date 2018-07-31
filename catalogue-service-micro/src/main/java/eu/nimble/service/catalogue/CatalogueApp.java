@@ -49,7 +49,7 @@ public class CatalogueApp implements CommandLineRunner {
     @EventListener({ContextRefreshedEvent.class})
     void contextRefreshedEvent() {
         HibernateUtility.getInstance(eu.nimble.utility.Configuration.UBL_PERSISTENCE_UNIT_NAME);
-        //MarmottaSynchronizer.getInstance().startSynchronization();
+        MarmottaSynchronizer.getInstance().startSynchronization();
     }
 
     @EventListener({ContextClosedEvent.class})
