@@ -28,6 +28,7 @@ public class TemplateGenerator {
     private CellStyle mandatoryCellStyle;
     private CellStyle boldCellStyle;
     private CellStyle wordWrapStyle;
+    private String defaultLanguage = "en";
 
     public TemplateGenerator() {
         template = new XSSFWorkbook();
@@ -186,7 +187,7 @@ public class TemplateGenerator {
                 int colFrom = columnOffset;
                 int colTo = columnOffset + categories.get(i).getProperties().size() - 1;
                 cell = getCellWithMissingCellPolicy(topRow, colFrom);
-                cell.setCellValue(categories.get(i).getPreferredName());
+                cell.setCellValue(categories.get(i).getPreferredName(defaultLanguage));
                 cell.setCellStyle(headerCellStyle);
                 cra = new CellRangeAddress(0, 0, colFrom, colTo);
                 productPropertiesTab.addMergedRegion(cra);
@@ -215,7 +216,7 @@ public class TemplateGenerator {
         List<Property> properties = TemplateConfig.getFixedPropertiesForProductPropertyTab();
         for (Property property : properties) {
             cell = secondRow.createCell(columnOffset);
-            cell.setCellValue(property.getPreferredName());
+            cell.setCellValue(property.getPreferredName(defaultLanguage));
             cell.setCellStyle(boldCellStyle);
             checkMandatory(property, cell);
             thirdRow.createCell(columnOffset).setCellValue(normalizeDataTypeForTemplate(property));
@@ -227,7 +228,7 @@ public class TemplateGenerator {
         for (Category category : categories) {
             for (Property property : category.getProperties()) {
                 cell = secondRow.createCell(columnOffset);
-                cell.setCellValue(property.getPreferredName());
+                cell.setCellValue(property.getPreferredName(defaultLanguage));
                 cell.setCellStyle(boldCellStyle);
                 thirdRow.createCell(columnOffset).setCellValue(normalizeDataTypeForTemplate(property));
                 fourthRow.createCell(columnOffset).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
@@ -292,9 +293,9 @@ public class TemplateGenerator {
         List<Property> properties = TemplateConfig.getFixedPropertiesForTermsTab();
         for (Property property : properties) {
             // dropdown menu for incoterms
-            if(property.getPreferredName().equals(TEMPLATE_TRADING_DELIVERY_INCOTERMS)){
+            if(property.getPreferredName(defaultLanguage).equals(TEMPLATE_TRADING_DELIVERY_INCOTERMS)){
                 cell = secondRow.createCell(columnIndex);
-                cell.setCellValue(property.getPreferredName());
+                cell.setCellValue(property.getPreferredName(defaultLanguage));
                 cell.setCellStyle(boldCellStyle);
                 checkMandatory(property, cell);
                 thirdRow.createCell(columnIndex).setCellValue(property.getDataType());
@@ -319,7 +320,7 @@ public class TemplateGenerator {
             }
             else{
                 cell = secondRow.createCell(columnIndex);
-                cell.setCellValue(property.getPreferredName());
+                cell.setCellValue(property.getPreferredName(defaultLanguage));
                 cell.setCellStyle(boldCellStyle);
                 checkMandatory(property, cell);
                 thirdRow.createCell(columnIndex).setCellValue(property.getDataType());
@@ -341,7 +342,7 @@ public class TemplateGenerator {
                 int rowTo = rowIndex + categories.get(i).getProperties().size() - 1;
                 Row row = propertyDetailsTab.createRow(rowIndex);
                 Cell valueCell = getCellWithMissingCellPolicy(row, 0);
-                valueCell.setCellValue(categories.get(i).getPreferredName());
+                valueCell.setCellValue(categories.get(i).getPreferredName(defaultLanguage));
                 valueCell.setCellStyle(headerCellStyle);
                 CellRangeAddress cra = new CellRangeAddress(rowFrom, rowTo, 0, 0);
                 propertyDetailsTab.addMergedRegion(cra);
@@ -391,7 +392,7 @@ public class TemplateGenerator {
                 row = getRow(propertyDetailsTab, ++rowIndex);
 
                 columnIndex = 1;
-                row.createCell(columnIndex).setCellValue(property.getPreferredName());
+                row.createCell(columnIndex).setCellValue(property.getPreferredName(defaultLanguage));
                 row.createCell(++columnIndex).setCellValue(property.getShortName());
                 cell = row.createCell(++columnIndex);
                 cell.setCellValue(property.getDefinition());
@@ -425,7 +426,7 @@ public class TemplateGenerator {
                 if (values.size() > 0) {
                     Row row = getRow(valuesTab, rowIndex++);
                     Cell cell = row.createCell(columnIndex);
-                    cell.setCellValue(property.getPreferredName());
+                    cell.setCellValue(property.getPreferredName(defaultLanguage));
                     cell.setCellStyle(boldCellStyle);
 
                     for (int j = 0; j < values.size(); j++) {
@@ -437,11 +438,11 @@ public class TemplateGenerator {
                     columnIndex++;
 
                     // update the number of properties with specific value constraints
-                    if (!propNums.containsKey(category.getPreferredName())) {
-                        propNums.put(category.getPreferredName(), 1);
+                    if (!propNums.containsKey(category.getPreferredName(defaultLanguage))) {
+                        propNums.put(category.getPreferredName(defaultLanguage), 1);
                     } else {
-                        int count = propNums.get(category.getPreferredName());
-                        propNums.put(category.getPreferredName(), ++count);
+                        int count = propNums.get(category.getPreferredName(defaultLanguage));
+                        propNums.put(category.getPreferredName(defaultLanguage), ++count);
                     }
                 }
             }
@@ -490,8 +491,8 @@ public class TemplateGenerator {
     }
 
     private void checkMandatory(Property property, Cell cell) {
-        if (property.getPreferredName().contentEquals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION) ||
-                property.getPreferredName().contentEquals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_NAME)) {
+        if (property.getPreferredName(defaultLanguage).contentEquals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION) ||
+                property.getPreferredName(defaultLanguage).contentEquals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_NAME)) {
             cell.setCellStyle(mandatoryCellStyle);
         }
     }

@@ -3,9 +3,11 @@ package eu.nimble.service.catalogue.sync;
 import eu.nimble.data.transformer.ontmalizer.XML2OWLMapper;
 import eu.nimble.data.transformer.ontmalizer.XSD2OWLMapper;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
-import eu.nimble.utility.config.CatalogueServiceConfig;
+import eu.nimble.service.catalogue.util.SpringBridge;
+import eu.nimble.service.model.BigDecimalXmlAdapter;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.utility.Configuration;
+import eu.nimble.utility.config.CatalogueServiceConfig;
 import org.apache.commons.io.IOUtils;
 import org.apache.marmotta.client.exception.MarmottaClientException;
 import org.slf4j.Logger;
@@ -26,7 +28,6 @@ import java.net.URL;
  */
 public class MarmottaClient {
     private static final Logger logger = LoggerFactory.getLogger(MarmottaClient.class);
-    private CatalogueServiceConfig config = CatalogueServiceConfig.getInstance();
 
     public void submitCatalogueDataToMarmotta(CatalogueType catalogue) throws MarmottaSynchronizationException {
         logger.info("Catalogue with uuid: {} will be submitted to Marmotta.", catalogue.getUUID());
@@ -35,7 +36,7 @@ public class MarmottaClient {
 
         URL marmottaURL;
         try {
-            String marmottaBaseUrl = config.getMarmottaUrl();
+            String marmottaBaseUrl = SpringBridge.getInstance().getCatalogueServiceConfig().getMarmottaUrl();
             marmottaURL = new URL(marmottaBaseUrl + "/import/upload?context=" + catalogue.getUUID());
         } catch (MalformedURLException e) {
             throw new MarmottaSynchronizationException("Invalid URL while submitting template", e);
@@ -75,7 +76,7 @@ public class MarmottaClient {
 
         URL marmottaURL;
         try {
-            String marmottaBaseUrl = config.getMarmottaUrl();
+            String marmottaBaseUrl = SpringBridge.getInstance().getCatalogueServiceConfig().getMarmottaUrl();
             marmottaURL = new URL(marmottaBaseUrl + "/context/" + uuid);
         } catch (IOException e) {
             throw new MarmottaSynchronizationException("Failed to read Marmotta URL from config file", e);
@@ -121,6 +122,7 @@ public class MarmottaClient {
             marsh.setProperty("jaxb.formatted.output", true);
             JAXBElement element = new JAXBElement(
                     new QName(Configuration.UBL_CATALOGUE_NS, "Catalogue"), catalogue.getClass(), catalogue);
+            marsh.setAdapter(new BigDecimalXmlAdapter());
             marsh.marshal(element, serializedCatalogueBaos);
             marsh.marshal(element, serializedCatalogueWriter);
 

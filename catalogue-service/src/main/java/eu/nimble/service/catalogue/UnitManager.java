@@ -80,6 +80,11 @@ public class UnitManager {
         unitType8.setID("dimensions");
         unitType8.setUnitCode(Arrays.asList("length","width","height","depth"));
         hibernateUtility.persist(unitType8);
+
+        UnitType unitType9 = new UnitType();
+        unitType9.setID("warranty_period");
+        unitType9.setUnitCode(Arrays.asList("month","year"));
+        hibernateUtility.persist(unitType9);
     }
 
 

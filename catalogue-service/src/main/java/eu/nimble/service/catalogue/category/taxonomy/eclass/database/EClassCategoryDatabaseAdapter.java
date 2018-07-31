@@ -1,6 +1,8 @@
 package eu.nimble.service.catalogue.category.taxonomy.eclass.database;
 
 import eu.nimble.service.catalogue.model.category.*;
+import eu.nimble.service.catalogue.util.SpringBridge;
+import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.exception.CategoryDatabaseException;
 import eu.nimble.service.catalogue.template.TemplateConfig;
@@ -21,6 +23,8 @@ public class EClassCategoryDatabaseAdapter {
     private static final String CATEGORY_BASE_URI = "http://www.nimble-project.org/resource/eclass/";
     private static final String PROPERTY_BASE_URI = "http://www.nimble-project.org/resource/eclass/property/";
 
+    private String defaultLanguage = "en";
+
     public static void main(String[] args) throws CategoryDatabaseException, SQLException, ClassNotFoundException {
         /*EClassCategoryDatabaseAdapter e = new EClassCategoryDatabaseAdapter();
         Connection c = e.getConnection();
@@ -35,7 +39,7 @@ public class EClassCategoryDatabaseAdapter {
 
     private Connection getConnection() throws CategoryDatabaseException {
         try {
-            CatalogueServiceConfig config = CatalogueServiceConfig.getInstance();
+            CatalogueServiceConfig config = SpringBridge.getInstance().getCatalogueServiceConfig();
 
             Class.forName(config.getCategoryDbDriver());
             Connection connection = DriverManager
@@ -205,30 +209,6 @@ public class EClassCategoryDatabaseAdapter {
 
             PreparedStatement preparedStatement = connection.prepareStatement(eClassQueryGetClassificationClassByLevel());
             preparedStatement.setString(1, Integer.toString(level));
-            ResultSet rs = preparedStatement.executeQuery();
-            results = extractClassificationClassesFromResultSet(rs);
-            rs.close();
-            preparedStatement.close();
-
-            return results;
-        } catch (SQLException e) {
-            throw new CategoryDatabaseException("Failed to retrieve classification by level", e);
-        } finally {
-            closeConnection(connection);
-        }
-    }
-
-    public List<Category> getSubCategories(String parentId) throws CategoryDatabaseException {
-        Connection connection = null;
-        List<Category> results = new ArrayList<>();
-
-        try {
-            connection = getConnection();
-            Category cc = getCategoryById(parentId);
-
-            PreparedStatement preparedStatement = connection.prepareStatement(eClassQueryGetSubCategoryIds());
-            preparedStatement.setString(1, Integer.toString(cc.getLevel() + 1));
-            preparedStatement.setString(2, cc.getCode().substring(0, 2) + "%");
             ResultSet rs = preparedStatement.executeQuery();
             results = extractClassificationClassesFromResultSet(rs);
             rs.close();
@@ -430,7 +410,8 @@ public class EClassCategoryDatabaseAdapter {
             cc.setDefinition(rs.getString(COLUMN_CLASSIFICATION_CLASS_DEFINITION));
             cc.setId(rs.getString(COLUMN_CLASSIFICATION_CLASS_IRDICC));
             cc.setLevel(Integer.valueOf(rs.getString(COLUMN_CLASSIFICATION_CLASS_LEVEL)));
-            cc.setPreferredName(rs.getString(COLUMN_CLASSIFICATION_CLASS_PREFERRED_NAME));
+
+            cc.addPreferredName(rs.getString(COLUMN_CLASSIFICATION_CLASS_PREFERRED_NAME), defaultLanguage);
             cc.setNote(rs.getString(COLUMN_CLASSIFICATION_CLASS_NOTE));
             cc.setRemark(rs.getString(COLUMN_CLASSIFICATION_CLASS_REMARK));
             cc.setTaxonomyId("eClass");
@@ -445,7 +426,7 @@ public class EClassCategoryDatabaseAdapter {
         while (rs.next()) {
             Property prop = new Property();
             prop.setId(rs.getString(COLUMN_PROPERTY_IRDI_PR));
-            prop.setPreferredName(rs.getString(COLUMN_PROPERTY_PREFERRED_NAME));
+            prop.addPreferredName(rs.getString(COLUMN_PROPERTY_PREFERRED_NAME), defaultLanguage);
             prop.setShortName(rs.getString(COLUMN_PROPERTY_SHORT_NAME));
             prop.setDefinition(rs.getString(COLUMN_PROPERTY_DEFINITION));
             prop.setNote(rs.getString(COLUMN_PROPERTY_NOTE));

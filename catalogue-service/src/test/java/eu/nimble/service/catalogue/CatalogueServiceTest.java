@@ -21,9 +21,9 @@ import org.springframework.test.context.junit4.SpringRunner;
  *
  * @author yildiray
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {PersistenceConfig.class, CatalogueServiceConfig.class})
+//@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+//@RunWith(SpringRunner.class)
+//@SpringBootTest(classes = {PersistenceConfig.class, CatalogueServiceConfig.class})
 public class CatalogueServiceTest {
 
 	private static String addedCatalogueUUID;

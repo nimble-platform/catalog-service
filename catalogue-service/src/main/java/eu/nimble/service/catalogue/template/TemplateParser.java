@@ -103,7 +103,7 @@ public class TemplateParser {
             CommodityClassificationType classification = new CommodityClassificationType();
             CodeType classificationCode = new CodeType();
             classificationCode.setValue(category.getId());
-            classificationCode.setName(category.getPreferredName());
+            classificationCode.setName(category.getPreferredName(defaultLanguage));
             classificationCode.setListID(category.getTaxonomyId());
             classification.setItemClassificationCode(classificationCode);
             classifications.add(classification);
@@ -131,7 +131,7 @@ public class TemplateParser {
                     }
                 }
                 cell = getCellWithMissingCellPolicy(productPropertiesTab.getRow(rowIndex), columnIndex);
-                List<Object> values = (List<Object>) parseCell(cell,property.getPreferredName(), property.getDataType(), true);
+                List<Object> values = (List<Object>) parseCell(cell,property.getPreferredName(defaultLanguage), property.getDataType(), true);
                 if (values.isEmpty()) {
                     columnIndex++;
                     continue;
@@ -149,17 +149,19 @@ public class TemplateParser {
         ItemPropertyType itemProp = new ItemPropertyType();
         CodeType associatedClassificationCode = new CodeType();
         itemProp.setItemClassificationCode(associatedClassificationCode);
+
         TextType textType = new TextType();
         textType.setLanguageID(defaultLanguage);
-        textType.setValue(property.getPreferredName());
+        textType.setValue(property.getPreferredName(defaultLanguage));
         itemProp.setName(textType);
+
         String valueQualifier = TemplateGenerator.normalizeDataTypeForTemplate(property.getDataType().toUpperCase());
         itemProp.setValueQualifier(property.getDataType());
 
         if (category != null) {
             itemProp.setID(property.getId());
             associatedClassificationCode.setValue(category.getId());
-            associatedClassificationCode.setName(category.getPreferredName());
+            associatedClassificationCode.setName(category.getPreferredName(defaultLanguage));
             associatedClassificationCode.setListID(category.getTaxonomyId());
         } else {
             itemProp.setID(UUID.randomUUID().toString());
@@ -226,7 +228,7 @@ public class TemplateParser {
             String unit = getCellStringValue(getCellWithMissingCellPolicy(row, columnIndex));
 
             Property property = new Property();
-            property.setPreferredName(propertyName);
+            property.addPreferredName(propertyName, defaultLanguage);
             property.setDataType(dataType);
 
             if (!unit.contentEquals("")) {
@@ -237,7 +239,7 @@ public class TemplateParser {
 
             // get the values for the custom property
             Cell cell = getCellWithMissingCellPolicy(productPropertiesTab.getRow(rowIndex), columnIndex);
-            List<Object> values = (List<Object>) parseCell(cell,property.getPreferredName(), property.getDataType(), true);
+            List<Object> values = (List<Object>) parseCell(cell,property.getPreferredName(defaultLanguage), property.getDataType(), true);
             if (values.isEmpty()) {
                 columnIndex++;
                 continue;
@@ -256,7 +258,7 @@ public class TemplateParser {
         for (int i = 0; i < properties.size(); i++) {
             Property property = properties.get(i);
             Cell cell = getCellWithMissingCellPolicy(propertiesRow, i + 1);
-            if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION)) {
+            if (property.getPreferredName(defaultLanguage).equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION)) {
                 if(getCellStringValue(cell).contentEquals("")){
                     throw new TemplateParseException("No Manufacturer Item Identification provided for the item");
                 }
@@ -264,7 +266,7 @@ public class TemplateParser {
                 itemId.setID((String) parseCell(cell,TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION, TEMPLATE_DATA_TYPE_TEXT, false));
                 item.setManufacturersItemIdentification(itemId);
 
-            } else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_NAME)) {
+            } else if (property.getPreferredName(defaultLanguage).equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_NAME)) {
                 if(getCellStringValue(cell).contentEquals("")){
                     throw new TemplateParseException("No name provided for the item : " + " id: " + item.getManufacturersItemIdentification().getID());
                 }
@@ -284,7 +286,7 @@ public class TemplateParser {
                     item.getName().add(textType);
                 }
 
-            } else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION)) {
+            } else if (property.getPreferredName(defaultLanguage).equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION)) {
                 List<String> productDescriptions = (List<String>) parseCell(cell,TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION, TEMPLATE_DATA_TYPE_TEXT, true);
                 for(String productDescriptionValue: productDescriptions) {
                     String language = defaultLanguage, productDescription = "";
@@ -300,7 +302,7 @@ public class TemplateParser {
                     item.getDescription().add(textType);
                 }
 
-            } else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_CERTIFICATIONS)) {
+            } else if (property.getPreferredName(defaultLanguage).equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_CERTIFICATIONS)) {
                 List<String> certificateNames = (List<String>) parseCell(cell,TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_CERTIFICATIONS, TEMPLATE_DATA_TYPE_TEXT, true);
                 List<CertificateType> certificates = new ArrayList<>();
                 for (String name : certificateNames) {
@@ -332,7 +334,7 @@ public class TemplateParser {
                     docRefs.add(docRef);
                 }
                 item.setSafetyDataSheet(docRefs);
-            }*/ else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_WIDTH)) {
+            }*/ else if (property.getPreferredName(defaultLanguage).equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_WIDTH)) {
                 // just to initialize the dimension array
                 item.getDimension();
                 List<QuantityType> widths;
@@ -348,7 +350,7 @@ public class TemplateParser {
                     item.getDimension().add(dimension);
                 }
 
-            } else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_LENGTH)) {
+            } else if (property.getPreferredName(defaultLanguage).equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_LENGTH)) {
                 List<QuantityType> lengths;
                 try {
                     lengths = (List<QuantityType>) parseCell(cell,TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_LENGTH, TEMPLATE_DATA_TYPE_QUANTITY, true);
@@ -362,7 +364,7 @@ public class TemplateParser {
                     item.getDimension().add(dimension);
                 }
 
-            } else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_HEIGHT)) {
+            } else if (property.getPreferredName(defaultLanguage).equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_HEIGHT)) {
                 List<QuantityType> widths;
                 try {
                     widths = (List<QuantityType>) parseCell(cell,TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_HEIGHT, TEMPLATE_DATA_TYPE_QUANTITY, true);
@@ -410,7 +412,7 @@ public class TemplateParser {
             List<Property> termRelatedProperties = TemplateConfig.getFixedPropertiesForTermsTab();
             for (Property property : termRelatedProperties) {
                 cell = getCellWithMissingCellPolicy(row, columnIndex);
-                if (property.getPreferredName().contentEquals(TEMPLATE_TRADING_DELIVERY_PRICE_AMOUNT)) {
+                if (property.getPreferredName(defaultLanguage).contentEquals(TEMPLATE_TRADING_DELIVERY_PRICE_AMOUNT)) {
                     ItemLocationQuantityType itemLocationQuantity = new ItemLocationQuantityType();
                     catalogueLine.setRequiredItemLocationQuantity(itemLocationQuantity);
                     PriceType price = new PriceType();
@@ -434,14 +436,14 @@ public class TemplateParser {
                     value = getCellStringValue(tmp);
                     amount.setCurrencyID(value);
 
-                } else if (property.getPreferredName().contentEquals(TEMPLATE_TRADING_DELIVERY_PRICE_BASE_QUANTITY)) {
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(TEMPLATE_TRADING_DELIVERY_PRICE_BASE_QUANTITY)) {
                     QuantityType baseQuantity = (QuantityType) parseCell(cell,TEMPLATE_TRADING_DELIVERY_PRICE_BASE_QUANTITY, TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (baseQuantity == null) {
                         baseQuantity = new QuantityType();
                     }
                     catalogueLine.getRequiredItemLocationQuantity().getPrice().setBaseQuantity(baseQuantity);
 
-                } else if (property.getPreferredName().contentEquals(TEMPLATE_TRADING_DELIVERY_MINIMUM_ORDER_QUANTITY)) {
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(TEMPLATE_TRADING_DELIVERY_MINIMUM_ORDER_QUANTITY)) {
                     QuantityType minimumOrderQuantity = (QuantityType) parseCell(cell,TEMPLATE_TRADING_DELIVERY_MINIMUM_ORDER_QUANTITY, TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (minimumOrderQuantity != null) {
                         if (minimumOrderQuantity.getUnitCode() == null) {
@@ -452,10 +454,10 @@ public class TemplateParser {
                     }
                     catalogueLine.setMinimumOrderQuantity(minimumOrderQuantity);
 
-                } else if (property.getPreferredName().contentEquals(TEMPLATE_TRADING_DELIVERY_FREE_SAMPLE)) {
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(TEMPLATE_TRADING_DELIVERY_FREE_SAMPLE)) {
                     catalogueLine.setFreeOfChargeIndicator((Boolean) parseCell(cell,TEMPLATE_TRADING_DELIVERY_FREE_SAMPLE, TEMPLATE_DATA_TYPE_BOOLEAN, false));
 
-                } else if (property.getPreferredName().contentEquals(TEMPLATE_TRADING_DELIVERY_WARRANTY_VALIDITY_PERIOD)) {
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(TEMPLATE_TRADING_DELIVERY_WARRANTY_VALIDITY_PERIOD)) {
                     QuantityType warrantyValidityPeriod = (QuantityType) parseCell(cell,TEMPLATE_TRADING_DELIVERY_WARRANTY_VALIDITY_PERIOD, TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (warrantyValidityPeriod != null) {
                         if (warrantyValidityPeriod.getUnitCode() == null) {
@@ -468,7 +470,7 @@ public class TemplateParser {
                     catalogueLine.setWarrantyValidityPeriod(period);
                     period.setDurationMeasure(warrantyValidityPeriod);
 
-                } else if (property.getPreferredName().contentEquals(TEMPLATE_TRADING_DELIVERY_WARRANTY_INFORMATION)) {
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(TEMPLATE_TRADING_DELIVERY_WARRANTY_INFORMATION)) {
                     if (cell != null) {
                         List<String> values = (List<String>) parseCell(cell,TEMPLATE_TRADING_DELIVERY_WARRANTY_INFORMATION, TEMPLATE_DATA_TYPE_TEXT, true);
                         if (values.size() > 0) {
@@ -476,13 +478,13 @@ public class TemplateParser {
                         }
                     }
 
-                } else if (property.getPreferredName().contentEquals(TEMPLATE_TRADING_DELIVERY_INCOTERMS)) {
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(TEMPLATE_TRADING_DELIVERY_INCOTERMS)) {
                     DeliveryTermsType deliveryTerms = new DeliveryTermsType();
                     catalogueLine.getGoodsItem().setDeliveryTerms(deliveryTerms);
                     value = (String) parseCell(cell,TEMPLATE_TRADING_DELIVERY_INCOTERMS, TEMPLATE_DATA_TYPE_TEXT, false);
                     catalogueLine.getGoodsItem().getDeliveryTerms().setIncoterms(value);
 
-                } else if (property.getPreferredName().contentEquals(TEMPLATE_TRADING_DELIVERY_SPECIAL_TERMS)) {
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(TEMPLATE_TRADING_DELIVERY_SPECIAL_TERMS)) {
                     List<String> values = (List<String>) parseCell(cell,TEMPLATE_TRADING_DELIVERY_SPECIAL_TERMS, TEMPLATE_DATA_TYPE_TEXT, true);
 
                     for(String stvalue: values) {
@@ -500,7 +502,7 @@ public class TemplateParser {
 
                         catalogueLine.getGoodsItem().getDeliveryTerms().getSpecialTerms().add(textType);
                     }
-                } else if (property.getPreferredName().contentEquals(TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD)) {
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD)) {
                     QuantityType estimatedDeliveryQuantity = (QuantityType) parseCell(cell,TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD, TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (estimatedDeliveryQuantity != null) {
                         if (estimatedDeliveryQuantity.getUnitCode() == null) {
@@ -515,7 +517,7 @@ public class TemplateParser {
                     catalogueLine.getGoodsItem().getDeliveryTerms().setEstimatedDeliveryPeriod(period);
                     period.setDurationMeasure(estimatedDeliveryQuantity);
 
-                } else if (property.getPreferredName().contentEquals(TEMPLATE_TRADING_DELIVERY_TRANSPORT_MODE)) {
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(TEMPLATE_TRADING_DELIVERY_TRANSPORT_MODE)) {
                     cell = getCellWithMissingCellPolicy(row, columnIndex);
                     if (cell != null) {
                         value = getCellStringValue(cell);
@@ -524,7 +526,7 @@ public class TemplateParser {
                         catalogueLine.getGoodsItem().getDeliveryTerms().setTransportModeCode(transportModeCode);
                     }
 
-                } else if (property.getPreferredName().contentEquals(TEMPLATE_TRADING_DELIVERY_APPLICABLE_ADDRESS_COUNTRY)) {
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(TEMPLATE_TRADING_DELIVERY_APPLICABLE_ADDRESS_COUNTRY)) {
                     List<AddressType> applicableAddressList = new ArrayList<>();
                     cell = getCellWithMissingCellPolicy(row, columnIndex);
                     List<String> countries = parseMultiValues(cell);
@@ -545,7 +547,7 @@ public class TemplateParser {
                     }
                     catalogueLine.getRequiredItemLocationQuantity().setApplicableTerritoryAddress(applicableAddressList);
 
-                } else if (property.getPreferredName().contentEquals(TEMPLATE_TRADING_DELIVERY_PACKAGING_TYPE)) {
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(TEMPLATE_TRADING_DELIVERY_PACKAGING_TYPE)) {
                     cell = getCellWithMissingCellPolicy(row, columnIndex);
                     CodeType packagingType = new CodeType();
                     if (cell != null) {
@@ -557,7 +559,7 @@ public class TemplateParser {
                     catalogueLine.getGoodsItem().setContainingPackage(packaging);
                     packaging.setPackagingTypeCode(packagingType);
 
-                } else if (property.getPreferredName().contentEquals(TEMPLATE_TRADING_DELIVERY_PACKAGE_QUANTITY)) {
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(TEMPLATE_TRADING_DELIVERY_PACKAGE_QUANTITY)) {
                     QuantityType packageQuantity = (QuantityType) parseCell(cell,TEMPLATE_TRADING_DELIVERY_PACKAGE_QUANTITY, TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (packageQuantity != null) {
                         if (packageQuantity.getUnitCode() == null) {

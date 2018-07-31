@@ -50,6 +50,8 @@ import java.util.zip.ZipInputStream;
 @ComponentScan(basePackages = "eu")
 public class CatalogueController {
 
+    private String defaultLanguage = "en";
+
     private static Logger log = LoggerFactory
             .getLogger(CatalogueController.class);
 
@@ -419,14 +421,14 @@ public class CatalogueController {
             PartyType party = new PartyType();
             TextType textType = new TextType();
             textType.setValue(partyName);
-            textType.setLanguageID("en");
+            textType.setLanguageID(defaultLanguage);
             party.setName(textType);
             party.setID(partyId);
 
-            String dataChannelServiceUrlStr = conf.getIdentityUrl() + "/party/" + partyId;
+            /*String dataChannelServiceUrlStr = conf.getIdentityUrl() + "/party/" + partyId;
 
             HttpResponse<JsonNode> response;
-            /*try {
+            try {
                 response = Unirest.get(dataChannelServiceUrlStr)
                         .header("Authorization", bearerToken).asJson();
 
