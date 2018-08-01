@@ -58,6 +58,7 @@ persistence:
     schema: public
 
   marmotta:
+    sync: true
     url: ${MARMOTTA_URL:http://nimble-staging.salzburgresearch.at/marmotta}
 
   orm:
@@ -254,6 +255,8 @@ persistence:
           password:
           driver_class: org.h2.Driver
         dialect: org.hibernate.dialect.H2Dialect
+  marmotta:
+    sync: false
 
 nimble:
   identity:
