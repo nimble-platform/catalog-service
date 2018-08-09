@@ -78,7 +78,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 //        String filePath = "C:\\Users\\suat\\Desktop\\multtemp.xlsx";
 //        InputStream is = new FileInputStream(filePath);
 //        PartyType party = new PartyType();
-//        CatalogueType catalogue = csi.addCatalogue(is, party);
+//        CatalogueType catalogue = csi.parseCatalogue(is, party);
 //        System.out.println(catalogue.getCatalogueLine().size());
     }
 
@@ -293,7 +293,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public CatalogueType addCatalogue(InputStream catalogueTemplate, String uploadMode, PartyType party) {
+    public CatalogueType parseCatalogue(InputStream catalogueTemplate, String uploadMode, PartyType party) {
         CatalogueType catalogue = getCatalogue("default", party.getID());
         boolean newCatalogue = false;
         if (catalogue == null) {
@@ -318,13 +318,13 @@ public class CatalogueServiceImpl implements CatalogueService {
             catalogue.setCatalogueLine(catalogueLines);
             checkReferencesInCatalogue(catalogue);
 
-            return addCatalogue(catalogue);
+            return catalogue;
 
         } else {
             updateLinesForUploadMode(catalogue, uploadMode, catalogueLines);
             checkReferencesInCatalogue(catalogue);
 
-            return updateCatalogue(catalogue);
+            return catalogue;
         }
     }
 

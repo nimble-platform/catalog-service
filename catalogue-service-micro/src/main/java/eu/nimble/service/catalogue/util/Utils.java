@@ -1,4 +1,4 @@
-package eu.nimble.service.catalogue.impl;
+package eu.nimble.service.catalogue.util;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
+import eu.nimble.service.catalogue.util.CatalogueLineValidator;
+import eu.nimble.service.catalogue.util.CatalogueValidator;
+import eu.nimble.service.catalogue.util.HttpResponseUtil;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.utility.config.CatalogueServiceConfig;
@@ -13,6 +16,7 @@ import io.swagger.annotations.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.logging.LogLevel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -21,6 +25,8 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by suat on 22-Aug-17.
@@ -105,26 +111,45 @@ public class CatalogueLineController {
         log.info("Incoming request to add catalogue line to catalogue: {}", catalogueUuid);
         CatalogueType catalogue;
         CatalogueLineType catalogueLine;
+
         try {
+            // get owning catalogue
             catalogue = service.getCatalogue(catalogueUuid);
             if (catalogue == null) {
                 log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
             }
-            catalogueLine = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                    .readValue(catalogueLineJson, CatalogueLineType.class);
 
-            boolean tmp = service.existCatalogueLineById(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid());
+            // parse catalogue line
+            try {
+                catalogueLine = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                        .readValue(catalogueLineJson, CatalogueLineType.class);
+            } catch (IOException e) {
+                log.warn("The following catalogue line could not be created: {}", catalogueLineJson);
+                return HttpResponseUtil.createResponseEntityAndLog(String.format("Failed to deserialize catalogue line: %s", catalogueLineJson), e, HttpStatus.BAD_REQUEST, LogLevel.ERROR);
+            }
 
-            if (!tmp) {
+            // validate the incoming content
+            CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogue, catalogueLine);
+            List<String> errors = catalogueLineValidator.validate();
+            if (errors.size() > 0) {
+                if (errors.size() > 0) {
+                    StringBuilder sb = new StringBuilder("");
+                    for (String error : errors) {
+                        sb.append(error).append(System.lineSeparator());
+                    }
+                    return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                }
+            }
+
+            // check duplicate line
+            boolean lineExists = service.existCatalogueLineById(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid());
+            if (!lineExists) {
                 catalogueLine = service.addLineToCatalogue(catalogue, catalogueLine);
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("There already exists a product with the given id");
             }
 
-        } catch (IOException e) {
-            log.warn("The following catalogue line could not be created: {}", catalogueLineJson);
-            return createErrorResponseEntity("Failed to deserialize catalogue line from json string", HttpStatus.BAD_REQUEST, e);
         } catch (Exception e) {
             log.warn("The following catalogue line could not be created: {}", catalogueLineJson);
             return createErrorResponseEntity("Failed to add the provided catalogue line", HttpStatus.INTERNAL_SERVER_ERROR, e);
@@ -173,37 +198,54 @@ public class CatalogueLineController {
             produces = {"application/json"},
             method = RequestMethod.PUT)
     public ResponseEntity updateCatalogueLine(@PathVariable String catalogueUuid, @RequestBody String catalogueLineJson) {
-        log.info("Incoming request to update catalogue line. Catalogue uuid: {}", catalogueUuid);
-
-        if (service.getCatalogue(catalogueUuid) == null) {
-            log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
-        }
-
-        CatalogueLineType catalogueLine = null;
         try {
-            catalogueLine = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                    .readValue(catalogueLineJson, CatalogueLineType.class);
+            log.info("Incoming request to update catalogue line. Catalogue uuid: {}", catalogueUuid);
+            CatalogueType catalogue = service.getCatalogue(catalogueUuid);
+            if (catalogue == null) {
+                log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
+            }
 
-            boolean tmp = service.existCatalogueLineById(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid());
+            CatalogueLineType catalogueLine;
 
-            if (!tmp) {
+            //parse catalogue line
+            try {
+                catalogueLine = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                        .readValue(catalogueLineJson, CatalogueLineType.class);
+
+            } catch (IOException e) {
+                log.warn("The following catalogue line could not be updated: {}", catalogueLineJson);
+                return HttpResponseUtil.createResponseEntityAndLog(String.format("Failed to deserialize catalogue line from json string: %s", catalogueLineJson), e, HttpStatus.BAD_REQUEST, LogLevel.ERROR);
+            }
+
+            // validate the incoming content
+            CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogue, catalogueLine);
+            List<String> errors = catalogueLineValidator.validate();
+            if (errors.size() > 0) {
+                if (errors.size() > 0) {
+                    StringBuilder sb = new StringBuilder("");
+                    for (String error : errors) {
+                        sb.append(error).append(System.lineSeparator());
+                    }
+                    return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                }
+            }
+
+            // consider the case of an updated line id conflicting with the id of an existing line
+            boolean lineExists = service.existCatalogueLineById(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid());
+            if (!lineExists) {
                 service.updateCatalogueLine(catalogueLine);
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("There already exists a product with the given id");
             }
 
-        } catch (IOException e) {
-            log.warn("The following catalogue line could not be updated: {}", catalogueLineJson);
-            return createErrorResponseEntity("Failed to deserialize catalogue line from json string", HttpStatus.BAD_REQUEST, e);
+            log.info("Completed the request to add catalogue line catalogue uuid, line lineId: {}", catalogueUuid, catalogueLine.getID());
+            return ResponseEntity.ok(catalogueLine);
+
         } catch (Exception e) {
             log.warn("The following catalogue line could not be updated: {}", catalogueLineJson);
             return createErrorResponseEntity("Failed to add the provided catalogue line", HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
-
-
-        log.info("Completed the request to add catalogue line catalogue uuid, line lineId: {}", catalogueUuid, catalogueLine.getID());
-        return ResponseEntity.ok(catalogueLine);
     }
 
     /**

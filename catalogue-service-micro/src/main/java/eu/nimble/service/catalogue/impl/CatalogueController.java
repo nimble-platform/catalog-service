@@ -6,12 +6,17 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import eu.nimble.service.catalogue.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
+import eu.nimble.service.catalogue.util.CatalogueValidator;
+import eu.nimble.service.catalogue.util.HttpResponseUtil;
+import eu.nimble.service.catalogue.util.Utils;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.Configuration;
+import eu.nimble.utility.JAXBUtility;
 import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.utility.config.PersistenceConfig;
 import io.swagger.annotations.ApiOperation;
@@ -23,6 +28,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.logging.LogLevel;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -163,60 +169,74 @@ public class CatalogueController {
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
             method = RequestMethod.POST)
-    public ResponseEntity addXMLCatalogue(@PathVariable String standard,
-                                          @RequestBody String serializedCatalogue, HttpServletRequest request) {
-        log.info("Incoming request to post catalogue with standard: {} standard", standard);
-        log.debug("Catalogue content: {}", serializedCatalogue);
+    public <T> ResponseEntity addXMLCatalogue(@PathVariable String standard,
+                                              @RequestBody String serializedCatalogue, HttpServletRequest request) {
+        try {
+            log.info("Incoming request to post catalogue with standard: {} standard", standard);
 
-        String contentType = request.getContentType();
-        if (contentType.contentEquals(MediaType.APPLICATION_JSON_VALUE)) {
-            return addJSONCatalogue(serializedCatalogue, request);
-        } else if (contentType.contentEquals(MediaType.APPLICATION_XML_VALUE)) {
-            return addXMLCatalogue(serializedCatalogue, standard, Utils.baseUrl(request));
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid content type: " + contentType);
+            // get standard
+            Configuration.Standard std;
+            try {
+                std = getStandardEnum(standard);
+            } catch (Exception e) {
+                return createErrorResponseEntity("Invalid standard: " + standard, HttpStatus.BAD_REQUEST, e);
+            }
+
+            String contentType = request.getContentType();
+            // get catalogue
+            T catalogue;
+            try {
+                catalogue = parseCatalogue(contentType, serializedCatalogue, std);
+            } catch (Exception e) {
+                return createErrorResponseEntity(String.format("Failed to deserialize catalogue: %s", serializedCatalogue), HttpStatus.BAD_REQUEST, e);
+            }
+
+            // for ubl catalogues, do the following validations
+            if (std.equals(Configuration.Standard.UBL)) {
+                CatalogueType ublCatalogue = (CatalogueType) catalogue;
+
+                // validate the content of the catalogue
+                CatalogueValidator catalogueValidator = new CatalogueValidator(ublCatalogue);
+                List<String> errors = catalogueValidator.validate();
+                if (errors.size() > 0) {
+                    StringBuilder sb = new StringBuilder("");
+                    for (String error : errors) {
+                        sb.append(error).append(System.lineSeparator());
+                    }
+                    return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                }
+
+                // check catalogue with the same id exists
+                boolean catalogueExists = CatalogueDatabaseAdapter.catalogueExists(ublCatalogue.getProviderParty().getID(), ublCatalogue.getID());
+                if (catalogueExists) {
+                    return HttpResponseUtil.createResponseEntityAndLog(String.format("Catalogue with ID: '%s' already exists", ublCatalogue.getID()), null, HttpStatus.OK, LogLevel.INFO);
+                }
+            }
+
+            catalogue = service.addCatalogue(catalogue, std);
+
+            return createCreatedCatalogueResponse(catalogue, Utils.baseUrl(request));
+
+        } catch (Exception e) {
+            return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while adding the catalogue: %s", serializedCatalogue), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
         }
     }
 
-    private ResponseEntity addXMLCatalogue(String catalogueXML, String standard, String baseUrl) {
-        Configuration.Standard std;
-        try {
-            std = getStandardEnum(standard);
-        } catch (Exception e) {
-            return createErrorResponseEntity("Invalid standard: " + standard, HttpStatus.BAD_REQUEST, e);
+    private <T> T parseCatalogue(String contentType, String serializedCatalogue, Configuration.Standard standard) throws IOException {
+        T catalogue = null;
+        if (contentType.contentEquals(MediaType.APPLICATION_XML_VALUE)) {
+            if (standard == Configuration.Standard.UBL) {
+                CatalogueType ublCatalogue = (CatalogueType) JAXBUtility.deserialize(serializedCatalogue, Configuration.UBL_CATALOGUE_PACKAGENAME);
+                catalogue = (T) ublCatalogue;
+
+            } else if (standard == Configuration.Standard.MODAML) {
+                catalogue = (T) JAXBUtility.deserialize(serializedCatalogue, Configuration.MODAML_CATALOGUE_PACKAGENAME);
+            }
+
+        } else if (contentType.contentEquals(MediaType.APPLICATION_JSON_VALUE)) {
+            catalogue = (T) new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(serializedCatalogue, CatalogueType.class);
         }
-
-        Object catalogue;
-        try {
-            catalogue = service.addCatalogue(catalogueXML, std);
-        } catch (Exception e) {
-            log.warn("Failed to add the following catalogue: {}", catalogueXML);
-            return createErrorResponseEntity("Failed to post catalogue for standard: " + standard, HttpStatus.INTERNAL_SERVER_ERROR, e);
-        }
-
-        return createCreatedCatalogueResponse(catalogue, baseUrl);
-    }
-
-    private ResponseEntity addJSONCatalogue(@RequestBody String catalogueJson, HttpServletRequest request) {
-        log.info("Incoming request to post catalogue");
-        log.debug("Catalogue content: {}", catalogueJson);
-
-        CatalogueType catalogue;
-        try {
-            catalogue = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(catalogueJson, CatalogueType.class);
-        } catch (IOException e) {
-            return createErrorResponseEntity("Failed to deserialize catalogue from json string", HttpStatus.BAD_REQUEST, e);
-        }
-
-        try {
-            catalogue = service.addCatalogue(catalogue);
-        } catch (Exception e) {
-            log.warn("Failed to add the following catalogue: {}", catalogueJson);
-            return createErrorResponseEntity("Failed to add the catalogue", HttpStatus.INTERNAL_SERVER_ERROR, e);
-        }
-        log.info("Catalogue add with uuid: {} completed", catalogue.getUUID());
-
-        return createCreatedCatalogueResponse(catalogue, Utils.baseUrl(request));
+        return catalogue;
     }
 
     private ResponseEntity createCreatedCatalogueResponse(Object catalogue, String baseUrl) {
@@ -265,40 +285,55 @@ public class CatalogueController {
             produces = {"application/json"},
             method = RequestMethod.PUT)
     public ResponseEntity updateJSONCatalogue(@PathVariable String standard, @RequestBody String catalogueJson) {
-        log.info("Incoming request to update catalogue");
-        log.debug("Catalogue data: " + catalogueJson);
-
-        Configuration.Standard std;
         try {
-            std = getStandardEnum(standard);
-            if (std != Configuration.Standard.UBL) {
-                String msg = "Update operation is not support for " + standard;
-                log.info(msg);
-                return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(msg);
+            log.info("Incoming request to update catalogue");
+
+            // check standard
+            Configuration.Standard std;
+            try {
+                std = getStandardEnum(standard);
+                if (std != Configuration.Standard.UBL) {
+                    String msg = "Update operation is not support for " + standard;
+                    log.info(msg);
+                    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(msg);
+                }
+            } catch (Exception e) {
+                return createErrorResponseEntity("Invalid standard: " + standard, HttpStatus.BAD_REQUEST, e);
             }
+
+            // parse catalogue
+            CatalogueType catalogue;
+            try {
+                catalogue = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(catalogueJson, CatalogueType.class);
+            } catch (IOException e) {
+                return createErrorResponseEntity(String.format("Failed to deserialize catalogue: %s", catalogueJson), HttpStatus.INTERNAL_SERVER_ERROR, e);
+            }
+
+            // validate the catalogue content
+            CatalogueValidator catalogueValidator = new CatalogueValidator(catalogue);
+            List<String> errors = catalogueValidator.validate();
+            if (errors.size() > 0) {
+                StringBuilder sb = new StringBuilder("");
+                for (String error : errors) {
+                    sb.append(error).append(System.lineSeparator());
+                }
+                return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+            }
+
+            try {
+                catalogue = service.updateCatalogue(catalogue);
+            } catch (Exception e) {
+                log.warn("Failed to update the following catalogue: {}", catalogueJson);
+                return createErrorResponseEntity("Failed to update the catalogue", HttpStatus.INTERNAL_SERVER_ERROR, e);
+            }
+
+            log.info("Completed request to update the catalogue. uuid: {}", catalogue.getUUID());
+            return ResponseEntity.ok(catalogue);
+
         } catch (Exception e) {
-            return createErrorResponseEntity("Invalid standard: " + standard, HttpStatus.BAD_REQUEST, e);
+            return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while adding the catalogue: %s", catalogueJson), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
         }
-
-        CatalogueType catalogue;
-        try {
-            catalogue = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(catalogueJson, CatalogueType.class);
-        } catch (IOException e) {
-            log.warn("Failed to update the following catalogue: {}", catalogueJson);
-            return createErrorResponseEntity("Failed to deserialize catalogue from json string", HttpStatus.INTERNAL_SERVER_ERROR, e);
-        }
-
-        try {
-            service.updateCatalogue(catalogue);
-        } catch (Exception e) {
-            log.warn("Failed to update the following catalogue: {}", catalogueJson);
-            return createErrorResponseEntity("Failed to update the catalogue", HttpStatus.INTERNAL_SERVER_ERROR, e);
-        }
-
-        log.info("Completed request to update the catalogue. uuid: {}", catalogue.getUUID());
-        return ResponseEntity.ok(catalogue);
     }
-
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Delete the given catalogue")
@@ -407,19 +442,20 @@ public class CatalogueController {
             @RequestParam(value = "uploadMode", defaultValue = "append") String uploadMode,
             @RequestParam("partyId") String partyId,
             @RequestParam("partyName") String partyName,
-            @RequestHeader(value="Authorization", required=true) String bearerToken,
+            @RequestHeader(value = "Authorization", required = true) String bearerToken,
             HttpServletRequest request) {
-        log.info("Incoming request to upload template upload mode: {}, party id: {}, party name: {}", uploadMode, partyId, partyName);
-        CatalogueType catalogue;
         try {
+            log.info("Incoming request to upload template upload mode: {}, party id: {}, party name: {}", uploadMode, partyId, partyName);
+            CatalogueType catalogue;
             PartyType party;
             String dataChannelServiceUrlStr = catalogueServiceConfig.getIdentityUrl() + "/party/" + partyId;
 
+            // get party details from identity service
             HttpResponse<JsonNode> response;
             try {
                 response = Unirest.get(dataChannelServiceUrlStr)
                         .header("Authorization", bearerToken).asJson();
-                if(response.getStatus() == 404) {
+                if (response.getStatus() == 404) {
                     String msg = String.format("No party found for partyId: %s", partyId);
                     log.warn(msg);
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(msg);
@@ -434,20 +470,35 @@ public class CatalogueController {
                 return createErrorResponseEntity("Failed to get complete party details", HttpStatus.INTERNAL_SERVER_ERROR, e);
             }
 
-            catalogue = service.addCatalogue(file.getInputStream(), uploadMode, party);
-        } catch (IOException e) {
-            return createErrorResponseEntity("Failed to retrieve the template", HttpStatus.INTERNAL_SERVER_ERROR, e);
-        }
+            // parse catalogue
+            try {
+                catalogue = service.parseCatalogue(file.getInputStream(), uploadMode, party);
+            } catch (Exception e) {
+                String msg = e.getMessage() != null ? e.getMessage() : "Failed to retrieve the template";
+                return HttpResponseUtil.createResponseEntityAndLog(msg, e, HttpStatus.BAD_REQUEST, LogLevel.ERROR);
+            }
 
-        URI catalogueURI;
-        try {
-            catalogueURI = new URI(Utils.baseUrl(request) + catalogue.getUUID());
-        } catch (URISyntaxException e) {
-            return createErrorResponseEntity("Failed to generate a URI for the newly created item", HttpStatus.INTERNAL_SERVER_ERROR, e);
-        }
+            // save catalogue
+            // check whether an insert or update operations is needed
+            if(catalogue.getHjid() == null) {
+                service.addCatalogue(catalogue, Configuration.Standard.UBL);
+            } else {
+                service.updateCatalogue(catalogue);
+            }
 
-        log.info("Completed the request to upload template. Added catalogue uuid: {}", catalogue.getUUID());
-        return ResponseEntity.created(catalogueURI).body(catalogue);
+            URI catalogueURI;
+            try {
+                catalogueURI = new URI(Utils.baseUrl(request) + catalogue.getUUID());
+            } catch (URISyntaxException e) {
+                return createErrorResponseEntity("Failed to generate a URI for the newly created item", HttpStatus.INTERNAL_SERVER_ERROR, e);
+            }
+
+            log.info("Completed the request to upload template. Added catalogue uuid: {}", catalogue.getUUID());
+            return ResponseEntity.created(catalogueURI).body(catalogue);
+
+        } catch (Exception e) {
+            return HttpResponseUtil.createResponseEntityAndLog("Unexpected error while uploading the template", e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+        }
     }
 
     /**
@@ -545,7 +596,7 @@ public class CatalogueController {
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieve the supported standards")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Retrieve the supported standards successfully",response = String.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Retrieve the supported standards successfully", response = String.class, responseContainer = "List"),
             @ApiResponse(code = 500, message = "Failed to get supported standards")
     })
     @RequestMapping(value = "/catalogue/standards",
