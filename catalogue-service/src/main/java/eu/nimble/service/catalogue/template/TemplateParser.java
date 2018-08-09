@@ -153,7 +153,7 @@ public class TemplateParser {
         TextType textType = new TextType();
         textType.setLanguageID(defaultLanguage);
         textType.setValue(property.getPreferredName(defaultLanguage));
-        itemProp.setName(textType);
+        itemProp.getName().add(textType);
 
         String valueQualifier = TemplateGenerator.normalizeDataTypeForTemplate(property.getDataType().toUpperCase());
         itemProp.setValueQualifier(property.getDataType());
@@ -176,9 +176,12 @@ public class TemplateParser {
 
         } else if (valueQualifier.contentEquals(TEMPLATE_DATA_TYPE_BOOLEAN)) {
             List<Boolean> bools = (List<Boolean>) values;
-            List<String> stringVals = new ArrayList<>();
+            List<TextType> stringVals = new ArrayList<>();
             for (Boolean value : bools) {
-                stringVals.add(value.toString());
+                TextType booleanText = new TextType();
+                booleanText.setValue(value.toString());
+                booleanText.setValue("en");
+                stringVals.add(booleanText);
             }
             itemProp.setValue(stringVals);
 
@@ -187,7 +190,13 @@ public class TemplateParser {
             itemProp.setValueQuantity(quantities);
 
         } else {
-            itemProp.setValue((List<String>) values);
+            itemProp.setValue((List<TextType>) values);
+            /* for(String value: (List<String>) values) {
+                TextType text = new TextType();
+                text.setValue(value);
+                text.setValue(defaultLanguage);
+                itemProp.getValue().add(text);
+            } */
         }
 
 

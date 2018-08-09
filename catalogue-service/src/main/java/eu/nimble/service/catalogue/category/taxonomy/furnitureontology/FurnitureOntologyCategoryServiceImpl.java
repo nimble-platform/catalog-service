@@ -72,7 +72,7 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
     @Override
     public Category getCategory(String categoryId) {
         // create category from the uri
-        Category category = createCategory(categoryId);
+        Category category = createCategory(categoryId, null);
         List<Property> properties = new ArrayList<>();
         category.setProperties(properties);
 
@@ -81,10 +81,16 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
         try {
             SPARQLResult dataTypes = sparqlClient.select(datatypeSparql);
             if (dataTypes != null) {
+                String translation = null;
                 for (Map<String, RDFNode> dataType : dataTypes) {
-                    Property property = createProperty(dataType.get("prop").toString(), dataType.get("range").toString());
+                    translation = dataType.get("translation") != null ? dataType.get("translation").toString() : null;
+
+                    String propertyTranslation = dataType.get("proptranslation") != null ? dataType.get("proptranslation").toString() : null;
+                    Property property = createProperty(dataType.get("prop").toString(), dataType.get("range").toString(), propertyTranslation);
                     properties.add(property);
                 }
+                category = createCategory(categoryId, translation);
+                category.setProperties(properties);
             }
         } catch (IOException | MarmottaClientException e) {
             log.warn("Failed to get datatype properties for category: " + categoryId, e);
@@ -111,7 +117,8 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
                 String remainder = getRemainder(record.get("uri").toString(), FURNITURE_NS,FURNITURE_NS2);
                 if (remainder.toLowerCase().contains(categoryName.toLowerCase())) {
                     String uri = record.get("uri").toString();
-                    Category cat = createCategory(uri);
+                    String translation = record.get("translation") != null ? record.get("translation").toString() : null;
+                    Category cat = createCategory(uri, translation);
                     result.add(cat);
                 }
             }
@@ -119,22 +126,28 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
         return result;
     }
 
-    private Property createProperty(String uri, String range) {
+    private Property createProperty(String uri, String range, String translation) {
         Property property = new Property();
         property.setId(uri);
         property.addPreferredName(getRemainder(uri, FURNITURE_NS,FURNITURE_NS2), defaultLanguage);
+        if(translation != null) {
+            property.addPreferredName(translation, "es");
+        }
         property.setDataType(getNormalizedDatatype(getRemainder(range, XSD_NS,null).toUpperCase()));
         property.setUri(uri);
         return property;
     }
 
-    private Category createCategory(String uri) {
+    private Category createCategory(String uri, String translation) {
         Category cat = new Category();
         cat.setId(uri);
         cat.setCategoryUri(uri);
         cat.setTaxonomyId(getTaxonomyId());
 
         cat.addPreferredName(getRemainder(uri, FURNITURE_NS,FURNITURE_NS2), defaultLanguage);
+        if(translation != null) {
+            cat.addPreferredName(translation, "es");
+        }
         cat.setCode(getRemainder(uri, FURNITURE_NS,FURNITURE_NS2));
         return cat;
     }
@@ -175,12 +188,13 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
             for (int i = sparqlResult.size()-1; i > -1; i--) {
                 Map<String, RDFNode> record = sparqlResult.get(i);
                 String uri = record.get("parent").toString();
-                Category cat = createCategory(uri);
+                String translation = record.get("translation") != null ? record.get("translation").toString() : null;
+                Category cat = createCategory(uri, translation);
                 parents.add(cat);
             }
         }
         // add categoryURI to parent list
-        parents.add(createCategory(categoryURI));
+        parents.add(createCategory(categoryURI, null));
         int parentSize = parents.size();
         // set parents
         categoryTreeResponse.setParents(parents);
@@ -202,7 +216,8 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
             for (int i = 0; i < sparqlResult.size(); i++) {
                 Map<String, RDFNode> record = sparqlResult.get(i);
                 String uri = record.get("uri").toString();
-                Category cat = createCategory(uri);
+                String translation = record.get("translation") != null ? record.get("translation").toString() : null;
+                Category cat = createCategory(uri, translation);
                 siblings.get(0).add(cat);
             }
         }
@@ -221,7 +236,8 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
                 for (int i = 0; i < sparqlResult.size(); i++) {
                     Map<String, RDFNode> record = sparqlResult.get(i);
                     String uri = record.get("children").toString();
-                    Category cat = createCategory(uri);
+                    String translation = record.get("translation") != null ? record.get("translation").toString() : null;
+                    Category cat = createCategory(uri, translation);
                     siblings.get(j).add(cat);
                 }
             }
@@ -248,7 +264,8 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
             for (int i = 0; i < sparqlResult.size(); i++) {
                 Map<String, RDFNode> record = sparqlResult.get(i);
                 String uri = record.get("parent").toString();
-                Category cat = createCategory(uri);
+                String translation = record.get("translation") != null ? record.get("translation").toString() : null;
+                Category cat = createCategory(uri, translation);
                 result.add(cat);
             }
         }
@@ -271,7 +288,8 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
             for (int i = 0; i < sparqlResult.size(); i++) {
                 Map<String, RDFNode> record = sparqlResult.get(i);
                 String uri = record.get("children").toString();
-                Category cat = createCategory(uri);
+                String translation = record.get("translation") != null ? record.get("translation").toString() : null;
+                Category cat = createCategory(uri, translation);
                 result.add(cat);
             }
         }
@@ -294,7 +312,8 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
             for (int i = 0; i < sparqlResult.size(); i++) {
                 Map<String, RDFNode> record = sparqlResult.get(i);
                 String uri = record.get("uri").toString();
-                Category cat = createCategory(uri);
+                String translation = record.get("translation") != null ? record.get("translation").toString() : null;
+                Category cat = createCategory(uri, translation);
                 result.add(cat);
             }
         }
@@ -330,16 +349,19 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
         StringBuilder sb = new StringBuilder("");
         sb.append("PREFIX owl: <http://www.w3.org/2002/07/owl#>\n").
                 append("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n").
+                append("PREFIX FurnitureSectorOntology1: <http://www.aidimme.es/FurnitureSectorOntology.owl#>").append(System.lineSeparator()).
                 append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n").
                 append("PREFIX mic:<").append(FURNITURE_NS).append(">\n").
                 append("\n").
-                append("SELECT DISTINCT ?prop ?range WHERE { \n").
+                append("SELECT DISTINCT ?prop ?range ?translation ?proptranslation WHERE { \n").
                 append("  {\n").
                 append("    GRAPH <").append(GRAPH_URI).append("> {\n").
                 append("      ?cl rdf:type owl:Class .\n").
+                append("      ?cl FurnitureSectorOntology1:translation ?translation.").append(System.lineSeparator()).
                 append("      FILTER (?cl IN (<").append(uri).append(">)).\n").
                 append("      ?cl rdfs:subClassOf*/rdfs:subClassOf ?parents .\n").
                 append("      ?prop rdf:type owl:DatatypeProperty . \n").
+                append("      ?prop FurnitureSectorOntology1:translation ?proptranslation.").append(System.lineSeparator()).
                 append("      ?prop rdfs:domain ?domain .\n").
                 append("      ?prop rdfs:range ?range .\n").
                 append("      ?domain owl:unionOf ?list .\n").
@@ -351,9 +373,11 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
                 append("  UNION {\n").
                 append("    GRAPH <").append(GRAPH_URI).append("> {\n").
                 append("      ?cl rdf:type owl:Class .\n").
+                append("      ?cl FurnitureSectorOntology1:translation ?translation.").append(System.lineSeparator()).
                 append("      ?cl rdfs:subClassOf*/rdfs:subClassOf ?parents .\n").
                 append("      FILTER (?cl IN (<").append(uri).append(">)).\n").
                 append("      ?prop rdf:type owl:DatatypeProperty . \n").
+                append("      ?prop FurnitureSectorOntology1:translation ?proptranslation.").append(System.lineSeparator()).
                 append("      ?prop rdfs:domain ?definedIn .\n").
                 append("      ?prop rdfs:range ?range .\n").
                 append("      FILTER ( isIRI(?definedIn)) .\n").
@@ -363,13 +387,17 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
                 append("  UNION {\n").
                 append("    GRAPH <").append(GRAPH_URI).append("> {\n").
                 append("      ?prop rdfs:domain <").append(uri).append("> .\n").
+                append("      <").append(uri).append("> FurnitureSectorOntology1:translation ?translation.").append(System.lineSeparator()).
+                append("      ?prop FurnitureSectorOntology1:translation ?proptranslation.").append(System.lineSeparator()).
                 append("      ?prop rdfs:range ?range .\n").
                 append("    }\n").
                 append("  }\n").
                 append("  UNION {\n").
                 append("    GRAPH <").append(GRAPH_URI).append("> {\n").
                 append("      ?prop rdf:type owl:DatatypeProperty . \n").
+                append("      ?prop FurnitureSectorOntology1:translation ?proptranslation.").append(System.lineSeparator()).
                 append("      ?prop rdfs:domain ?domain .\n").
+                append("      ?domain FurnitureSectorOntology1:translation ?translation.").append(System.lineSeparator()).
                 append("      ?prop rdfs:range ?range .\n").
                 append("      ?domain owl:unionOf ?list .\n").
                 append("      ?list rdf:rest*/rdf:first ?member .\n").
@@ -400,12 +428,14 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
         StringBuilder sb = new StringBuilder("");
         sb.append("PREFIX owl: <http://www.w3.org/2002/07/owl#>").append(System.lineSeparator())
                 .append("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>").append(System.lineSeparator())
+                .append("PREFIX FurnitureSectorOntology1: <http://www.aidimme.es/FurnitureSectorOntology.owl#>").append(System.lineSeparator())
                 .append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ").append(System.lineSeparator())
                 .append("PREFIX mic: <").append(FURNITURE_NS).append(">").append(System.lineSeparator())
                 .append(System.lineSeparator())
-                .append("SELECT ?uri WHERE {").append(System.lineSeparator())
+                .append("SELECT ?uri ?translation WHERE {").append(System.lineSeparator())
                 .append("  GRAPH <").append(GRAPH_URI).append("> {").append(System.lineSeparator())
                 .append("    ?uri rdf:type owl:Class.").append(System.lineSeparator())
+                .append("    ?uri FurnitureSectorOntology1:translation ?translation.").append(System.lineSeparator())
                 .append("    FILTER regex (lcase(?uri), \"").append(categoryName).append("\") .").append(System.lineSeparator())
                 .append("	}").append(System.lineSeparator())
                 .append("}");
@@ -416,12 +446,14 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
         StringBuilder sb = new StringBuilder("");
         sb.append("PREFIX owl: <http://www.w3.org/2002/07/owl#>").append(System.lineSeparator())
                 .append("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>").append(System.lineSeparator())
+                .append("PREFIX FurnitureSectorOntology1: <http://www.aidimme.es/FurnitureSectorOntology.owl#>").append(System.lineSeparator())
                 .append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ").append(System.lineSeparator())
                 .append("PREFIX mic: <").append(FURNITURE_NS).append(">").append(System.lineSeparator())
                 .append(System.lineSeparator())
-                .append("SELECT ?uri WHERE {").append(System.lineSeparator())
+                .append("SELECT ?uri ?translation WHERE {").append(System.lineSeparator())
                 .append("  GRAPH <").append(GRAPH_URI).append("> {").append(System.lineSeparator())
                 .append("    ?uri rdf:type owl:Class.").append(System.lineSeparator())
+                .append("    ?uri FurnitureSectorOntology1:translation ?translation.").append(System.lineSeparator())
                 .append("    FILTER (!isBlank(?uri)).").append(System.lineSeparator())
                 .append("    MINUS { ?uri rdfs:subClassOf ?parent.").append(System.lineSeparator())
                 .append("            FILTER (!isBlank(?parent)).}").append(System.lineSeparator())
@@ -434,12 +466,14 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
         StringBuilder sb = new StringBuilder("");
         sb.append("PREFIX owl: <http://www.w3.org/2002/07/owl#>").append(System.lineSeparator())
                 .append("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>").append(System.lineSeparator())
+                .append("PREFIX FurnitureSectorOntology1: <http://www.aidimme.es/FurnitureSectorOntology.owl#>").append(System.lineSeparator())
                 .append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ").append(System.lineSeparator())
                 .append("PREFIX mic: <").append(FURNITURE_NS).append(">").append(System.lineSeparator())
                 .append(System.lineSeparator())
-                .append("SELECT ?children WHERE {").append(System.lineSeparator())
+                .append("SELECT ?children ?translation WHERE {").append(System.lineSeparator())
                 .append("  GRAPH <").append(GRAPH_URI).append("> {").append(System.lineSeparator())
                 .append("    ?children rdfs:subClassOf <").append(categoryURI).append(">. ").append(System.lineSeparator())
+                .append("    ?children FurnitureSectorOntology1:translation ?translation.").append(System.lineSeparator())
                 .append("    FILTER (!isBlank(?children)).")
                 .append("	}").append(System.lineSeparator())
                 .append("}");
@@ -450,12 +484,14 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
         StringBuilder sb = new StringBuilder("");
         sb.append("PREFIX owl: <http://www.w3.org/2002/07/owl#>").append(System.lineSeparator())
                 .append("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>").append(System.lineSeparator())
+                .append("PREFIX FurnitureSectorOntology1: <http://www.aidimme.es/FurnitureSectorOntology.owl#>").append(System.lineSeparator())
                 .append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ").append(System.lineSeparator())
                 .append("PREFIX mic: <").append(FURNITURE_NS).append(">").append(System.lineSeparator())
                 .append(System.lineSeparator())
-                .append("SELECT ?parent WHERE {").append(System.lineSeparator())
+                .append("SELECT ?parent ?translation WHERE {").append(System.lineSeparator())
                 .append("  GRAPH <").append(GRAPH_URI).append("> {").append(System.lineSeparator())
                 .append("    <").append(categoryURI).append("> rdfs:subClassOf+ ?parent.").append(System.lineSeparator())
+                .append("    ?parent FurnitureSectorOntology1:translation ?translation.").append(System.lineSeparator())
                 .append("    FILTER (!isBlank(?parent)).")
                 .append("	}").append(System.lineSeparator())
                 .append("}");
