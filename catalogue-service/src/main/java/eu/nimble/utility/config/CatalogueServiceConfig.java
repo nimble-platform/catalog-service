@@ -178,6 +178,7 @@ public class CatalogueServiceConfig {
     public void setIdentityUrl(String identityUrl) {
         this.identityUrl = identityUrl;
     }
+<<<<<<< HEAD
 
     public boolean isMarmottaSync() {
         return marmottaSync;
@@ -186,4 +187,6 @@ public class CatalogueServiceConfig {
     public void setMarmottaSync(boolean marmottaSync) {
         this.marmottaSync = marmottaSync;
     }
+=======
+>>>>>>> origin
 }
