@@ -6,9 +6,13 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import com.sun.tools.doclets.formats.html.resources.standard;
+import eu.nimble.data.transformer.ontmalizer.XML2OWLMapper;
 import eu.nimble.service.catalogue.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
+import eu.nimble.service.catalogue.sync.MarmottaClient;
+import eu.nimble.service.catalogue.sync.MarmottaSynchronizationException;
 import eu.nimble.service.catalogue.util.CatalogueValidator;
 import eu.nimble.service.catalogue.util.HttpResponseUtil;
 import eu.nimble.service.catalogue.util.Utils;
@@ -143,8 +147,8 @@ public class CatalogueController {
         }
 
         if (catalogue == null) {
-            log.info("No default catalogue for uuid: {}", uuid);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(String.format("No default catalogue for uuid: %s", uuid));
+            log.info("No catalogue for uuid: {}", uuid);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(String.format("No catalogue for uuid: %s", uuid));
         }
 
         log.info("Completed request to get catalogue for standard: {}, uuid: {}", standard, uuid);
@@ -615,6 +619,53 @@ public class CatalogueController {
         log.info("Completed request to retrieve the supported standards");
         return ResponseEntity.ok(standards);
     }
+
+    /**
+     * Returns a catalogue in semantic format
+     */
+    @CrossOrigin(origins = {"*"})
+    @RequestMapping(value = "/catalogue/semantic/{uuid}",
+            method = RequestMethod.GET)
+    public ResponseEntity getCatalogueInSemanticFormat(@PathVariable String uuid,
+                                                       @RequestParam(value = "semanticContentType", required = false) String semanticContentType,
+                                                       @RequestHeader("Authorization") String authorization,
+                                                       HttpServletResponse response) {
+        try {
+            log.info("Incoming request to get catalogue in semantic format, uuid: {}, content type: {}", uuid, semanticContentType);
+            Object catalogue;
+            try {
+                catalogue = service.getCatalogue(uuid, Configuration.Standard.UBL);
+            } catch (Exception e) {
+                return createErrorResponseEntity("Failed to get catalogue for uuid: " + uuid, HttpStatus.INTERNAL_SERVER_ERROR, e);
+            }
+
+            if (catalogue == null) {
+                log.info("No catalogue for uuid: {}", uuid);
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(String.format("No default catalogue for uuid: %s", uuid));
+            }
+
+            // transform content to other semantic formats
+            if (semanticContentType == null) {
+                semanticContentType = "RDF/XML";
+            }
+
+            MarmottaClient marmottaClient = new MarmottaClient();
+            try {
+                XML2OWLMapper rdfGenerator = marmottaClient.transformCatalogueToRDF((CatalogueType) catalogue);
+                rdfGenerator.writeModel(response.getOutputStream(), semanticContentType);
+                response.flushBuffer();
+            } catch (IOException | MarmottaSynchronizationException e) {
+                return HttpResponseUtil.createResponseEntityAndLog(String.format("Failed to get catalogue with uuid: %s", uuid), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+            }
+
+            log.info("Completed request to get catalogue, uuid: {}", uuid);
+            return ResponseEntity.ok(catalogue);
+
+        } catch (Exception e) {
+            return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while getting the catalogue in semantic format. uuid: %s, content-type: %s", uuid, semanticContentType), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+        }
+    }
+
 
     private ResponseEntity createErrorResponseEntity(String msg, HttpStatus status, Exception e) {
         msg = msg + e.getMessage();
