@@ -9,7 +9,7 @@ import eu.nimble.utility.HibernateUtility;
 public class CatalogueDatabaseAdapter {
     public static boolean catalogueExists(String partyId, String partySpecificCatalogueId) {
         String queryStr = "SELECT COUNT(c) FROM CatalogueType c WHERE c.ID = ? and c.providerParty.ID = ?";
-        int catalogueExists = ((Long) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).getCount(queryStr, partySpecificCatalogueId, partyId)).intValue();
+        int catalogueExists = ((Long) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).load(queryStr, partySpecificCatalogueId, partyId)).intValue();
         return catalogueExists == 1 ? true : false;
     }
 }

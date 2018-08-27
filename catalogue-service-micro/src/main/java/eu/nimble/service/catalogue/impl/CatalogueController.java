@@ -168,6 +168,7 @@ public class CatalogueController {
     @ApiOperation(value = "", notes = "Add the catalogue passed in a serialized form")
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Invalid content type"),
+            @ApiResponse(code = 409, message = "A catalogue with the same ID exists for the publisher party")
     })
     @RequestMapping(value = "/catalogue/{standard}",
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
@@ -213,7 +214,7 @@ public class CatalogueController {
                 // check catalogue with the same id exists
                 boolean catalogueExists = CatalogueDatabaseAdapter.catalogueExists(ublCatalogue.getProviderParty().getID(), ublCatalogue.getID());
                 if (catalogueExists) {
-                    return HttpResponseUtil.createResponseEntityAndLog(String.format("Catalogue with ID: '%s' already exists", ublCatalogue.getID()), null, HttpStatus.OK, LogLevel.INFO);
+                    return HttpResponseUtil.createResponseEntityAndLog(String.format("Catalogue with ID: '%s' already exists", ublCatalogue.getID()), null, HttpStatus.CONFLICT, LogLevel.INFO);
                 }
             }
 

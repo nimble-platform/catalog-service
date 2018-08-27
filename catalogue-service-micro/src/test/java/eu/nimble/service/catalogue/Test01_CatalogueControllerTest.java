@@ -36,7 +36,7 @@ public class Test01_CatalogueControllerTest {
     private static String createdCatalogueId;
 
     @Test
-    public void test1_postJsonCatalogue() throws Exception {
+    public void test10_postJsonCatalogue() throws Exception {
         String catalogueJson = IOUtils.toString(Test01_CatalogueControllerTest.class.getResourceAsStream("/example_catalogue.json"));
 
         MockHttpServletRequestBuilder request = post("/catalogue/ubl")
@@ -46,6 +46,16 @@ public class Test01_CatalogueControllerTest {
 
         CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
         createdCatalogueId = catalogue.getUUID();
+    }
+
+    @Test
+    public void test11_postExistingCatalogue() throws Exception {
+        String catalogueJson = IOUtils.toString(Test01_CatalogueControllerTest.class.getResourceAsStream("/example_catalogue.json"));
+
+        MockHttpServletRequestBuilder request = post("/catalogue/ubl")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(catalogueJson);
+        this.mockMvc.perform(request).andDo(print()).andExpect(status().isConflict()).andReturn();
     }
 
     @Test
