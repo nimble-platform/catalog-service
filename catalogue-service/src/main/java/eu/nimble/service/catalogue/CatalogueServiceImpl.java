@@ -453,6 +453,37 @@ public class CatalogueServiceImpl implements CatalogueService {
         return catalogueLine;
     }
 
+    @Override
+    public <T> List<T> getCatalogueLines(String catalogueId, List<String> catalogueLineIds) {
+
+        if (catalogueLineIds.size() == 0){
+            return null;
+        }
+
+        List<T> catalogueLines = null;
+
+        String query = "SELECT cl FROM CatalogueLineType as cl, CatalogueType as c "
+                + " JOIN c.catalogueLine as clj"
+                + " WHERE c.UUID = '" + catalogueId + "' "
+                + " AND (";
+
+        int size = catalogueLineIds.size();
+        for(int i = 0;i<size;i++){
+            if(i == size-1){
+                query += "cl.ID = '"+catalogueLineIds.get(i)+"')";
+            }
+            else {
+                query += "cl.ID = '"+catalogueLineIds.get(i)+"' OR ";
+            }
+        }
+        query += " AND clj.ID = cl.ID ";
+
+        catalogueLines = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
+                .loadAll(query);
+
+        return catalogueLines;
+    }
+
     // TODO test
     @Override
     public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine) {

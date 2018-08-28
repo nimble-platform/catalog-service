@@ -32,11 +32,11 @@ import java.util.List;
  * Created by suat on 22-Aug-17.
  * <p>
  * Catalogue line-level REST services. All services defined in this class are prefixed with the
- * "/catalogue/{catalogueUuid}/catalogueline" path where the {@catalogueId} is the unique identifier of the specified
+ * "/catalogue/{catalogueUuid}" path where the {@catalogueId} is the unique identifier of the specified
  * catalogue. All services in this class work only on the UBL based catalogues.
  */
 @Controller
-@RequestMapping(value = "/catalogue/{catalogueUuid}/catalogueline")
+@RequestMapping(value = "/catalogue/{catalogueUuid}")
 public class CatalogueLineController {
     private static Logger log = LoggerFactory.getLogger(CatalogueLineController.class);
 
@@ -61,7 +61,7 @@ public class CatalogueLineController {
             @ApiResponse(code = 400, message = "Failed to get catalogue line"),
             @ApiResponse(code = 204, message = "There does not exist a catalogue line with the given lineId")
     })
-    @RequestMapping(value = "/{lineId}",
+    @RequestMapping(value = "/catalogueline/{lineId}",
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity getCatalogueLine(@PathVariable String catalogueUuid, @PathVariable String lineId) {
@@ -87,6 +87,49 @@ public class CatalogueLineController {
         return ResponseEntity.ok(catalogueLine);
     }
 
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieve the catalogue lines specified with the catalogueUuid and lineIds parameters")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved catalogue lines successfully", response = CatalogueLineType.class,responseContainer = "List"),
+            @ApiResponse(code = 404, message = "Catalogue with the given uuid does not exist"),
+            @ApiResponse(code = 400, message = "Failed to get catalogue lines"),
+            @ApiResponse(code = 204, message = "There does not exist catalogue lines with the some given lineIds")
+    })
+    @RequestMapping(value = "/cataloguelines/{lineIds}",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity getCatalogueLines(@PathVariable String catalogueUuid, @PathVariable List<String> lineIds) {
+        log.info("Incoming request to get catalogue line with lineIds: {}", lineIds);
+
+        if (service.getCatalogue(catalogueUuid) == null) {
+            log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
+        }
+
+        List<CatalogueLineType> catalogueLines;
+        try {
+            catalogueLines = service.getCatalogueLines(catalogueUuid, lineIds);
+        } catch (Exception e) {
+            return createErrorResponseEntity("Failed to get catalogue lines", HttpStatus.BAD_REQUEST, e);
+        }
+
+        if (catalogueLines == null){
+            log.error("There does not exist catalogue lines with lineIds {}", lineIds);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("There does not exist catalogue lines with lineIds " + lineIds);
+        }
+
+        if(catalogueLines.size() != lineIds.size()){
+            for (CatalogueLineType catalogueLineType : catalogueLines){
+                lineIds.remove(lineIds.indexOf(catalogueLineType.getID()));
+            }
+            log.error("There does not exist catalogue lines with lineIds {}", lineIds);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("There does not exist catalogue lines with lineIds " + lineIds);
+        }
+
+        log.info("Completed the request to get catalogue lines with lineId: {}", lineIds);
+        return ResponseEntity.ok(catalogueLines);
+    }
+
     /**
      * Adds the provided line
      *
@@ -103,7 +146,7 @@ public class CatalogueLineController {
             @ApiResponse(code = 400, message = "Failed to deserialize catalogue line from json string"),
             @ApiResponse(code = 500, message = "Failed to add the provided catalogue line")
     })
-    @RequestMapping(
+    @RequestMapping( value = "/catalogueline",
             consumes = {"application/json"},
             produces = {"application/json"},
             method = RequestMethod.POST)
@@ -194,7 +237,8 @@ public class CatalogueLineController {
             @ApiResponse(code = 400, message = "Failed to deserialize catalogue line from json string"),
             @ApiResponse(code = 500, message = "Failed to add the provided catalogue line")
     })
-    @RequestMapping(consumes = {"application/json"},
+    @RequestMapping( value = "/catalogueline",
+            consumes = {"application/json"},
             produces = {"application/json"},
             method = RequestMethod.PUT)
     public ResponseEntity updateCatalogueLine(@PathVariable String catalogueUuid, @RequestBody String catalogueLineJson) {
@@ -262,7 +306,7 @@ public class CatalogueLineController {
             @ApiResponse(code = 404, message = "Catalogue with the given uuid does not exist"),
             @ApiResponse(code = 500, message = "Failed to delete the catalogue line")
     })
-    @RequestMapping(value = "/{lineId}",
+    @RequestMapping(value = "/catalogueline/{lineId}",
             produces = {"application/json"},
             method = RequestMethod.DELETE)
     public ResponseEntity deleteCatalogueLineById(@PathVariable String catalogueUuid, @PathVariable String lineId) {
