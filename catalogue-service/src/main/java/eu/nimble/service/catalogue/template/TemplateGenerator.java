@@ -7,9 +7,7 @@ import eu.nimble.service.catalogue.exception.TemplateParseException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
-import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.usermodel.*;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -220,6 +218,22 @@ public class TemplateGenerator {
             checkMandatory(property, cell);
             thirdRow.createCell(columnOffset).setCellValue(normalizeDataTypeForTemplate(property));
             fourthRow.createCell(columnOffset).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
+
+            if (property.getDataType().equals("BOOLEAN")){
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnOffset,columnOffset);
+                DataValidationHelper dataValidationHelper = new XSSFDataValidationHelper((XSSFSheet) productPropertiesTab);
+                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createExplicitListConstraint(new String[]{
+                        "TRUE","FALSE","YES","NO"});
+                DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
+                dataValidation.setSuppressDropDownArrow(true);
+                // error box
+                dataValidation.setShowErrorBox(true);
+                dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
+                // empty cell
+                dataValidation.setEmptyCellAllowed(true);
+                productPropertiesTab.addValidationData(dataValidation);
+            }
+
             columnOffset++;
         }
 
@@ -231,6 +245,21 @@ public class TemplateGenerator {
                 cell.setCellStyle(boldCellStyle);
                 thirdRow.createCell(columnOffset).setCellValue(normalizeDataTypeForTemplate(property));
                 fourthRow.createCell(columnOffset).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
+
+                if (property.getDataType().equals("BOOLEAN")){
+                    CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnOffset,columnOffset);
+                    DataValidationHelper dataValidationHelper = new XSSFDataValidationHelper((XSSFSheet) productPropertiesTab);
+                    DataValidationConstraint dataValidationConstraint =dataValidationHelper.createExplicitListConstraint(new String[]{
+                            "TRUE","FALSE","YES","NO"});
+                    DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
+                    dataValidation.setSuppressDropDownArrow(true);
+                    // error box
+                    dataValidation.setShowErrorBox(true);
+                    dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
+                    // empty cell
+                    dataValidation.setEmptyCellAllowed(true);
+                    productPropertiesTab.addValidationData(dataValidation);
+                }
                 columnOffset++;
             }
         }
@@ -291,14 +320,15 @@ public class TemplateGenerator {
         columnIndex = 1;
         List<Property> properties = TemplateConfig.getFixedPropertiesForTermsTab();
         for (Property property : properties) {
+
+            cell = secondRow.createCell(columnIndex);
+            cell.setCellValue(property.getPreferredName());
+            cell.setCellStyle(boldCellStyle);
+            checkMandatory(property, cell);
+            thirdRow.createCell(columnIndex).setCellValue(property.getDataType());
+
             // dropdown menu for incoterms
             if(property.getPreferredName().equals(TEMPLATE_TRADING_DELIVERY_INCOTERMS)){
-                cell = secondRow.createCell(columnIndex);
-                cell.setCellValue(property.getPreferredName());
-                cell.setCellStyle(boldCellStyle);
-                checkMandatory(property, cell);
-                thirdRow.createCell(columnIndex).setCellValue(property.getDataType());
-
                 CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnIndex,columnIndex);
                 DataValidationHelper dataValidationHelper = new XSSFDataValidationHelper((XSSFSheet) termsTab);
                 DataValidationConstraint dataValidationConstraint =dataValidationHelper.createExplicitListConstraint(new String[]{
@@ -315,17 +345,25 @@ public class TemplateGenerator {
                 dataValidation.setEmptyCellAllowed(true);
                 termsTab.addValidationData(dataValidation);
 
-                columnIndex++;
+            }
+            else if (property.getDataType().equals("BOOLEAN")){
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnIndex,columnIndex);
+                DataValidationHelper dataValidationHelper = new XSSFDataValidationHelper((XSSFSheet) termsTab);
+                DataValidationConstraint dataValidationConstraint =dataValidationHelper.createExplicitListConstraint(new String[]{
+                        "TRUE","FALSE","YES","NO"});
+                DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
+                dataValidation.setSuppressDropDownArrow(true);
+                // error box
+                dataValidation.setShowErrorBox(true);
+                dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
+                // empty cell
+                dataValidation.setEmptyCellAllowed(true);
+                termsTab.addValidationData(dataValidation);
             }
             else{
-                cell = secondRow.createCell(columnIndex);
-                cell.setCellValue(property.getPreferredName());
-                cell.setCellStyle(boldCellStyle);
-                checkMandatory(property, cell);
-                thirdRow.createCell(columnIndex).setCellValue(property.getDataType());
                 fourthRow.createCell(columnIndex).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
-                columnIndex++;
             }
+            columnIndex++;
         }
 
         autoSizeAllColumns(termsTab);
