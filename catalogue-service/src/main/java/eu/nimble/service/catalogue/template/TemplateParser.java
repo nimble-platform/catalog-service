@@ -452,6 +452,9 @@ public class TemplateParser {
                     DeliveryTermsType deliveryTerms = new DeliveryTermsType();
                     catalogueLine.getGoodsItem().setDeliveryTerms(deliveryTerms);
                     value = (String) parseCell(cell,TEMPLATE_TRADING_DELIVERY_INCOTERMS, TEMPLATE_DATA_TYPE_TEXT, false);
+                    if (value != null){
+                        value = value.replace("_"," ");
+                    }
                     catalogueLine.getGoodsItem().getDeliveryTerms().setIncoterms(value);
 
                 } else if (property.getPreferredName().contentEquals(TEMPLATE_TRADING_DELIVERY_SPECIAL_TERMS)) {

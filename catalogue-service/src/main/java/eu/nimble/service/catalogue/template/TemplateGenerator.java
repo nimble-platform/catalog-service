@@ -242,7 +242,7 @@ public class TemplateGenerator {
                 CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnOffset,columnOffset);
                 DataValidationHelper dataValidationHelper = new XSSFDataValidationHelper((XSSFSheet) productPropertiesTab);
                 DataValidationConstraint dataValidationConstraint = dataValidationHelper.createExplicitListConstraint(new String[]{
-                        "TRUE","FALSE","YES","NO"});
+                        "TRUE","FALSE"});
                 DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
                 dataValidation.setSuppressDropDownArrow(true);
                 // error box
@@ -277,13 +277,12 @@ public class TemplateGenerator {
                 fourthRow.createCell(columnOffset).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
 
                 productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
-                productPropertiesTab.getRow(5).createCell(columnOffset).setCellStyle(editableStyle);
 
                 if (property.getDataType().equals("BOOLEAN")){
                     CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnOffset,columnOffset);
                     DataValidationHelper dataValidationHelper = new XSSFDataValidationHelper((XSSFSheet) productPropertiesTab);
                     DataValidationConstraint dataValidationConstraint =dataValidationHelper.createExplicitListConstraint(new String[]{
-                            "TRUE","FALSE","YES","NO"});
+                            "TRUE","FALSE"});
                     DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
                     dataValidation.setSuppressDropDownArrow(true);
                     // error box
@@ -388,10 +387,10 @@ public class TemplateGenerator {
                 CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnIndex,columnIndex);
                 DataValidationHelper dataValidationHelper = new XSSFDataValidationHelper((XSSFSheet) termsTab);
                 DataValidationConstraint dataValidationConstraint =dataValidationHelper.createExplicitListConstraint(new String[]{
-                        "CIF (Cost, Insurance and Freight)","CIP (Carriage and Insurance Paid to)",
-                        "CFR (Cost and Freight)","CPT (Carriage paid to)","DAT (Delivered at Terminal)",
-                        "DAP (Delivered at Place)","DDP (Delivery Duty Paid)","EXW (Ex Works)","FAS (Free Alongside Ship)",
-                        "FCA (Free Carrier)","FOB (Free on Board)"});
+                        "CIF_(Cost,_Insurance_and_Freight)","CIP_(Carriage_and_Insurance_Paid_to)",
+                        "CFR_(Cost_and_Freight)","CPT_(Carriage_paid_to)","DAT_(Delivered_at_Terminal)",
+                        "DAP_(Delivered_at_Place)","DDP_(Delivery_Duty_Paid)","EXW_(Ex_Works)","FAS_(Free_Alongside_Ship)",
+                        "FCA_(Free_Carrier)","FOB_(Free_on_Board)"});
                 DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
                 dataValidation.setSuppressDropDownArrow(true);
                 // error box
@@ -406,7 +405,7 @@ public class TemplateGenerator {
                 CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnIndex,columnIndex);
                 DataValidationHelper dataValidationHelper = new XSSFDataValidationHelper((XSSFSheet) termsTab);
                 DataValidationConstraint dataValidationConstraint =dataValidationHelper.createExplicitListConstraint(new String[]{
-                        "TRUE","FALSE","YES","NO"});
+                        "TRUE","FALSE"});
                 DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
                 dataValidation.setSuppressDropDownArrow(true);
                 // error box
