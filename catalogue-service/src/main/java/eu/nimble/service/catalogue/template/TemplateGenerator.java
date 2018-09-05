@@ -26,6 +26,9 @@ public class TemplateGenerator {
     private CellStyle mandatoryCellStyle;
     private CellStyle boldCellStyle;
     private CellStyle wordWrapStyle;
+    private CellStyle readOnlyStyle;
+    private CellStyle editableStyle;
+    private CellStyle tabCellStyle;
 
     public TemplateGenerator() {
         template = new XSSFWorkbook();
@@ -171,9 +174,15 @@ public class TemplateGenerator {
         // create the top row containing the category names and ids on top of the corresponding properties
         // create the dimension tab
         Row topRow = productPropertiesTab.createRow(0);
+
+        // make first five columns read only
+        for (int i=0;i<5;i++){
+            topRow.createCell(i).setCellStyle(readOnlyStyle);
+        }
+
         Cell cell = getCellWithMissingCellPolicy(topRow, 5);
         cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_DIMENSIONS);
-        cell.setCellStyle(headerCellStyle);
+        cell.setCellStyle(tabCellStyle);
         CellRangeAddress cra = new CellRangeAddress(0, 0, 5, 7);
         productPropertiesTab.addMergedRegion(cra);
 
@@ -185,7 +194,7 @@ public class TemplateGenerator {
                 int colTo = columnOffset + categories.get(i).getProperties().size() - 1;
                 cell = getCellWithMissingCellPolicy(topRow, colFrom);
                 cell.setCellValue(categories.get(i).getPreferredName());
-                cell.setCellStyle(headerCellStyle);
+                cell.setCellStyle(tabCellStyle);
                 cra = new CellRangeAddress(0, 0, colFrom, colTo);
                 productPropertiesTab.addMergedRegion(cra);
                 columnOffset = colTo + 1;
@@ -207,6 +216,14 @@ public class TemplateGenerator {
         cell = fourthRow.createCell(0);
         cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PROPERTY_UNIT);
         cell.setCellStyle(boldCellStyle);
+        cell= productPropertiesTab.createRow(++rowIndex).createCell(0);
+        cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PRODUCT+" 1");
+        cell.setCellStyle(readOnlyStyle);
+        cell = productPropertiesTab.createRow(++rowIndex).createCell(0);
+        cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PRODUCT+" 2");
+        cell.setCellStyle(readOnlyStyle);
+        cell = productPropertiesTab.createRow(++rowIndex).createCell(0);
+        cell.setCellValue("...");
 
         // common UBL-based properties
         columnOffset = 1;
@@ -215,8 +232,19 @@ public class TemplateGenerator {
             cell = secondRow.createCell(columnOffset);
             cell.setCellValue(property.getPreferredName());
             cell.setCellStyle(boldCellStyle);
-            checkMandatory(property, cell);
-            thirdRow.createCell(columnOffset).setCellValue(normalizeDataTypeForTemplate(property));
+            if(checkMandatory(property, cell)){
+                productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(mandatoryCellStyle);
+                productPropertiesTab.getRow(5).createCell(columnOffset).setCellStyle(mandatoryCellStyle);
+            }
+            else {
+                productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
+                productPropertiesTab.getRow(5).createCell(columnOffset).setCellStyle(editableStyle);
+            }
+            Cell thirdRowCell = thirdRow.createCell(columnOffset);
+            thirdRowCell.setCellValue(normalizeDataTypeForTemplate(property));
+            // make thirdRow read only
+            thirdRowCell.setCellStyle(readOnlyStyle);
+
             fourthRow.createCell(columnOffset).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
 
             if (property.getDataType().equals("BOOLEAN")){
@@ -234,6 +262,14 @@ public class TemplateGenerator {
                 productPropertiesTab.addValidationData(dataValidation);
             }
 
+            // check whether the property needs a unit
+            if(!property.getDataType().equals("AMOUNT") && !property.getDataType().equals("QUANTITY")){
+                fourthRow.getCell(columnOffset).setCellStyle(readOnlyStyle);
+            }
+            else {
+                fourthRow.getCell(columnOffset).setCellStyle(editableStyle);
+            }
+
             columnOffset++;
         }
 
@@ -243,8 +279,14 @@ public class TemplateGenerator {
                 cell = secondRow.createCell(columnOffset);
                 cell.setCellValue(property.getPreferredName());
                 cell.setCellStyle(boldCellStyle);
-                thirdRow.createCell(columnOffset).setCellValue(normalizeDataTypeForTemplate(property));
+                Cell thirdRowCell = thirdRow.createCell(columnOffset);
+                thirdRowCell.setCellValue(normalizeDataTypeForTemplate(property));
+                // make thirdRow read only
+                thirdRowCell.setCellStyle(readOnlyStyle);
                 fourthRow.createCell(columnOffset).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
+
+                productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
+                productPropertiesTab.getRow(5).createCell(columnOffset).setCellStyle(editableStyle);
 
                 if (property.getDataType().equals("BOOLEAN")){
                     CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnOffset,columnOffset);
@@ -260,6 +302,15 @@ public class TemplateGenerator {
                     dataValidation.setEmptyCellAllowed(true);
                     productPropertiesTab.addValidationData(dataValidation);
                 }
+
+                // check whether the property needs a unit
+                if(!property.getDataType().equals("AMOUNT") && !property.getDataType().equals("QUANTITY")){
+                    fourthRow.getCell(columnOffset).setCellStyle(readOnlyStyle);
+                }
+                else {
+                    fourthRow.getCell(columnOffset).setCellStyle(editableStyle);
+                }
+
                 columnOffset++;
             }
         }
@@ -271,6 +322,10 @@ public class TemplateGenerator {
         // create the top row containing the property categories
         // trading details block
         Row topRow = termsTab.createRow(0);
+        // make first five columns read only
+        for (int i=0;i<5;i++){
+            topRow.createCell(i).setCellStyle(readOnlyStyle);
+        }
         Cell cell = getCellWithMissingCellPolicy(topRow, 2);
         cell.setCellValue(TemplateConfig.TEMPLATE_TRADING_DELIVERY_TRADING_DETAILS);
         cell.setCellStyle(boldCellStyle);
@@ -315,6 +370,14 @@ public class TemplateGenerator {
         cell = fourthRow.createCell(columnIndex);
         cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PROPERTY_UNIT);
         cell.setCellStyle(boldCellStyle);
+        cell= termsTab.createRow(++rowIndex).createCell(0);
+        cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PRODUCT+" 1");
+        cell.setCellStyle(readOnlyStyle);
+        cell = termsTab.createRow(++rowIndex).createCell(0);
+        cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PRODUCT+" 2");
+        cell.setCellStyle(readOnlyStyle);
+        cell = termsTab.createRow(++rowIndex).createCell(0);
+        cell.setCellValue("...");
 
         // common UBL-based properties
         columnIndex = 1;
@@ -324,8 +387,19 @@ public class TemplateGenerator {
             cell = secondRow.createCell(columnIndex);
             cell.setCellValue(property.getPreferredName());
             cell.setCellStyle(boldCellStyle);
-            checkMandatory(property, cell);
-            thirdRow.createCell(columnIndex).setCellValue(property.getDataType());
+            if(checkMandatory(property, cell)){
+                termsTab.getRow(4).createCell(columnIndex).setCellStyle(mandatoryCellStyle);
+                termsTab.getRow(5).createCell(columnIndex).setCellStyle(mandatoryCellStyle);
+            }
+            else {
+                termsTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
+                termsTab.getRow(5).createCell(columnIndex).setCellStyle(editableStyle);
+            }
+            Cell thirdRowCell = thirdRow.createCell(columnIndex);
+            thirdRowCell.setCellValue(property.getDataType());
+            // make thirdRow read only
+            thirdRowCell.setCellStyle(readOnlyStyle);
+            fourthRow.createCell(columnIndex).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
 
             // dropdown menu for incoterms
             if(property.getPreferredName().equals(TEMPLATE_TRADING_DELIVERY_INCOTERMS)){
@@ -360,8 +434,12 @@ public class TemplateGenerator {
                 dataValidation.setEmptyCellAllowed(true);
                 termsTab.addValidationData(dataValidation);
             }
-            else{
-                fourthRow.createCell(columnIndex).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
+            // check whether the property needs a unit
+            if(!property.getDataType().equals("AMOUNT") && !property.getDataType().equals("QUANTITY")){
+                fourthRow.getCell(columnIndex).setCellStyle(readOnlyStyle);
+            }
+            else {
+                fourthRow.getCell(columnIndex).setCellStyle(editableStyle);
             }
             columnIndex++;
         }
@@ -390,38 +468,40 @@ public class TemplateGenerator {
 
         // header row containing the labels of property related fields
         rowIndex = 0;
-        columnIndex = 1;
+        columnIndex = 0;
         Row row = propertyDetailsTab.createRow(rowIndex);
         Cell cell = row.createCell(columnIndex);
+        cell.setCellStyle(tabCellStyle);
+        cell = row.createCell(++columnIndex);
         cell.setCellValue(TemplateConfig.TEMPLATE_PROPERTY_DETAILS_PROPERTY_NAME);
-        cell.setCellStyle(headerCellStyle);
+        cell.setCellStyle(tabCellStyle);
         cell = row.createCell(++columnIndex);
         cell.setCellValue(TemplateConfig.TEMPLATE_PROPERTY_DETAILS_SHORT_NAME);
-        cell.setCellStyle(headerCellStyle);
+        cell.setCellStyle(tabCellStyle);
         cell = row.createCell(++columnIndex);
         cell.setCellValue(TemplateConfig.TEMPLATE_PROPERTY_DETAILS_DEFINITION);
-        cell.setCellStyle(headerCellStyle);
+        cell.setCellStyle(tabCellStyle);
         cell = row.createCell(++columnIndex);
         cell.setCellValue(TemplateConfig.TEMPLATE_PROPERTY_DETAILS_NOTE);
-        cell.setCellStyle(headerCellStyle);
+        cell.setCellStyle(tabCellStyle);
         cell = row.createCell(++columnIndex);
         cell.setCellValue(TemplateConfig.TEMPLATE_PROPERTY_DETAILS_REMARK);
-        cell.setCellStyle(headerCellStyle);
+        cell.setCellStyle(tabCellStyle);
         cell = row.createCell(++columnIndex);
         cell.setCellValue(TemplateConfig.TEMPLATE_PROPERTY_DETAILS_PREFERRED_SYMBOL);
-        cell.setCellStyle(headerCellStyle);
+        cell.setCellStyle(tabCellStyle);
         cell = row.createCell(++columnIndex);
         cell.setCellValue(TemplateConfig.TEMPLATE_PROPERTY_DETAILS_UNIT);
-        cell.setCellStyle(headerCellStyle);
+        cell.setCellStyle(tabCellStyle);
         cell = row.createCell(++columnIndex);
         cell.setCellValue(TemplateConfig.TEMPLATE_PROPERTY_DETAILS_IEC_CATEGORY);
-        cell.setCellStyle(headerCellStyle);
+        cell.setCellStyle(tabCellStyle);
         cell = row.createCell(++columnIndex);
         cell.setCellValue(TemplateConfig.TEMPLATE_PROPERTY_DETAILS_ATTRIBUTE_TYPE);
-        cell.setCellStyle(headerCellStyle);
+        cell.setCellStyle(tabCellStyle);
         cell = row.createCell(++columnIndex);
         cell.setCellValue(TemplateConfig.TEMPLATE_PROPERTY_DETAILS_DATA_TYPE);
-        cell.setCellStyle(headerCellStyle);
+        cell.setCellStyle(tabCellStyle);
 
         // fill in the details about the properties obtained from categories
         for (Category category : categories) {
@@ -527,11 +607,12 @@ public class TemplateGenerator {
 
     }
 
-    private void checkMandatory(Property property, Cell cell) {
+    private boolean checkMandatory(Property property, Cell cell) {
         if (property.getPreferredName().contentEquals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION) ||
                 property.getPreferredName().contentEquals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_NAME)) {
-            cell.setCellStyle(mandatoryCellStyle);
+            return true;
         }
+        return false;
     }
 
     private Row getRow(Sheet sheet, int rowNum) {
@@ -555,9 +636,6 @@ public class TemplateGenerator {
         headerCellStyle.setFont(font);
 
         mandatoryCellStyle = template.createCellStyle();
-        font = template.createFont();
-        font.setBold(true);
-        mandatoryCellStyle.setFont(font);
         mandatoryCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         mandatoryCellStyle.setFillForegroundColor(IndexedColors.RED.getIndex());
 
@@ -565,9 +643,25 @@ public class TemplateGenerator {
         font = template.createFont();
         font.setBold(true);
         boldCellStyle.setFont(font);
+        boldCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        boldCellStyle.setFillForegroundColor(IndexedColors.GREY_40_PERCENT.getIndex());
 
         wordWrapStyle = template.createCellStyle();
         wordWrapStyle.setWrapText(true);
+
+        readOnlyStyle = template.createCellStyle();
+        readOnlyStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        readOnlyStyle.setFillForegroundColor(IndexedColors.GREY_40_PERCENT.getIndex());
+
+        editableStyle = template.createCellStyle();
+        editableStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        editableStyle.setFillForegroundColor(IndexedColors.BRIGHT_GREEN.getIndex());
+
+        tabCellStyle = template.createCellStyle();
+        tabCellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        tabCellStyle.setFont(font);
+        tabCellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        tabCellStyle.setFillForegroundColor(IndexedColors.GREY_40_PERCENT.getIndex());
     }
 
     private void autoSizeAllColumns(Sheet sheet) {

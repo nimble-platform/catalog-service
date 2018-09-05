@@ -61,6 +61,7 @@ public class TemplateConfig {
     public static String TEMPLATE_PRODUCT_PROPERTIES_LENGTH = "Length";
     public static String TEMPLATE_PRODUCT_PROPERTIES_HEIGHT = "Height";
     public static String TEMPLATE_PRODUCT_PROPERTIES_CERTIFICATIONS = "Certifications";
+    public static String TEMPLATE_PRODUCT_PROPERTIES_PRODUCT = "Product";
     public static String TEMPLATE_PRODUCT_PROPERTIES_PRODUCT_DATA_SHEET = "Product Data Sheet";
     public static String TEMPLATE_PRODUCT_PROPERTIES_PRODUCT_SAFETY_SHEET = "Product Safety Sheet";
 
