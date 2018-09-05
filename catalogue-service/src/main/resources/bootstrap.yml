@@ -79,10 +79,10 @@ persistence:
         jdbc:
           batch_size: 0
         c3p0:
-          acquire_increment: 5
-          initialPoolSize: 5
-          max_size: 15
-          min_size: 5
+          acquire_increment: 3
+          initialPoolSize: 3
+          max_size: 6
+          min_size: 3
           maxStatementsPerConnection: 5
           acquireRetryAttempts: 10
           acquireRetryDelay: 100
