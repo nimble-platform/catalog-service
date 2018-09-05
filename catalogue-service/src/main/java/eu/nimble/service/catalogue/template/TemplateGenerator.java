@@ -216,14 +216,7 @@ public class TemplateGenerator {
         cell = fourthRow.createCell(0);
         cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PROPERTY_UNIT);
         cell.setCellStyle(boldCellStyle);
-        cell= productPropertiesTab.createRow(++rowIndex).createCell(0);
-        cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PRODUCT+" 1");
-        cell.setCellStyle(readOnlyStyle);
-        cell = productPropertiesTab.createRow(++rowIndex).createCell(0);
-        cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PRODUCT+" 2");
-        cell.setCellStyle(readOnlyStyle);
-        cell = productPropertiesTab.createRow(++rowIndex).createCell(0);
-        cell.setCellValue("...");
+        productPropertiesTab.createRow(++rowIndex);
 
         // common UBL-based properties
         columnOffset = 1;
@@ -234,11 +227,9 @@ public class TemplateGenerator {
             cell.setCellStyle(boldCellStyle);
             if(checkMandatory(property, cell)){
                 productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(mandatoryCellStyle);
-                productPropertiesTab.getRow(5).createCell(columnOffset).setCellStyle(mandatoryCellStyle);
             }
             else {
                 productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
-                productPropertiesTab.getRow(5).createCell(columnOffset).setCellStyle(editableStyle);
             }
             Cell thirdRowCell = thirdRow.createCell(columnOffset);
             thirdRowCell.setCellValue(normalizeDataTypeForTemplate(property));
@@ -370,14 +361,7 @@ public class TemplateGenerator {
         cell = fourthRow.createCell(columnIndex);
         cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PROPERTY_UNIT);
         cell.setCellStyle(boldCellStyle);
-        cell= termsTab.createRow(++rowIndex).createCell(0);
-        cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PRODUCT+" 1");
-        cell.setCellStyle(readOnlyStyle);
-        cell = termsTab.createRow(++rowIndex).createCell(0);
-        cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PRODUCT+" 2");
-        cell.setCellStyle(readOnlyStyle);
-        cell = termsTab.createRow(++rowIndex).createCell(0);
-        cell.setCellValue("...");
+        termsTab.createRow(++rowIndex);
 
         // common UBL-based properties
         columnIndex = 1;
@@ -389,11 +373,9 @@ public class TemplateGenerator {
             cell.setCellStyle(boldCellStyle);
             if(checkMandatory(property, cell)){
                 termsTab.getRow(4).createCell(columnIndex).setCellStyle(mandatoryCellStyle);
-                termsTab.getRow(5).createCell(columnIndex).setCellStyle(mandatoryCellStyle);
             }
             else {
                 termsTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
-                termsTab.getRow(5).createCell(columnIndex).setCellStyle(editableStyle);
             }
             Cell thirdRowCell = thirdRow.createCell(columnIndex);
             thirdRowCell.setCellValue(property.getDataType());
