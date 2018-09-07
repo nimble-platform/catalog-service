@@ -21,6 +21,7 @@ import javax.xml.namespace.QName;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 
 /**
@@ -67,7 +68,12 @@ public class MarmottaClient {
 
             conn.disconnect();
         } catch (IOException | MarmottaClientException e) {
-            throw new MarmottaSynchronizationException("Failed to submit catalogue to Marmotta", e);
+            // TODO now the assumption is that although a timeout is received, Marmotta is still working properly
+            if (!(e instanceof SocketTimeoutException)) {
+                throw new MarmottaSynchronizationException("Failed to submit catalogue to Marmotta", e);
+            } else {
+                logger.warn("Timeout from Marmotta while submitting the catalogue with uuid: {}", catalogue.getUUID(), e);
+            }
         }
     }
 
