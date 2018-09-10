@@ -11,6 +11,7 @@ import eu.nimble.service.model.BigDecimalXmlAdapter;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.utility.Configuration;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
@@ -63,9 +64,12 @@ public class MarmottaClient {
             builder = new URIBuilder(SpringBridge.getInstance().getCatalogueServiceConfig().getMarmottaUrl() + "/import/upload");
             builder.setParameter("context", catalogue.getUUID());
 
-
+            RequestConfig requestConfig = RequestConfig.custom()
+                    .setSocketTimeout(0)
+                    .build();
 
             HttpPost httpPost = new HttpPost(builder.build());
+            httpPost.setConfig(requestConfig);
             CloseableHttpClient client = HttpClientBuilder.create().disableAutomaticRetries().build();
 
 
