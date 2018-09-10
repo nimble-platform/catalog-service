@@ -1,10 +1,8 @@
 package eu.nimble.service.catalogue.sync;
 
 import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.mashape.unirest.request.HttpRequestWithBody;
 import eu.nimble.data.transformer.ontmalizer.XML2OWLMapper;
 import eu.nimble.data.transformer.ontmalizer.XSD2OWLMapper;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
@@ -13,6 +11,13 @@ import eu.nimble.service.model.BigDecimalXmlAdapter;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.utility.Configuration;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.marmotta.client.exception.MarmottaClientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +30,7 @@ import javax.xml.namespace.QName;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 /**
@@ -49,18 +55,44 @@ public class MarmottaClient {
         }
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        rdfGenerator.writeModel(baos, "N3");
+        StringWriter stringWriter = new StringWriter();
+        rdfGenerator.writeModel(stringWriter, "N3");
 
-        HttpResponse<String> response = null;
+        URIBuilder builder = null;
         try {
-            response = Unirest.post(SpringBridge.getInstance().getCatalogueServiceConfig().getMarmottaUrl() + "/import/upload").
-                    header("Content-Type", "text/n3").
-                    queryString("context", catalogue.getUUID()).body(baos.toByteArray()).asString();
-            System.out.println("STATUS: " + response.getStatus());
-        } catch (UnirestException e) {
-            e.printStackTrace();
-        }
+            builder = new URIBuilder(SpringBridge.getInstance().getCatalogueServiceConfig().getMarmottaUrl() + "/import/upload");
+            builder.setParameter("context", catalogue.getUUID());
 
+
+
+            HttpPost httpPost = new HttpPost(builder.build());
+            CloseableHttpClient client = HttpClientBuilder.create().disableAutomaticRetries().build();
+
+
+            StringEntity entity = new StringEntity(stringWriter.toString());
+            httpPost.setEntity(entity);
+            httpPost.setHeader("Content-type", "text/n3");
+
+            CloseableHttpResponse response = null;
+            response = client.execute(httpPost);
+            System.out.println("STATUS: " + response.getStatusLine().getStatusCode());
+            client.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+//        HttpResponse<String> response = null;
+//        try {
+//            response = Unirest.post(SpringBridge.getInstance().getCatalogueServiceConfig().getMarmottaUrl() + "/import/upload").
+//                    header("Content-Type", "text/n3").
+//                    queryString("context", catalogue.getUUID()).body(baos.toByteArray()).asString();
+//            System.out.println("STATUS: " + response.getStatus());
+//        } catch (UnirestException e) {
+//            e.printStackTrace();
+//        }
+
+        HttpClientBuilder.create().disableAutomaticRetries().build();
 
 //        HttpURLConnection conn = null;
 //        try {
