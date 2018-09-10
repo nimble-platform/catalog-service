@@ -1,5 +1,10 @@
 package eu.nimble.service.catalogue.sync;
 
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import com.mashape.unirest.request.HttpRequestWithBody;
 import eu.nimble.data.transformer.ontmalizer.XML2OWLMapper;
 import eu.nimble.data.transformer.ontmalizer.XSD2OWLMapper;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
@@ -7,7 +12,6 @@ import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.BigDecimalXmlAdapter;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.utility.Configuration;
-import eu.nimble.utility.config.CatalogueServiceConfig;
 import org.apache.commons.io.IOUtils;
 import org.apache.marmotta.client.exception.MarmottaClientException;
 import org.slf4j.Logger;
@@ -21,7 +25,6 @@ import javax.xml.namespace.QName;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.SocketTimeoutException;
 import java.net.URL;
 
 /**
@@ -45,41 +48,55 @@ public class MarmottaClient {
             throw new MarmottaSynchronizationException("Failed to read Marmotta URL from config file", e);
         }
 
-        HttpURLConnection conn = null;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        rdfGenerator.writeModel(baos, "N3");
+
+        HttpResponse<String> response = null;
         try {
-            conn = (HttpURLConnection) marmottaURL.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "text/n3");
-            conn.setDoOutput(true);
-            conn.setConnectTimeout(59999);
-            conn.setReadTimeout(60000);
-            conn.setChunkedStreamingMode(0);
-
-            OutputStream os = conn.getOutputStream();
-            rdfGenerator.writeModel(os, "N3");
-            os.flush();
-
-            StringWriter catalogueRDFWriter = new StringWriter();
-            rdfGenerator.writeModel(catalogueRDFWriter, "N3");
-            logger.info("Transformed RDF data 2:\n{}", catalogueRDFWriter.toString());
-
-            logger.info("Catalogue with uuid: {} submitted to Marmotta. Received HTTP response: {}", catalogue.getUUID(), conn.getResponseCode());
-            if (conn.getResponseCode() != 200) {
-                InputStream error = conn.getErrorStream();
-                String msg = IOUtils.toString(error);
-                logger.error("Error from Marmotta upon submitting the catalogue: {}, error: {}", catalogue.getUUID(), msg);
-                throw new MarmottaClientException(msg);
-            }
-
-            conn.disconnect();
-        } catch (IOException | MarmottaClientException e) {
-            // TODO now the assumption is that although a timeout is received, Marmotta is still working properly
-            if (!(e instanceof SocketTimeoutException)) {
-                throw new MarmottaSynchronizationException("Failed to submit catalogue to Marmotta", e);
-            } else {
-                logger.warn("Timeout from Marmotta while submitting the catalogue with uuid: {}", catalogue.getUUID(), e);
-            }
+            response = Unirest.post(SpringBridge.getInstance().getCatalogueServiceConfig().getMarmottaUrl() + "/import/upload").
+                    header("Content-Type", "text/n3").
+                    queryString("context", catalogue.getUUID()).body(baos.toByteArray()).asString();
+            System.out.println("STATUS: " + response.getStatus());
+        } catch (UnirestException e) {
+            e.printStackTrace();
         }
+
+
+//        HttpURLConnection conn = null;
+//        try {
+//            conn = (HttpURLConnection) marmottaURL.openConnection();
+//            conn.setRequestMethod("POST");
+//            conn.setRequestProperty("Content-Type", "text/n3");
+//            conn.setDoOutput(true);
+//            conn.setConnectTimeout(59999);
+//            conn.setReadTimeout(60000);
+//            conn.setChunkedStreamingMode(0);
+//
+//            OutputStream os = conn.getOutputStream();
+//            rdfGenerator.writeModel(os, "N3");
+//            os.flush();
+//
+//            StringWriter catalogueRDFWriter = new StringWriter();
+//            rdfGenerator.writeModel(catalogueRDFWriter, "N3");
+//            logger.info("Transformed RDF data 2:\n{}", catalogueRDFWriter.toString());
+//
+//            logger.info("Catalogue with uuid: {} submitted to Marmotta. Received HTTP response: {}", catalogue.getUUID(), conn.getResponseCode());
+//            if (conn.getResponseCode() != 200) {
+//                InputStream error = conn.getErrorStream();
+//                String msg = IOUtils.toString(error);
+//                logger.error("Error from Marmotta upon submitting the catalogue: {}, error: {}", catalogue.getUUID(), msg);
+//                throw new MarmottaClientException(msg);
+//            }
+//
+//            conn.disconnect();
+//        } catch (IOException | MarmottaClientException e) {
+//            // TODO now the assumption is that although a timeout is received, Marmotta is still working properly
+//            if (!(e instanceof SocketTimeoutException)) {
+//                throw new MarmottaSynchronizationException("Failed to submit catalogue to Marmotta", e);
+//            } else {
+//                logger.warn("Timeout from Marmotta while submitting the catalogue with uuid: {}", catalogue.getUUID(), e);
+//            }
+//        }
     }
 
     public void deleteCatalogueFromMarmotta(String uuid) throws MarmottaSynchronizationException {
