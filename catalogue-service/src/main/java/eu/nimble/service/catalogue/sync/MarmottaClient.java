@@ -137,7 +137,7 @@ public class MarmottaClient {
         }
 
         // log the catalogue to be transformed
-        logger.debug("Catalogue to be transformed:\n{}", serializedCatalogueWriter.toString());
+        logger.info("Catalogue to be transformed:\n{}", serializedCatalogueWriter.toString());
         serializedCatalogueWriter.flush();
 
         try {
@@ -151,7 +151,7 @@ public class MarmottaClient {
 
             StringWriter catalogueRDFWriter = new StringWriter();
             generator.writeModel(catalogueRDFWriter, "N3");
-            logger.debug("Transformed RDF data:\n{}", catalogueRDFWriter.toString());
+            logger.info("Transformed RDF data:\n{}", catalogueRDFWriter.toString());
             catalogueRDFWriter.flush();
 
             return generator;
