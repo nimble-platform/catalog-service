@@ -58,6 +58,10 @@ public class MarmottaClient {
             rdfGenerator.writeModel(os, "N3");
             os.flush();
 
+            StringWriter catalogueRDFWriter = new StringWriter();
+            rdfGenerator.writeModel(catalogueRDFWriter, "N3");
+            logger.info("Transformed RDF data 2:\n{}", catalogueRDFWriter.toString());
+
             logger.info("Catalogue with uuid: {} submitted to Marmotta. Received HTTP response: {}", catalogue.getUUID(), conn.getResponseCode());
             if (conn.getResponseCode() != 200) {
                 InputStream error = conn.getErrorStream();
