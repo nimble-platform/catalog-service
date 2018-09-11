@@ -58,7 +58,7 @@ persistence:
     schema: public
 
   marmotta:
-    sync: false
+    sync: true
     url: ${MARMOTTA_URL:http://nimble-staging.salzburgresearch.at/marmotta}
 
   orm:
