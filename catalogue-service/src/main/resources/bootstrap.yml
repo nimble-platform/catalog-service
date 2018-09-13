@@ -136,10 +136,9 @@ security:
     authorization:
       check-token-access:
 
-
 nimble:
   identity:
-    url: ${IDENTITY_SERVICE_URL:http://nimble-staging.salzburgresearch.at/identity}
+    url: ${IDENTITY_SERVICE_URL}
 
 ################################################################################################
 ################################## KUBERNETES CONFIG ###########################################
