@@ -9,6 +9,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import eu.nimble.service.catalogue.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
+import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.util.CatalogueValidator;
 import eu.nimble.service.catalogue.util.HttpResponseUtil;
 import eu.nimble.service.catalogue.util.Utils;
@@ -203,7 +204,7 @@ public class CatalogueController {
                     for (String error : errors) {
                         sb.append(error).append(System.lineSeparator());
                     }
-                    return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                    return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
                 }
 
                 // check catalogue with the same id exists
@@ -317,7 +318,7 @@ public class CatalogueController {
                 for (String error : errors) {
                     sb.append(error).append(System.lineSeparator());
                 }
-                return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
             }
 
             try {
@@ -533,11 +534,23 @@ public class CatalogueController {
         ZipInputStream zis = null;
         try {
             zis = new ZipInputStream(pack.getInputStream());
-            service.addImagesToProducts(zis, catalogueUuid);
+            CatalogueType catalogue = service.addImagesToProducts(zis, catalogueUuid);
+            CatalogueValidator catalogueValidator = new CatalogueValidator(catalogue);
+            List<String> errors = catalogueValidator.validate();
+            if (errors.size() > 0) {
+                StringBuilder sb = new StringBuilder("");
+                for (String error : errors) {
+                    sb.append(error).append(System.lineSeparator());
+                }
+                return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
+            }
+            service.updateCatalogue(catalogue);
 
         } catch (IOException e) {
             return createErrorResponseEntity("Failed obtain a Zip package from the provided data", HttpStatus.BAD_REQUEST, e);
-        } finally {
+        } catch (CatalogueServiceException e) {
+            return createErrorResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST, e);
+        }finally {
             try {
                 zis.close();
             } catch (IOException e) {

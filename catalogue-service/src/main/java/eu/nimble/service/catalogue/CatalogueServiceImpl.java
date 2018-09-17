@@ -370,7 +370,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public void addImagesToProducts(ZipInputStream imagePackage, String catalogueUuid) {
+    public CatalogueType addImagesToProducts(ZipInputStream imagePackage, String catalogueUuid) {
         try {
             CatalogueType catalogue = getCatalogue(catalogueUuid);
             ZipEntry ze = imagePackage.getNextEntry();
@@ -416,7 +416,8 @@ public class CatalogueServiceImpl implements CatalogueService {
                 ze = imagePackage.getNextEntry();
             }
 
-            updateCatalogue(catalogue);
+            return catalogue;
+
         } catch (IOException e) {
             String msg = "Failed to get next entry";
             logger.error(msg, e);

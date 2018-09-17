@@ -176,13 +176,11 @@ public class CatalogueLineController {
             CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogue, catalogueLine);
             List<String> errors = catalogueLineValidator.validate();
             if (errors.size() > 0) {
-                if (errors.size() > 0) {
-                    StringBuilder sb = new StringBuilder("");
-                    for (String error : errors) {
-                        sb.append(error).append(System.lineSeparator());
-                    }
-                    return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                StringBuilder sb = new StringBuilder("");
+                for (String error : errors) {
+                    sb.append(error).append(System.lineSeparator());
                 }
+                return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
             }
 
             // check duplicate line
@@ -266,13 +264,11 @@ public class CatalogueLineController {
             CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogue, catalogueLine);
             List<String> errors = catalogueLineValidator.validate();
             if (errors.size() > 0) {
-                if (errors.size() > 0) {
-                    StringBuilder sb = new StringBuilder("");
-                    for (String error : errors) {
-                        sb.append(error).append(System.lineSeparator());
-                    }
-                    return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                StringBuilder sb = new StringBuilder("");
+                for (String error : errors) {
+                    sb.append(error).append(System.lineSeparator());
                 }
+                return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
             }
 
             // consider the case of an updated line id conflicting with the id of an existing line

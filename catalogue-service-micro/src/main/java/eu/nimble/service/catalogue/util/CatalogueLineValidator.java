@@ -3,7 +3,9 @@ package eu.nimble.service.catalogue.util;
 import com.google.common.base.Strings;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemPropertyType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemType;
+import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +14,8 @@ import java.util.List;
  * Created by suat on 08-Aug-18.
  */
 public class CatalogueLineValidator {
+
+    private static final long MAX_FILE_SIZE = 1048575;
 
     private List<String> errorMessages;
     private CatalogueType owningCatalogue;
@@ -38,6 +42,7 @@ public class CatalogueLineValidator {
         nameExists();
         commodityClassificationExists();
         partyIdsMatch();
+        fileSizesLessThanTheMaximum();
 
         return  errorMessages;
     }
@@ -84,6 +89,26 @@ public class CatalogueLineValidator {
         String itemManufacturerPartyId = item.getManufacturerParty().getID();
         if (!catalogueProviderPartyId.contentEquals(itemManufacturerPartyId)) {
             errorMessages.add(String.format("Catalogue provider party and manufacturer party ids do no match for catalogue line. id: %s, catalogue provider party id: %s, line manufacturer party id: %s", extractedLineId, catalogueProviderPartyId, itemManufacturerPartyId));
+        }
+    }
+
+    private void fileSizesLessThanTheMaximum() {
+        // validate images
+        for(BinaryObjectType bo : catalogueLine.getGoodsItem().getItem().getProductImage()) {
+            if(bo.getValue().length > MAX_FILE_SIZE) {
+                errorMessages.add(String.format("%s is larger than the allowed size: %s", bo.getFileName(), MAX_FILE_SIZE));
+            }
+        }
+
+        // validate properties getting binary content
+        for(ItemPropertyType itemProperty : catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty()) {
+            if(itemProperty.getValueQualifier().contentEquals("BINARY")) {
+                for(BinaryObjectType bo : itemProperty.getValueBinary()) {
+                    if(bo.getValue().length > MAX_FILE_SIZE) {
+                        errorMessages.add(String.format("%s is larger than the allowed size: %s", bo.getFileName(), MAX_FILE_SIZE));
+                    }
+                }
+            }
         }
     }
 }
