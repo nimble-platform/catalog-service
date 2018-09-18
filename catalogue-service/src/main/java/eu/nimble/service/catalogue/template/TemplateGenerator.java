@@ -670,6 +670,7 @@ public class TemplateGenerator {
         sourceList.getRow(0).createCell(2).setCellValue(TemplateConfig.TEMPLATE_CURRENCY_LIST);
         sourceList.getRow(1).createCell(2).setCellValue("EUR");
         sourceList.getRow(2).createCell(2).setCellValue("USD");
+        sourceList.getRow(3).createCell(2).setCellValue("SEK");
 
         namedCell = template.createName();
         namedCell.setNameName(TemplateConfig.TEMPLATE_CURRENCY_LIST);
