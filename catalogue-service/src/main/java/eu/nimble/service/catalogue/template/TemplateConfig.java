@@ -24,6 +24,8 @@ public class TemplateConfig {
     public static String TEMPLATE_INFO_GENERIC_INFORMATION = "Generic Information";
     public static String TEMPLATE_INFO_YOU_SHOULD_EDIT = "*** You should edit only the \"Product Properties\" and \"Trading & Delivery Terms\" tabs. Do not edit the other tabs.";
     public static String TEMPLATE_INFO_MANDATORY_INFORMATION = "*** Mandatory information to be provided are colored with \"Red\" as this line";
+    public static String TEMPLATE_INFO_NOT_EDITABLE = "*** Cells which you should not edit are colored with \"Grey\" as this line";
+    public static String TEMPLATE_INFO_YOU_CAN_EDIT = "*** First editable cells for a column are colored with \"Green\" as this line";
     public static String TEMPLATE_INFO_DATA_FIELDS = "*** Data fields can be provided with multiple values by separating the values with the pipe (|) character.";
     public static String TEMPLATE_INFO_IN_THIS_WAY = "        In this way, product variations can be specified by providing alternative values for product properties. See the example below:";
     public static String TEMPLATE_INFO_EX1 = "                Ex: 250|500|1000";

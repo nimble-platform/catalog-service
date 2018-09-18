@@ -78,6 +78,14 @@ public class TemplateGenerator {
         cell.setCellValue(TemplateConfig.TEMPLATE_INFO_MANDATORY_INFORMATION);
         cell.setCellStyle(mandatoryCellStyle);
         row = infoTab.createRow(++rowIndex);
+        cell = row.createCell(0);
+        cell.setCellValue(TemplateConfig.TEMPLATE_INFO_NOT_EDITABLE);
+        cell.setCellStyle(readOnlyStyle);
+        row = infoTab.createRow(++rowIndex);
+        cell = row.createCell(0);
+        cell.setCellValue(TemplateConfig.TEMPLATE_INFO_YOU_CAN_EDIT);
+        cell.setCellStyle(editableStyle);
+        row = infoTab.createRow(++rowIndex);
         row.createCell(0).setCellValue(TemplateConfig.TEMPLATE_INFO_DATA_FIELDS);
         row = infoTab.createRow(++rowIndex);
         row.createCell(0).setCellValue(TemplateConfig.TEMPLATE_INFO_IN_THIS_WAY);
