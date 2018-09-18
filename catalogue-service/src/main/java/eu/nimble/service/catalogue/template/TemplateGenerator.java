@@ -385,12 +385,8 @@ public class TemplateGenerator {
             // dropdown menu for incoterms
             if(property.getPreferredName().equals(TEMPLATE_TRADING_DELIVERY_INCOTERMS)){
                 CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnIndex,columnIndex);
-                DataValidationHelper dataValidationHelper = new XSSFDataValidationHelper((XSSFSheet) termsTab);
-                DataValidationConstraint dataValidationConstraint =dataValidationHelper.createExplicitListConstraint(new String[]{
-                        "CIF_(Cost,_Insurance_and_Freight)","CIP_(Carriage_and_Insurance_Paid_to)",
-                        "CFR_(Cost_and_Freight)","CPT_(Carriage_paid_to)","DAT_(Delivered_at_Terminal)",
-                        "DAP_(Delivered_at_Place)","DDP_(Delivery_Duty_Paid)","EXW_(Ex_Works)","FAS_(Free_Alongside_Ship)",
-                        "FCA_(Free_Carrier)","FOB_(Free_on_Board)"});
+                DataValidationHelper dataValidationHelper = termsTab.getDataValidationHelper();
+                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_INCOTERMS_LIST);
                 DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
                 dataValidation.setSuppressDropDownArrow(true);
                 // error box
@@ -598,6 +594,23 @@ public class TemplateGenerator {
         namedCell.setNameName(TemplateConfig.TEMPLATE_BOOLEAN_LIST);
         namedCell.setRefersToFormula(TemplateConfig.TEMPLATE_BOOLEAN_REFERENCE);
 
+        // values for incoterms
+        sourceList.getRow(0).createCell(1).setCellValue(TemplateConfig.TEMPLATE_INCOTERMS_LIST);
+        sourceList.getRow(1).createCell(1).setCellValue("CIF (Cost,Insurance and Freight)");
+        sourceList.getRow(2).createCell(1).setCellValue("CIP (Carriage and Insurance Paid to)");
+        sourceList.createRow(3).createCell(1).setCellValue("CFR (Cost and Freight)");
+        sourceList.createRow(4).createCell(1).setCellValue("CPT (Carriage paid to)");
+        sourceList.createRow(5).createCell(1).setCellValue("DAT (Delivered at Terminal)");
+        sourceList.createRow(6).createCell(1).setCellValue("DAP (Delivered at Place)");
+        sourceList.createRow(7).createCell(1).setCellValue("DDP (Delivery Duty Paid)");
+        sourceList.createRow(8).createCell(1).setCellValue("EXW (Ex Works)");
+        sourceList.createRow(9).createCell(1).setCellValue("FAS (Free Alongside Ship)");
+        sourceList.createRow(10).createCell(1).setCellValue("FCA (Free Carrier)");
+        sourceList.createRow(11).createCell(1).setCellValue("FOB (Free on Board)");
+
+        namedCell = template.createName();
+        namedCell.setNameName(TemplateConfig.TEMPLATE_INCOTERMS_LIST);
+        namedCell.setRefersToFormula(TemplateConfig.TEMPLATE_INCOTERMS_REFERENCE);
         // set sheet hidden
         template.setSheetHidden(template.getSheetIndex(TemplateConfig.TEMPLATE_TAB_SOURCE_LIST),true);
     }

@@ -109,8 +109,10 @@ public class TemplateConfig {
     public static String TEMPLATE_DATA_TYPE_BOOLEAN = "BOOLEAN";
 
     public static String TEMPLATE_BOOLEAN_REFERENCE = "SourceList!$A$2:$A$3";
+    public static String TEMPLATE_INCOTERMS_REFERENCE = "SourceList!$B$2:$B$12";
 
     public static String TEMPLATE_BOOLEAN_LIST = "Boolean";
+    public static String TEMPLATE_INCOTERMS_LIST = "Incoterms";
 
     public static List<Property> getFixedPropertiesForProductPropertyTab() {
         List<Property> properties = new ArrayList<>();
