@@ -414,6 +414,20 @@ public class TemplateGenerator {
             if(!property.getDataType().equals("AMOUNT") && !property.getDataType().equals("QUANTITY")){
                 fourthRow.getCell(columnIndex).setCellStyle(readOnlyStyle);
             }
+            else if(property.getDataType().equals("AMOUNT")){
+                fourthRow.getCell(columnIndex).setCellStyle(editableStyle);
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3,3,columnIndex,columnIndex);
+                DataValidationHelper dataValidationHelper = termsTab.getDataValidationHelper();
+                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_CURRENCY_LIST);
+                DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
+                dataValidation.setSuppressDropDownArrow(true);
+                // error box
+                dataValidation.setShowErrorBox(true);
+                dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
+                // empty cell
+                dataValidation.setEmptyCellAllowed(true);
+                termsTab.addValidationData(dataValidation);
+            }
             else {
                 fourthRow.getCell(columnIndex).setCellStyle(editableStyle);
             }
@@ -611,6 +625,16 @@ public class TemplateGenerator {
         namedCell = template.createName();
         namedCell.setNameName(TemplateConfig.TEMPLATE_INCOTERMS_LIST);
         namedCell.setRefersToFormula(TemplateConfig.TEMPLATE_INCOTERMS_REFERENCE);
+
+        // values for currency
+        sourceList.getRow(0).createCell(2).setCellValue(TemplateConfig.TEMPLATE_CURRENCY_LIST);
+        sourceList.getRow(1).createCell(2).setCellValue("EUR");
+        sourceList.getRow(2).createCell(2).setCellValue("USD");
+
+        namedCell = template.createName();
+        namedCell.setNameName(TemplateConfig.TEMPLATE_CURRENCY_LIST);
+        namedCell.setRefersToFormula(TemplateConfig.TEMPLATE_CURRENCY_REFERENCE);
+
         // set sheet hidden
         template.setSheetHidden(template.getSheetIndex(TemplateConfig.TEMPLATE_TAB_SOURCE_LIST),true);
     }
