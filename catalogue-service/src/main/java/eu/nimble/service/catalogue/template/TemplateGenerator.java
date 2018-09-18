@@ -585,7 +585,8 @@ public class TemplateGenerator {
 
         firstRow.createCell(0).setCellValue(categoryIds.toString());
         secondRow.createCell(0).setCellValue(taxonomyIds.toString());
-
+        // make this sheet hidden
+        template.setSheetHidden(template.getSheetIndex(metadataTab),true);
     }
 
     private boolean checkMandatory(Property property, Cell cell) {
