@@ -111,10 +111,16 @@ public class TemplateConfig {
     public static String TEMPLATE_BOOLEAN_REFERENCE = "SourceList!$A$2:$A$3";
     public static String TEMPLATE_INCOTERMS_REFERENCE = "SourceList!$B$2:$B$12";
     public static String TEMPLATE_CURRENCY_REFERENCE = "SourceList!$C$2:$C$3";
+    public static String TEMPLATE_DIMENSION_REFERENCE = "SourceList!$D$2:$D$4";
+    public static String TEMPLATE_WARRANTY_REFERENCE = "SourceList!$E$2:$E$3";
+    public static String TEMPLATE_DELIVERY_PERIOD_REFERENCE = "SourceList!$F$2:$F$4";
 
     public static String TEMPLATE_BOOLEAN_LIST = "Boolean";
     public static String TEMPLATE_INCOTERMS_LIST = "Incoterms";
     public static String TEMPLATE_CURRENCY_LIST = "Currency";
+    public static String TEMPLATE_DIMENSION_LIST = "Dimension";
+    public static String TEMPLATE_WARRANTY_VALIDITY_LIST = "WarrantyValidity";
+    public static String TEMPLATE_DELIVERY_PERIOD_LIST = "DeliveryPeriod";
 
     public static List<Property> getFixedPropertiesForProductPropertyTab() {
         List<Property> properties = new ArrayList<>();

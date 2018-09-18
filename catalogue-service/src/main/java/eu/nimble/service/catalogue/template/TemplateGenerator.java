@@ -254,6 +254,20 @@ public class TemplateGenerator {
                 productPropertiesTab.addValidationData(dataValidation);
             }
 
+            if(property.getPreferredName().equals(TEMPLATE_PRODUCT_PROPERTIES_WIDTH) || property.getPreferredName().equals(TEMPLATE_PRODUCT_PROPERTIES_LENGTH) || property.getPreferredName().equals(TEMPLATE_PRODUCT_PROPERTIES_HEIGHT)){
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3,3,columnOffset,columnOffset);
+                DataValidationHelper dataValidationHelper = productPropertiesTab.getDataValidationHelper();
+                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_DIMENSION_LIST);
+                DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
+                dataValidation.setSuppressDropDownArrow(true);
+                // error box
+                dataValidation.setShowErrorBox(true);
+                dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
+                // empty cell
+                dataValidation.setEmptyCellAllowed(true);
+                productPropertiesTab.addValidationData(dataValidation);
+            }
+
             // check whether the property needs a unit
             if(!property.getDataType().equals("AMOUNT") && !property.getDataType().equals("QUANTITY")){
                 fourthRow.getCell(columnOffset).setCellStyle(readOnlyStyle);
@@ -401,6 +415,32 @@ public class TemplateGenerator {
                 CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnIndex,columnIndex);
                 DataValidationHelper dataValidationHelper = termsTab.getDataValidationHelper();
                 DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_BOOLEAN_LIST);
+                DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
+                dataValidation.setSuppressDropDownArrow(true);
+                // error box
+                dataValidation.setShowErrorBox(true);
+                dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
+                // empty cell
+                dataValidation.setEmptyCellAllowed(true);
+                termsTab.addValidationData(dataValidation);
+            }
+            else if(property.getPreferredName().equals(TemplateConfig.TEMPLATE_TRADING_DELIVERY_WARRANTY_VALIDITY_PERIOD)){
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3,3,columnIndex,columnIndex);
+                DataValidationHelper dataValidationHelper = termsTab.getDataValidationHelper();
+                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_WARRANTY_VALIDITY_LIST);
+                DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
+                dataValidation.setSuppressDropDownArrow(true);
+                // error box
+                dataValidation.setShowErrorBox(true);
+                dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
+                // empty cell
+                dataValidation.setEmptyCellAllowed(true);
+                termsTab.addValidationData(dataValidation);
+            }
+            else if(property.getPreferredName().equals(TemplateConfig.TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD)){
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3,3,columnIndex,columnIndex);
+                DataValidationHelper dataValidationHelper = termsTab.getDataValidationHelper();
+                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_DELIVERY_PERIOD_LIST);
                 DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
                 dataValidation.setSuppressDropDownArrow(true);
                 // error box
@@ -634,6 +674,35 @@ public class TemplateGenerator {
         namedCell = template.createName();
         namedCell.setNameName(TemplateConfig.TEMPLATE_CURRENCY_LIST);
         namedCell.setRefersToFormula(TemplateConfig.TEMPLATE_CURRENCY_REFERENCE);
+
+        // values for dimensions
+        sourceList.getRow(0).createCell(3).setCellValue(TemplateConfig.TEMPLATE_DIMENSION_LIST);
+        sourceList.getRow(1).createCell(3).setCellValue("mm");
+        sourceList.getRow(2).createCell(3).setCellValue("cm");
+        sourceList.getRow(3).createCell(3).setCellValue("m");
+
+        namedCell = template.createName();
+        namedCell.setNameName(TemplateConfig.TEMPLATE_DIMENSION_LIST);
+        namedCell.setRefersToFormula(TemplateConfig.TEMPLATE_DIMENSION_REFERENCE);
+
+        // values for Warranty Validity Period
+        sourceList.getRow(0).createCell(4).setCellValue(TemplateConfig.TEMPLATE_WARRANTY_VALIDITY_LIST);
+        sourceList.getRow(1).createCell(4).setCellValue("year");
+        sourceList.getRow(2).createCell(4).setCellValue("month");
+
+        namedCell = template.createName();
+        namedCell.setNameName(TemplateConfig.TEMPLATE_WARRANTY_VALIDITY_LIST);
+        namedCell.setRefersToFormula(TemplateConfig.TEMPLATE_WARRANTY_REFERENCE);
+
+        // values for Estimated Delivery Period
+        sourceList.getRow(0).createCell(5).setCellValue(TemplateConfig.TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD);
+        sourceList.getRow(1).createCell(5).setCellValue("working days");
+        sourceList.getRow(2).createCell(5).setCellValue("days");
+        sourceList.getRow(3).createCell(5).setCellValue("weeks");
+
+        namedCell = template.createName();
+        namedCell.setNameName(TemplateConfig.TEMPLATE_DELIVERY_PERIOD_LIST);
+        namedCell.setRefersToFormula(TemplateConfig.TEMPLATE_DELIVERY_PERIOD_REFERENCE);
 
         // set sheet hidden
         template.setSheetHidden(template.getSheetIndex(TemplateConfig.TEMPLATE_TAB_SOURCE_LIST),true);
