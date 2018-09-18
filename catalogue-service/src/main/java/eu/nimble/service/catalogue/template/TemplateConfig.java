@@ -17,6 +17,7 @@ public class TemplateConfig {
     public static String TEMPLATE_TAB_PROPERTY_DETAILS = "Property Details";
     public static String TEMPLATE_TAB_ALLOWED_VALUES_FOR_PROPERTIES = "Allowed Values for Properties";
     public static String TEMPLATE_TAB_METADATA = "Publishing Metadata";
+    public static String TEMPLATE_TAB_SOURCE_LIST = "SourceList";
 
     public static String TEMPLATE_INFO_HOW_TO_FILL = "How to fill in this template?";
     public static String TEMPLATE_INFO_THIS_TAB_PROVIDES = "Below, we provide information about how to fill this template in by giving details about the other tabs of this template";
@@ -106,6 +107,10 @@ public class TemplateConfig {
     public static String TEMPLATE_DATA_TYPE_STRING = "STRING";
     public static String TEMPLATE_DATA_TYPE_STRING_TRANSLATABLE = "STRING_TRANSLATABLE";
     public static String TEMPLATE_DATA_TYPE_BOOLEAN = "BOOLEAN";
+
+    public static String TEMPLATE_BOOLEAN_REFERENCE = "SourceList!$A$2:$A$3";
+
+    public static String TEMPLATE_BOOLEAN_LIST = "Boolean";
 
     public static List<Property> getFixedPropertiesForProductPropertyTab() {
         List<Property> properties = new ArrayList<>();

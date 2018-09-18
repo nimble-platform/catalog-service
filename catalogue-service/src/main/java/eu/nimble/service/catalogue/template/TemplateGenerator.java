@@ -42,7 +42,9 @@ public class TemplateGenerator {
         Sheet propertyDetailsTab = template.createSheet(TemplateConfig.TEMPLATE_TAB_PROPERTY_DETAILS);
         Sheet valuesTab = template.createSheet(TemplateConfig.TEMPLATE_TAB_ALLOWED_VALUES_FOR_PROPERTIES);
         Sheet metadataTab = template.createSheet(TemplateConfig.TEMPLATE_TAB_METADATA);
+        Sheet sourceList = template.createSheet(TemplateConfig.TEMPLATE_TAB_SOURCE_LIST);
 
+        populateSourceList(sourceList);
         populateInfoTab(infoTab);
         populateProductPropertiesTab(categories, propertiesTab);
         populateTradingDeliveryTermsTab(tradingDeliveryTermsTab);
@@ -240,9 +242,8 @@ public class TemplateGenerator {
 
             if (property.getDataType().equals("BOOLEAN")){
                 CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnOffset,columnOffset);
-                DataValidationHelper dataValidationHelper = new XSSFDataValidationHelper((XSSFSheet) productPropertiesTab);
-                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createExplicitListConstraint(new String[]{
-                        "TRUE","FALSE"});
+                DataValidationHelper dataValidationHelper = productPropertiesTab.getDataValidationHelper();
+                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_BOOLEAN_LIST);
                 DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
                 dataValidation.setSuppressDropDownArrow(true);
                 // error box
@@ -280,9 +281,8 @@ public class TemplateGenerator {
 
                 if (property.getDataType().equals("BOOLEAN")){
                     CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnOffset,columnOffset);
-                    DataValidationHelper dataValidationHelper = new XSSFDataValidationHelper((XSSFSheet) productPropertiesTab);
-                    DataValidationConstraint dataValidationConstraint =dataValidationHelper.createExplicitListConstraint(new String[]{
-                            "TRUE","FALSE"});
+                    DataValidationHelper dataValidationHelper = productPropertiesTab.getDataValidationHelper();
+                    DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_BOOLEAN_LIST);
                     DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
                     dataValidation.setSuppressDropDownArrow(true);
                     // error box
@@ -403,9 +403,8 @@ public class TemplateGenerator {
             }
             else if (property.getDataType().equals("BOOLEAN")){
                 CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnIndex,columnIndex);
-                DataValidationHelper dataValidationHelper = new XSSFDataValidationHelper((XSSFSheet) termsTab);
-                DataValidationConstraint dataValidationConstraint =dataValidationHelper.createExplicitListConstraint(new String[]{
-                        "TRUE","FALSE"});
+                DataValidationHelper dataValidationHelper = termsTab.getDataValidationHelper();
+                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_BOOLEAN_LIST);
                 DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
                 dataValidation.setSuppressDropDownArrow(true);
                 // error box
@@ -587,6 +586,20 @@ public class TemplateGenerator {
         secondRow.createCell(0).setCellValue(taxonomyIds.toString());
         // make this sheet hidden
         template.setSheetHidden(template.getSheetIndex(metadataTab),true);
+    }
+
+    private void populateSourceList(Sheet sourceList){
+        // values for boolean
+        sourceList.createRow(0).createCell(0).setCellValue(TemplateConfig.TEMPLATE_BOOLEAN_LIST);
+        sourceList.createRow(1).createCell(0).setCellValue("TRUE");
+        sourceList.createRow(2).createCell(0).setCellValue("FALSE");
+
+        Name namedCell = template.createName();
+        namedCell.setNameName(TemplateConfig.TEMPLATE_BOOLEAN_LIST);
+        namedCell.setRefersToFormula(TemplateConfig.TEMPLATE_BOOLEAN_REFERENCE);
+
+        // set sheet hidden
+        template.setSheetHidden(template.getSheetIndex(TemplateConfig.TEMPLATE_TAB_SOURCE_LIST),true);
     }
 
     private boolean checkMandatory(Property property, Cell cell) {
