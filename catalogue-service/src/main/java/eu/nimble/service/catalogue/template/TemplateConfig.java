@@ -13,7 +13,9 @@ public class TemplateConfig {
 
     public static String TEMPLATE_TAB_INFORMATION = "Information";
     public static String TEMPLATE_TAB_TRADING_DELIVERY_TERMS = "Trading & Delivery Terms";
+    public static String TEMPLATE_TAB_TRADING_DELIVERY_TERMS_EXAMPLE = "Trading & Delivery Terms Example";
     public static String TEMPLATE_TAB_PRODUCT_PROPERTIES = "Product Properties";
+    public static String TEMPLATE_TAB_PRODUCT_PROPERTIES_EXAMPLE = "Product Properties Example";
     public static String TEMPLATE_TAB_PROPERTY_DETAILS = "Property Details";
     public static String TEMPLATE_TAB_ALLOWED_VALUES_FOR_PROPERTIES = "Allowed Values for Properties";
     public static String TEMPLATE_TAB_METADATA = "Publishing Metadata";
@@ -52,6 +54,8 @@ public class TemplateConfig {
     public static String TEMPLATE_INFO_THIS_TAB_CONTAINS = "This tab contains additional information for each property associated with the chosen product category";
     public static String TEMPLATE_INFO_THIS_TAB_CONTAINS_VALUES = "This tab contains values that are allowed to be set for each property starting from the 4th row";
     public static String TEMPLATE_INFO_THIS_TAB_CONTAINS_INFORMATION = "This tab contains information about the publishing process such as selected category metadata, publishing party and so on.";
+    public static String TEMPLATE_INFO_PRODUCT_PROPERTIES_EXAMPLE = "This is an example which shows how you can fill \"Product Properties\" tab.";
+    public static String TEMPLATE_INFO_TRADING_DELIVERY_EXAMPLE = "This is an example which shows how you can fill \"Trading & Delivery Terms\" tab.";
 
     public static String TEMPLATE_PRODUCT_PROPERTIES_PROPERTY_NAME = "Property Name";
     public static String TEMPLATE_PRODUCT_PROPERTIES_PROPERTY_DATA_TYPE = "Property Data Type";
