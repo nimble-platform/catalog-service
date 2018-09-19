@@ -181,6 +181,9 @@ public class TemplateGenerator {
     }
 
     private void populateProductPropertiesTab(List<Category> categories, Sheet productPropertiesTab) {
+        // make first column read only
+        productPropertiesTab.setDefaultColumnStyle(0,readOnlyStyle);
+
         // create the top row containing the category names and ids on top of the corresponding properties
         // create the dimension tab
         Row topRow = productPropertiesTab.createRow(0);
@@ -331,6 +334,9 @@ public class TemplateGenerator {
     }
 
     private void populateTradingDeliveryTermsTab(Sheet termsTab) {
+        // make first column read only
+        termsTab.setDefaultColumnStyle(0,readOnlyStyle);
+
         // create the top row containing the property categories
         // trading details block
         Row topRow = termsTab.createRow(0);
