@@ -9,7 +9,6 @@ import eu.nimble.service.catalogue.category.CategoryServiceManager;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.util.DataIntegratorUtil;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
-import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
@@ -107,9 +106,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     public CatalogueType updateCatalogue(CatalogueType catalogue) {
         logger.info("Catalogue with uuid: {} will be updated", catalogue.getUUID());
 
-        checkReferencesInCatalogue(catalogue);
-
-        catalogue = addParentCategories(catalogue);
+        DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(catalogue);
         // merge the hibernate object
         catalogue = (CatalogueType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
 
@@ -153,16 +150,7 @@ public class CatalogueServiceImpl implements CatalogueService {
             String uuid = UUID.randomUUID().toString();
             ublCatalogue.setUUID(uuid);
 
-            ublCatalogue = addParentCategories(ublCatalogue);
-            // set references from items to the catalogue
-            for(CatalogueLineType line : ublCatalogue.getCatalogueLine()) {
-                DataIntegratorUtil.setCatalogueDocumentReference(((CatalogueType) catalogue).getUUID(),line);
-                DataIntegratorUtil.setDefaultCategories(line);
-            }
-
-            checkReferencesInCatalogue(ublCatalogue);
-
-            DataIntegratorUtil.checkExistingParties((CatalogueType) catalogue);
+            DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(ublCatalogue);
             // persist the catalogue in relational DB
             HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(ublCatalogue);
             logger.info("Catalogue with uuid: {} persisted in DB", uuid.toString());
@@ -296,14 +284,10 @@ public class CatalogueServiceImpl implements CatalogueService {
             catalogue.setID("default");
             catalogue.setProviderParty(party);
             catalogue.setCatalogueLine(catalogueLines);
-            checkReferencesInCatalogue(catalogue);
-
             return catalogue;
 
         } else {
             updateLinesForUploadMode(catalogue, uploadMode, catalogueLines);
-            checkReferencesInCatalogue(catalogue);
-
             return catalogue;
         }
     }
@@ -468,15 +452,8 @@ public class CatalogueServiceImpl implements CatalogueService {
     // TODO test
     @Override
     public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine) {
-        // add parents of the selected category to commodity classifications of the item
-        for(CommodityClassificationType cct : getParentCategories(catalogueLine.getGoodsItem().getItem().getCommodityClassification())){
-            catalogueLine.getGoodsItem().getItem().getCommodityClassification().add(cct);
-        }
-        DataIntegratorUtil.setDefaultCategories(catalogueLine);
-        // set party
-        catalogueLine.getGoodsItem().getItem().setManufacturerParty(catalogue.getProviderParty());
         catalogue.getCatalogueLine().add(catalogueLine);
-        checkReferencesInCatalogue(catalogue);
+        DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(catalogue);
 
         catalogue = (CatalogueType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
         catalogueLine = catalogue.getCatalogueLine().get(catalogue.getCatalogueLine().size()-1);
@@ -489,10 +466,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     @Override
     public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine) {
-        // add parents of the selected category to commodity classifications of the item
-        for(CommodityClassificationType cct : getParentCategories(catalogueLine.getGoodsItem().getItem().getCommodityClassification())){
-            catalogueLine.getGoodsItem().getItem().getCommodityClassification().add(cct);
-        }
+        DataIntegratorUtil.setParentCategories(catalogueLine.getGoodsItem().getItem().getCommodityClassification());
         catalogueLine = (CatalogueLineType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueLine);
 
         // add synchronization record
@@ -515,63 +489,6 @@ public class CatalogueServiceImpl implements CatalogueService {
             // add synchronization record
             MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueId);
         }
-    }
-
-    private void checkReferencesInCatalogue(CatalogueType catalogue) {
-        for(CatalogueLineType line : catalogue.getCatalogueLine()) {
-            // check catalogue line ids
-            // make sure that line IDs and the manufacturer item IDs are the same
-            String manufacturerItemId = line.getGoodsItem().getItem().getManufacturersItemIdentification().getID();
-            if(manufacturerItemId == null && line.getID() == null) {
-                line.setID(UUID.randomUUID().toString());
-                line.getGoodsItem().getItem().getManufacturersItemIdentification().setID(line.getID());
-
-            } else if(line.getID() == null) {
-                line.setID(manufacturerItemId);
-
-            } else if(manufacturerItemId == null) {
-                line.getGoodsItem().getItem().getManufacturersItemIdentification().setID(line.getID());
-            }
-            DataIntegratorUtil.setCatalogueDocumentReference(catalogue.getUUID(),line);
-        }
-    }
-
-    private CatalogueType addParentCategories(CatalogueType catalogueType){
-        for(CatalogueLineType line : catalogueType.getCatalogueLine()) {
-            // add parents of the selected category to commodity classifications of the item
-            for(CommodityClassificationType cct : getParentCategories(line.getGoodsItem().getItem().getCommodityClassification())){
-                line.getGoodsItem().getItem().getCommodityClassification().add(cct);
-            }
-        }
-        return catalogueType;
-    }
-
-    private List<CommodityClassificationType> getParentCategories(List<CommodityClassificationType> commodityClassifications){
-        List<CommodityClassificationType> commodityClassificationTypeList = new ArrayList<>();
-        // find parents of the selected categories
-        for(CommodityClassificationType cct : commodityClassifications){
-            // Default categories have no parents
-            if(cct.getItemClassificationCode().getListID().contentEquals("Default")){
-                continue;
-            }
-            CategoryServiceManager csm = CategoryServiceManager.getInstance();
-            List<Category> parentCategories = csm.getParentCategories(cct.getItemClassificationCode().getListID(),cct.getItemClassificationCode().getValue());
-
-            for(int i = 0; i< parentCategories.size()-1;i++){
-                Category category = parentCategories.get(i);
-                CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
-                CodeType codeType = new CodeType();
-                codeType.setValue(category.getId());
-                codeType.setName(category.getPreferredName());
-                codeType.setListID(category.getTaxonomyId());
-                codeType.setURI(category.getCategoryUri());
-                commodityClassificationType.setItemClassificationCode(codeType);
-                if(!commodityClassificationTypeList.contains(commodityClassificationType) && !commodityClassifications.contains(commodityClassificationType)){
-                    commodityClassificationTypeList.add(commodityClassificationType);
-                }
-            }
-        }
-        return commodityClassificationTypeList;
     }
 
     @Override
