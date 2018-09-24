@@ -2,10 +2,10 @@ package eu.nimble.service.catalogue;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.nimble.service.catalogue.util.DataModelUtil;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
+import eu.nimble.utility.JsonSerializationUtility;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +33,7 @@ public class CatalogueDatabaseAdapter {
             objectMapper = objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             try {
                 JSONObject object = new JSONObject(objectMapper.writeValueAsString(party));
-                DataModelUtil.removeHjidFields(object);
+                JsonSerializationUtility.removeHjidFields(object);
                 party = objectMapper.readValue(object.toString(), PartyType.class);
             }
             catch (Exception e){
