@@ -54,7 +54,6 @@ import java.util.zip.ZipInputStream;
  * can be executed. A catalogue contains contains catalogue lines each of which corresponds to a product or service.
  */
 @Controller
-@ComponentScan(basePackages = "eu")
 public class CatalogueController {
 
     private static Logger log = LoggerFactory

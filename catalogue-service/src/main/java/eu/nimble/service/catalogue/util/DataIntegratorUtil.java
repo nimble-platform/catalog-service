@@ -4,10 +4,7 @@ import eu.nimble.service.catalogue.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.category.CategoryServiceManager;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.CommodityClassificationType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.DocumentReferenceType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
 
 import java.util.ArrayList;
@@ -17,7 +14,7 @@ import java.util.UUID;
 public class DataIntegratorUtil {
 
     public static void ensureCatalogueDataIntegrityAndEnhancement(CatalogueType catalogue){
-        PartyType partyType = CatalogueDatabaseAdapter.getParty(catalogue.getProviderParty());
+        PartyType partyType = CatalogueDatabaseAdapter.syncPartyInUBLDB(catalogue.getProviderParty());
         catalogue.setProviderParty(partyType);
 
         for(CatalogueLineType line : catalogue.getCatalogueLine()) {
