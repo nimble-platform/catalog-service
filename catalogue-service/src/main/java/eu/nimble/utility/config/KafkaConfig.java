@@ -2,9 +2,7 @@ package eu.nimble.utility.config;
 
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -51,35 +49,35 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, CompanyUpdate> consumerFactory() {
-        return new DefaultKafkaConsumerFactory<>(consumerConfigs(), new StringDeserializer(), new JsonDeserializer<>(CompanyUpdate.class));
+    public ConsumerFactory<String, AuthorizedMessage> consumerFactory() {
+        return new DefaultKafkaConsumerFactory<>(consumerConfigs(), new StringDeserializer(), new JsonDeserializer<>(AuthorizedMessage.class));
     }
 
     @Bean
-    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, CompanyUpdate>> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, CompanyUpdate> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, AuthorizedMessage>> kafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, AuthorizedMessage> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         return factory;
     }
 
-    public static class CompanyUpdate {
-        private String companyId;
+    public static class AuthorizedMessage {
+        private String value;
         private String accessToken;
 
-        public CompanyUpdate() {
+        public AuthorizedMessage() {
         }
 
-        public CompanyUpdate(String companyId, String accessToken) {
-            this.companyId = companyId;
+        public AuthorizedMessage(String value, String accessToken) {
+            this.value = value;
             this.accessToken = accessToken;
         }
 
-        public String getCompanyId() {
-            return companyId;
+        public String getValue() {
+            return value;
         }
 
-        public void setCompanyId(String companyId) {
-            this.companyId = companyId;
+        public void setValue(String value) {
+            this.value = value;
         }
 
         public String getAccessToken() {

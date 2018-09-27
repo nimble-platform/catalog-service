@@ -11,8 +11,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class KafkaReceiver {
     @KafkaListener(topics = "${nimble.kafka.topics.companyUpdates}")
-    public void receiveCompanyUpdates(ConsumerRecord<String, KafkaConfig.CompanyUpdate> consumerRecord) {
-        String companyID = consumerRecord.value().getCompanyId();
+    public void receiveCompanyUpdates(ConsumerRecord<String, KafkaConfig.AuthorizedMessage> consumerRecord) {
+        String companyID = consumerRecord.value().getValue();
         String accessToken = consumerRecord.value().getAccessToken();
         System.out.println("Receiver: " + companyID);
     }
