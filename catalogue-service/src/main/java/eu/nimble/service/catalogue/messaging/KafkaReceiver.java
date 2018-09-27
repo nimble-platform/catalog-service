@@ -1,5 +1,6 @@
 package eu.nimble.service.catalogue.messaging;
 
+import eu.nimble.utility.config.KafkaConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
@@ -9,10 +10,10 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class KafkaReceiver {
-
     @KafkaListener(topics = "${nimble.kafka.topics.companyUpdates}")
-    public void receiveCompanyUpdates(ConsumerRecord<?, ?> consumerRecord) {
-        String companyID = consumerRecord.value().toString();
-        System.out.println("Received updated for company with ID: " + companyID);
+    public void receiveCompanyUpdates(ConsumerRecord<String, KafkaConfig.AuthorizedMessage> consumerRecord) {
+        String companyID = consumerRecord.value().getValue();
+        String accessToken = consumerRecord.value().getAccessToken();
+        System.out.println("Receiver: " + companyID);
     }
 }
