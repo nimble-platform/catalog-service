@@ -5,6 +5,7 @@
 
     <properties>
         <springfox.version>2.5.0</springfox.version>
+        <spring.kafka.version>1.3.7.RELEASE</spring.kafka.version>
     </properties>
 
     <parent>
@@ -113,6 +114,14 @@
             <groupId>com.mashape.unirest</groupId>
             <artifactId>unirest-java</artifactId>
             <version>1.4.9</version>
+        </dependency>
+
+
+        <!-- Kafka -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+            <version>${spring.kafka.version}</version>
         </dependency>
     </dependencies>
 </project>

@@ -24,6 +24,14 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    consumer:
+      group-id: catalogue-service${KAFKA_CONSUMER_GROUP_ID_SUFFIX:}
+    properties:
+      sasl:
+        jaas:
+          config: ${KAFKA_JAAS_CONFIG}
 
 logstash:
   uri: ${LOGSTASH_URI:localhost:5000}
@@ -139,6 +147,9 @@ security:
 nimble:
   identity:
     url: ${IDENTITY_SERVICE_URL}
+  kafka:
+    topics:
+      companyUpdates: ${KAFKA_TOPIC_COMPANY_UPDATES:company-updates}
 
 ################################################################################################
 ################################## KUBERNETES CONFIG ###########################################
