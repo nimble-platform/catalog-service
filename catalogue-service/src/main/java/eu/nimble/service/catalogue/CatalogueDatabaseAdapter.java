@@ -26,7 +26,7 @@ public class CatalogueDatabaseAdapter {
     private static final Logger logger = LoggerFactory.getLogger(CatalogueDatabaseAdapter.class);
 
     private static final String CATALOGUE_EXISTS_QUERY = "SELECT COUNT(c) FROM CatalogueType c WHERE c.ID = ? and c.providerParty.ID = ?";
-    private static final String GET_PARTY_QUERY = "SELECT party FROM PartyType party WHERE party.ID = ?";
+    private static final String GET_PARTY_QUERY = "SELECT party FROM PartyType party WHERE party.ID = ? ORDER BY party.hjid ASC";
     private static final String GET_PARTY_CATALOGUES_QUERY = "SELECT catalogue.ID FROM CatalogueType as catalogue" +
             " JOIN catalogue.providerParty as catalogue_provider_party " +
             " WHERE catalogue_provider_party.ID = ?";
@@ -34,22 +34,6 @@ public class CatalogueDatabaseAdapter {
     public static boolean catalogueExists(String partyId, String partySpecificCatalogueId) {
         int catalogueExists = ((Long) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).load(CATALOGUE_EXISTS_QUERY, partySpecificCatalogueId, partyId)).intValue();
         return catalogueExists == 1 ? true : false;
-    }
-
-    public static PartyType updateParty(String partyId, String bearerToken) {
-        PartyType party = SpringBridge.getInstance().getIdentityClientTyped().getParty(bearerToken, partyId);
-        PartyType catalogueParty = getParty(partyId);
-        if (party == null) {
-            party = removePartyHjids(party);
-            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).persist(party);
-
-        } else {
-            long hjid = party.getHjid();
-            party = new PartyType();
-            party.setHjid(hjid);
-            party.setName("Deneme 1 - 2");
-        }
-        return party;
     }
 
     public static void syncPartyInUBLDB(String partyId, String bearerToken) {
@@ -118,7 +102,11 @@ public class CatalogueDatabaseAdapter {
     }
 
     public static PartyType getParty(String partyId) {
-        return HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).load(GET_PARTY_QUERY, partyId);
+        List<PartyType>  partyTypes = (List<PartyType>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).loadAll(GET_PARTY_QUERY, partyId);
+        if(partyTypes.size() == 0){
+            return null;
+        }
+        return partyTypes.get(0);
     }
 
     public static List<String> getCatalogueIdsOfParty(String partyId) {
