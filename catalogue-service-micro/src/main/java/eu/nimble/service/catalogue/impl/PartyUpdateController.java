@@ -54,7 +54,8 @@ public class PartyUpdateController {
     @RequestMapping(value = "/catalogue/party/{partyId}/trust",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             method = RequestMethod.POST)
-    public ResponseEntity onPartyTrustUpdate(@ApiParam(value = "Serialization of a PartyType instance via a Jackson ObjectMapper initialized with default configurations") @RequestBody String serializedParty,
+    public ResponseEntity onPartyTrustUpdate(@ApiParam(value = "Identifier of the party") @PathVariable String partyId,
+                                             @ApiParam(value = "Serialization of a PartyType instance via a Jackson ObjectMapper initialized with default configurations") @RequestBody String serializedParty,
                                              @ApiParam(value = "Authorization header to be obtained via login to the NIMBLE platform") @RequestHeader(value = "Authorization") String bearerToken) {
 
         try {
