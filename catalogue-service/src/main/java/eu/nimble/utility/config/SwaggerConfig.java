@@ -29,8 +29,8 @@ public class SwaggerConfig {
                 "1.0",
                 "",
                 "",
-                "",
-                ""
+                "Additional documentation related to Catalogue Service REST API",
+                "https://secure.salzburgresearch.at/wiki/display/NIMBLE/Task+2.3+Design+of+an+Open+API+for+the+NIMBLE+Platform"
         );
     }
 }
