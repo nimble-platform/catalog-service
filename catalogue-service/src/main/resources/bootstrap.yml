@@ -150,6 +150,7 @@ nimble:
   kafka:
     topics:
       companyUpdates: ${KAFKA_TOPIC_COMPANY_UPDATES:company-updates}
+      trustScoreUpdates: ${KAFKA_TOPIC_TRUST_SCORE_UPDATES:trust-score-updates}
 
 ################################################################################################
 ################################## KUBERNETES CONFIG ###########################################
