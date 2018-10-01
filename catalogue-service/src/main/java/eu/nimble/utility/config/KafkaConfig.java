@@ -49,12 +49,12 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ProducerFactory<String, AuthorizedMessage> producerFactory() {
+    public ProducerFactory<String, AuthorizedCompanyUpdate> producerFactory() {
         return new DefaultKafkaProducerFactory<>(producerConfigs());
     }
 
     @Bean
-    public KafkaTemplate<String, AuthorizedMessage> kafkaTemplate() {
+    public KafkaTemplate<String, AuthorizedCompanyUpdate> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 
@@ -73,35 +73,35 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConsumerFactory<String, AuthorizedMessage> consumerFactory() {
-        return new DefaultKafkaConsumerFactory<>(consumerConfigs(), new StringDeserializer(), new JsonDeserializer<>(AuthorizedMessage.class));
+    public ConsumerFactory<String, AuthorizedCompanyUpdate> consumerFactory() {
+        return new DefaultKafkaConsumerFactory<>(consumerConfigs(), new StringDeserializer(), new JsonDeserializer<>(AuthorizedCompanyUpdate.class));
     }
 
     @Bean
-    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, AuthorizedMessage>> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, AuthorizedMessage> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, AuthorizedCompanyUpdate>> kafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, AuthorizedCompanyUpdate> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         return factory;
     }
 
-    public static class AuthorizedMessage {
-        private String value;
+    public static class AuthorizedCompanyUpdate {
+        private String companyID;
         private String accessToken;
 
-        public AuthorizedMessage() {
+        public AuthorizedCompanyUpdate() {
         }
 
-        public AuthorizedMessage(String value, String accessToken) {
-            this.value = value;
+        public AuthorizedCompanyUpdate(String companyID, String accessToken) {
+            this.companyID = companyID;
             this.accessToken = accessToken;
         }
 
-        public String getValue() {
-            return value;
+        public String getCompanyID() {
+            return companyID;
         }
 
-        public void setValue(String value) {
-            this.value = value;
+        public void setCompanyID(String companyID) {
+            this.companyID = companyID;
         }
 
         public String getAccessToken() {

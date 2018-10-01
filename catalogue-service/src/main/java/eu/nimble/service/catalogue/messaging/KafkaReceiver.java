@@ -18,8 +18,8 @@ public class KafkaReceiver {
     private static Logger logger = LoggerFactory.getLogger(KafkaReceiver.class);
 
     @KafkaListener(topics = "${nimble.kafka.topics.companyUpdates}")
-    public void receiveCompanyUpdates(ConsumerRecord<String, KafkaConfig.AuthorizedMessage> consumerRecord) {
-        String companyID = consumerRecord.value().getValue();
+    public void receiveCompanyUpdates(ConsumerRecord<String, KafkaConfig.AuthorizedCompanyUpdate> consumerRecord) {
+        String companyID = consumerRecord.value().getCompanyID();
         logger.info("Received company updates for company with id: {}",companyID);
         String accessToken = consumerRecord.value().getAccessToken();
 
@@ -30,8 +30,8 @@ public class KafkaReceiver {
     }
 
     @KafkaListener(topics = "${nimble.kafka.topics.trustScoreUpdates}")
-    public void receiveTrustScoreUpdates(ConsumerRecord<String, KafkaConfig.AuthorizedMessage> consumerRecord) {
-        String companyID = consumerRecord.value().getValue();
+    public void receiveTrustScoreUpdates(ConsumerRecord<String, KafkaConfig.AuthorizedCompanyUpdate> consumerRecord) {
+        String companyID = consumerRecord.value().getCompanyID();
         logger.info("Received company updates for company with id: {}",companyID);
     }
 }
