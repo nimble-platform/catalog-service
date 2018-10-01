@@ -28,4 +28,10 @@ public class KafkaReceiver {
 
         logger.info("Updated party for the company with id: {} successfully",companyID);
     }
+
+    @KafkaListener(topics = "${nimble.kafka.topics.trustScoreUpdates}")
+    public void receiveTrustScoreUpdates(ConsumerRecord<String, KafkaConfig.AuthorizedMessage> consumerRecord) {
+        String companyID = consumerRecord.value().getValue();
+        logger.info("Received company updates for company with id: {}",companyID);
+    }
 }
