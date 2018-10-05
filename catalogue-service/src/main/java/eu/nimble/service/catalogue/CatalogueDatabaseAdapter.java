@@ -1,5 +1,6 @@
 package eu.nimble.service.catalogue;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.util.SpringBridge;
@@ -10,12 +11,14 @@ import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JsonSerializationUtility;
+import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.DataModelUtility;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,8 +53,24 @@ public class CatalogueDatabaseAdapter {
         }
     }
 
-    public static void syncTrustScores(PartyType trustParty) {
+    public static void syncTrustScores(String partyId, String accessToken) {
+        PartyType trustParty;
+        try {
+
+            InputStream partyStream = SpringBridge.getInstance().getTrustClient().obtainPartyTrustValues(partyId, accessToken).body().asInputStream();
+            trustParty = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(partyStream, PartyType.class);
+
+        } catch (IOException e) {
+            logger.error("Failed to synchronize trust scores for party: {}", partyId, e);
+            return;
+        }
+
         PartyType catalogueParty = getParty(trustParty.getID());
+        if(catalogueParty == null) {
+            logger.warn("No party available in UBLDB with id: {}", partyId);
+            return;
+        }
+
         if(catalogueParty.getQualityIndicator() == null) {
             catalogueParty.setQualityIndicator(new ArrayList<>());
         }

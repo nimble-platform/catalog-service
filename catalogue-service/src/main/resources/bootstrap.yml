@@ -147,6 +147,8 @@ security:
 nimble:
   identity:
     url: ${IDENTITY_SERVICE_URL}
+  trust:
+    url: ${TRUST_SERVICE_URL:http://nimble-staging.salzburgresearch.at/trust}
   kafka:
     topics:
       companyUpdates: ${KAFKA_TOPIC_COMPANY_UPDATES:company-updates}
