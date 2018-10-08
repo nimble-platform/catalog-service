@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.util;
 
 import eu.nimble.common.rest.identity.IdentityClientTyped;
+import eu.nimble.common.rest.trust.TrustClient;
 import eu.nimble.utility.config.CatalogueServiceConfig;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,9 @@ public class SpringBridge implements ApplicationContextAware {
     @Autowired
     private IdentityClientTyped identityClientTyped;
 
+    @Autowired
+    private TrustClient trustClient;
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext)
             throws BeansException {
@@ -38,5 +42,9 @@ public class SpringBridge implements ApplicationContextAware {
 
     public IdentityClientTyped getIdentityClientTyped() {
         return identityClientTyped;
+    }
+
+    public TrustClient getTrustClient() {
+        return trustClient;
     }
 }
