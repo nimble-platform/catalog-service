@@ -6,6 +6,7 @@ import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.BigDecimalXmlAdapter;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.utility.Configuration;
 import org.apache.commons.io.IOUtils;
 import org.apache.marmotta.client.exception.MarmottaClientException;
@@ -74,6 +75,10 @@ public class MarmottaClient {
             } else {
                 logger.warn("Timeout from Marmotta while submitting the catalogue with uuid: {}", catalogue.getUUID(), e);
             }
+        }
+
+        for (CatalogueLineType catalogueLine:catalogue.getCatalogueLine()){
+            SolrClient.indexProperties(catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty());
         }
     }
 
