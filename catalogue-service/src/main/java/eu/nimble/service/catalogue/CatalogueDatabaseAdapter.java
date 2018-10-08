@@ -55,13 +55,20 @@ public class CatalogueDatabaseAdapter {
 
     public static void syncTrustScores(String partyId, String accessToken) {
         PartyType trustParty;
+        InputStream partyStream;
+
         try {
-
-            InputStream partyStream = SpringBridge.getInstance().getTrustClient().obtainPartyTrustValues(partyId, accessToken).body().asInputStream();
-            trustParty = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(partyStream, PartyType.class);
-
+            partyStream = SpringBridge.getInstance().getTrustClient().obtainPartyTrustValues(partyId, accessToken).body().asInputStream();
         } catch (IOException e) {
-            logger.error("Failed to synchronize trust scores for party: {}", partyId, e);
+            logger.error("Failed to obtain party: {}", partyId, e);
+            return;
+        }
+
+        try {
+            trustParty = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(partyStream, PartyType.class);
+        }
+        catch (Exception e){
+            logger.error("Failed to deserialize party: {}", partyId, e);
             return;
         }
 
