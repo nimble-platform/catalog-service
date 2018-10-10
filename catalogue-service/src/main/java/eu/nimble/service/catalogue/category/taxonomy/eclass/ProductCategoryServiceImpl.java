@@ -40,7 +40,20 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
         try {
             categories = eClassCategoryDatabaseAdapter.getClassificationClassesByName(categoryName);
         } catch (CategoryDatabaseException e) {
-            logger.error("Failed to retrieve product categories", e);
+            logger.error("Failed to retrieve product categories for category name: {}", categoryName, e);
+            return new ArrayList<>();
+        }
+        return categories;
+    }
+
+    @Override
+    public List<Category> getProductCategories(String categoryName, boolean forLogistics) {
+        EClassCategoryDatabaseAdapter eClassCategoryDatabaseAdapter = new EClassCategoryDatabaseAdapter();
+        List<Category> categories;
+        try {
+            categories = eClassCategoryDatabaseAdapter.getClassificationClassesByName(categoryName, forLogistics);
+        } catch (CategoryDatabaseException e) {
+            logger.error("Failed to retrieve product categories for category name: {} for logistics: {}", categoryName, forLogistics, e);
             return new ArrayList<>();
         }
         return categories;

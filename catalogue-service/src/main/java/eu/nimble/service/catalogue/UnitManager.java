@@ -48,7 +48,7 @@ public class UnitManager {
 
         UnitType unitType2 = new UnitType();
         unitType2.setID("currency_quantity");
-        unitType2.setUnitCode(Arrays.asList("EUR","USD"));
+        unitType2.setUnitCode(Arrays.asList("EUR","USD","SEK"));
         hibernateUtility.persist(unitType2);
 
         UnitType unitType3 = new UnitType();

@@ -5,7 +5,6 @@ import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.template.TemplateConfig;
-import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 import eu.nimble.utility.config.CatalogueServiceConfig;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
@@ -124,6 +123,15 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
             }
         }
         return result;
+    }
+
+    @Override
+    public List<Category> getProductCategories(String categoryName, boolean forLogistics) {
+        if(!forLogistics) {
+            return getProductCategories(categoryName);
+        } else {
+            return new ArrayList<>();
+        }
     }
 
     private Property createProperty(String uri, String range, String translation) {

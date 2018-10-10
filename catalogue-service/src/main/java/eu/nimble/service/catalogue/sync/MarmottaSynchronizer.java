@@ -1,5 +1,6 @@
 package eu.nimble.service.catalogue.sync;
 
+import eu.nimble.service.catalogue.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.util.SpringBridge;
@@ -8,6 +9,7 @@ import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,19 +53,6 @@ public class MarmottaSynchronizer {
 
     }
 
-    public static void main(String[] args) throws SQLException, InterruptedException {
-        MarmottaSynchronizer sync = new MarmottaSynchronizer();
-        /*sync.createStatusTable();
-        String uuid = "catUuid";
-        sync.addRecord(SyncStatus.UPDATE, uuid);
-        List<SyncStatusRecord> records = sync.getStatusRecords();
-        System.out.println(records.toString());
-        sync.deleteStatusRecords(uuid);
-        records = sync.getStatusRecords();
-        System.out.println(records);
-        System.out.println("done");*/
-    }
-
     public static MarmottaSynchronizer getInstance() {
         if (instance == null) {
             instance = new MarmottaSynchronizer();
@@ -72,11 +61,19 @@ public class MarmottaSynchronizer {
     }
 
     public void stopSynchronization() {
-        syncThread.interrupt();
-        logger.info("Synchronization thread interrupted");
+        if(syncThread != null) {
+            syncThread.interrupt();
+            logger.info("Synchronization thread interrupted");
+        }
     }
 
     public void startSynchronization() {
+        boolean isSyncing = SpringBridge.getInstance().getCatalogueServiceConfig().isMarmottaSync();
+        logger.info("Marmotta sync: {}", isSyncing);
+        if(!isSyncing) {
+            return;
+        }
+
         createStatusTable();
         syncThread = new Thread(() -> {
             long interval = SpringBridge.getInstance().getCatalogueServiceConfig().getSyncDbUpdateCheckInterval();
@@ -170,6 +167,11 @@ public class MarmottaSynchronizer {
     }
 
     public void addRecord(SyncStatus updateType, String catalogueUuid) {
+        boolean isSyncing = SpringBridge.getInstance().getCatalogueServiceConfig().isMarmottaSync();
+        if(!isSyncing) {
+            return;
+        }
+
         Connection c = getConnection();
         if(c == null) {
             logger.info("No connection to add status record");
@@ -196,7 +198,19 @@ public class MarmottaSynchronizer {
         }
     }
 
+    public void addRecord(String partyId) {
+        List<String> catalogueIds = CatalogueDatabaseAdapter.getCatalogueIdsOfParty(partyId);
+        for(String catalogueId : catalogueIds) {
+            addRecord(SyncStatus.UPDATE, catalogueId);
+        }
+    }
+
     private void deleteStatusRecords(String catalogueUuid) {
+        boolean isSyncing = SpringBridge.getInstance().getCatalogueServiceConfig().isMarmottaSync();
+        if(!isSyncing) {
+            return;
+        }
+
         Connection c = getConnection();
         if(c == null) {
             logger.info("No connection to delete status record");

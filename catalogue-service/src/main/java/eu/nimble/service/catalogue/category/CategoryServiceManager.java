@@ -39,10 +39,14 @@ public class CategoryServiceManager {
         return pcs.getCategory(categoryId);
     }
 
-    public List<Category> getProductCategories(String categoryName) {
+    public List<Category> getProductCategories(String categoryName, Boolean forLogistics) {
         List<Category> categories = new ArrayList<>();
         for(ProductCategoryService pcs : services.values()) {
-            categories.addAll(pcs.getProductCategories(categoryName));
+            if(forLogistics == null) {
+                categories.addAll(pcs.getProductCategories(categoryName));
+            } else {
+                categories.addAll(pcs.getProductCategories(categoryName, forLogistics));
+            }
         }
         return categories;
     }

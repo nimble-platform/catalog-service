@@ -40,6 +40,8 @@ public class ProductCategoryController {
      *                      Example: eClass, eClass
      * @param categoryIds   List of category ids.
      *                      Example: 0173-1#01-BAC439#012,0173-1#01-AJZ694#013
+     * @param forLogistics  Optional parameter to indicate to restrict the results specific to logistics services or
+     *                      regular products. If not specified, all matched categories are returned
      * @return <li>200 along with the list of categories retrieved for the given parameters</li>
      * <li>400 if none of category names or (taxonomyId/categoryId) pairs are provided; number of elements in taxonomy id and category id lists do not match</li>
      */
@@ -50,13 +52,14 @@ public class ProductCategoryController {
             method = RequestMethod.GET)
     public ResponseEntity getCategories(@RequestParam(required = false) List<String> categoryNames,
                                         @RequestParam(required = false) List<String> taxonomyIds,
-                                        @RequestParam(required = false) List<String> categoryIds) {
+                                        @RequestParam(required = false) List<String> categoryIds,
+                                        @RequestParam(required = false) Boolean forLogistics) {
         log.info("Incoming request to get categories category names");
         List<Category> categories = new ArrayList<>();
         if (categoryNames != null && categoryNames.size() > 0) {
             log.info("Getting categories for name: {}", categoryNames);
             for (String name : categoryNames) {
-                categories.addAll(csm.getProductCategories(name));
+                categories.addAll(csm.getProductCategories(name, forLogistics));
             }
 
         } else if (taxonomyIds != null && taxonomyIds.size() > 0 && categoryIds != null && categoryIds.size() > 0) {

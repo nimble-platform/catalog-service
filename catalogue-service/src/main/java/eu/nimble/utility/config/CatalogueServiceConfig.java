@@ -50,6 +50,8 @@ public class CatalogueServiceConfig {
 
     @Value("${persistence.marmotta.url}")
     private String marmottaUrl;
+    @Value("${persistence.marmotta.sync}")
+    private boolean marmottaSync;
     @Value("${nimble.identity.url}")
     private String identityUrl;
 
@@ -175,5 +177,13 @@ public class CatalogueServiceConfig {
 
     public void setIdentityUrl(String identityUrl) {
         this.identityUrl = identityUrl;
+    }
+
+    public boolean isMarmottaSync() {
+        return marmottaSync;
+    }
+
+    public void setMarmottaSync(boolean marmottaSync) {
+        this.marmottaSync = marmottaSync;
     }
 }

@@ -6,8 +6,8 @@ import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.BigDecimalXmlAdapter;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.utility.Configuration;
-import eu.nimble.utility.config.CatalogueServiceConfig;
 import org.apache.commons.io.IOUtils;
 import org.apache.marmotta.client.exception.MarmottaClientException;
 import org.slf4j.Logger;
@@ -21,6 +21,7 @@ import javax.xml.namespace.QName;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 
 /**
@@ -50,8 +51,9 @@ public class MarmottaClient {
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "text/n3");
             conn.setDoOutput(true);
-            conn.setConnectTimeout(60000);
+            conn.setConnectTimeout(59999);
             conn.setReadTimeout(60000);
+            conn.setChunkedStreamingMode(0);
 
             OutputStream os = conn.getOutputStream();
             rdfGenerator.writeModel(os, "N3");
@@ -67,7 +69,16 @@ public class MarmottaClient {
 
             conn.disconnect();
         } catch (IOException | MarmottaClientException e) {
-            throw new MarmottaSynchronizationException("Failed to submit catalogue to Marmotta", e);
+            // TODO now the assumption is that although a timeout is received, Marmotta is still working properly
+            if (!(e instanceof SocketTimeoutException)) {
+                throw new MarmottaSynchronizationException("Failed to submit catalogue to Marmotta", e);
+            } else {
+                logger.warn("Timeout from Marmotta while submitting the catalogue with uuid: {}", catalogue.getUUID(), e);
+            }
+        }
+
+        for (CatalogueLineType catalogueLine:catalogue.getCatalogueLine()){
+            SolrClient.indexProperties(catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty());
         }
     }
 
@@ -113,7 +124,7 @@ public class MarmottaClient {
         XSD2OWLMapper mapping = getXSDToOWLMapping();
 
         ByteArrayOutputStream serializedCatalogueBaos = new ByteArrayOutputStream();
-        StringWriter serializedCatalogueWriter = new StringWriter();
+//        StringWriter serializedCatalogueWriter = new StringWriter();
         try {
             String packageName = catalogue.getClass().getPackage().getName();
             JAXBContext jc = JAXBContext.newInstance(packageName);
@@ -124,15 +135,15 @@ public class MarmottaClient {
                     new QName(Configuration.UBL_CATALOGUE_NS, "Catalogue"), catalogue.getClass(), catalogue);
             marsh.setAdapter(new BigDecimalXmlAdapter());
             marsh.marshal(element, serializedCatalogueBaos);
-            marsh.marshal(element, serializedCatalogueWriter);
+//            marsh.marshal(element, serializedCatalogueWriter);
 
         } catch (JAXBException e) {
             throw new MarmottaSynchronizationException("Failed to serialize the catalogue instance to XML", e);
         }
 
         // log the catalogue to be transformed
-        logger.debug("Catalogue to be transformed:\n{}", serializedCatalogueWriter.toString());
-        serializedCatalogueWriter.flush();
+//        logger.debug("Catalogue to be transformed:\n{}", serializedCatalogueWriter.toString());
+//        serializedCatalogueWriter.flush();
 
         try {
             ByteArrayInputStream bais = new ByteArrayInputStream(serializedCatalogueBaos.toByteArray());
@@ -143,10 +154,10 @@ public class MarmottaClient {
             serializedCatalogueBaos.close();
             bais.close();
 
-            StringWriter catalogueRDFWriter = new StringWriter();
-            generator.writeModel(catalogueRDFWriter, "N3");
-            logger.debug("Transformed RDF data:\n{}", catalogueRDFWriter.toString());
-            catalogueRDFWriter.flush();
+//            StringWriter catalogueRDFWriter = new StringWriter();
+//            generator.writeModel(catalogueRDFWriter, "N3");
+//            logger.debug("Transformed RDF data:\n{}", catalogueRDFWriter.toString());
+//            catalogueRDFWriter.flush();
 
             return generator;
 

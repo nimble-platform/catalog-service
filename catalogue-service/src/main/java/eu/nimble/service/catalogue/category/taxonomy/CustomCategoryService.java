@@ -35,6 +35,11 @@ public class CustomCategoryService implements ProductCategoryService {
     }
 
     @Override
+    public List<Category> getProductCategories(String categoryName, boolean forLogistics) {
+        return new ArrayList<>();
+    }
+
+    @Override
     public String getTaxonomyId() {
         return "Custom";
     }
