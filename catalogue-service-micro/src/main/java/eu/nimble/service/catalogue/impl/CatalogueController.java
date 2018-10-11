@@ -384,12 +384,13 @@ public class CatalogueController {
     public void downloadTemplate(
             @RequestParam("categoryIds") List<String> categoryIds,
             @RequestParam("taxonomyIds") List<String> taxonomyIds,
+            @RequestParam("templateLanguage") String templateLanguage,
             HttpServletResponse response) {
         log.info("Incoming request to generate a template. Category ids: {}, taxonomy ids: {}", categoryIds, taxonomyIds);
 
         Workbook template;
         try {
-            template = service.generateTemplateForCategory(categoryIds, taxonomyIds);
+            template = service.generateTemplateForCategory(categoryIds, taxonomyIds,templateLanguage);
         } catch (Exception e) {
             String msg = "Failed to generate template\n" + e.getMessage();
             log.error(msg, e);

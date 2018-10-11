@@ -190,13 +190,12 @@ public class TemplateParser {
             itemProp.setValueQuantity(quantities);
 
         } else {
-            itemProp.setValue((List<TextType>) values);
-            /* for(String value: (List<String>) values) {
+            for(String value: (List<String>) values) {
                 TextType text = new TextType();
                 text.setValue(value);
-                text.setValue(defaultLanguage);
+                text.setLanguageID(defaultLanguage);
                 itemProp.getValue().add(text);
-            } */
+            }
         }
 
 

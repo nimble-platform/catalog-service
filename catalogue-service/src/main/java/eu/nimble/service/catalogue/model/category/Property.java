@@ -43,12 +43,17 @@ public class Property {
         if(language == null) {
             language = "en";
         }
+        String nameInEnglish = null;
 
         for(TextType pNames: preferredName) {
-            if(pNames.getLanguageID().equals(language))
+            String id = pNames.getLanguageID();
+            if(id.equals("en")){
+                nameInEnglish = pNames.getValue();
+            }
+            if(id.equals(language))
                 return pNames.getValue();
         }
-        return null;
+        return nameInEnglish;
     }
 
     public List<TextType> getPreferredName() {

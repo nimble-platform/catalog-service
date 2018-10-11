@@ -74,7 +74,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         taxonomyIds.add("eClass");
         taxonomyIds.add("FurnitureOntology");
         //taxonomyIds.add("eClass");
-        Workbook wb = csi.generateTemplateForCategory(categoryIds, taxonomyIds);
+        Workbook wb = csi.generateTemplateForCategory(categoryIds, taxonomyIds,"en");
         wb.write(new FileOutputStream(filePath));
         wb.close();
 
@@ -251,7 +251,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public Workbook generateTemplateForCategory(List<String> categoryIds, List<String> taxonomyIds) {
+    public Workbook generateTemplateForCategory(List<String> categoryIds, List<String> taxonomyIds,String templateLanguage) {
         List<Category> categories = new ArrayList<>();
         for (int i = 0; i < categoryIds.size(); i++) {
             Category category = csmInstance.getCategory(taxonomyIds.get(i), categoryIds.get(i));
@@ -259,7 +259,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         }
 
         TemplateGenerator templateGenerator = new TemplateGenerator();
-        Workbook template = templateGenerator.generateTemplateForCategory(categories);
+        Workbook template = templateGenerator.generateTemplateForCategory(categories,templateLanguage);
         return template;
     }
 
