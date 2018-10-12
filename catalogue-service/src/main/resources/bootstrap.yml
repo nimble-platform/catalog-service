@@ -24,6 +24,14 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    consumer:
+      group-id: catalogue-service${KAFKA_CONSUMER_GROUP_ID_SUFFIX:}
+    properties:
+      sasl:
+        jaas:
+          config: ${KAFKA_JAAS_CONFIG}
 
 logstash:
   uri: ${LOGSTASH_URI:localhost:5000}
@@ -79,10 +87,10 @@ persistence:
         jdbc:
           batch_size: 0
         c3p0:
-          acquire_increment: 5
-          initialPoolSize: 5
-          max_size: 15
-          min_size: 5
+          acquire_increment: 3
+          initialPoolSize: 3
+          max_size: 6
+          min_size: 3
           maxStatementsPerConnection: 5
           acquireRetryAttempts: 10
           acquireRetryDelay: 100
@@ -136,10 +144,15 @@ security:
     authorization:
       check-token-access:
 
-
 nimble:
   identity:
-    url: ${IDENTITY_SERVICE_URL:http://nimble-staging.salzburgresearch.at/identity}
+    url: ${IDENTITY_SERVICE_URL}
+  trust:
+    url: ${TRUST_SERVICE_URL:http://nimble-staging.salzburgresearch.at/trust}
+  kafka:
+    topics:
+      companyUpdates: ${KAFKA_TOPIC_COMPANY_UPDATES:company-updates}
+      trustScoreUpdates: ${KAFKA_TOPIC_TRUST_SCORE_UPDATES:trust-score-updates}
 
 ################################################################################################
 ################################## KUBERNETES CONFIG ###########################################

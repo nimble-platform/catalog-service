@@ -7,8 +7,8 @@ package eu.nimble.service.catalogue;
 
 import eu.nimble.service.catalogue.category.CategoryServiceManager;
 import eu.nimble.service.catalogue.model.category.Category;
+import eu.nimble.service.catalogue.util.DataIntegratorUtil;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
-import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
@@ -17,6 +17,7 @@ import eu.nimble.service.catalogue.template.TemplateParser;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
+import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
@@ -31,6 +32,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -106,9 +108,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     public CatalogueType updateCatalogue(CatalogueType catalogue) {
         logger.info("Catalogue with uuid: {} will be updated", catalogue.getUUID());
 
-        checkReferencesInCatalogue(catalogue);
-
-        catalogue = addParentCategories(catalogue);
+        DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(catalogue);
         // merge the hibernate object
         catalogue = (CatalogueType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
 
@@ -152,39 +152,9 @@ public class CatalogueServiceImpl implements CatalogueService {
             String uuid = UUID.randomUUID().toString();
             ublCatalogue.setUUID(uuid);
 
-            ublCatalogue = addParentCategories(ublCatalogue);
-            // set references from items to the catalogue
-            for(CatalogueLineType line : ublCatalogue.getCatalogueLine()) {
-                DocumentReferenceType docRef = new DocumentReferenceType();
-                docRef.setID(((CatalogueType) catalogue).getUUID());
-                line.getGoodsItem().getItem().setCatalogueDocumentReference(docRef);
-
-                // Transport Service
-                if(line.getGoodsItem().getItem().getTransportationServiceDetails() != null){
-                    CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
-                    CodeType codeType = new CodeType();
-                    codeType.setListID("Default");
-                    codeType.setName("Transport Service");
-                    codeType.setValue("Transport Service");
-                    commodityClassificationType.setItemClassificationCode(codeType);
-                    line.getGoodsItem().getItem().getCommodityClassification().add(commodityClassificationType);
-                }
-                // Product
-                else{
-                    CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
-                    CodeType codeType = new CodeType();
-                    codeType.setListID("Default");
-                    codeType.setName("Product");
-                    codeType.setValue("Product");
-                    commodityClassificationType.setItemClassificationCode(codeType);
-                    line.getGoodsItem().getItem().getCommodityClassification().add(commodityClassificationType);
-                }
-            }
-
-            checkReferencesInCatalogue(ublCatalogue);
-
+            DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(ublCatalogue);
             // persist the catalogue in relational DB
-            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).persist(ublCatalogue);
+            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(ublCatalogue);
             logger.info("Catalogue with uuid: {} persisted in DB", uuid.toString());
 
             // add synchronization record
@@ -316,14 +286,10 @@ public class CatalogueServiceImpl implements CatalogueService {
             catalogue.setID("default");
             catalogue.setProviderParty(party);
             catalogue.setCatalogueLine(catalogueLines);
-            checkReferencesInCatalogue(catalogue);
-
             return catalogue;
 
         } else {
             updateLinesForUploadMode(catalogue, uploadMode, catalogueLines);
-            checkReferencesInCatalogue(catalogue);
-
             return catalogue;
         }
     }
@@ -370,7 +336,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public void addImagesToProducts(ZipInputStream imagePackage, String catalogueUuid) {
+    public CatalogueType addImagesToProducts(ZipInputStream imagePackage, String catalogueUuid) {
         try {
             CatalogueType catalogue = getCatalogue(catalogueUuid);
             ZipEntry ze = imagePackage.getNextEntry();
@@ -416,7 +382,8 @@ public class CatalogueServiceImpl implements CatalogueService {
                 ze = imagePackage.getNextEntry();
             }
 
-            updateCatalogue(catalogue);
+            return catalogue;
+
         } catch (IOException e) {
             String msg = "Failed to get next entry";
             logger.error(msg, e);
@@ -453,35 +420,42 @@ public class CatalogueServiceImpl implements CatalogueService {
         return catalogueLine;
     }
 
+    @Override
+    public <T> List<T> getCatalogueLines(String catalogueId, List<String> catalogueLineIds) {
+
+        if (catalogueLineIds.size() == 0){
+            return null;
+        }
+
+        List<T> catalogueLines = null;
+
+        String query = "SELECT cl FROM CatalogueLineType as cl, CatalogueType as c "
+                + " JOIN c.catalogueLine as clj"
+                + " WHERE c.UUID = '" + catalogueId + "' "
+                + " AND (";
+
+        int size = catalogueLineIds.size();
+        for(int i = 0;i<size;i++){
+            if(i == size-1){
+                query += "cl.ID = '"+catalogueLineIds.get(i)+"')";
+            }
+            else {
+                query += "cl.ID = '"+catalogueLineIds.get(i)+"' OR ";
+            }
+        }
+        query += " AND clj.ID = cl.ID ";
+
+        catalogueLines = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
+                .loadAll(query);
+
+        return catalogueLines;
+    }
+
     // TODO test
     @Override
     public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine) {
-        // add parents of the selected category to commodity classifications of the item
-        for(CommodityClassificationType cct : getParentCategories(catalogueLine.getGoodsItem().getItem().getCommodityClassification())){
-            catalogueLine.getGoodsItem().getItem().getCommodityClassification().add(cct);
-        }
-        // Transport Service
-        if(catalogueLine.getGoodsItem().getItem().getTransportationServiceDetails() != null){
-            CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
-            CodeType codeType = new CodeType();
-            codeType.setListID("Default");
-            codeType.setName("Transport Service");
-            codeType.setValue("Transport Service");
-            commodityClassificationType.setItemClassificationCode(codeType);
-            catalogueLine.getGoodsItem().getItem().getCommodityClassification().add(commodityClassificationType);
-        }
-        // Product
-        else{
-            CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
-            CodeType codeType = new CodeType();
-            codeType.setListID("Default");
-            codeType.setName("Product");
-            codeType.setValue("Product");
-            commodityClassificationType.setItemClassificationCode(codeType);
-            catalogueLine.getGoodsItem().getItem().getCommodityClassification().add(commodityClassificationType);
-        }
         catalogue.getCatalogueLine().add(catalogueLine);
-        checkReferencesInCatalogue(catalogue);
+        DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(catalogue);
 
         catalogue = (CatalogueType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
         catalogueLine = catalogue.getCatalogueLine().get(catalogue.getCatalogueLine().size()-1);
@@ -494,10 +468,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     @Override
     public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine) {
-        // add parents of the selected category to commodity classifications of the item
-        for(CommodityClassificationType cct : getParentCategories(catalogueLine.getGoodsItem().getItem().getCommodityClassification())){
-            catalogueLine.getGoodsItem().getItem().getCommodityClassification().add(cct);
-        }
+        DataIntegratorUtil.setParentCategories(catalogueLine.getGoodsItem().getItem().getCommodityClassification());
         catalogueLine = (CatalogueLineType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueLine);
 
         // add synchronization record
@@ -520,67 +491,6 @@ public class CatalogueServiceImpl implements CatalogueService {
             // add synchronization record
             MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueId);
         }
-    }
-
-    private void checkReferencesInCatalogue(CatalogueType catalogue) {
-        for(CatalogueLineType line : catalogue.getCatalogueLine()) {
-            // check catalogue line ids
-            // make sure that line IDs and the manufacturer item IDs are the same
-            String manufacturerItemId = line.getGoodsItem().getItem().getManufacturersItemIdentification().getID();
-            if(manufacturerItemId == null && line.getID() == null) {
-                line.setID(UUID.randomUUID().toString());
-                line.getGoodsItem().getItem().getManufacturersItemIdentification().setID(line.getID());
-
-            } else if(line.getID() == null) {
-                line.setID(manufacturerItemId);
-
-            } else if(manufacturerItemId == null) {
-                line.getGoodsItem().getItem().getManufacturersItemIdentification().setID(line.getID());
-            }
-
-            // set references from items to the catalogue
-            DocumentReferenceType docRef = new DocumentReferenceType();
-            docRef.setID(catalogue.getUUID());
-            line.getGoodsItem().getItem().setCatalogueDocumentReference(docRef);
-        }
-    }
-
-    private CatalogueType addParentCategories(CatalogueType catalogueType){
-        for(CatalogueLineType line : catalogueType.getCatalogueLine()) {
-            // add parents of the selected category to commodity classifications of the item
-            for(CommodityClassificationType cct : getParentCategories(line.getGoodsItem().getItem().getCommodityClassification())){
-                line.getGoodsItem().getItem().getCommodityClassification().add(cct);
-            }
-        }
-        return catalogueType;
-    }
-
-    private List<CommodityClassificationType> getParentCategories(List<CommodityClassificationType> commodityClassifications){
-        List<CommodityClassificationType> commodityClassificationTypeList = new ArrayList<>();
-        // find parents of the selected categories
-        for(CommodityClassificationType cct : commodityClassifications){
-            // Default categories have no parents
-            if(cct.getItemClassificationCode().getListID().contentEquals("Default")){
-                continue;
-            }
-            CategoryServiceManager csm = CategoryServiceManager.getInstance();
-            List<Category> parentCategories = csm.getParentCategories(cct.getItemClassificationCode().getListID(),cct.getItemClassificationCode().getValue());
-
-            for(int i = 0; i< parentCategories.size()-1;i++){
-                Category category = parentCategories.get(i);
-                CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
-                CodeType codeType = new CodeType();
-                codeType.setValue(category.getId());
-                codeType.setName(category.getPreferredName());
-                codeType.setListID(category.getTaxonomyId());
-                codeType.setURI(category.getCategoryUri());
-                commodityClassificationType.setItemClassificationCode(codeType);
-                if(!commodityClassificationTypeList.contains(commodityClassificationType) && !commodityClassifications.contains(commodityClassificationType)){
-                    commodityClassificationTypeList.add(commodityClassificationType);
-                }
-            }
-        }
-        return commodityClassificationTypeList;
     }
 
     @Override
