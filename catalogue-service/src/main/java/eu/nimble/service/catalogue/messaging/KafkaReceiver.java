@@ -37,10 +37,11 @@ public class KafkaReceiver {
     @KafkaListener(topics = "${nimble.kafka.topics.trustScoreUpdates}")
     public void receiveTrustScoreUpdates(ConsumerRecord<String, KafkaConfig.AuthorizedCompanyUpdate> consumerRecord) {
         String companyID = consumerRecord.value().getCompanyId();
+        logger.info("Received company trust updates for company with id: {}",companyID);
         String accessToken = consumerRecord.value().getAccessToken();
 
         CatalogueDatabaseAdapter.syncTrustScores(companyID, accessToken);
         MarmottaSynchronizer.getInstance().addRecord(companyID);
-        logger.info("Received company updates for company with id: {}",companyID);
+        logger.info("Processed company trust updates for company with id: {}", companyID);
     }
 }

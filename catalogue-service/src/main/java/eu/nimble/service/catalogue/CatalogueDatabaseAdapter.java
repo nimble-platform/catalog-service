@@ -30,7 +30,7 @@ public class CatalogueDatabaseAdapter {
 
     private static final String CATALOGUE_EXISTS_QUERY = "SELECT COUNT(c) FROM CatalogueType c WHERE c.ID = ? and c.providerParty.ID = ?";
     private static final String GET_PARTY_QUERY = "SELECT party FROM PartyType party WHERE party.ID = ? ORDER BY party.hjid ASC";
-    private static final String GET_PARTY_CATALOGUES_QUERY = "SELECT catalogue.ID FROM CatalogueType as catalogue" +
+    private static final String GET_PARTY_CATALOGUES_QUERY = "SELECT catalogue.UUID FROM CatalogueType as catalogue" +
             " JOIN catalogue.providerParty as catalogue_provider_party " +
             " WHERE catalogue_provider_party.ID = ?";
 
@@ -56,19 +56,21 @@ public class CatalogueDatabaseAdapter {
     public static void syncTrustScores(String partyId, String accessToken) {
         PartyType trustParty;
         InputStream partyStream;
+        String partyStr;
 
         try {
             partyStream = SpringBridge.getInstance().getTrustClient().obtainPartyTrustValues(partyId, accessToken).body().asInputStream();
+            partyStr = IOUtils.toString(partyStream);
         } catch (IOException e) {
-            logger.error("Failed to obtain party: {}", partyId, e);
+            logger.error("Failed to obtain party with id: {} from trust service", partyId, e);
             return;
         }
 
         try {
-            trustParty = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(partyStream, PartyType.class);
+            trustParty = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(partyStr, PartyType.class);
         }
         catch (Exception e){
-            logger.error("Failed to deserialize party: {}", partyId, e);
+            logger.error("Failed to deserialize party with id: {}, serialization: {}", partyId, partyStr, e);
             return;
         }
 
