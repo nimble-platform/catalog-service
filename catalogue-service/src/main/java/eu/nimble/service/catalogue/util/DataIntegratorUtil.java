@@ -18,13 +18,16 @@ public class DataIntegratorUtil {
         catalogue.setProviderParty(partyType);
 
         for(CatalogueLineType line : catalogue.getCatalogueLine()) {
-            line.getGoodsItem().getItem().setManufacturerParty(partyType);
-            setDefaultCategories(line);
-            setParentCategories(line.getGoodsItem().getItem().getCommodityClassification());
-            checkCatalogueLineIDs(line);
-            setCatalogueDocumentReference(catalogue.getUUID(),line);
-
+            ensureCatalogueLineDataIntegrityAndEnhancement(line, catalogue);
         }
+    }
+
+    public static void ensureCatalogueLineDataIntegrityAndEnhancement(CatalogueLineType catalogueLine, CatalogueType catalogue){
+        catalogueLine.getGoodsItem().getItem().setManufacturerParty(catalogue.getProviderParty());
+        setDefaultCategories(catalogueLine);
+        setParentCategories(catalogueLine.getGoodsItem().getItem().getCommodityClassification());
+        checkCatalogueLineIDs(catalogueLine);
+        setCatalogueDocumentReference(catalogue.getUUID(),catalogueLine);
     }
 
     public static void setParentCategories(List<CommodityClassificationType> commodityClassifications){
