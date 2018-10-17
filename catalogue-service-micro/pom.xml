@@ -12,6 +12,8 @@
 
     <properties>
         <dockerImageTag>${project.version}</dockerImageTag>
+        <thymeleaf.version>3.0.9.RELEASE</thymeleaf.version>
+        <thymeleaf-layout-dialect.version>2.2.1</thymeleaf-layout-dialect.version>
     </properties>
 
     <parent>

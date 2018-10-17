@@ -468,7 +468,8 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     @Override
     public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine) {
-        DataIntegratorUtil.setParentCategories(catalogueLine.getGoodsItem().getItem().getCommodityClassification());
+        CatalogueType catalogue = getCatalogue(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID());
+        DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(catalogueLine, catalogue);
         catalogueLine = (CatalogueLineType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueLine);
 
         // add synchronization record
