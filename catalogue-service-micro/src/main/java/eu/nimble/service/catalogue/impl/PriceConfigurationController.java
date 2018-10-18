@@ -156,7 +156,6 @@ public class PriceConfigurationController {
 
         List<AllowanceChargeType> discounts = new ArrayList<>();
         AllowanceChargeType discount = new AllowanceChargeType();
-        discount.setPercent(BigDecimal.valueOf(10));
         discounts.add(discount);
         ilqt.setAllowanceCharge(discounts);
         option.setItemLocationQuantity(ilqt);
