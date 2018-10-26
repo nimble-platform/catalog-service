@@ -107,6 +107,7 @@ public class TemplateParser {
             classificationCode.setValue(category.getId());
             classificationCode.setName(category.getPreferredName());
             classificationCode.setListID(category.getTaxonomyId());
+            classificationCode.setURI(category.getCategoryUri());
             classification.setItemClassificationCode(classificationCode);
             classifications.add(classification);
         }
