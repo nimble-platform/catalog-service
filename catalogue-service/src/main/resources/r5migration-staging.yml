@@ -1,0 +1,26 @@
+hibernate:
+  connection:
+    #### Postgres Configs
+    url: jdbc:postgresql://sl-eu-lon-2-portal.1.dblayer.com:21736/ubldb?currentSchema=public
+    username: admin
+    password: IRDMKUYCDTIDNLQG
+    driver_class: org.postgresql.Driver
+  dialect: org.hibernate.dialect.PostgreSQLDialect
+  show_sql: false
+  hbm2ddl:
+    auto: update
+  cache:
+    provider_class: org.hibernate.cache.HashtableCacheProvider
+  jdbc:
+    batch_size: 0
+    lob:
+      non_contextual_creation: true
+  use_sql_comments: true
+  transaction:
+    factory_class: org.hibernate.transaction.JDBCTransactionFactory
+  current_session_context_class: thread
+  #TODO: below configuration is quite inefficient as it uses a db connection each time a lazy list is initialized
+  enable_lazy_load_no_trans: true
+  event:
+    merge:
+      entity_copy_observer: allow
