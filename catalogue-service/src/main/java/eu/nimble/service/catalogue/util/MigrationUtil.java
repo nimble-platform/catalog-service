@@ -30,9 +30,9 @@ public class MigrationUtil {
     private static final String environment = "staging";
 
     // connection parameters for 'Staging'
-    private static final String url = "jdbc:postgresql://sl-eu-lon-2-portal.1.dblayer.com:21736/ubldb";
-    private static final String username = "admin";
-    private static final String password = "IRDMKUYCDTIDNLQG";
+    private static String url;
+    private static String username;
+    private static String password;
 
     public static void main(String[] args) throws Exception{
         MigrationUtil script = new MigrationUtil();
@@ -157,7 +157,24 @@ public class MigrationUtil {
         try {
             PropertySource<?> applicationYamlPropertySource = loader.load(
                     "properties", new ClassPathResource("r5migration-" + environment + ".yml"), null);
-            return ((MapPropertySource) applicationYamlPropertySource).getSource();
+
+            Map map = ((MapPropertySource) applicationYamlPropertySource).getSource();
+
+            String url = (String) map.get("hibernate.connection.url");
+            url = url.replace("${STAGING_DB_HOST}",System.getenv("STAGING_DB_HOST")).replace("${STAGING_DB_PORT}",System.getenv("STAGING_DB_PORT"));
+
+            // set staging parameters
+            MigrationUtil.url = url;
+            MigrationUtil.username = System.getenv("STAGING_DB_USERNAME");
+            MigrationUtil.password = System.getenv("STAGING_DB_PASSWORD");
+            //
+
+            map.put("hibernate.connection.url",url);
+            map.put("hibernate.connection.username",MigrationUtil.username);
+            map.put("hibernate.connection.password",MigrationUtil.password);
+
+
+            return map;
 
         } catch (IOException e) {
             logger.error("", e);
