@@ -31,12 +31,12 @@ public class MigrationUtil {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MigrationUtil.class);
     private static final String token = "Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIxYnNrM09PZkNzdWF0LXV1X0lqU2JxX2QwMmtZM2NteXJheUpXeE93MmlZIn0.eyJqdGkiOiJmZjE0MzE0ZS02MGVlLTQ3NjgtYTYzZS03OGZmOTQzOWZjZGMiLCJleHAiOjE1MzczNDA4MTMsIm5iZiI6MCwiaWF0IjoxNTM3MzM3MjEzLCJpc3MiOiJodHRwOi8va2V5Y2xvYWs6ODA4MC9hdXRoL3JlYWxtcy9tYXN0ZXIiLCJhdWQiOiJuaW1ibGVfY2xpZW50Iiwic3ViIjoiZGUwNWNkODAtMzJmYy00NmNjLWE3ZjgtZDQyYzU1YTIxYjExIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoibmltYmxlX2NsaWVudCIsImF1dGhfdGltZSI6MCwic2Vzc2lvbl9zdGF0ZSI6Ijk1ODEyMzczLTdmNTAtNGVlYS1iZjU4LWRiNzk5MWNiY2E2NSIsImFjciI6IjEiLCJhbGxvd2VkLW9yaWdpbnMiOltdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsibGVnYWxfcmVwcmVzZW50YXRpdmUiLCJuaW1ibGVfdXNlciIsImluaXRpYWxfcmVwcmVzZW50YXRpdmUiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sIm5hbWUiOiJhbHAgY2VuayIsInByZWZlcnJlZF91c2VybmFtZSI6ImFscEBnbWFpbC5jb20iLCJnaXZlbl9uYW1lIjoiYWxwIiwiZmFtaWx5X25hbWUiOiJjZW5rIiwiZW1haWwiOiJhbHBAZ21haWwuY29tIn0.dSldcfxcPvO4eU2ntSniQbPKVRPyc6c9ls9iXA38fZSK9AEtwN72BupF9NYh5mwRUQYV7R5yHtSAWosIxOKIiD9xQ0fxrYF38OAQXFenqEe7j8HWF92qhK2l1NSMXPNJdHt33h8fNBZ_hbyB5bI_kToczOg3nikdxu8fjellcg023lPzEMtseQyHkuLCYCwgKF1IjRD5cUuRZyurs6V2HyFP7l-BvgIXHt_CwxnZ0-W6gjSx2N0PBRuKGzN68Ivx2wWguPwF1m1Q1n2H5ckAcbkY-gy6L43q2_bTM-pFMj2HbWkeOqiKMlyHCOsNpUAAvSEkZ4yjDy0k9jzlnpaDTQ";
-    private static final String environment = "staging";
+    private static final String environment = "production";
 
     // connection parameters for 'Staging'
-    private static final String url = "jdbc:postgresql://sl-eu-lon-2-portal.1.dblayer.com:21736/ubldb";
-    private static final String username = "admin";
-    private static final String password = "IRDMKUYCDTIDNLQG";
+    private static String url;
+    private static String username;
+    private static String password;
 
     public static void main(String[] args) throws SQLException, InterruptedException, ClassNotFoundException {
         MigrationUtil script = new MigrationUtil();
@@ -110,7 +110,7 @@ public class MigrationUtil {
 
             String stringIds = ids.toString().replace("[","").replace("]","").replace(" ","");
 
-            HttpResponse<JsonNode> response = Unirest.get("http://nimble-staging.salzburgresearch.at/identity/parties/"+stringIds)
+            HttpResponse<JsonNode> response = Unirest.get(getIdentityServiceUrl() + "parties/"+stringIds)
                     .header("Authorization", token).asJson();
 
             ObjectMapper objectMapper = new ObjectMapper();
@@ -1993,12 +1993,38 @@ public class MigrationUtil {
         YamlPropertySourceLoader loader = new YamlPropertySourceLoader();
         try {
             PropertySource<?> applicationYamlPropertySource = loader.load(
-                    "properties", new ClassPathResource("r5migration-" + environment + ".yml"), null);
-            return ((MapPropertySource) applicationYamlPropertySource).getSource();
+                    "properties", new ClassPathResource("releases/r5/r5migration.yml"), null);
+
+            Map map = ((MapPropertySource) applicationYamlPropertySource).getSource();
+
+            String url = (String) map.get("hibernate.connection.url");
+            url = url.replace("${DB_HOST}",System.getenv("DB_HOST")).replace("${DB_PORT}",System.getenv("DB_PORT"));
+
+            // set staging parameters
+            MigrationUtil.url = url;
+            MigrationUtil.username = System.getenv("DB_USERNAME");
+            MigrationUtil.password = System.getenv("DB_PASSWORD");
+            //
+
+            map.put("hibernate.connection.url",url);
+            map.put("hibernate.connection.username",MigrationUtil.username);
+            map.put("hibernate.connection.password",MigrationUtil.password);
+
+
+            return map;
 
         } catch (IOException e) {
             logger.error("", e);
             throw new RuntimeException();
         }
+    }
+
+    private static String getIdentityServiceUrl() {
+        if(environment.contentEquals("production")) {
+            return "https://nimble-platform.salzburgresearch.at/nimble/identity/";
+        } else if(environment.contentEquals("staging")) {
+            return "http://nimble-stag'ng.salzburgresearch.at/identity/";
+        }
+        throw new RuntimeException();
     }
 }
