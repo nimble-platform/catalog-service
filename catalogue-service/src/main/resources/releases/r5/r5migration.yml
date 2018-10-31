@@ -1,9 +1,9 @@
 hibernate:
   connection:
     #### Postgres Configs
-    url: jdbc:postgresql://${STAGING_DB_HOST}:${STAGING_DB_PORT}/ubldb?currentSchema=public
-    username: ${STAGING_DB_USERNAME}
-    password: ${STAGING_DB_PASSWORD}
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/ubldb?currentSchema=public
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver_class: org.postgresql.Driver
   dialect: org.hibernate.dialect.PostgreSQLDialect
   show_sql: false
