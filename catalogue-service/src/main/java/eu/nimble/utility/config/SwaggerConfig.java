@@ -18,8 +18,20 @@ public class SwaggerConfig {
                 .select()
                 .apis(RequestHandlerSelectors.basePackage("eu.nimble"))
                 .paths(PathSelectors.any())
-                .build();
+                .build()
+                .apiInfo(metaData());
     }
 
+    private ApiInfo metaData(){
+        return new ApiInfo(
+                "NIMBLE Catalogue REST API",
+                "REST API handling catalogues on the NIMBLE platform",
+                "1.0",
+                "",
+                "",
+                "Additional documentation related to Catalogue Service REST API",
+                "https://secure.salzburgresearch.at/wiki/display/NIMBLE/Task+2.3+Design+of+an+Open+API+for+the+NIMBLE+Platform"
+        );
+    }
 }
 

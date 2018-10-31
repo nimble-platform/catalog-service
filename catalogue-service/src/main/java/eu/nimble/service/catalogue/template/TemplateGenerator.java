@@ -38,14 +38,20 @@ public class TemplateGenerator {
     public Workbook generateTemplateForCategory(List<Category> categories) {
         Sheet infoTab = template.createSheet(TemplateConfig.TEMPLATE_TAB_INFORMATION);
         Sheet propertiesTab = template.createSheet(TemplateConfig.TEMPLATE_TAB_PRODUCT_PROPERTIES);
+        Sheet propertiesExampleTab = template.createSheet(TemplateConfig.TEMPLATE_TAB_PRODUCT_PROPERTIES_EXAMPLE);
         Sheet tradingDeliveryTermsTab = template.createSheet(TemplateConfig.TEMPLATE_TAB_TRADING_DELIVERY_TERMS);
+        Sheet tradingDeliveryTermsTabExample = template.createSheet(TemplateConfig.TEMPLATE_TAB_TRADING_DELIVERY_TERMS_EXAMPLE);
         Sheet propertyDetailsTab = template.createSheet(TemplateConfig.TEMPLATE_TAB_PROPERTY_DETAILS);
         Sheet valuesTab = template.createSheet(TemplateConfig.TEMPLATE_TAB_ALLOWED_VALUES_FOR_PROPERTIES);
         Sheet metadataTab = template.createSheet(TemplateConfig.TEMPLATE_TAB_METADATA);
+        Sheet sourceList = template.createSheet(TemplateConfig.TEMPLATE_TAB_SOURCE_LIST);
 
+        populateSourceList(sourceList);
         populateInfoTab(infoTab);
         populateProductPropertiesTab(categories, propertiesTab);
+        populateProductPropertiesExampleTab(categories,propertiesExampleTab);
         populateTradingDeliveryTermsTab(tradingDeliveryTermsTab);
+        populateTradingDeliveryTermsExampleTab(tradingDeliveryTermsTabExample);
         populatePropertyDetailsTab(categories, propertyDetailsTab);
         populateAllowedValuesTab(categories, valuesTab);
         populateMetadataTab(categories, metadataTab);
@@ -75,6 +81,14 @@ public class TemplateGenerator {
         cell = row.createCell(0);
         cell.setCellValue(TemplateConfig.TEMPLATE_INFO_MANDATORY_INFORMATION);
         cell.setCellStyle(mandatoryCellStyle);
+        row = infoTab.createRow(++rowIndex);
+        cell = row.createCell(0);
+        cell.setCellValue(TemplateConfig.TEMPLATE_INFO_NOT_EDITABLE);
+        cell.setCellStyle(readOnlyStyle);
+        row = infoTab.createRow(++rowIndex);
+        cell = row.createCell(0);
+        cell.setCellValue(TemplateConfig.TEMPLATE_INFO_YOU_CAN_EDIT);
+        cell.setCellStyle(editableStyle);
         row = infoTab.createRow(++rowIndex);
         row.createCell(0).setCellValue(TemplateConfig.TEMPLATE_INFO_DATA_FIELDS);
         row = infoTab.createRow(++rowIndex);
@@ -128,6 +142,15 @@ public class TemplateGenerator {
         row.createCell(0).setCellValue(TemplateConfig.TEMPLATE_INFO_THE_FIFTH_ROW);
         rowIndex++;
 
+        // product properties example tab info
+        row = infoTab.createRow(++rowIndex);
+        cell = row.createCell(0);
+        cell.setCellValue(TemplateConfig.TEMPLATE_TAB_PRODUCT_PROPERTIES_EXAMPLE);
+        cell.setCellStyle(headerCellStyle);
+        row = infoTab.createRow(++rowIndex);
+        row.createCell(0).setCellValue(TemplateConfig.TEMPLATE_INFO_PRODUCT_PROPERTIES_EXAMPLE);
+        rowIndex++;
+
         // terms tab info
         row = infoTab.createRow(++rowIndex);
         cell = row.createCell(0);
@@ -139,6 +162,15 @@ public class TemplateGenerator {
         row.createCell(0).setCellValue(TemplateConfig.TEMPLATE_INFO_MANUFACTURER_ITEM_IDENTIFICATION);
         row = infoTab.createRow(++rowIndex);
         row.createCell(0).setCellValue(TemplateConfig.TEMPLATE_INFO_NOTADDING_CUSTOM_PROPERTIES);
+        rowIndex++;
+
+        // terms tab example info
+        row = infoTab.createRow(++rowIndex);
+        cell = row.createCell(0);
+        cell.setCellValue(TemplateConfig.TEMPLATE_TAB_TRADING_DELIVERY_TERMS_EXAMPLE);
+        cell.setCellStyle(headerCellStyle);
+        row = infoTab.createRow(++rowIndex);
+        row.createCell(0).setCellValue(TemplateConfig.TEMPLATE_INFO_TRADING_DELIVERY_EXAMPLE);
         rowIndex++;
 
         // product details tab info
@@ -171,6 +203,9 @@ public class TemplateGenerator {
     }
 
     private void populateProductPropertiesTab(List<Category> categories, Sheet productPropertiesTab) {
+        // make first column read only
+        productPropertiesTab.setDefaultColumnStyle(0,readOnlyStyle);
+
         // create the top row containing the category names and ids on top of the corresponding properties
         // create the dimension tab
         Row topRow = productPropertiesTab.createRow(0);
@@ -240,9 +275,22 @@ public class TemplateGenerator {
 
             if (property.getDataType().equals("BOOLEAN")){
                 CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnOffset,columnOffset);
-                DataValidationHelper dataValidationHelper = new XSSFDataValidationHelper((XSSFSheet) productPropertiesTab);
-                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createExplicitListConstraint(new String[]{
-                        "TRUE","FALSE"});
+                DataValidationHelper dataValidationHelper = productPropertiesTab.getDataValidationHelper();
+                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_BOOLEAN_LIST);
+                DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
+                dataValidation.setSuppressDropDownArrow(true);
+                // error box
+                dataValidation.setShowErrorBox(true);
+                dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
+                // empty cell
+                dataValidation.setEmptyCellAllowed(true);
+                productPropertiesTab.addValidationData(dataValidation);
+            }
+
+            if(property.getPreferredName().equals(TEMPLATE_PRODUCT_PROPERTIES_WIDTH) || property.getPreferredName().equals(TEMPLATE_PRODUCT_PROPERTIES_LENGTH) || property.getPreferredName().equals(TEMPLATE_PRODUCT_PROPERTIES_HEIGHT)){
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3,3,columnOffset,columnOffset);
+                DataValidationHelper dataValidationHelper = productPropertiesTab.getDataValidationHelper();
+                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_DIMENSION_LIST);
                 DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
                 dataValidation.setSuppressDropDownArrow(true);
                 // error box
@@ -280,9 +328,8 @@ public class TemplateGenerator {
 
                 if (property.getDataType().equals("BOOLEAN")){
                     CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnOffset,columnOffset);
-                    DataValidationHelper dataValidationHelper = new XSSFDataValidationHelper((XSSFSheet) productPropertiesTab);
-                    DataValidationConstraint dataValidationConstraint =dataValidationHelper.createExplicitListConstraint(new String[]{
-                            "TRUE","FALSE"});
+                    DataValidationHelper dataValidationHelper = productPropertiesTab.getDataValidationHelper();
+                    DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_BOOLEAN_LIST);
                     DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
                     dataValidation.setSuppressDropDownArrow(true);
                     // error box
@@ -308,7 +355,187 @@ public class TemplateGenerator {
         autoSizeAllColumns(productPropertiesTab);
     }
 
+    private void populateProductPropertiesExampleTab(List<Category> categories,Sheet productPropertiesExampleTab){
+        // make first column read only
+        productPropertiesExampleTab.setDefaultColumnStyle(0,readOnlyStyle);
+
+        // create the top row containing the category names and ids on top of the corresponding properties
+        // create the dimension tab
+        Row topRow = productPropertiesExampleTab.createRow(0);
+
+        // make first five columns read only
+        for (int i=0;i<5;i++){
+            topRow.createCell(i).setCellStyle(readOnlyStyle);
+        }
+
+        Cell cell = getCellWithMissingCellPolicy(topRow, 5);
+        cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_DIMENSIONS);
+        cell.setCellStyle(tabCellStyle);
+        CellRangeAddress cra = new CellRangeAddress(0, 0, 5, 7);
+        productPropertiesExampleTab.addMergedRegion(cra);
+
+        // create the titles for categories
+        int columnOffset = TemplateConfig.getFixedPropertiesForProductPropertyTab().size() + 1;
+        for (int i = 0; i < categories.size(); i++) {
+            if(categories.get(i).getProperties().size() > 0) {
+                int colFrom = columnOffset;
+                int colTo = columnOffset + categories.get(i).getProperties().size() - 1;
+                cell = getCellWithMissingCellPolicy(topRow, colFrom);
+                cell.setCellValue(categories.get(i).getPreferredName());
+                cell.setCellStyle(tabCellStyle);
+                cra = new CellRangeAddress(0, 0, colFrom, colTo);
+                productPropertiesExampleTab.addMergedRegion(cra);
+                columnOffset = colTo + 1;
+            }
+        }
+
+        // 2nd, 3rd and 4th rows
+        // name, data type, unit label on the leftmost column
+        int rowIndex = 1;
+        Row secondRow = productPropertiesExampleTab.createRow(rowIndex);
+        cell = secondRow.createCell(0);
+        cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PROPERTY_NAME);
+        cell.setCellStyle(boldCellStyle);
+        Row thirdRow = productPropertiesExampleTab.createRow(++rowIndex);
+        cell = thirdRow.createCell(0);
+        cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PROPERTY_DATA_TYPE);
+        cell.setCellStyle(boldCellStyle);
+        Row fourthRow = productPropertiesExampleTab.createRow(++rowIndex);
+        cell = fourthRow.createCell(0);
+        cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PROPERTY_UNIT);
+        cell.setCellStyle(boldCellStyle);
+        productPropertiesExampleTab.createRow(++rowIndex);
+
+        // common UBL-based properties
+        columnOffset = 1;
+        List<Property> properties = TemplateConfig.getFixedPropertiesForProductPropertyTab();
+        for (Property property : properties) {
+            cell = secondRow.createCell(columnOffset);
+            cell.setCellValue(property.getPreferredName());
+            cell.setCellStyle(boldCellStyle);
+            if(checkMandatory(property, cell)){
+                productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellStyle(mandatoryCellStyle);
+            }
+            else {
+                productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
+            }
+            Cell thirdRowCell = thirdRow.createCell(columnOffset);
+            thirdRowCell.setCellValue(normalizeDataTypeForTemplate(property));
+            // make thirdRow read only
+            thirdRowCell.setCellStyle(readOnlyStyle);
+
+            fourthRow.createCell(columnOffset).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
+
+            if(property.getPreferredName().equals(TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION)){
+                productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue("Product_id1");
+                productPropertiesExampleTab.createRow(5).createCell(columnOffset).setCellValue("Product_id2");
+                productPropertiesExampleTab.createRow(6).createCell(columnOffset).setCellValue("Product_id3");
+            }
+            else if(property.getPreferredName().equals(TEMPLATE_PRODUCT_PROPERTIES_NAME)){
+                productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue("Plastic-head mallet");
+                productPropertiesExampleTab.getRow(5).createCell(columnOffset).setCellValue("Iron-head mallet");
+                productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("Wood-head mallet");
+            }
+            else if(property.getPreferredName().equals(TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION)){
+                productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue("Mallet that can be used mosaic tiling");
+                productPropertiesExampleTab.getRow(5).createCell(columnOffset).setCellValue("Strong mallet");
+                productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("Great for metal working");
+            }
+            else if(property.getPreferredName().equals(TEMPLATE_PRODUCT_PROPERTIES_CERTIFICATIONS)){
+                productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue("Mineral Oil MSDB");
+                productPropertiesExampleTab.getRow(5).createCell(columnOffset).setCellValue("ISO9001");
+                productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("SGS Test Report|Wood Spoon Food Safe Test Report");
+            }
+            else if(property.getPreferredName().equals(TEMPLATE_PRODUCT_PROPERTIES_WIDTH) || property.getPreferredName().equals(TEMPLATE_PRODUCT_PROPERTIES_LENGTH) || property.getPreferredName().equals(TEMPLATE_PRODUCT_PROPERTIES_HEIGHT)){
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3,3,columnOffset,columnOffset);
+                DataValidationHelper dataValidationHelper = productPropertiesExampleTab.getDataValidationHelper();
+                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_DIMENSION_LIST);
+                DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
+                dataValidation.setSuppressDropDownArrow(true);
+                // error box
+                dataValidation.setShowErrorBox(true);
+                dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
+                // empty cell
+                dataValidation.setEmptyCellAllowed(true);
+                productPropertiesExampleTab.addValidationData(dataValidation);
+
+                productPropertiesExampleTab.getRow(3).getCell(columnOffset).setCellValue("mm");
+
+                if(property.getPreferredName().equals(TEMPLATE_PRODUCT_PROPERTIES_WIDTH)){
+                    productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue("83");
+                    productPropertiesExampleTab.getRow(5).createCell(columnOffset).setCellValue("78");
+                    productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("80");
+                }
+                else if(property.getPreferredName().equals(TEMPLATE_PRODUCT_PROPERTIES_LENGTH)){
+                    productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue("43");
+                    productPropertiesExampleTab.getRow(5).createCell(columnOffset).setCellValue("35");
+                    productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("40");
+                }
+                else if(property.getPreferredName().equals(TEMPLATE_PRODUCT_PROPERTIES_HEIGHT)){
+                    productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue("315");
+                    productPropertiesExampleTab.getRow(5).createCell(columnOffset).setCellValue("300");
+                    productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("320");
+                }
+            }
+
+            // check whether the property needs a unit
+            if(!property.getDataType().equals("AMOUNT") && !property.getDataType().equals("QUANTITY")){
+                fourthRow.getCell(columnOffset).setCellStyle(readOnlyStyle);
+            }
+            else {
+                fourthRow.getCell(columnOffset).setCellStyle(editableStyle);
+            }
+
+            columnOffset++;
+        }
+
+        // columns for the properties obtained from the categories
+        for (Category category : categories) {
+            for (Property property : category.getProperties()) {
+                cell = secondRow.createCell(columnOffset);
+                cell.setCellValue(property.getPreferredName());
+                cell.setCellStyle(boldCellStyle);
+                Cell thirdRowCell = thirdRow.createCell(columnOffset);
+                thirdRowCell.setCellValue(normalizeDataTypeForTemplate(property));
+                // make thirdRow read only
+                thirdRowCell.setCellStyle(readOnlyStyle);
+                fourthRow.createCell(columnOffset).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
+
+                productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
+
+                if (property.getDataType().equals("BOOLEAN")){
+                    CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnOffset,columnOffset);
+                    DataValidationHelper dataValidationHelper = productPropertiesExampleTab.getDataValidationHelper();
+                    DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_BOOLEAN_LIST);
+                    DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
+                    dataValidation.setSuppressDropDownArrow(true);
+                    // error box
+                    dataValidation.setShowErrorBox(true);
+                    dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
+                    // empty cell
+                    dataValidation.setEmptyCellAllowed(true);
+                    productPropertiesExampleTab.addValidationData(dataValidation);
+                }
+
+                // check whether the property needs a unit
+                if(!property.getDataType().equals("AMOUNT") && !property.getDataType().equals("QUANTITY")){
+                    fourthRow.getCell(columnOffset).setCellStyle(readOnlyStyle);
+                }
+                else {
+                    fourthRow.getCell(columnOffset).setCellStyle(editableStyle);
+                }
+
+                columnOffset++;
+            }
+        }
+
+        autoSizeAllColumns(productPropertiesExampleTab);
+    }
+
     private void populateTradingDeliveryTermsTab(Sheet termsTab) {
+        // make first column read only
+        termsTab.setDefaultColumnStyle(0,readOnlyStyle);
+
         // create the top row containing the property categories
         // trading details block
         Row topRow = termsTab.createRow(0);
@@ -385,12 +612,8 @@ public class TemplateGenerator {
             // dropdown menu for incoterms
             if(property.getPreferredName().equals(TEMPLATE_TRADING_DELIVERY_INCOTERMS)){
                 CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnIndex,columnIndex);
-                DataValidationHelper dataValidationHelper = new XSSFDataValidationHelper((XSSFSheet) termsTab);
-                DataValidationConstraint dataValidationConstraint =dataValidationHelper.createExplicitListConstraint(new String[]{
-                        "CIF_(Cost,_Insurance_and_Freight)","CIP_(Carriage_and_Insurance_Paid_to)",
-                        "CFR_(Cost_and_Freight)","CPT_(Carriage_paid_to)","DAT_(Delivered_at_Terminal)",
-                        "DAP_(Delivered_at_Place)","DDP_(Delivery_Duty_Paid)","EXW_(Ex_Works)","FAS_(Free_Alongside_Ship)",
-                        "FCA_(Free_Carrier)","FOB_(Free_on_Board)"});
+                DataValidationHelper dataValidationHelper = termsTab.getDataValidationHelper();
+                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_INCOTERMS_LIST);
                 DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
                 dataValidation.setSuppressDropDownArrow(true);
                 // error box
@@ -403,9 +626,34 @@ public class TemplateGenerator {
             }
             else if (property.getDataType().equals("BOOLEAN")){
                 CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnIndex,columnIndex);
-                DataValidationHelper dataValidationHelper = new XSSFDataValidationHelper((XSSFSheet) termsTab);
-                DataValidationConstraint dataValidationConstraint =dataValidationHelper.createExplicitListConstraint(new String[]{
-                        "TRUE","FALSE"});
+                DataValidationHelper dataValidationHelper = termsTab.getDataValidationHelper();
+                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_BOOLEAN_LIST);
+                DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
+                dataValidation.setSuppressDropDownArrow(true);
+                // error box
+                dataValidation.setShowErrorBox(true);
+                dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
+                // empty cell
+                dataValidation.setEmptyCellAllowed(true);
+                termsTab.addValidationData(dataValidation);
+            }
+            else if(property.getPreferredName().equals(TemplateConfig.TEMPLATE_TRADING_DELIVERY_WARRANTY_VALIDITY_PERIOD)){
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3,3,columnIndex,columnIndex);
+                DataValidationHelper dataValidationHelper = termsTab.getDataValidationHelper();
+                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_WARRANTY_VALIDITY_LIST);
+                DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
+                dataValidation.setSuppressDropDownArrow(true);
+                // error box
+                dataValidation.setShowErrorBox(true);
+                dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
+                // empty cell
+                dataValidation.setEmptyCellAllowed(true);
+                termsTab.addValidationData(dataValidation);
+            }
+            else if(property.getPreferredName().equals(TemplateConfig.TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD)){
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3,3,columnIndex,columnIndex);
+                DataValidationHelper dataValidationHelper = termsTab.getDataValidationHelper();
+                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_DELIVERY_PERIOD_LIST);
                 DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
                 dataValidation.setSuppressDropDownArrow(true);
                 // error box
@@ -419,6 +667,20 @@ public class TemplateGenerator {
             if(!property.getDataType().equals("AMOUNT") && !property.getDataType().equals("QUANTITY")){
                 fourthRow.getCell(columnIndex).setCellStyle(readOnlyStyle);
             }
+            else if(property.getDataType().equals("AMOUNT")){
+                fourthRow.getCell(columnIndex).setCellStyle(editableStyle);
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3,3,columnIndex,columnIndex);
+                DataValidationHelper dataValidationHelper = termsTab.getDataValidationHelper();
+                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_CURRENCY_LIST);
+                DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
+                dataValidation.setSuppressDropDownArrow(true);
+                // error box
+                dataValidation.setShowErrorBox(true);
+                dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
+                // empty cell
+                dataValidation.setEmptyCellAllowed(true);
+                termsTab.addValidationData(dataValidation);
+            }
             else {
                 fourthRow.getCell(columnIndex).setCellStyle(editableStyle);
             }
@@ -426,6 +688,235 @@ public class TemplateGenerator {
         }
 
         autoSizeAllColumns(termsTab);
+    }
+
+    private void populateTradingDeliveryTermsExampleTab(Sheet termsExampleTab) {
+        // make first column read only
+        termsExampleTab.setDefaultColumnStyle(0,readOnlyStyle);
+
+        // create the top row containing the property categories
+        // trading details block
+        Row topRow = termsExampleTab.createRow(0);
+        // make first five columns read only
+        for (int i=0;i<5;i++){
+            topRow.createCell(i).setCellStyle(readOnlyStyle);
+        }
+        Cell cell = getCellWithMissingCellPolicy(topRow, 2);
+        cell.setCellValue(TemplateConfig.TEMPLATE_TRADING_DELIVERY_TRADING_DETAILS);
+        cell.setCellStyle(boldCellStyle);
+        CellRangeAddress cra = new CellRangeAddress(0, 0, 2, 5);
+        termsExampleTab.addMergedRegion(cra);
+
+        // warranty block
+        cell = getCellWithMissingCellPolicy(topRow, 6);
+        cell.setCellValue(TemplateConfig.TEMPLATE_TRADING_DELIVERY_WARRANTY);
+        cell.setCellStyle(boldCellStyle);
+        cra = new CellRangeAddress(0, 0, 6, 7);
+        termsExampleTab.addMergedRegion(cra);
+
+        // delivery terms block
+        cell = getCellWithMissingCellPolicy(topRow, 8);
+        cell.setCellValue(TemplateConfig.TEMPLATE_TRADING_DELIVERY_DELIVERY_TERMS);
+        cell.setCellStyle(boldCellStyle);
+        cra = new CellRangeAddress(0, 0, 8, 12);
+        termsExampleTab.addMergedRegion(cra);
+
+        // packaging block
+        cell = getCellWithMissingCellPolicy(topRow, 13);
+        cell.setCellValue(TemplateConfig.TEMPLATE_TRADING_DELIVERY_PACKAGING);
+        cell.setCellStyle(boldCellStyle);
+        cra = new CellRangeAddress(0, 0, 13, 14);
+        termsExampleTab.addMergedRegion(cra);
+
+
+        // 2nd, 3rd and 4th rows
+        // name, data type, unit label on the leftmost column
+        int rowIndex = 1;
+        int columnIndex = 0;
+        Row secondRow = termsExampleTab.createRow(rowIndex);
+        cell = secondRow.createCell(columnIndex);
+        cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PROPERTY_NAME);
+        cell.setCellStyle(boldCellStyle);
+        Row thirdRow = termsExampleTab.createRow(++rowIndex);
+        cell = thirdRow.createCell(columnIndex);
+        cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PROPERTY_DATA_TYPE);
+        cell.setCellStyle(boldCellStyle);
+        Row fourthRow = termsExampleTab.createRow(++rowIndex);
+        cell = fourthRow.createCell(columnIndex);
+        cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PROPERTY_UNIT);
+        cell.setCellStyle(boldCellStyle);
+        termsExampleTab.createRow(++rowIndex);
+
+        // common UBL-based properties
+        columnIndex = 1;
+        List<Property> properties = TemplateConfig.getFixedPropertiesForTermsTab();
+        for (Property property : properties) {
+
+            cell = secondRow.createCell(columnIndex);
+            cell.setCellValue(property.getPreferredName());
+            cell.setCellStyle(boldCellStyle);
+            if(checkMandatory(property, cell)){
+                termsExampleTab.getRow(4).createCell(columnIndex).setCellStyle(mandatoryCellStyle);
+            }
+            else {
+                termsExampleTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
+            }
+            Cell thirdRowCell = thirdRow.createCell(columnIndex);
+            thirdRowCell.setCellValue(property.getDataType());
+            // make thirdRow read only
+            thirdRowCell.setCellStyle(readOnlyStyle);
+            fourthRow.createCell(columnIndex).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
+
+            // fill cells with example values
+            if (property.getPreferredName().equals(TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION)){
+                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("Product_id1");
+                termsExampleTab.createRow(5).createCell(columnIndex).setCellValue("Product_id2");
+                termsExampleTab.createRow(6).createCell(columnIndex).setCellValue("Product_id3");
+            }
+            else if(property.getPreferredName().equals(TEMPLATE_TRADING_DELIVERY_PRICE_BASE_QUANTITY)){
+                termsExampleTab.getRow(3).getCell(columnIndex).setCellValue("piece");
+                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("1");
+                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("1");
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("1");
+            }
+            else if(property.getPreferredName().equals(TEMPLATE_TRADING_DELIVERY_MINIMUM_ORDER_QUANTITY)){
+                termsExampleTab.getRow(3).getCell(columnIndex).setCellValue("piece");
+                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("3000");
+                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("3000");
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("1000");
+            }
+//            else if(property.getPreferredName().equals(TEMPLATE_TRADING_DELIVERY_WARRANTY_INFORMATION)){
+//                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("Warranty information here");
+//                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("Warranty information here");
+//                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("Warranty information here");
+//            }
+//            else if(property.getPreferredName().equals(TEMPLATE_TRADING_DELIVERY_SPECIAL_TERMS)){
+//                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("Special terms here");
+//                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("Special terms here");
+//                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("Special terms here");
+//            }
+            else if(property.getPreferredName().equals(TEMPLATE_TRADING_DELIVERY_APPLICABLE_ADDRESS_COUNTRY)){
+                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("China");
+                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("");
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("");
+            }
+            else if(property.getPreferredName().equals(TEMPLATE_TRADING_DELIVERY_TRANSPORT_MODE)){
+                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("Sea | Air");
+                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("Road");
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("Road");
+            }
+            else if(property.getPreferredName().equals(TEMPLATE_TRADING_DELIVERY_PACKAGING_TYPE)){
+                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("box");
+                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("cartons");
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("polybag");
+            }
+            else if(property.getPreferredName().equals(TEMPLATE_TRADING_DELIVERY_PACKAGE_QUANTITY)){
+                termsExampleTab.getRow(3).getCell(columnIndex).setCellValue("items");
+                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("10");
+                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("30");
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("1");
+            }
+            // dropdown menu for incoterms
+            else if(property.getPreferredName().equals(TEMPLATE_TRADING_DELIVERY_INCOTERMS)){
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnIndex,columnIndex);
+                DataValidationHelper dataValidationHelper = termsExampleTab.getDataValidationHelper();
+                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_INCOTERMS_LIST);
+                DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
+                dataValidation.setSuppressDropDownArrow(true);
+                // error box
+                dataValidation.setShowErrorBox(true);
+                dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
+                // empty cell
+                dataValidation.setEmptyCellAllowed(true);
+                termsExampleTab.addValidationData(dataValidation);
+
+                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("CIF (Cost,Insurance and Freight)");
+                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("FOB (Free on Board)");
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("DAT (Delivered at Terminal)");
+            }
+            else if (property.getDataType().equals("BOOLEAN")){
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnIndex,columnIndex);
+                DataValidationHelper dataValidationHelper = termsExampleTab.getDataValidationHelper();
+                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_BOOLEAN_LIST);
+                DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
+                dataValidation.setSuppressDropDownArrow(true);
+                // error box
+                dataValidation.setShowErrorBox(true);
+                dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
+                // empty cell
+                dataValidation.setEmptyCellAllowed(true);
+                termsExampleTab.addValidationData(dataValidation);
+
+                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("TRUE");
+                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("FALSE");
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("FALSE");
+            }
+            else if(property.getPreferredName().equals(TemplateConfig.TEMPLATE_TRADING_DELIVERY_WARRANTY_VALIDITY_PERIOD)){
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3,3,columnIndex,columnIndex);
+                DataValidationHelper dataValidationHelper = termsExampleTab.getDataValidationHelper();
+                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_WARRANTY_VALIDITY_LIST);
+                DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
+                dataValidation.setSuppressDropDownArrow(true);
+                // error box
+                dataValidation.setShowErrorBox(true);
+                dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
+                // empty cell
+                dataValidation.setEmptyCellAllowed(true);
+                termsExampleTab.addValidationData(dataValidation);
+
+                termsExampleTab.getRow(3).getCell(columnIndex).setCellValue("year");
+                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("1");
+                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("3");
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("2");
+            }
+            else if(property.getPreferredName().equals(TemplateConfig.TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD)){
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3,3,columnIndex,columnIndex);
+                DataValidationHelper dataValidationHelper = termsExampleTab.getDataValidationHelper();
+                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_DELIVERY_PERIOD_LIST);
+                DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
+                dataValidation.setSuppressDropDownArrow(true);
+                // error box
+                dataValidation.setShowErrorBox(true);
+                dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
+                // empty cell
+                dataValidation.setEmptyCellAllowed(true);
+                termsExampleTab.addValidationData(dataValidation);
+
+                termsExampleTab.getRow(3).getCell(columnIndex).setCellValue("weeks");
+                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("1");
+                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("4");
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("2");
+            }
+            // check whether the property needs a unit
+            if(!property.getDataType().equals("AMOUNT") && !property.getDataType().equals("QUANTITY")){
+                fourthRow.getCell(columnIndex).setCellStyle(readOnlyStyle);
+            }
+            else if(property.getDataType().equals("AMOUNT")){
+                fourthRow.getCell(columnIndex).setCellStyle(editableStyle);
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3,3,columnIndex,columnIndex);
+                DataValidationHelper dataValidationHelper = termsExampleTab.getDataValidationHelper();
+                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_CURRENCY_LIST);
+                DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
+                dataValidation.setSuppressDropDownArrow(true);
+                // error box
+                dataValidation.setShowErrorBox(true);
+                dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
+                // empty cell
+                dataValidation.setEmptyCellAllowed(true);
+                termsExampleTab.addValidationData(dataValidation);
+
+                termsExampleTab.getRow(3).getCell(columnIndex).setCellValue("EUR");
+                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("4");
+                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("6");
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("1");
+            }
+            else {
+                fourthRow.getCell(columnIndex).setCellStyle(editableStyle);
+            }
+            columnIndex++;
+        }
+
+        autoSizeAllColumns(termsExampleTab);
     }
 
     private void populatePropertyDetailsTab(List<Category> categories, Sheet propertyDetailsTab) {
@@ -585,7 +1076,79 @@ public class TemplateGenerator {
 
         firstRow.createCell(0).setCellValue(categoryIds.toString());
         secondRow.createCell(0).setCellValue(taxonomyIds.toString());
+        // make this sheet hidden
+        template.setSheetHidden(template.getSheetIndex(metadataTab),true);
+    }
 
+    private void populateSourceList(Sheet sourceList){
+        // values for boolean
+        sourceList.createRow(0).createCell(0).setCellValue(TemplateConfig.TEMPLATE_BOOLEAN_LIST);
+        sourceList.createRow(1).createCell(0).setCellValue("TRUE");
+        sourceList.createRow(2).createCell(0).setCellValue("FALSE");
+
+        Name namedCell = template.createName();
+        namedCell.setNameName(TemplateConfig.TEMPLATE_BOOLEAN_LIST);
+        namedCell.setRefersToFormula(TemplateConfig.TEMPLATE_BOOLEAN_REFERENCE);
+
+        // values for incoterms
+        sourceList.getRow(0).createCell(1).setCellValue(TemplateConfig.TEMPLATE_INCOTERMS_LIST);
+        sourceList.getRow(1).createCell(1).setCellValue("CIF (Cost,Insurance and Freight)");
+        sourceList.getRow(2).createCell(1).setCellValue("CIP (Carriage and Insurance Paid to)");
+        sourceList.createRow(3).createCell(1).setCellValue("CFR (Cost and Freight)");
+        sourceList.createRow(4).createCell(1).setCellValue("CPT (Carriage paid to)");
+        sourceList.createRow(5).createCell(1).setCellValue("DAT (Delivered at Terminal)");
+        sourceList.createRow(6).createCell(1).setCellValue("DAP (Delivered at Place)");
+        sourceList.createRow(7).createCell(1).setCellValue("DDP (Delivery Duty Paid)");
+        sourceList.createRow(8).createCell(1).setCellValue("EXW (Ex Works)");
+        sourceList.createRow(9).createCell(1).setCellValue("FAS (Free Alongside Ship)");
+        sourceList.createRow(10).createCell(1).setCellValue("FCA (Free Carrier)");
+        sourceList.createRow(11).createCell(1).setCellValue("FOB (Free on Board)");
+
+        namedCell = template.createName();
+        namedCell.setNameName(TemplateConfig.TEMPLATE_INCOTERMS_LIST);
+        namedCell.setRefersToFormula(TemplateConfig.TEMPLATE_INCOTERMS_REFERENCE);
+
+        // values for currency
+        sourceList.getRow(0).createCell(2).setCellValue(TemplateConfig.TEMPLATE_CURRENCY_LIST);
+        sourceList.getRow(1).createCell(2).setCellValue("EUR");
+        sourceList.getRow(2).createCell(2).setCellValue("USD");
+        sourceList.getRow(3).createCell(2).setCellValue("SEK");
+
+        namedCell = template.createName();
+        namedCell.setNameName(TemplateConfig.TEMPLATE_CURRENCY_LIST);
+        namedCell.setRefersToFormula(TemplateConfig.TEMPLATE_CURRENCY_REFERENCE);
+
+        // values for dimensions
+        sourceList.getRow(0).createCell(3).setCellValue(TemplateConfig.TEMPLATE_DIMENSION_LIST);
+        sourceList.getRow(1).createCell(3).setCellValue("mm");
+        sourceList.getRow(2).createCell(3).setCellValue("cm");
+        sourceList.getRow(3).createCell(3).setCellValue("m");
+
+        namedCell = template.createName();
+        namedCell.setNameName(TemplateConfig.TEMPLATE_DIMENSION_LIST);
+        namedCell.setRefersToFormula(TemplateConfig.TEMPLATE_DIMENSION_REFERENCE);
+
+        // values for Warranty Validity Period
+        sourceList.getRow(0).createCell(4).setCellValue(TemplateConfig.TEMPLATE_WARRANTY_VALIDITY_LIST);
+        sourceList.getRow(1).createCell(4).setCellValue("year");
+        sourceList.getRow(2).createCell(4).setCellValue("month");
+
+        namedCell = template.createName();
+        namedCell.setNameName(TemplateConfig.TEMPLATE_WARRANTY_VALIDITY_LIST);
+        namedCell.setRefersToFormula(TemplateConfig.TEMPLATE_WARRANTY_REFERENCE);
+
+        // values for Estimated Delivery Period
+        sourceList.getRow(0).createCell(5).setCellValue(TemplateConfig.TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD);
+        sourceList.getRow(1).createCell(5).setCellValue("working days");
+        sourceList.getRow(2).createCell(5).setCellValue("days");
+        sourceList.getRow(3).createCell(5).setCellValue("weeks");
+
+        namedCell = template.createName();
+        namedCell.setNameName(TemplateConfig.TEMPLATE_DELIVERY_PERIOD_LIST);
+        namedCell.setRefersToFormula(TemplateConfig.TEMPLATE_DELIVERY_PERIOD_REFERENCE);
+
+        // set sheet hidden
+        template.setSheetHidden(template.getSheetIndex(TemplateConfig.TEMPLATE_TAB_SOURCE_LIST),true);
     }
 
     private boolean checkMandatory(Property property, Cell cell) {

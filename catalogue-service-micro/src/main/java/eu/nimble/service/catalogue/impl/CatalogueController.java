@@ -18,6 +18,7 @@ import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.JAXBUtility;
+import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.utility.config.PersistenceConfig;
 import io.swagger.annotations.ApiOperation;
@@ -53,7 +54,6 @@ import java.util.zip.ZipInputStream;
  * can be executed. A catalogue contains contains catalogue lines each of which corresponds to a product or service.
  */
 @Controller
-@ComponentScan(basePackages = "eu")
 public class CatalogueController {
 
     private static Logger log = LoggerFactory
@@ -464,7 +464,7 @@ public class CatalogueController {
                 ObjectMapper objectMapper = new ObjectMapper();
                 objectMapper = objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                 JSONObject responseObject = response.getBody().getObject();
-                Utils.removeHjidFields(responseObject);
+                JsonSerializationUtility.removeHjidFields(responseObject);
                 party = objectMapper.readValue(responseObject.toString(), PartyType.class);
 
             } catch (UnirestException e) {
