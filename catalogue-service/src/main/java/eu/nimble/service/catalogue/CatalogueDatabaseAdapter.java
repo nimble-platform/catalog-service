@@ -99,7 +99,7 @@ public class CatalogueDatabaseAdapter {
             // update existing indicators
             boolean indicatorExists = false;
             for(QualityIndicatorType qualityIndicatorExisting : catalogueParty.getQualityIndicator()) {
-                if(qualityIndicator.getQualityParameter().contentEquals(qualityIndicatorExisting.getQualityParameter())) {
+                if(qualityIndicator.getQualityParameter() != null && qualityIndicator.getQualityParameter().contentEquals(qualityIndicatorExisting.getQualityParameter())) {
                     if(qualityIndicatorExisting.getQuantity() == null) {
                         qualityIndicatorExisting.setQuantity(new QuantityType());
                     }
