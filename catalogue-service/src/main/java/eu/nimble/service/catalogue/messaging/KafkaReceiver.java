@@ -3,7 +3,7 @@ package eu.nimble.service.catalogue.messaging;
 import eu.nimble.common.rest.trust.TrustClient;
 import eu.nimble.service.catalogue.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
-import eu.nimble.utility.config.KafkaConfig;
+import eu.nimble.service.catalogue.config.KafkaConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

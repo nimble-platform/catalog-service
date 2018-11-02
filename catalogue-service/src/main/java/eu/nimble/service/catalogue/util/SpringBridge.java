@@ -2,7 +2,7 @@ package eu.nimble.service.catalogue.util;
 
 import eu.nimble.common.rest.identity.IdentityClientTyped;
 import eu.nimble.common.rest.trust.TrustClient;
-import eu.nimble.utility.config.CatalogueServiceConfig;
+import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
