@@ -93,6 +93,7 @@ public class ProductCategoryController {
      *
      * @return
      */
+    @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieve the identifiers of the available product category taxonomies")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieved the identifiers of the available product category taxonomies successfully", response = String.class, responseContainer = "List"),

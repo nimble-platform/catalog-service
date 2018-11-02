@@ -19,7 +19,11 @@ public class CategoryServiceManager {
     @Autowired
     public CategoryServiceManager(List<ProductCategoryService> productCategoryServices){
         for (ProductCategoryService cp : productCategoryServices) {
-            instance.services.put(cp.getTaxonomyId(), cp);
+            String taxonomyID = cp.getTaxonomyId();
+            // taxonomy id is null for custom categories
+            if(taxonomyID != null){
+                instance.services.put(cp.getTaxonomyId(), cp);
+            }
         }
     }
 
