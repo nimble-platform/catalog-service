@@ -25,6 +25,7 @@ spec:
     spec:
       containers:
 #      can be overwritten with "-set spec.template.spec.containers[0].image=image_url"
+      - image: nimbleplatform/catalogue-service-micro:test
       - image: nimbleplatform/catalogue-service-micro:IMAGE_TAG
         imagePullPolicy: Always
         name: catalogue-service
@@ -34,11 +35,11 @@ spec:
           protocol: TCP
         resources:
           requests:
-            cpu: 300m
-            memory: 1536Mi
+            cpu: 200m
+            memory: 128Mi
           limits:
-            cpu: 600m
-            memory: 2560Mi
+            cpu: 400m
+            memory: 512Mi
         env:
           - name: SPRING_PROFILES_ACTIVE
             value: "k8s"
@@ -98,7 +99,6 @@ spec:
               secretKeyRef:
                 name: catalogue-service-secret
                 key: sync_db_password
-
           - name: CATEGORY_DB_PASSWORD
             valueFrom:
               secretKeyRef:

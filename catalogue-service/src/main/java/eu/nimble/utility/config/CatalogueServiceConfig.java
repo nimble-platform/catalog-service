@@ -8,6 +8,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.Arrays;
 
 /**
@@ -49,23 +50,12 @@ public class CatalogueServiceConfig {
 
     @Value("${persistence.marmotta.url}")
     private String marmottaUrl;
+    @Value("${persistence.marmotta.sync}")
+    private boolean marmottaSync;
+    @Value("${nimble.identity.url}")
+    private String identityUrl;
 
-    private static CatalogueServiceConfig instance;
-
-    private CatalogueServiceConfig() {
-        // as the instance of this class is created by Spring, if set the instance in the constructor
-        instance = this;
-    }
-
-    private static boolean dbInitialized = false;
-    public static CatalogueServiceConfig getInstance() {
-        if(dbInitialized == false && instance != null) {
-            instance.setupDBConnections();
-            dbInitialized = true;
-        }
-        return instance;
-    }
-
+    @PostConstruct
     private void setupDBConnections() {
         if (environment != null) {
             // check for "kubernetes" profile
@@ -179,5 +169,21 @@ public class CatalogueServiceConfig {
 
     public void setMarmottaUrl(String marmottaUrl) {
         this.marmottaUrl = marmottaUrl;
+    }
+
+    public String getIdentityUrl() {
+        return identityUrl;
+    }
+
+    public void setIdentityUrl(String identityUrl) {
+        this.identityUrl = identityUrl;
+    }
+
+    public boolean isMarmottaSync() {
+        return marmottaSync;
+    }
+
+    public void setMarmottaSync(boolean marmottaSync) {
+        this.marmottaSync = marmottaSync;
     }
 }

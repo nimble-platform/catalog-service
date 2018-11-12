@@ -1,7 +1,17 @@
 node ('nimble-jenkins-slave') {
     stage('Clone and Update') {
-        git(url: 'https://github.com/nimble-platform/catalog-service.git', branch: 'k8s-integration')
+        git(url: 'https://github.com/nimble-platform/catalog-service.git', branch: env.BRANCH_NAME)
+    }
 
+    stage('Build Dependencies') {
+        sh 'rm -rf common'
+        sh 'git clone https://github.com/nimble-platform/common'
+        dir('common') {
+            sh 'git checkout ' + env.BRANCH_NAME
+            sh 'mvn clean install'
+        }
+    }
+  
         sh 'rm -rf common ; git clone https://github.com/nimble-platform/common.git ; cd common ; mvn clean install'
     }
 
@@ -18,10 +28,15 @@ node ('nimble-jenkins-slave') {
         }
     }
 
-    stage ('Deploy') {
-        sh ''' sed -i 's/IMAGE_TAG/'"$BUILD_NUMBER"'/g' kubernetes/deploy.yml '''
-        sh 'kubectl apply -f kubernetes/deploy.yml -n prod --validate=false'
-        sh 'kubectl apply -f kubernetes/svc.yml -n prod --validate=false'
+    if (env.BRANCH_NAME == 'master') {
+
+        stage('Push Docker') {
+            sh 'docker push nimbleplatform/catalogue-service-micro:latest'
+        }
+
+        stage('Deploy') {
+            sh 'ssh nimble "cd /data/deployment_setup/prod/ && sudo ./run-prod.sh restart-single catalog-service-srdc"'
+        }
     }
 
     stage ('Print-deploy logs') {

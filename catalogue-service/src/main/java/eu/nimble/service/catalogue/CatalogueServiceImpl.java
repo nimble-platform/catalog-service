@@ -5,8 +5,10 @@
  */
 package eu.nimble.service.catalogue;
 
-import eu.nimble.service.catalogue.category.datamodel.Category;
-import eu.nimble.utility.config.CatalogueServiceConfig;
+import eu.nimble.service.catalogue.category.CategoryServiceManager;
+import eu.nimble.service.catalogue.model.category.Category;
+import eu.nimble.service.catalogue.util.DataIntegratorUtil;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
@@ -14,16 +16,12 @@ import eu.nimble.service.catalogue.template.TemplateGenerator;
 import eu.nimble.service.catalogue.template.TemplateParser;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.DocumentReferenceType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
+import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
 import org.apache.commons.io.IOUtils;
-import org.apache.jena.base.Sys;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +32,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -49,8 +48,6 @@ public class CatalogueServiceImpl implements CatalogueService {
     private static final Logger logger = LoggerFactory.getLogger(CatalogueServiceImpl.class);
     private static CatalogueService instance = null;
     private static CategoryServiceManager csmInstance = CategoryServiceManager.getInstance();
-
-    private CatalogueServiceConfig config = CatalogueServiceConfig.getInstance();
 
     private CatalogueServiceImpl() {
     }
@@ -83,7 +80,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 //        String filePath = "C:\\Users\\suat\\Desktop\\multtemp.xlsx";
 //        InputStream is = new FileInputStream(filePath);
 //        PartyType party = new PartyType();
-//        CatalogueType catalogue = csi.addCatalogue(is, party);
+//        CatalogueType catalogue = csi.parseCatalogue(is, party);
 //        System.out.println(catalogue.getCatalogueLine().size());
     }
 
@@ -111,10 +108,9 @@ public class CatalogueServiceImpl implements CatalogueService {
     public CatalogueType updateCatalogue(CatalogueType catalogue) {
         logger.info("Catalogue with uuid: {} will be updated", catalogue.getUUID());
 
-        checkReferencesInCatalogue(catalogue);
-
+        DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(catalogue);
         // merge the hibernate object
-        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
+        catalogue = (CatalogueType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
 
         // add synchronization record
         MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogue.getUUID());
@@ -143,7 +139,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         } else if (standard == Configuration.Standard.MODAML) {
             catalogue = (T) JAXBUtility.deserialize(catalogueXml, Configuration.MODAML_CATALOGUE_PACKAGENAME);
         }
-        addCatalogue(catalogue, standard);
+        catalogue = addCatalogue(catalogue, standard);
 
         return catalogue;
     }
@@ -156,15 +152,9 @@ public class CatalogueServiceImpl implements CatalogueService {
             String uuid = UUID.randomUUID().toString();
             ublCatalogue.setUUID(uuid);
 
-            // set references from items to the catalogue
-            for(CatalogueLineType line : ublCatalogue.getCatalogueLine()) {
-                DocumentReferenceType docRef = new DocumentReferenceType();
-                docRef.setID(((CatalogueType) catalogue).getUUID());
-                line.getGoodsItem().getItem().setCatalogueDocumentReference(docRef);
-            }
-
+            DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(ublCatalogue);
             // persist the catalogue in relational DB
-            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).persist(ublCatalogue);
+            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(ublCatalogue);
             logger.info("Catalogue with uuid: {} persisted in DB", uuid.toString());
 
             // add synchronization record
@@ -273,7 +263,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public CatalogueType addCatalogue(InputStream catalogueTemplate, String uploadMode, PartyType party) {
+    public CatalogueType parseCatalogue(InputStream catalogueTemplate, String uploadMode, PartyType party) {
         CatalogueType catalogue = getCatalogue("default", party.getID());
         boolean newCatalogue = false;
         if (catalogue == null) {
@@ -296,15 +286,11 @@ public class CatalogueServiceImpl implements CatalogueService {
             catalogue.setID("default");
             catalogue.setProviderParty(party);
             catalogue.setCatalogueLine(catalogueLines);
-            checkReferencesInCatalogue(catalogue);
-
-            return addCatalogue(catalogue);
+            return catalogue;
 
         } else {
             updateLinesForUploadMode(catalogue, uploadMode, catalogueLines);
-            checkReferencesInCatalogue(catalogue);
-
-            return updateCatalogue(catalogue);
+            return catalogue;
         }
     }
 
@@ -350,7 +336,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public void addImagesToProducts(ZipInputStream imagePackage, String catalogueUuid) {
+    public CatalogueType addImagesToProducts(ZipInputStream imagePackage, String catalogueUuid) {
         try {
             CatalogueType catalogue = getCatalogue(catalogueUuid);
             ZipEntry ze = imagePackage.getNextEntry();
@@ -396,7 +382,8 @@ public class CatalogueServiceImpl implements CatalogueService {
                 ze = imagePackage.getNextEntry();
             }
 
-            updateCatalogue(catalogue);
+            return catalogue;
+
         } catch (IOException e) {
             String msg = "Failed to get next entry";
             logger.error(msg, e);
@@ -433,13 +420,45 @@ public class CatalogueServiceImpl implements CatalogueService {
         return catalogueLine;
     }
 
+    @Override
+    public <T> List<T> getCatalogueLines(String catalogueId, List<String> catalogueLineIds) {
+
+        if (catalogueLineIds.size() == 0){
+            return null;
+        }
+
+        List<T> catalogueLines = null;
+
+        String query = "SELECT cl FROM CatalogueLineType as cl, CatalogueType as c "
+                + " JOIN c.catalogueLine as clj"
+                + " WHERE c.UUID = '" + catalogueId + "' "
+                + " AND (";
+
+        int size = catalogueLineIds.size();
+        for(int i = 0;i<size;i++){
+            if(i == size-1){
+                query += "cl.ID = '"+catalogueLineIds.get(i)+"')";
+            }
+            else {
+                query += "cl.ID = '"+catalogueLineIds.get(i)+"' OR ";
+            }
+        }
+        query += " AND clj.ID = cl.ID ";
+
+        catalogueLines = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
+                .loadAll(query);
+
+        return catalogueLines;
+    }
+
     // TODO test
     @Override
     public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine) {
         catalogue.getCatalogueLine().add(catalogueLine);
-        checkReferencesInCatalogue(catalogue);
+        DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(catalogue);
 
-        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
+        catalogue = (CatalogueType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
+        catalogueLine = catalogue.getCatalogueLine().get(catalogue.getCatalogueLine().size()-1);
 
         // add synchronization record
         MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogue.getUUID());
@@ -449,10 +468,14 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     @Override
     public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine) {
-        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueLine);
+        CatalogueType catalogue = getCatalogue(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID());
+        DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(catalogueLine, catalogue);
+        catalogueLine = (CatalogueLineType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueLine);
 
         // add synchronization record
-        MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getUUID());
+        // Not UUID but ID of the document reference should be used.
+        // While UUID is the unique identifier of the reference itself, ID keeps the unique identifier of the catalogue.
+        MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID());
 
         return catalogueLine;
     }
@@ -468,25 +491,6 @@ public class CatalogueServiceImpl implements CatalogueService {
 
             // add synchronization record
             MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueId);
-        }
-    }
-
-    private void checkReferencesInCatalogue(CatalogueType catalogue) {
-        for(CatalogueLineType line : catalogue.getCatalogueLine()) {
-            // check catalogue line ids
-            if(line.getID() == null) {
-                String manufacturersItemId = line.getGoodsItem().getItem().getManufacturersItemIdentification().getID();
-                if(manufacturersItemId == null) {
-                    line.setID(UUID.randomUUID().toString());
-                } else {
-                    line.setID(manufacturersItemId);
-                }
-            }
-
-            // set references from items to the catalogue
-            DocumentReferenceType docRef = new DocumentReferenceType();
-            docRef.setID(catalogue.getUUID());
-            line.getGoodsItem().getItem().setCatalogueDocumentReference(docRef);
         }
     }
 
