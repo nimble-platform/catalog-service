@@ -1,5 +1,4 @@
-node('nimble-jenkins-slave') {
-
+node ('nimble-jenkins-slave') {
     stage('Clone and Update') {
         git(url: 'https://github.com/nimble-platform/catalog-service.git', branch: env.BRANCH_NAME)
     }
@@ -12,26 +11,20 @@ node('nimble-jenkins-slave') {
             sh 'mvn clean install'
         }
     }
-
-    stage('Build Java') {
-        sh '/bin/bash -xe deploy.sh java-build'
+  
+        sh 'rm -rf common ; git clone https://github.com/nimble-platform/common.git ; cd common ; mvn clean install'
     }
 
-    if (env.BRANCH_NAME == 'staging') {
-        stage('Build Docker') {
-            sh '/bin/bash -xe deploy.sh docker-build-staging'
-        }
+    stage ('Build docker image') {
+        sh 'mvn clean install -DskipTests'
+        sh 'mvn -f catalogue-service-micro/pom.xml docker:build -DdockerImageTag=${BUILD_NUMBER} -P docker'
 
-        stage('Push Docker') {
-            sh 'docker push nimbleplatform/catalogue-service-micro:staging'
-        }
+        sh 'sleep 5' // For the tag to populate
+    }
 
-        stage('Deploy') {
-            sh 'ssh staging "cd /srv/nimble-staging/ && ./run-staging.sh restart-single catalog-service-srdc"'
-        }
-    } else {
-        stage('Build Docker') {
-            sh '/bin/bash -xe deploy.sh docker-build'
+    stage ('Push docker image') {
+        withDockerRegistry([credentialsId: 'NimbleDocker']) {
+            sh 'docker push nimbleplatform/catalogue-service-micro:${BUILD_NUMBER}'
         }
     }
 
@@ -46,16 +39,8 @@ node('nimble-jenkins-slave') {
         }
     }
 
-    // Kubernetes setup is disabled for now
-//    if (env.BRANCH_NAME == 'master') {
-//        stage('Push Docker') {
-//            withDockerRegistry([credentialsId: 'NimbleDocker']) {
-//                sh '/bin/bash -xe deploy.sh docker-push'
-//            }
-//        }
-//
-//        stage('Apply to Cluster') {
-//            sh 'kubectl apply -f kubernetes/deploy.yml -n prod --validate=false'
-//        }
-//    }
+    stage ('Print-deploy logs') {
+        sh 'sleep 60'
+        sh 'kubectl -n prod logs deploy/catalogue-service -c catalogue-service'
+    }
 }
