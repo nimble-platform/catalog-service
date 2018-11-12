@@ -13,7 +13,7 @@ node ('nimble-jenkins-slave') {
     }
   
         sh 'rm -rf common ; git clone https://github.com/nimble-platform/common.git ; cd common ; mvn clean install'
-    }
+    
 
     stage ('Build docker image') {
         sh 'mvn clean install -DskipTests'
