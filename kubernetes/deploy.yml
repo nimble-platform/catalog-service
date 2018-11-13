@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
 #      can be overwritten with "-set spec.template.spec.containers[0].image=image_url"
-      - image: nimbleplatform/catalogue-service-micro:test
+#      - image: nimbleplatform/catalogue-service-micro:test
       - image: nimbleplatform/catalogue-service-micro:IMAGE_TAG
         imagePullPolicy: Always
         name: catalogue-service
