@@ -1,4 +1,5 @@
-node ('nimble-jenkins-slave') {
+node('nimble-jenkins-slave') {
+
     stage('Clone and Update') {
         git(url: 'https://github.com/nimble-platform/catalog-service.git', branch: env.BRANCH_NAME)
     }
@@ -11,20 +12,26 @@ node ('nimble-jenkins-slave') {
             sh 'mvn clean install'
         }
     }
-  
-        sh 'rm -rf common ; git clone https://github.com/nimble-platform/common.git ; cd common ; mvn clean install'
+
+    stage('Build Java') {
+        sh '/bin/bash -xe deploy.sh java-build'
     }
 
-    stage ('Build docker image') {
-        sh 'mvn clean install -DskipTests'
-        sh 'mvn -f catalogue-service-micro/pom.xml docker:build -DdockerImageTag=${BUILD_NUMBER} -P docker'
+    if (env.BRANCH_NAME == 'staging') {
+        stage('Build Docker') {
+            sh '/bin/bash -xe deploy.sh docker-build-staging'
+        }
 
-        sh 'sleep 5' // For the tag to populate
-    }
+        stage('Push Docker') {
+            sh 'docker push nimbleplatform/catalogue-service-micro:staging'
+        }
 
-    stage ('Push docker image') {
-        withDockerRegistry([credentialsId: 'NimbleDocker']) {
-            sh 'docker push nimbleplatform/catalogue-service-micro:${BUILD_NUMBER}'
+        stage('Deploy') {
+            sh 'ssh staging "cd /srv/nimble-staging/ && ./run-staging.sh restart-single catalog-service-srdc"'
+        }
+    } else {
+        stage('Build Docker') {
+            sh '/bin/bash -xe deploy.sh docker-build'
         }
     }
 
@@ -38,10 +45,5 @@ node ('nimble-jenkins-slave') {
         stage('Deploy') {
             sh 'ssh nimble "cd /data/deployment_setup/prod/ && sudo ./run-prod.sh restart-single catalog-service-srdc"'
         }
-    }
-
-    stage ('Print-deploy logs') {
-        sh 'sleep 60'
-        sh 'kubectl -n prod logs deploy/catalogue-service -c catalogue-service'
     }
 }
