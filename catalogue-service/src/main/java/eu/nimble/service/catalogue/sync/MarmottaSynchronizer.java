@@ -1,5 +1,6 @@
 package eu.nimble.service.catalogue.sync;
 
+import eu.nimble.service.catalogue.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.util.SpringBridge;
@@ -194,6 +195,13 @@ public class MarmottaSynchronizer {
         } finally {
             closeStatement(s);
             closeConnection(c);
+        }
+    }
+
+    public void addRecord(String partyId) {
+        List<String> catalogueIds = CatalogueDatabaseAdapter.getCatalogueIdsOfParty(partyId);
+        for(String catalogueId : catalogueIds) {
+            addRecord(SyncStatus.UPDATE, catalogueId);
         }
     }
 

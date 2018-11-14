@@ -6,11 +6,11 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import com.sun.tools.doclets.formats.html.resources.standard;
 import eu.nimble.data.transformer.ontmalizer.XML2OWLMapper;
 import eu.nimble.service.catalogue.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
+import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.sync.MarmottaClient;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizationException;
 import eu.nimble.service.catalogue.util.CatalogueValidator;
@@ -21,6 +21,7 @@ import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.JAXBUtility;
+import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.config.CatalogueServiceConfig;
 import eu.nimble.utility.config.PersistenceConfig;
 import io.swagger.annotations.ApiOperation;
@@ -56,7 +57,6 @@ import java.util.zip.ZipInputStream;
  * can be executed. A catalogue contains contains catalogue lines each of which corresponds to a product or service.
  */
 @Controller
-@ComponentScan(basePackages = "eu")
 public class CatalogueController {
 
     private static Logger log = LoggerFactory
@@ -208,7 +208,7 @@ public class CatalogueController {
                     for (String error : errors) {
                         sb.append(error).append(System.lineSeparator());
                     }
-                    return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                    return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
                 }
 
                 // check catalogue with the same id exists
@@ -322,7 +322,7 @@ public class CatalogueController {
                 for (String error : errors) {
                     sb.append(error).append(System.lineSeparator());
                 }
-                return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
             }
 
             try {
@@ -468,7 +468,7 @@ public class CatalogueController {
                 ObjectMapper objectMapper = new ObjectMapper();
                 objectMapper = objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                 JSONObject responseObject = response.getBody().getObject();
-                Utils.removeHjidFields(responseObject);
+                JsonSerializationUtility.removeHjidFields(responseObject);
                 party = objectMapper.readValue(responseObject.toString(), PartyType.class);
 
             } catch (UnirestException e) {
@@ -538,11 +538,23 @@ public class CatalogueController {
         ZipInputStream zis = null;
         try {
             zis = new ZipInputStream(pack.getInputStream());
-            service.addImagesToProducts(zis, catalogueUuid);
+            CatalogueType catalogue = service.addImagesToProducts(zis, catalogueUuid);
+            CatalogueValidator catalogueValidator = new CatalogueValidator(catalogue);
+            List<String> errors = catalogueValidator.validate();
+            if (errors.size() > 0) {
+                StringBuilder sb = new StringBuilder("");
+                for (String error : errors) {
+                    sb.append(error).append(System.lineSeparator());
+                }
+                return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
+            }
+            service.updateCatalogue(catalogue);
 
         } catch (IOException e) {
             return createErrorResponseEntity("Failed obtain a Zip package from the provided data", HttpStatus.BAD_REQUEST, e);
-        } finally {
+        } catch (CatalogueServiceException e) {
+            return createErrorResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST, e);
+        }finally {
             try {
                 zis.close();
             } catch (IOException e) {

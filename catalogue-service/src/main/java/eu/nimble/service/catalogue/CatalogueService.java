@@ -60,13 +60,22 @@ public interface CatalogueService {
      */
     public CatalogueType parseCatalogue(InputStream catalogueTemplate, String uploadMode, PartyType party);
 
-    public void addImagesToProducts(ZipInputStream imagePackage, String catalogueUuid);
+    /**
+     * Adds the provided images to the relevant products in the catalogue.
+     * !!! This method does not update the database
+     * @param imagePackage
+     * @param catalogueUuid
+     * @return
+     */
+    public CatalogueType addImagesToProducts(ZipInputStream imagePackage, String catalogueUuid);
 
     /*
      * Catalogue-line level endpoints
      */
 
     public <T> T getCatalogueLine(String catalogueId, String catalogueLineId);
+
+    public <T> List<T> getCatalogueLines(String catalogueId, List<String> catalogueLineIds);
 
     public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine);
 
