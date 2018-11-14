@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -16,7 +16,7 @@ spec:
       maxSurge: 1
       maxUnavailable: 1
     type: RollingUpdate
-  revisionHistoryLimit: 5
+  revisionHistoryLimit: 2
   template:
     metadata:
       labels:
@@ -26,6 +26,7 @@ spec:
       containers:
 #      can be overwritten with "-set spec.template.spec.containers[0].image=image_url"
       - image: nimbleplatform/catalogue-service-micro:test
+      - image: nimbleplatform/catalogue-service-micro:IMAGE_TAG
         imagePullPolicy: Always
         name: catalogue-service
         ports:
@@ -68,8 +69,8 @@ spec:
                 key: ubl_db_username
           - name: UBL_DB_PASSWORD
             valueFrom:
-              configMapKeyRef:
-                name: catalogue-service-configmap
+              secretKeyRef:
+                name: catalogue-service-secret
                 key: ubl_db_password
 
           # SyncDB database
@@ -95,24 +96,31 @@ spec:
                 key: sync_db_username
           - name: SYNC_DB_PASSWORD
             valueFrom:
+              secretKeyRef:
+                name: catalogue-service-secret
+                key: sync_db_password
+          - name: CATEGORY_DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: catalogue-service-secret
+                key: CATEGORY_DB_PASSWORD
+          - name: CATEGORY_DB_HOST
+            valueFrom:
               configMapKeyRef:
                 name: catalogue-service-configmap
-                key: sync_db_password
-
----
-
-kind: Service
-metadata:
-  name: catalogue-service
-  labels:
-    app: catalogue-service
-    name: catalogue-service
-spec:
-  ports:
-    - name: http
-      protocol: TCP
-      port: 8095
-      targetPort: 8095
-  selector:
-    app: catalogue-service
-    name: catalogue-service
+                key: CATEGORY_DB_HOST
+          - name: CATEGORY_DB_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: catalogue-service-configmap
+                key: CATEGORY_DB_PORT
+          - name: CATEGORY_DB_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: catalogue-service-configmap
+                key: CATEGORY_DB_NAME
+          - name: CATEGORY_DB_USERNAME
+            valueFrom:
+              configMapKeyRef:
+                name: catalogue-service-configmap
+                key: CATEGORY_DB_USERNAME
