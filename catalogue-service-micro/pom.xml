@@ -6,12 +6,11 @@
 
     <groupId>eu.nimble.core.service.catalogue</groupId>
     <artifactId>catalogue-service-micro</artifactId>
-    <version>0.0.1</version>
+    <version>5.0.0-Staging</version>
     <name>Catalogue Service Spring Boot Rest</name>
     <packaging>jar</packaging>
 
     <properties>
-        <dockerImageTag>${project.version}</dockerImageTag>
         <thymeleaf.version>3.0.9.RELEASE</thymeleaf.version>
         <thymeleaf-layout-dialect.version>2.2.1</thymeleaf-layout-dialect.version>
     </properties>
@@ -148,7 +147,8 @@
         <profile>
             <id>docker</id>
             <properties>
-                <docker.plugin.version>0.4.13</docker.plugin.version>
+				<docker.image.tag>${project.version}</docker.image.tag>
+				<docker.plugin.version>1.2.0</docker.plugin.version>
                 <docker.image.prefix>nimbleplatform</docker.image.prefix>
             </properties>
             <build>
@@ -178,7 +178,7 @@
                                 </resource>
                             </resources>
                             <imageTags>
-                                <imageTag>${dockerImageTag}</imageTag>
+                                <imageTag>${docker.image.tag}</imageTag>
                             </imageTags>
                             <serverId>docker-hub</serverId>
                             <registryUrl>https://index.docker.io/v1/</registryUrl>
