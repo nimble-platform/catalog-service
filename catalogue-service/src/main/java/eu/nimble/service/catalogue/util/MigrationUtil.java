@@ -9,7 +9,6 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JsonSerializationUtility;
-import eu.nimble.utility.config.CatalogueServiceConfig;
 import org.json.JSONObject;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.env.YamlPropertySourceLoader;
