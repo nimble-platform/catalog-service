@@ -1,4 +1,4 @@
-package eu.nimble.utility.config;
+package eu.nimble.service.catalogue.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

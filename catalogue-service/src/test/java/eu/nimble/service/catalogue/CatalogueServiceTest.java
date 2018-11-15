@@ -8,14 +8,8 @@ package eu.nimble.service.catalogue;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
-import eu.nimble.utility.config.CatalogueServiceConfig;
-import eu.nimble.utility.config.PersistenceConfig;
 import org.apache.commons.io.IOUtils;
 import org.junit.*;
-import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  *

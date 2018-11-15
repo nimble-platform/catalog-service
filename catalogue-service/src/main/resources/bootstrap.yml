@@ -167,9 +167,9 @@ persistence:
   categorydb:
     driver: org.postgresql.Driver
     connection:
-      url: # set in eu.nimble.utility.config.CatalogueServiceConfig
-    username: # set in eu.nimble.utility.config.CatalogueServiceConfig
-    password: # set in eu.nimble.utility.config.CatalogueServiceConfig
+      url: # set in eu.nimble.service.catalogue.config.CatalogueServiceConfig
+    username: # set in eu.nimble.service.catalogue.config.CatalogueServiceConfig
+    password: # set in eu.nimble.service.catalogue.config.CatalogueServiceConfig
     bluemix:
       credentials_json: ${BLUEMIX_CATEGORY_DB_JSON:}
   orm:

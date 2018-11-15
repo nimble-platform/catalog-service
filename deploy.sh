@@ -13,7 +13,7 @@ elif [ "$1" == "docker-build" ]; then
 
 elif [ "$1" == "docker-build-staging" ]; then
 
-    mvn -f catalogue-service-micro/pom.xml docker:build -DdockerImageTag=staging -P docker
+    mvn -f catalogue-service-micro/pom.xml docker:build -Ddocker.image.tag=staging -P docker
 
 elif [ "$1" == "docker-run" ]; then
 
