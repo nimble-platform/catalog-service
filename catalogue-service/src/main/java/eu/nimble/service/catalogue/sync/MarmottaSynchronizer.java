@@ -4,12 +4,11 @@ import eu.nimble.service.catalogue.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.util.SpringBridge;
-import eu.nimble.utility.config.CatalogueServiceConfig;
+import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;

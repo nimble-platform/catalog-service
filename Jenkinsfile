@@ -38,7 +38,8 @@ node('nimble-jenkins-slave') {
     if (env.BRANCH_NAME == 'master') {
 
         stage('Push Docker') {
-            sh 'docker push nimbleplatform/catalogue-service-micro:latest'
+            sh 'mvn -f catalogue-service-micro/pom.xml docker:build docker:push -P docker'
+            sh 'mvn -f catalogue-service-micro/pom.xml docker:build docker:push -P docker -Ddocker.image.tag=latest'
         }
 
         stage('Deploy') {
