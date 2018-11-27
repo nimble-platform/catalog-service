@@ -2022,7 +2022,7 @@ public class MigrationUtil {
         if(environment.contentEquals("production")) {
             return "https://nimble-platform.salzburgresearch.at/nimble/identity/";
         } else if(environment.contentEquals("staging")) {
-            return "http://nimble-stag'ng.salzburgresearch.at/identity/";
+            return "http://nimble-staging.salzburgresearch.at/identity/";
         }
         throw new RuntimeException();
     }
