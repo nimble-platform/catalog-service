@@ -73,7 +73,7 @@ public class Test01_CatalogueControllerTest {
         CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
 
         // update party address
-        catalogue.getProviderParty().getPostalAddress().setCityName("Luleburgaz");
+        catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().setName("Updated product name");
 
         // get Json version of the updated catalogue
         String catalogueTypeAsString = mapper.writeValueAsString(catalogue);
@@ -86,7 +86,7 @@ public class Test01_CatalogueControllerTest {
         catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
 
         // check whether it is updated or not
-        Assert.assertEquals("Luleburgaz", catalogue.getProviderParty().getPostalAddress().getCityName());
+        Assert.assertEquals("Updated product name", catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getName());
     }
 
     @Test

@@ -1,28 +1,24 @@
 package eu.nimble.service.catalogue.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
+import eu.nimble.service.catalogue.persistence.CatalogueLineRepository;
+import eu.nimble.service.catalogue.persistence.CatalogueRepository;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
 import eu.nimble.service.catalogue.util.HttpResponseUtil;
 import eu.nimble.service.catalogue.util.HyperJaxbSerializationUtil;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
-import eu.nimble.service.model.ubl.commonbasiccomponents.AmountType;
-import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
-import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
-import eu.nimble.utility.Configuration;
-import eu.nimble.utility.HibernateUtility;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.PriceOptionType;
 import eu.nimble.utility.JsonSerializationUtility;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.jvnet.hyperjaxb3.item.Item;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.logging.LogLevel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,9 +27,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -52,117 +46,10 @@ public class PriceConfigurationController {
 
     private CatalogueService service = CatalogueServiceImpl.getInstance();
 
-    public static void main(String[] args) throws JsonProcessingException {
-        PriceOptionType option = new PriceOptionType();
-
-        // item props
-        List<ItemPropertyType> props = new ArrayList<>();
-        ItemPropertyType prop = new ItemPropertyType();
-        prop.setName("prop1");
-        List<String> propVals = new ArrayList<>();
-        propVals.add("p1V1");
-        propVals.add("p1V2");
-        prop.setValue(propVals);
-        props.add(prop);
-
-        prop = new ItemPropertyType();
-        prop.setName("prop2");
-        propVals = new ArrayList<>();
-        propVals.add("p2V1");
-        propVals.add("p2V2");
-        prop.setValue(propVals);
-        props.add(prop);
-        option.setAdditionalItemProperty(props);
-
-        // delivery period
-        PeriodType period = new PeriodType();
-        QuantityType duration = new QuantityType();
-        duration.setValue(BigDecimal.valueOf(2));
-        duration.setUnitCode("weeks");
-        period.setDurationMeasure(duration);
-        option.setEstimatedDeliveryPeriod(period);
-
-        // incoterms
-        List<String> incoTerms = new ArrayList<>();
-        incoTerms.add("CIF");
-        incoTerms.add("CIP");
-        option.setIncoterms(incoTerms);
-
-        List<PaymentMeansType> paymentMeans = new ArrayList<>();
-        PaymentMeansType mean = new PaymentMeansType();
-        CodeType meanCode = new CodeType();
-        meanCode.setName("Credit Card");
-        mean.setPaymentMeansCode(meanCode);
-        paymentMeans.add(mean);
-
-        mean = new PaymentMeansType();
-        meanCode = new CodeType();
-        meanCode.setName("ACH Transfer");
-        mean.setPaymentMeansCode(meanCode);
-        paymentMeans.add(mean);
-
-        option.setPaymentMeans(paymentMeans);
-
-        PaymentTermsType paymentTerms = new PaymentTermsType();
-        List<TradingTermType> tradingTerms = new ArrayList<>();
-        TradingTermType term = new TradingTermType();
-        term.setDescription("Payment in advance");
-        tradingTerms.add(term);
-        term = new TradingTermType();
-        term.setDescription("10% discount if the payment is done ...");
-        term.setTradingTermFormat("%s, %s, %s");
-        List<String> termValues = new ArrayList<>();
-        termValues.add("10");
-        termValues.add("1");
-        termValues.add("1");
-        term.setValue(termValues);
-        tradingTerms.add(term);
-
-        paymentTerms.setTradingTerms(tradingTerms);
-        option.setPaymentTerms(paymentTerms);
-        option.setSpecialTerms("Some special terms");
-
-        ItemLocationQuantityType ilqt = new ItemLocationQuantityType();
-        List<AddressType> addresses = new ArrayList<>();
-        AddressType addr = new AddressType();
-        CountryType country = new CountryType();
-        country.setName("Turkey");
-        addr.setCountry(country);
-        addresses.add(addr);
-
-        addr = new AddressType();
-        country = new CountryType();
-        country.setName("Bulgaria");
-        addr.setCountry(country);
-        addresses.add(addr);
-
-        ilqt.setApplicableTerritoryAddress(addresses);
-
-        PriceType price = new PriceType();
-        QuantityType base = new QuantityType();
-        base.setUnitCode("m2");
-        base.setValue(BigDecimal.valueOf(1));
-        price.setBaseQuantity(base);
-        AmountType priceAmount = new AmountType();
-        priceAmount.setValue(BigDecimal.valueOf(10));
-        priceAmount.setCurrencyID("EUR");
-        price.setPriceAmount(priceAmount);
-        ilqt.setPrice(price);
-
-        QuantityType minQuantity = new QuantityType();
-        minQuantity.setUnitCode("m2");
-        minQuantity.setValue(BigDecimal.valueOf(10));
-        ilqt.setMinimumQuantity(minQuantity);
-
-        List<AllowanceChargeType> discounts = new ArrayList<>();
-        AllowanceChargeType discount = new AllowanceChargeType();
-        discounts.add(discount);
-        ilqt.setAllowanceCharge(discounts);
-        option.setItemLocationQuantity(ilqt);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        System.out.println(objectMapper.writeValueAsString(option));
-    }
+    @Autowired
+    private CatalogueRepository catalogueRepository;
+    @Autowired
+    private CatalogueLineRepository catalogueLineRepository;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Adds the given pricing option to the specified catalogue line (i.e. product/service)")
@@ -195,11 +82,11 @@ public class PriceConfigurationController {
             }
 
             // first persist the price options
-            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).persist(priceOption);
+            catalogueRepository.persistEntity(priceOption);
 
             // update the catalogue line
             catalogueLine.getPriceOption().add(priceOption);
-            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueLine);
+            catalogueLineRepository.save(catalogueLine);
 
             // update the index
             MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueUuid);
@@ -228,7 +115,7 @@ public class PriceConfigurationController {
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Adds the given pricing option to the specified catalogue line (i.e. product/service)")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Added the pricing option successfully", response = PriceOptionType.class),
+            @ApiResponse(code = 200, message = "Deleted the pricing option successfully"),
             @ApiResponse(code = 404, message = "No catalogue or catalogue line found for the specified parameters")
     })
     @RequestMapping(value = "/{optionId}",
@@ -270,7 +157,8 @@ public class PriceConfigurationController {
             }
 
             // remove the option and update the line
-            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).delete(PriceOptionType.class, optionId);
+//            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).delete(PriceOptionType.class, optionId);
+            catalogueRepository.deleteEntityByHjid(PriceOptionType.class, optionId);
 
             // update the index
             MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueUuid);
@@ -337,7 +225,7 @@ public class PriceConfigurationController {
             }
 
             // remove the option and update the line
-            priceOption = (PriceOptionType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(priceOption);
+            priceOption = catalogueRepository.updateEntity(priceOption);
 
             // update the index
             MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueUuid);
