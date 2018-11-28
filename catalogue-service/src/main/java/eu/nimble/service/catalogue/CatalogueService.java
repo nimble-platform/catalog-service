@@ -82,6 +82,4 @@ public interface CatalogueService {
     public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine);
 
     public void deleteCatalogueLineById(String catalogueId, String lineId);
-
-    public boolean existCatalogueLineById(String catalogueId,String lineId,Long hjid);
 }

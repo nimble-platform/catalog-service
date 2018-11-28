@@ -3,6 +3,8 @@ package eu.nimble.service.catalogue.util;
 import eu.nimble.common.rest.identity.IdentityClientTyped;
 import eu.nimble.common.rest.trust.TrustClient;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
+import eu.nimble.service.catalogue.persistence.CatalogueLineRepository;
+import eu.nimble.service.catalogue.persistence.CatalogueRepository;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -30,6 +32,12 @@ public class SpringBridge implements ApplicationContextAware {
     @Autowired
     private TrustClient trustClient;
 
+    @Autowired
+    private CatalogueRepository catalogueRepository;
+
+    @Autowired
+    private CatalogueLineRepository catalogueLineRepository;
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext)
             throws BeansException {
@@ -46,5 +54,13 @@ public class SpringBridge implements ApplicationContextAware {
 
     public TrustClient getTrustClient() {
         return trustClient;
+    }
+
+    public CatalogueRepository getCatalogueRepository() {
+        return catalogueRepository;
+    }
+
+    public CatalogueLineRepository getCatalogueLineRepository() {
+        return catalogueLineRepository;
     }
 }

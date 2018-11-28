@@ -8,6 +8,7 @@ package eu.nimble.service.catalogue;
 import eu.nimble.service.catalogue.category.CategoryServiceManager;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.util.DataIntegratorUtil;
+import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
@@ -25,6 +26,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.activation.MimetypesFileTypeMap;
@@ -110,7 +112,8 @@ public class CatalogueServiceImpl implements CatalogueService {
 
         DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(catalogue);
         // merge the hibernate object
-        catalogue = (CatalogueType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
+//        catalogue = (CatalogueType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
+        catalogue = SpringBridge.getInstance().getCatalogueRepository().save(catalogue);
 
         // add synchronization record
         MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogue.getUUID());
@@ -154,7 +157,8 @@ public class CatalogueServiceImpl implements CatalogueService {
 
             DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(ublCatalogue);
             // persist the catalogue in relational DB
-            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(ublCatalogue);
+//            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(ublCatalogue);
+            SpringBridge.getInstance().getCatalogueRepository().save(ublCatalogue);
             logger.info("Catalogue with uuid: {} persisted in DB", uuid.toString());
 
             // add synchronization record
@@ -173,14 +177,15 @@ public class CatalogueServiceImpl implements CatalogueService {
 
         String query;
         if (standard == Configuration.Standard.UBL) {
-            query = "SELECT catalogue FROM CatalogueType catalogue "
-                    + " WHERE catalogue.UUID = '" + uuid + "'";
-
-            resultSet = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
-                    .loadAll(query);
-            if (resultSet.size() > 0) {
-                catalogue = (T) resultSet.get(0);
-            }
+//            query = "SELECT catalogue FROM CatalogueType catalogue "
+//                    + " WHERE catalogue.UUID = '" + uuid + "'";
+//
+//            resultSet = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
+//                    .loadAll(query);
+//            if (resultSet.size() > 0) {
+//                catalogue = (T) resultSet.get(0);
+//            }
+            catalogue = (T) SpringBridge.getInstance().getCatalogueRepository().getCatalogueByUuid(uuid);
 
         } else if (standard == Configuration.Standard.MODAML) {
             query = "SELECT catalogue FROM TEXCatalogType catalogue "
@@ -200,25 +205,21 @@ public class CatalogueServiceImpl implements CatalogueService {
     @Override
     public <T> T getCatalogue(String id, String partyId, Configuration.Standard standard) {
         T catalogue = null;
-        List<T> resultSet = null;
 
         String query;
         if (standard == Configuration.Standard.UBL) {
-            query = "SELECT catalogue FROM CatalogueType as catalogue "
-                    + " JOIN catalogue.providerParty as catalogue_provider_party"
-                    + " WHERE catalogue.ID = '" + id + "'"
-                    + " AND catalogue_provider_party.ID = '" + partyId + "'";
-
-            resultSet = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
-                    .loadAll(query);
+//            query = "SELECT catalogue FROM CatalogueType as catalogue "
+//                    + " JOIN catalogue.providerParty as catalogue_provider_party"
+//                    + " WHERE catalogue.ID = '" + id + "'"
+//                    + " AND catalogue_provider_party.ID = '" + partyId + "'";
+//
+//            resultSet = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
+//                    .loadAll(query);
+            catalogue = (T) SpringBridge.getInstance().getCatalogueRepository().getCatalogueForParty(id, partyId);
 
         } else if (standard == Configuration.Standard.MODAML) {
             logger.warn("Fetching catalogues with id and party id from MODAML repository is not implemented yet");
             throw new NotImplementedException();
-        }
-
-        if (resultSet.size() > 0) {
-            catalogue = resultSet.get(0);
         }
 
         return catalogue;
@@ -233,7 +234,8 @@ public class CatalogueServiceImpl implements CatalogueService {
 
             if (catalogue != null) {
                 Long hjid = catalogue.getHjid();
-                HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).delete(CatalogueType.class, hjid);
+//                HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).delete(CatalogueType.class, hjid);
+                SpringBridge.getInstance().getCatalogueRepository().delete(hjid);
 
                 // add synchronization record
                 MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.DELETE, uuid);
@@ -332,7 +334,8 @@ public class CatalogueServiceImpl implements CatalogueService {
                 }
             }
         }
-        catalogue.setCatalogueLine(mergedList);
+        catalogue.getCatalogueLine().clear();
+        catalogue.getCatalogueLine().addAll(mergedList);
     }
 
     @Override
@@ -403,7 +406,6 @@ public class CatalogueServiceImpl implements CatalogueService {
     @Override
     public <T> T getCatalogueLine(String catalogueId, String catalogueLineId) {
         T catalogueLine = null;
-        List<T> resultSet;
 
         String query = "SELECT cl FROM CatalogueLineType as cl, CatalogueType as c "
                 + " JOIN c.catalogueLine as clj"
@@ -411,12 +413,12 @@ public class CatalogueServiceImpl implements CatalogueService {
                 + " AND cl.ID = '" + catalogueLineId + "' "
                 + " AND clj.ID = cl.ID ";
 
-        resultSet = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
-                .loadAll(query);
-        if (resultSet.size() > 0) {
-            catalogueLine = (T) resultSet.get(0);
-        }
-
+//        resultSet = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
+//                .loadAll(query);
+//        if (resultSet.size() > 0) {
+//            catalogueLine = (T) resultSet.get(0);
+//        }
+        catalogueLine = (T) SpringBridge.getInstance().getCatalogueRepository().getCatalogueLine(catalogueId, catalogueLineId);
         return catalogueLine;
     }
 
@@ -428,25 +430,34 @@ public class CatalogueServiceImpl implements CatalogueService {
         }
 
         List<T> catalogueLines = null;
+        List<String> parameterNames = new ArrayList<>();
+        List<Object> parameterValues = new ArrayList<>();
 
         String query = "SELECT cl FROM CatalogueLineType as cl, CatalogueType as c "
                 + " JOIN c.catalogueLine as clj"
-                + " WHERE c.UUID = '" + catalogueId + "' "
+                + " WHERE c.UUID = :catalogueId "
                 + " AND (";
+
+        parameterNames.add("catalogueId");
+        parameterValues.add(catalogueId);
 
         int size = catalogueLineIds.size();
         for(int i = 0;i<size;i++){
             if(i == size-1){
-                query += "cl.ID = '"+catalogueLineIds.get(i)+"')";
+                query += "cl.ID = :lineId" + i + ")";
             }
             else {
-                query += "cl.ID = '"+catalogueLineIds.get(i)+"' OR ";
+                query += "cl.ID = :lineId" + i + " OR ";
             }
+
+            parameterNames.add("lineId" + i);
+            parameterValues.add(catalogueLineIds.get(i));
         }
         query += " AND clj.ID = cl.ID ";
 
-        catalogueLines = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
-                .loadAll(query);
+//        catalogueLines = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
+//                .loadAll(query);
+        catalogueLines = SpringBridge.getInstance().getCatalogueRepository().getEntities(query, parameterNames.toArray(new String[parameterNames.size()]), parameterValues.toArray());
 
         return catalogueLines;
     }
@@ -457,7 +468,8 @@ public class CatalogueServiceImpl implements CatalogueService {
         catalogue.getCatalogueLine().add(catalogueLine);
         DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(catalogue);
 
-        catalogue = (CatalogueType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
+//        catalogue = (CatalogueType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
+        catalogue = SpringBridge.getInstance().getCatalogueRepository().save(catalogue);
         catalogueLine = catalogue.getCatalogueLine().get(catalogue.getCatalogueLine().size()-1);
 
         // add synchronization record
@@ -470,7 +482,8 @@ public class CatalogueServiceImpl implements CatalogueService {
     public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine) {
         CatalogueType catalogue = getCatalogue(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID());
         DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(catalogueLine, catalogue);
-        catalogueLine = (CatalogueLineType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueLine);
+//        catalogueLine = (CatalogueLineType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueLine);
+        catalogueLine = SpringBridge.getInstance().getCatalogueLineRepository().save(catalogueLine);
 
         // add synchronization record
         // Not UUID but ID of the document reference should be used.
@@ -487,40 +500,11 @@ public class CatalogueServiceImpl implements CatalogueService {
 
         if (catalogueLine != null) {
             Long hjid = catalogueLine.getHjid();
-            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).delete(CatalogueLineType.class, hjid);
+//            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).delete(CatalogueLineType.class, hjid);
+            SpringBridge.getInstance().getCatalogueLineRepository().delete(hjid);
 
             // add synchronization record
             MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueId);
         }
-    }
-
-    @Override
-    public boolean existCatalogueLineById(String catalogueId, String lineId,Long hjid) {
-        List<Long> resultSet;
-
-        String query;
-        // addCatalogueLine
-        if(hjid == null){
-            query = "SELECT COUNT(cl) FROM CatalogueLineType as cl, CatalogueType as c "
-                    + " JOIN c.catalogueLine as clj"
-                    + " WHERE c.UUID = '" + catalogueId + "' "
-                    + " AND cl.ID = '" + lineId + "' "
-                    + " AND clj.ID = cl.ID ";
-        }
-        // updateCatalogueLine
-        else{
-            query = "SELECT COUNT(clj) FROM CatalogueType as c "
-                    + " JOIN c.catalogueLine as clj"
-                    + " WHERE c.UUID = '" + catalogueId + "'"
-                    + " AND clj.hjid <> "+hjid
-                    + " AND clj.ID = '"+lineId+"'";
-        }
-        resultSet = (List<Long>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
-                .loadAll(query);
-        if (resultSet.size() > 0 && resultSet.get(0) > 0) {
-            return true;
-        }
-
-        return false;
     }
 }
