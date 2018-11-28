@@ -62,6 +62,9 @@ com:
         MLog: slf4j
 
 persistence:
+  solr:
+    url: ${SOLR_URL:http://nimble-staging.salzburgresearch.at/marmotta/solr/}
+    properties-index: ${PROPERTIES_INDEX:prop_trial}
   syncdb:
     #### Postgres Configs
     driver: org.postgresql.Driver
