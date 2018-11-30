@@ -55,9 +55,11 @@ public class CatalogueLineValidator {
     }
 
     private void checkReferenceToCatalogue() {
-        ItemType item = catalogueLine.getGoodsItem().getItem();
-        if (!item.getCatalogueDocumentReference().getID().equals(owningCatalogue.getUUID())) {
-            errorMessages.add(String.format("Catalogue uuid and catalogue document reference id do not match for catalogue line: %s", extractedLineId));
+        if(owningCatalogue.getUUID() != null){
+            ItemType item = catalogueLine.getGoodsItem().getItem();
+            if (!item.getCatalogueDocumentReference().getID().equals(owningCatalogue.getUUID())) {
+                errorMessages.add(String.format("Catalogue uuid and catalogue document reference id do not match for catalogue line: %s", extractedLineId));
+            }
         }
     }
 

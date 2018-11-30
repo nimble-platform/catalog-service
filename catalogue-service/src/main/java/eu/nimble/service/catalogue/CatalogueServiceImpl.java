@@ -160,8 +160,9 @@ public class CatalogueServiceImpl implements CatalogueService {
                 ublCatalogue.setUUID(uuid);
             }
             else {
+                uuid = UUID.randomUUID().toString();
                 // create a globally unique identifier
-                ublCatalogue.setUUID(UUID.randomUUID().toString());
+                ublCatalogue.setUUID(uuid);
             }
 
             DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(ublCatalogue);
