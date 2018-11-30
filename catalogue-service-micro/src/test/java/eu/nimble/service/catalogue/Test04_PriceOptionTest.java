@@ -5,10 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PriceOptionType;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,9 +91,7 @@ public class Test04_PriceOptionTest {
     public void test3_deletePriceOption() throws Exception {
         // delete the option
         MockHttpServletRequestBuilder request = delete("/catalogue/" + Test02_CatalogueLineControllerTest.catalogueId + "/catalogueline/" + catalogueLine.getID() + "/price-options/" + priceOption.getHjid())
-                .header("Authorization", "Bearer SOMETHING")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(priceOption));
+                .header("Authorization", "Bearer SOMETHING");
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
 
         // get catalogue line
