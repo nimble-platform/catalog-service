@@ -149,11 +149,20 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     @Override
     public <T> T addCatalogue(T catalogue, Configuration.Standard standard) {
+        return addCatalogueWithUUID(catalogue,standard,null);
+    }
+
+    @Override
+    public <T> T addCatalogueWithUUID(T catalogue, Configuration.Standard standard,String uuid) {
         if (standard == Configuration.Standard.UBL) {
-            // create a globally unique identifier
             CatalogueType ublCatalogue = (CatalogueType) catalogue;
-            String uuid = UUID.randomUUID().toString();
-            ublCatalogue.setUUID(uuid);
+            if(uuid != null){
+                ublCatalogue.setUUID(uuid);
+            }
+            else {
+                // create a globally unique identifier
+                ublCatalogue.setUUID(UUID.randomUUID().toString());
+            }
 
             DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(ublCatalogue);
             // persist the catalogue in relational DB
