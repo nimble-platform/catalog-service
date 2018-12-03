@@ -36,7 +36,7 @@ public class KafkaReceiver {
             logger.info("Updated party for the company with id: {} successfully", companyID);
 
         } catch (Exception e) {
-            logger.error("Failed to process company update from identity service for company: {}", companyID);
+            logger.error("Failed to process company update from identity service for company: {}", companyID, e);
         }
     }
 
@@ -54,7 +54,7 @@ public class KafkaReceiver {
             logger.info("Processed company trust updates for company with id: {}", companyID);
 
         } catch (Exception e) {
-            logger.error("Failed to process trust score updates for company: {}", companyID);
+            logger.error("Failed to process trust score updates for company: {}", companyID, e);
         }
     }
 }
