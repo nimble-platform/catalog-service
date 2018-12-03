@@ -54,6 +54,7 @@ public class CatalogueDatabaseAdapter {
         } else {
             DataModelUtility.nullifyPartyFields(catalogueParty);
             DataModelUtility.copyParty(catalogueParty, identityParty);
+            catalogueParty = checkPartyIntegrity(catalogueParty);
 //            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueParty);
             SpringBridge.getInstance().getCatalogueRepository().updateEntity(catalogueParty);
         }
@@ -156,10 +157,8 @@ public class CatalogueDatabaseAdapter {
 
     private static PartyType checkPartyIntegrity(PartyType party) {
         party = removePartyHjids(party);
-        // person information is not stored in ubldb
         // TODO do not store any other party information in ubldb than ID. Todo that the user interface and
         // other places relying on the party information (stored in ubldb) should be checked/updated
-        party.setPerson(null);
         return party;
     }
 
