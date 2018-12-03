@@ -1,0 +1,15 @@
+kind: Service
+metadata:
+  name: catalogue-service
+  labels:
+    app: catalogue-service
+    name: catalogue-service
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8095
+      targetPort: 8095
+  selector:
+    app: catalogue-service
+    name: catalogue-service
