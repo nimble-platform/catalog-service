@@ -40,23 +40,23 @@ public class CatalogueDatabaseAdapter {
 
     public static void syncPartyInUBLDB(String partyId, String bearerToken) {
         PartyType catalogueParty = getParty(partyId);
-        PartyType identityParty = null;
+        PartyType identityParty;
         try {
             identityParty = SpringBridge.getInstance().getIdentityClientTyped().getParty(bearerToken, partyId);
+            identityParty = checkPartyIntegrity(identityParty);
         } catch (IOException e) {
             String msg = String.format("Failed to get party with id: %s", partyId);
             logger.error(msg, e);
             throw new RuntimeException(msg, e);
         }
+
         if(catalogueParty == null) {
-            identityParty = checkPartyIntegrity(identityParty);
 //            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).persist(identityParty);
             SpringBridge.getInstance().getCatalogueRepository().persistEntity(identityParty);
 
         } else {
             DataModelUtility.nullifyPartyFields(catalogueParty);
             DataModelUtility.copyParty(catalogueParty, identityParty);
-            catalogueParty = checkPartyIntegrity(catalogueParty);
 //            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueParty);
             SpringBridge.getInstance().getCatalogueRepository().updateEntity(catalogueParty);
         }
