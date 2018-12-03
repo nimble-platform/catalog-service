@@ -96,7 +96,7 @@ persistence:
         cache:
           provider_class: org.hibernate.cache.HashtableCacheProvider
         jdbc:
-          batch_size: 10
+          batch_size: 0
         use_sql_comments: true
         transaction:
           factory_class: org.hibernate.transaction.JDBCTransactionFactory

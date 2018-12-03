@@ -24,24 +24,37 @@ public class KafkaReceiver {
 
     @KafkaListener(topics = "${nimble.kafka.topics.companyUpdates}")
     public void receiveCompanyUpdates(ConsumerRecord<String, KafkaConfig.AuthorizedCompanyUpdate> consumerRecord) {
-        String companyID = consumerRecord.value().getCompanyId();
-        logger.info("Received company updates for company with id: {}",companyID);
-        String accessToken = consumerRecord.value().getAccessToken();
+        String companyID = null;
+        try {
+            companyID = consumerRecord.value().getCompanyId();
+            logger.info("Received company updates for company with id: {}", companyID);
+            String accessToken = consumerRecord.value().getAccessToken();
 
-        CatalogueDatabaseAdapter.syncPartyInUBLDB(companyID,accessToken);
-        MarmottaSynchronizer.getInstance().addRecord(companyID);
+            CatalogueDatabaseAdapter.syncPartyInUBLDB(companyID, accessToken);
+            MarmottaSynchronizer.getInstance().addRecord(companyID);
 
-        logger.info("Updated party for the company with id: {} successfully",companyID);
+            logger.info("Updated party for the company with id: {} successfully", companyID);
+
+        } catch (Exception e) {
+            logger.error("Failed to process company update from identity service for company: {}", companyID);
+        }
     }
 
     @KafkaListener(topics = "${nimble.kafka.topics.trustScoreUpdates}")
     public void receiveTrustScoreUpdates(ConsumerRecord<String, KafkaConfig.AuthorizedCompanyUpdate> consumerRecord) {
-        String companyID = consumerRecord.value().getCompanyId();
-        logger.info("Received company trust updates for company with id: {}",companyID);
-        String accessToken = consumerRecord.value().getAccessToken();
+        String companyID = null;
 
-        CatalogueDatabaseAdapter.syncTrustScores(companyID, accessToken);
-        MarmottaSynchronizer.getInstance().addRecord(companyID);
-        logger.info("Processed company trust updates for company with id: {}", companyID);
+        try {
+            companyID = consumerRecord.value().getCompanyId();
+            logger.info("Received company trust updates for company with id: {}", companyID);
+            String accessToken = consumerRecord.value().getAccessToken();
+
+            CatalogueDatabaseAdapter.syncTrustScores(companyID, accessToken);
+            MarmottaSynchronizer.getInstance().addRecord(companyID);
+            logger.info("Processed company trust updates for company with id: {}", companyID);
+
+        } catch (Exception e) {
+            logger.error("Failed to process trust score updates for company: {}", companyID);
+        }
     }
 }
