@@ -1,19 +1,15 @@
 package eu.nimble.service.catalogue.messaging;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.common.rest.trust.TrustClient;
 import eu.nimble.service.catalogue.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
-import eu.nimble.utility.config.KafkaConfig;
+import eu.nimble.service.catalogue.config.KafkaConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
-
-import java.io.IOException;
 
 /**
  * Created by Johannes Innerbichler on 27.09.18.
@@ -28,23 +24,37 @@ public class KafkaReceiver {
 
     @KafkaListener(topics = "${nimble.kafka.topics.companyUpdates}")
     public void receiveCompanyUpdates(ConsumerRecord<String, KafkaConfig.AuthorizedCompanyUpdate> consumerRecord) {
-        String companyID = consumerRecord.value().getCompanyID();
-        logger.info("Received company updates for company with id: {}",companyID);
-        String accessToken = consumerRecord.value().getAccessToken();
+        String companyID = null;
+        try {
+            companyID = consumerRecord.value().getCompanyId();
+            logger.info("Received company updates for company with id: {}", companyID);
+            String accessToken = consumerRecord.value().getAccessToken();
 
-        CatalogueDatabaseAdapter.syncPartyInUBLDB(companyID,accessToken);
-        MarmottaSynchronizer.getInstance().addRecord(companyID);
+            CatalogueDatabaseAdapter.syncPartyInUBLDB(companyID, accessToken);
+            MarmottaSynchronizer.getInstance().addRecord(companyID);
 
-        logger.info("Updated party for the company with id: {} successfully",companyID);
+            logger.info("Updated party for the company with id: {} successfully", companyID);
+
+        } catch (Exception e) {
+            logger.error("Failed to process company update from identity service for company: {}", companyID, e);
+        }
     }
 
     @KafkaListener(topics = "${nimble.kafka.topics.trustScoreUpdates}")
     public void receiveTrustScoreUpdates(ConsumerRecord<String, KafkaConfig.AuthorizedCompanyUpdate> consumerRecord) {
-        String companyID = consumerRecord.value().getCompanyID();
-        String accessToken = consumerRecord.value().getAccessToken();
+        String companyID = null;
 
-        CatalogueDatabaseAdapter.syncTrustScores(companyID, accessToken);
-        MarmottaSynchronizer.getInstance().addRecord(companyID);
-        logger.info("Received company updates for company with id: {}",companyID);
+        try {
+            companyID = consumerRecord.value().getCompanyId();
+            logger.info("Received company trust updates for company with id: {}", companyID);
+            String accessToken = consumerRecord.value().getAccessToken();
+
+            CatalogueDatabaseAdapter.syncTrustScores(companyID, accessToken);
+            MarmottaSynchronizer.getInstance().addRecord(companyID);
+            logger.info("Processed company trust updates for company with id: {}", companyID);
+
+        } catch (Exception e) {
+            logger.error("Failed to process trust score updates for company: {}", companyID, e);
+        }
     }
 }

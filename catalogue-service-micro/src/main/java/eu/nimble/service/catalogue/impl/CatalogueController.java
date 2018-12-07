@@ -2,40 +2,38 @@ package eu.nimble.service.catalogue.impl;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
+import eu.nimble.common.rest.identity.IdentityClientTyped;
+import eu.nimble.data.transformer.ontmalizer.XML2OWLMapper;
 import eu.nimble.service.catalogue.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
+import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
+import eu.nimble.service.catalogue.sync.MarmottaClient;
+import eu.nimble.service.catalogue.sync.MarmottaSynchronizationException;
 import eu.nimble.service.catalogue.util.CatalogueValidator;
 import eu.nimble.service.catalogue.util.HttpResponseUtil;
+import eu.nimble.service.catalogue.util.TransactionEnabledSerializationUtility;
 import eu.nimble.service.catalogue.util.Utils;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.JAXBUtility;
-import eu.nimble.utility.JsonSerializationUtility;
-import eu.nimble.utility.config.CatalogueServiceConfig;
-import eu.nimble.utility.config.PersistenceConfig;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.logging.LogLevel;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -54,6 +52,7 @@ import java.util.zip.ZipInputStream;
  * can be executed. A catalogue contains contains catalogue lines each of which corresponds to a product or service.
  */
 @Controller
+@Transactional(transactionManager = "ubldbTransactionManager")
 public class CatalogueController {
 
     private String defaultLanguage = "en";
@@ -64,13 +63,11 @@ public class CatalogueController {
     private CatalogueService service = CatalogueServiceImpl.getInstance();
 
     @Autowired
-    private PersistenceConfig ublConf;
-
-    @Autowired
     private CatalogueServiceConfig catalogueServiceConfig;
-
-//    @Autowired
-//    private IdentityClientTyped identityClient;
+    @Autowired
+    private IdentityClientTyped identityClient;
+    @Autowired
+    private TransactionEnabledSerializationUtility serializationUtility;
 
     /**
      * Retrieves the default catalogue for the specified party. The catalogue is supposed to have and ID field with
@@ -106,7 +103,7 @@ public class CatalogueController {
         }
 
         log.info("Completed request to get default catalogue for party: {}", partyId);
-        return ResponseEntity.ok(catalogue);
+        return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogue));
     }
 
     /**
@@ -146,12 +143,12 @@ public class CatalogueController {
         }
 
         if (catalogue == null) {
-            log.info("No default catalogue for uuid: {}", uuid);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(String.format("No default catalogue for uuid: %s", uuid));
+            log.info("No catalogue for uuid: {}", uuid);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(String.format("No catalogue for uuid: %s", uuid));
         }
 
         log.info("Completed request to get catalogue for standard: {}, uuid: {}", standard, uuid);
-        return ResponseEntity.ok(catalogue);
+        return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogue));
     }
 
     /**
@@ -167,6 +164,7 @@ public class CatalogueController {
     @ApiOperation(value = "", notes = "Add the catalogue passed in a serialized form")
     @ApiResponses(value = {
             @ApiResponse(code = 400, message = "Invalid content type"),
+            @ApiResponse(code = 409, message = "A catalogue with the same ID exists for the publisher party")
     })
     @RequestMapping(value = "/catalogue/{standard}",
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
@@ -212,7 +210,7 @@ public class CatalogueController {
                 // check catalogue with the same id exists
                 boolean catalogueExists = CatalogueDatabaseAdapter.catalogueExists(ublCatalogue.getProviderParty().getID(), ublCatalogue.getID());
                 if (catalogueExists) {
-                    return HttpResponseUtil.createResponseEntityAndLog(String.format("Catalogue with ID: '%s' already exists", ublCatalogue.getID()), null, HttpStatus.OK, LogLevel.INFO);
+                    return HttpResponseUtil.createResponseEntityAndLog(String.format("Catalogue with ID: '%s' already exists", ublCatalogue.getID()), null, HttpStatus.CONFLICT, LogLevel.INFO);
                 }
             }
 
@@ -264,7 +262,7 @@ public class CatalogueController {
             }
         }
         log.info("Completed request to add catalogue, uuid: {}", uuid);
-        return ResponseEntity.created(catalogueURI).body(catalogue);
+        return ResponseEntity.created(catalogueURI).body(serializationUtility.serializeUBLObject(catalogue));
     }
 
     /**
@@ -331,7 +329,7 @@ public class CatalogueController {
             }
 
             log.info("Completed request to update the catalogue. uuid: {}", catalogue.getUUID());
-            return ResponseEntity.ok(catalogue);
+            return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogue));
 
         } catch (Exception e) {
             return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while adding the catalogue: %s", catalogueJson), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
@@ -451,27 +449,10 @@ public class CatalogueController {
         try {
             log.info("Incoming request to upload template upload mode: {}, party id: {}, party name: {}", uploadMode, partyId, partyName);
             CatalogueType catalogue;
-            PartyType party;
-            String dataChannelServiceUrlStr = catalogueServiceConfig.getIdentityUrl() + "/party/" + partyId;
-
-            // get party details from identity service
-            HttpResponse<JsonNode> response;
-            try {
-                response = Unirest.get(dataChannelServiceUrlStr)
-                        .header("Authorization", bearerToken).asJson();
-                if (response.getStatus() == 404) {
-                    String msg = String.format("No party found for partyId: %s", partyId);
-                    log.warn(msg);
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(msg);
-                }
-                ObjectMapper objectMapper = new ObjectMapper();
-                objectMapper = objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-                JSONObject responseObject = response.getBody().getObject();
-                JsonSerializationUtility.removeHjidFields(responseObject);
-                party = objectMapper.readValue(responseObject.toString(), PartyType.class);
-
-            } catch (UnirestException e) {
-                return createErrorResponseEntity("Failed to get complete party details", HttpStatus.INTERNAL_SERVER_ERROR, e);
+            PartyType party = CatalogueDatabaseAdapter.getParty(partyId);
+            if(party == null) {
+                party = identityClient.getParty(bearerToken, partyId);
+                party = CatalogueDatabaseAdapter.syncPartyInUBLDB(party);
             }
 
             // parse catalogue
@@ -498,7 +479,7 @@ public class CatalogueController {
             }
 
             log.info("Completed the request to upload template. Added catalogue uuid: {}", catalogue.getUUID());
-            return ResponseEntity.created(catalogueURI).body(catalogue);
+            return ResponseEntity.created(catalogueURI).body(serializationUtility.serializeUBLObject(catalogue));
 
         } catch (Exception e) {
             return HttpResponseUtil.createResponseEntityAndLog("Unexpected error while uploading the template", e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
@@ -631,6 +612,53 @@ public class CatalogueController {
         log.info("Completed request to retrieve the supported standards");
         return ResponseEntity.ok(standards);
     }
+
+    /**
+     * Returns a catalogue in semantic format
+     */
+    @CrossOrigin(origins = {"*"})
+    @RequestMapping(value = "/catalogue/semantic/{uuid}",
+            method = RequestMethod.GET)
+    public ResponseEntity getCatalogueInSemanticFormat(@PathVariable String uuid,
+                                                       @RequestParam(value = "semanticContentType", required = false) String semanticContentType,
+                                                       @RequestHeader("Authorization") String authorization,
+                                                       HttpServletResponse response) {
+        try {
+            log.info("Incoming request to get catalogue in semantic format, uuid: {}, content type: {}", uuid, semanticContentType);
+            Object catalogue;
+            try {
+                catalogue = service.getCatalogue(uuid, Configuration.Standard.UBL);
+            } catch (Exception e) {
+                return createErrorResponseEntity("Failed to get catalogue for uuid: " + uuid, HttpStatus.INTERNAL_SERVER_ERROR, e);
+            }
+
+            if (catalogue == null) {
+                log.info("No catalogue for uuid: {}", uuid);
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(String.format("No default catalogue for uuid: %s", uuid));
+            }
+
+            // transform content to other semantic formats
+            if (semanticContentType == null) {
+                semanticContentType = "RDF/XML";
+            }
+
+            MarmottaClient marmottaClient = new MarmottaClient();
+            try {
+                XML2OWLMapper rdfGenerator = marmottaClient.transformCatalogueToRDF((CatalogueType) catalogue);
+                rdfGenerator.writeModel(response.getOutputStream(), semanticContentType);
+                response.flushBuffer();
+            } catch (IOException | MarmottaSynchronizationException e) {
+                return HttpResponseUtil.createResponseEntityAndLog(String.format("Failed to get catalogue with uuid: %s", uuid), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+            }
+
+            log.info("Completed request to get catalogue, uuid: {}", uuid);
+            return ResponseEntity.ok().build();
+
+        } catch (Exception e) {
+            return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while getting the catalogue in semantic format. uuid: %s, content-type: %s", uuid, semanticContentType), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+        }
+    }
+
 
     private ResponseEntity createErrorResponseEntity(String msg, HttpStatus status, Exception e) {
         msg = msg + e.getMessage();

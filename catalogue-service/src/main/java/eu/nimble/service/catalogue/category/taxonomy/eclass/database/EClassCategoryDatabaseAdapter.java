@@ -1,12 +1,10 @@
 package eu.nimble.service.catalogue.category.taxonomy.eclass.database;
 
-import eu.nimble.service.catalogue.model.category.*;
-import eu.nimble.service.catalogue.util.SpringBridge;
-import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
-import eu.nimble.utility.config.CatalogueServiceConfig;
+import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.exception.CategoryDatabaseException;
+import eu.nimble.service.catalogue.model.category.*;
 import eu.nimble.service.catalogue.template.TemplateConfig;
-import org.apache.commons.collections4.ListUtils;
+import eu.nimble.service.catalogue.util.SpringBridge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +13,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static eu.nimble.service.catalogue.category.taxonomy.eclass.database.EClassCategoryDatabaseConfig.*;
-import static eu.nimble.service.catalogue.category.taxonomy.eclass.database.EClassCategoryDatabaseConfig.eClassQueryGetRootCategories;
 
 /**
  * Created by suat on 03-Mar-17.

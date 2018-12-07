@@ -1,13 +1,12 @@
 package eu.nimble.service.catalogue.template;
 
+import eu.nimble.service.catalogue.category.CategoryServiceManager;
+import eu.nimble.service.catalogue.exception.TemplateParseException;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.model.category.Unit;
-import eu.nimble.service.catalogue.exception.TemplateParseException;
-import eu.nimble.service.catalogue.category.CategoryServiceManager;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.model.ubl.commonbasiccomponents.*;
-import eu.nimble.utility.HibernateUtility;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.*;
@@ -81,7 +80,7 @@ public class TemplateParser {
             ItemType item = new ItemType();
             List<CommodityClassificationType> classifications = new ArrayList<>();
             List<ItemPropertyType> itemProperties = new ArrayList<>();
-            item.setManufacturerParty((PartyType) HibernateUtility.getInstance().copySerializableObject(party, PartyType.class));
+            item.setManufacturerParty(party);
             goodsItem.setItem(item);
             clt.setGoodsItem(goodsItem);
             item.setCommodityClassification(classifications);
@@ -105,6 +104,7 @@ public class TemplateParser {
             classificationCode.setValue(category.getId());
             classificationCode.setName(category.getPreferredName(defaultLanguage));
             classificationCode.setListID(category.getTaxonomyId());
+            classificationCode.setURI(category.getCategoryUri());
             classification.setItemClassificationCode(classificationCode);
             classifications.add(classification);
         }

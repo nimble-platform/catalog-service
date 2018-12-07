@@ -1,5 +1,6 @@
-package eu.nimble.utility.config;
+package eu.nimble.service.catalogue.config;
 
+import eu.nimble.utility.config.BluemixDatabaseConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,10 +55,11 @@ public class CatalogueServiceConfig {
     private boolean marmottaSync;
     @Value("${nimble.identity.url}")
     private String identityUrl;
-    @Value("${persistence.solr.properties-index}")
-    private String solrIndex;
+
     @Value("${persistence.solr.url}")
     private String solrURL;
+    @Value("${persistence.solr.properties-index}")
+    private String solrPropertyIndex;
 
     @PostConstruct
     private void setupDBConnections() {
@@ -191,13 +193,6 @@ public class CatalogueServiceConfig {
         this.marmottaSync = marmottaSync;
     }
 
-    public String getSolrIndex() {
-        return solrIndex;
-    }
-
-    public void setSolrIndex(String solrIndex) {
-        this.solrIndex = solrIndex;
-    }
 
     public String getSolrURL() {
         return solrURL;
@@ -205,5 +200,14 @@ public class CatalogueServiceConfig {
 
     public void setSolrURL(String solrURL) {
         this.solrURL = solrURL;
+    }
+
+
+    public String getSolrPropertyIndex() {
+        return solrPropertyIndex;
+    }
+
+    public void setSolrPropertyIndex(String solrPropertyIndex) {
+        this.solrPropertyIndex = solrPropertyIndex;
     }
 }

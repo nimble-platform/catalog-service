@@ -43,10 +43,7 @@ public class Test03_ProductCategoryControllerTest {
         ObjectMapper mapper = new ObjectMapper();
         JsonParser parser = mapper.getFactory().createParser(result.getResponse().getContentAsString());
         ArrayNode taxonomies = mapper.readTree(parser);
-        Assert.assertEquals(3, taxonomies.size());
-        Assert.assertEquals("Custom", taxonomies.get(0).asText());
-        Assert.assertEquals("eClass", taxonomies.get(1).asText());
-        Assert.assertEquals("FurnitureOntology", taxonomies.get(2).asText());
+        Assert.assertEquals(2, taxonomies.size());
     }
 
     @Test
