@@ -2,7 +2,6 @@ package eu.nimble.service.catalogue.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.*;
@@ -34,6 +33,7 @@ class UBLDBConfig {
     private DataSourceFactory dataSourceFactory;
 
     @Bean(name = "ubldbDataSource")
+    @Primary
 //    @ConfigurationProperties(prefix = "persistence.orm.ubl.hibernate.connection")
     public DataSource getDataSource() {
         return dataSourceFactory.createDatasource("ubldb");
