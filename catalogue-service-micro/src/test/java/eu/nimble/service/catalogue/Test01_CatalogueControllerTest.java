@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -18,6 +19,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+
+import java.util.Arrays;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -73,7 +76,10 @@ public class Test01_CatalogueControllerTest {
         CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
 
         // update party address
-        catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().setName("Updated product name");
+        TextType textType = new TextType();
+        textType.setValue("Updated product name");
+        textType.setLanguageID("en");
+        catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().setName(Arrays.asList(textType));
 
         // get Json version of the updated catalogue
         String catalogueTypeAsString = mapper.writeValueAsString(catalogue);
