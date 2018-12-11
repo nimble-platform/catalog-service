@@ -59,7 +59,7 @@ public class Test02_CatalogueLineControllerTest {
         // add the catalogue line
         String catalogueLineJson = IOUtils.toString(Test02_CatalogueLineControllerTest.class.getResourceAsStream("/example_catalogue_line.json"));
         CatalogueLineType catalogueLine = mapper.readValue(catalogueLineJson, CatalogueLineType.class);
-        catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().setID(catalogue.getID());
+        catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().setID(catalogueId);
         catalogueLineJson = mapper.writeValueAsString(catalogueLine);
 
         request = post("/catalogue/" + catalogue.getUUID() + "/catalogueline")

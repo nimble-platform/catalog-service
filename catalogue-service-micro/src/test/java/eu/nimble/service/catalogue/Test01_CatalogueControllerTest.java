@@ -2,6 +2,10 @@ package eu.nimble.service.catalogue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.ResourceType;
+import eu.nimble.utility.JsonSerializationUtility;
+import eu.nimble.utility.persistence.ResourceTypeRepository;
+import eu.nimble.utility.persistence.ResourceValidationUtil;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -19,6 +23,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -32,6 +40,8 @@ public class Test01_CatalogueControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+    @Autowired
+    private ResourceTypeRepository resourceTypeRepository;
     private ObjectMapper mapper = new ObjectMapper();
     private static String createdCatalogueId;
 
@@ -67,7 +77,26 @@ public class Test01_CatalogueControllerTest {
     }
 
     @Test
-    public void test3_updateJsonCatalogue() throws Exception {
+    public void test30_updateJsonCatalogueWithErroneousData() throws Exception {
+        MockHttpServletRequestBuilder request = get("/catalogue/ubl/" + createdCatalogueId);
+        MvcResult result = this.mockMvc.perform(request).andReturn();
+        CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
+
+        // update party address
+        catalogue.getCatalogueLine().get(0).setHjid(Long.MAX_VALUE);
+
+        // get Json version of the updated catalogue
+        String catalogueTypeAsString = mapper.writeValueAsString(catalogue);
+
+        // make request
+        request = put("/catalogue/ubl")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(catalogueTypeAsString);
+        this.mockMvc.perform(request).andDo(print()).andExpect(status().isBadRequest()).andReturn();
+    }
+
+    @Test
+    public void test31_updateJsonCatalogue() throws Exception {
         MockHttpServletRequestBuilder request = get("/catalogue/ubl/" + createdCatalogueId);
         MvcResult result = this.mockMvc.perform(request).andReturn();
         CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
@@ -87,6 +116,38 @@ public class Test01_CatalogueControllerTest {
 
         // check whether it is updated or not
         Assert.assertEquals("Updated product name", catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getName());
+    }
+
+    @Test
+    public void test32_updateJsonCatalogue() throws Exception {
+        MockHttpServletRequestBuilder request = get("/catalogue/ubl/" + createdCatalogueId);
+        MvcResult result = this.mockMvc.perform(request).andReturn();
+        CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
+
+
+        // get Json version of the updated catalogue
+        String catalogueTypeAsString = mapper.writeValueAsString(catalogue);
+
+        // make request
+        request = put("/catalogue/ubl")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(catalogueTypeAsString);
+        result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+        catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
+
+        // check whether it is updated or not
+        Assert.assertEquals("Updated product name", catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getName());
+
+        // check that resources have been managed properly
+        List<ResourceType> allResources = resourceTypeRepository.findAll();
+        Set<Long> catalogueIds = JsonSerializationUtility.extractAllHjids(catalogue);
+
+        Assert.assertEquals("Resource numbers and managed id sizes do not match", allResources.size(), catalogueIds.size());
+        Set<Long> managedIds = new HashSet<>();
+        for(ResourceType resource : allResources) {
+            managedIds.add(resource.getEntityID());
+        }
+        Assert.assertTrue("Managed ids and catalogue ids do not match", managedIds.containsAll(catalogueIds) && catalogueIds.containsAll(managedIds));
     }
 
     @Test
