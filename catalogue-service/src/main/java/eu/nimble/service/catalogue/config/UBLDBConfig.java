@@ -24,9 +24,9 @@ import java.util.Properties;
 @EnableJpaRepositories(
         entityManagerFactoryRef = "ubldbEntityManagerFactory",
         transactionManagerRef = "ubldbTransactionManager",
-        basePackages = {"eu.nimble.service.catalogue.persistence"}
+        basePackages = {"eu.nimble.service.catalogue.persistence", "eu.nimble.utility.persistence"}
 )
-@ComponentScan(basePackages = {"eu.nimble.utility.config"})
+@ComponentScan(basePackages = {"eu.nimble.service.catalogue.persistence"})
 class UBLDBConfig {
 
     @Autowired

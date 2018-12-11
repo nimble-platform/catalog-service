@@ -1,13 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package eu.nimble.service.catalogue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.category.CategoryServiceManager;
+import eu.nimble.service.catalogue.model.category.Category;
+import eu.nimble.service.catalogue.util.BinaryContentUtil;
+import eu.nimble.service.catalogue.util.DataIntegratorUtil;
+import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
 import eu.nimble.service.catalogue.model.category.Category;
@@ -26,6 +25,7 @@ import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
+import eu.nimble.utility.persistence.ResourceValidationUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
@@ -112,15 +112,18 @@ public class CatalogueServiceImpl implements CatalogueService {
     public CatalogueType updateCatalogue(CatalogueType catalogue) {
         logger.info("Catalogue with uuid: {} will be updated", catalogue.getUUID());
 
+        // get the original object to all the hjids
+        CatalogueType originalCatalogue = SpringBridge.getInstance().getCatalogueRepository().getCatalogueByUuid(catalogue.getUUID());
+        ResourceValidationUtil.removeHjidsForObject(originalCatalogue, Configuration.Standard.UBL.toString());
+
         DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(catalogue);
         // merge the hibernate object
 //        catalogue = (CatalogueType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
 
         // while updating catalogue, be sure that binary contents are updated as well
-        // get existing catalogue to compare it with the updated one
-        CatalogueType existingCatalogue = SpringBridge.getInstance().getCatalogueRepository().getCatalogueByUuid(catalogue.getUUID());
+        // compare the existing catalogue with the updated one
         // get uris of binary contents in existing catalogue
-        List<String> existingUris = SpringBridge.getInstance().getTransactionEnabledSerializationUtilityBinary().serializeBinaryObject(existingCatalogue);
+        List<String> existingUris = SpringBridge.getInstance().getTransactionEnabledSerializationUtilityBinary().serializeBinaryObject(originalCatalogue);
         // get uris of binary contents in the updated catalogue
         List<String> uris = SpringBridge.getInstance().getTransactionEnabledSerializationUtilityBinary().serializeBinaryObject(catalogue);
 
@@ -141,6 +144,9 @@ public class CatalogueServiceImpl implements CatalogueService {
         }
 
         catalogue = SpringBridge.getInstance().getCatalogueRepository().save(catalogue);
+
+        // add new entity ids to the database
+        ResourceValidationUtil.insertHjidsForObject(catalogue, catalogue.getProviderParty().getID(), Configuration.Standard.UBL.toString());
 
         // add synchronization record
         MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogue.getUUID());
@@ -201,8 +207,11 @@ public class CatalogueServiceImpl implements CatalogueService {
                 logger.error("Failed to remove binary content from the catalogue with id:{}", ublCatalogue.getUUID(), e);
             }
 
-            SpringBridge.getInstance().getCatalogueRepository().updateEntity(ublCatalogue);
+            ublCatalogue = SpringBridge.getInstance().getCatalogueRepository().updateEntity(ublCatalogue);
             logger.info("Catalogue with uuid: {} persisted in DB", uuid.toString());
+
+            // add the hjids to the resource
+            ResourceValidationUtil.insertHjidsForObject(ublCatalogue, ublCatalogue.getProviderParty().getID(), Configuration.Standard.UBL.toString());
 
             // add synchronization record
             MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.ADD, uuid);
@@ -279,6 +288,9 @@ public class CatalogueServiceImpl implements CatalogueService {
                 Long hjid = catalogue.getHjid();
 //                HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).delete(CatalogueType.class, hjid);
                 SpringBridge.getInstance().getCatalogueRepository().delete(hjid);
+
+                // delete hjid mappings from the database
+                ResourceValidationUtil.removeHjidsForObject(catalogue, Configuration.Standard.UBL.toString());
 
                 // add synchronization record
                 MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.DELETE, uuid);

@@ -1,17 +1,13 @@
 package eu.nimble.service.catalogue.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import eu.nimble.common.rest.identity.IdentityClientTyped;
 import eu.nimble.data.transformer.ontmalizer.XML2OWLMapper;
 import eu.nimble.service.catalogue.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
+import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.sync.MarmottaClient;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizationException;
@@ -24,15 +20,12 @@ import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.JAXBUtility;
-import eu.nimble.utility.JsonSerializationUtility;
-import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
-import eu.nimble.utility.config.PersistenceConfig;
+import eu.nimble.utility.persistence.ResourceValidationUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -217,6 +210,12 @@ public class CatalogueController {
                 if (catalogueExists) {
                     return HttpResponseUtil.createResponseEntityAndLog(String.format("Catalogue with ID: '%s' already exists", ublCatalogue.getID()), null, HttpStatus.CONFLICT, LogLevel.INFO);
                 }
+
+                // check the entity ids
+                boolean hjidsExists = ResourceValidationUtil.hjidsExit(catalogue);
+                if(hjidsExists) {
+                    return HttpResponseUtil.createResponseEntityAndLog(String.format("Entity IDs (hjid fields) found in the passed catalogue: %s, party id: %s. Make sure they are null", ((CatalogueType) catalogue).getID(), ((CatalogueType) catalogue).getProviderParty().getID()), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                }
             }
 
             catalogue = service.addCatalogue(catalogue, std);
@@ -324,6 +323,12 @@ public class CatalogueController {
                     sb.append(error).append(System.lineSeparator());
                 }
                 return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
+            }
+
+            // validate the entity ids
+            boolean hjidsBelongToCompany = ResourceValidationUtil.hjidsBelongsToParty(catalogue, catalogue.getProviderParty().getID(), Configuration.Standard.UBL.toString());
+            if(!hjidsBelongToCompany) {
+                return HttpResponseUtil.createResponseEntityAndLog(String.format("Some of the identifiers (hjid fields) do not belong to the party in the passed catalogue: %s, party id: %s.", catalogue.getID(), catalogue.getProviderParty().getID()), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
             }
 
             try {
