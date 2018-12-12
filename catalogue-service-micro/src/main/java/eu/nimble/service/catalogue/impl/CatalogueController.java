@@ -214,7 +214,7 @@ public class CatalogueController {
                 // check the entity ids
                 boolean hjidsExists = ResourceValidationUtil.hjidsExit(catalogue);
                 if(hjidsExists) {
-                    return HttpResponseUtil.createResponseEntityAndLog(String.format("Entity IDs (hjid fields) found in the passed catalogue: %s, party id: %s. Make sure they are null", ((CatalogueType) catalogue).getID(), ((CatalogueType) catalogue).getProviderParty().getID()), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                    return HttpResponseUtil.createResponseEntityAndLog(String.format("Entity IDs (hjid fields) found in the passed catalogue: %s. Make sure they are null", serializedCatalogue), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
                 }
             }
 
@@ -328,7 +328,7 @@ public class CatalogueController {
             // validate the entity ids
             boolean hjidsBelongToCompany = ResourceValidationUtil.hjidsBelongsToParty(catalogue, catalogue.getProviderParty().getID(), Configuration.Standard.UBL.toString());
             if(!hjidsBelongToCompany) {
-                return HttpResponseUtil.createResponseEntityAndLog(String.format("Some of the identifiers (hjid fields) do not belong to the party in the passed catalogue: %s, party id: %s.", catalogue.getID(), catalogue.getProviderParty().getID()), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                return HttpResponseUtil.createResponseEntityAndLog(String.format("Some of the identifiers (hjid fields) do not belong to the party in the passed catalogue: %s", catalogueJson), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
             }
 
             try {

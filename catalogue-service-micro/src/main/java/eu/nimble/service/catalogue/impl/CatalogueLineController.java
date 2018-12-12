@@ -11,6 +11,8 @@ import eu.nimble.service.catalogue.util.TransactionEnabledSerializationUtility;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
+import eu.nimble.utility.Configuration;
+import eu.nimble.utility.persistence.resource.ResourceValidationUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -188,6 +190,12 @@ public class CatalogueLineController {
                 return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
             }
 
+            // check the entity ids
+            boolean hjidsExists = ResourceValidationUtil.hjidsExit(catalogueLine);
+            if(hjidsExists) {
+                return HttpResponseUtil.createResponseEntityAndLog(String.format("Entity IDs (hjid fields) found in the passed catalogue line: %s. Make sure they are null", catalogueLineJson), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+            }
+
             // check duplicate line
 //            boolean lineExists = service.existCatalogueLineById(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid());
             boolean lineExists = catalogueRepository.checkCatalogueLineExistence(catalogueUuid, catalogueLine.getID()) == 0 ? false : true;
@@ -275,6 +283,12 @@ public class CatalogueLineController {
                     sb.append(error).append(System.lineSeparator());
                 }
                 return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
+            }
+
+            // validate the entity ids
+            boolean hjidsBelongToCompany = ResourceValidationUtil.hjidsBelongsToParty(catalogueLine, catalogue.getProviderParty().getID(), Configuration.Standard.UBL.toString());
+            if(!hjidsBelongToCompany) {
+                return HttpResponseUtil.createResponseEntityAndLog(String.format("Some of the identifiers (hjid fields) do not belong to the party in the passed catalogue line: %s.", catalogueLineJson), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
             }
 
             // consider the case of an updated line id conflicting with the id of an existing line

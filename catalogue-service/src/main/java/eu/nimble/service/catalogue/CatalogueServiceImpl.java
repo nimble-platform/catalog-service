@@ -518,7 +518,6 @@ public class CatalogueServiceImpl implements CatalogueService {
         return catalogueLines;
     }
 
-    // TODO test
     @Override
     public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine) {
         catalogue.getCatalogueLine().add(catalogueLine);
@@ -535,6 +534,9 @@ public class CatalogueServiceImpl implements CatalogueService {
         catalogue = SpringBridge.getInstance().getCatalogueRepository().updateEntity(catalogue);
         catalogueLine = catalogue.getCatalogueLine().get(catalogue.getCatalogueLine().size() - 1);
 
+        // insert the new identifiers for the line
+        ResourceValidationUtil.insertHjidsForObject(catalogueLine, catalogue.getProviderParty().getID(), Configuration.Standard.UBL.toString());
+
         // add synchronization record
         MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogue.getUUID());
 
@@ -545,6 +547,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine) {
         CatalogueType catalogue = getCatalogue(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID());
         DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(catalogueLine, catalogue);
+
 //        catalogueLine = (CatalogueLineType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueLine);
         // firstly, remove all binary contents belong to the catalogue line from the database
 
@@ -555,6 +558,9 @@ public class CatalogueServiceImpl implements CatalogueService {
                 existingCatalogueLine = catalogueLineType;
             }
         }
+        // remove the identifiers from the resources
+        ResourceValidationUtil.removeHjidsForObject(existingCatalogueLine, Configuration.Standard.UBL.toString());
+
         // before updating catalogue line, be sure that we update binary contents as well.
         // get uris of binary contents of existing catalogue line
         List<String> existingUris = SpringBridge.getInstance().getTransactionEnabledSerializationUtilityBinary().serializeBinaryObject(existingCatalogueLine);
@@ -576,6 +582,9 @@ public class CatalogueServiceImpl implements CatalogueService {
         }
         catalogueLine = SpringBridge.getInstance().getCatalogueLineRepository().save(catalogueLine);
 
+        // insert the new identifiers for the line
+        ResourceValidationUtil.insertHjidsForObject(catalogueLine, catalogue.getProviderParty().getID(), Configuration.Standard.UBL.toString());
+
         // add synchronization record
         // Not UUID but ID of the document reference should be used.
         // While UUID is the unique identifier of the reference itself, ID keeps the unique identifier of the catalogue.
@@ -593,6 +602,8 @@ public class CatalogueServiceImpl implements CatalogueService {
             Long hjid = catalogueLine.getHjid();
 //            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).delete(CatalogueLineType.class, hjid);
             SpringBridge.getInstance().getCatalogueLineRepository().delete(hjid);
+
+            ResourceValidationUtil.removeHjidsForObject(catalogueLine, Configuration.Standard.UBL.toString());
 
             // delete binary content from the database
             try {
