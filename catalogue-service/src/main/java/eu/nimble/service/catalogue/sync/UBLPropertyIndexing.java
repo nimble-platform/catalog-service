@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue.sync;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.CaseFormat;
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemPropertyType;
@@ -17,11 +18,11 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
-public class SolrClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(SolrClient.class);
+public class UBLPropertyIndexing {
+
+    private static final Logger logger = LoggerFactory.getLogger(UBLPropertyIndexing.class);
 
     private static final String url = SpringBridge.getInstance().getCatalogueServiceConfig().getSolrURL() + SpringBridge.getInstance().getCatalogueServiceConfig().getSolrPropertyIndex();
 
@@ -40,20 +41,44 @@ public class SolrClient {
         try {
             List<SolrInputDocument> docs = new ArrayList<>();
             for (ItemPropertyType property:properties){
+
+                // skip Binary properties
+                if(property.getValueQualifier().equals("BINARY")){
+                    continue;
+                }
+
                 // check whether the property is indexed or not
                 SolrQuery query = new SolrQuery();
-                query.setQuery("name:"+property.getName()+" AND range:\""+getType(property.getValueQualifier())+"\"");
+
+                String stringQuery = "(";
+
+                // prepare the query
+                int size = property.getName().size();
+                for(int i = 0; i < size; i++){
+                    TextType text = property.getName().get(i);
+                    if(i == size -1){
+                        stringQuery += "label_"+text.getLanguageID() +":\""+ text.getValue() + "\") AND range:\""+getType(property.getValueQualifier())+"\"";
+                    }
+                    else {
+                        stringQuery += "label_"+text.getLanguageID() +":\""+ text.getValue() + "\" OR ";
+                    }
+                }
+
+                query.setQuery(stringQuery);
                 QueryResponse response = client.query(query);
 
                 if(response.getResults().size() == 0){
                     SolrInputDocument doc = new SolrInputDocument();
-                    String id = UUID.randomUUID().toString();
-                    doc.addField("id",id);
-                    doc.addField("name", property.getName());
-                    doc.addField("label", property.getName());
-                    String type = getType(property.getValueQualifier());
-                    doc.addField("range",type);
+                    doc.addField("id",property.getID());
 
+                    // get labels and idxFields
+                    for(TextType text:property.getName()){
+                        doc.addField("idxField",getIdxField(text.getValue(),property.getValueQualifier()));
+                        doc.addField("label_"+text.getLanguageID(), text.getValue());
+                    }
+
+                    doc.addField("name", property.getName().get(0).getValue());
+                    doc.addField("range",property.getValueQualifier());
                     docs.add(doc);
                 }
             }
@@ -96,6 +121,7 @@ public class SolrClient {
                 SolrInputDocument doc = new SolrInputDocument();
                 doc.addField("id",property.getId());
                 doc.addField("name", property.getShortName());
+                doc.addField("idxField",property.getShortName());
                 // get preferred names
                 for(TextType type:property.getPreferredName()){
                     doc.addField("label_"+type.getLanguageID(), type.getValue());
@@ -149,5 +175,33 @@ public class SolrClient {
             return binaryDataType;
         }
         throw new RuntimeException("Unknown data type for value qualifier: " + valueQualifier);
+    }
+
+    private static String formatNameQualifier(String input) {
+        input = String.join(" ", input);
+        input = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, input);
+        input = input.replaceAll("[^a-zA-Z0-9_ ]", "");
+        input = input.trim().replaceAll(" ", "_").toUpperCase();
+        return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, input);
+    }
+
+    private static String getIdxField(String name,String valueQualifier){
+        String str = null;
+        if(valueQualifier.equals("NUMBER") || valueQualifier.equals("REAL_MEASURE") || valueQualifier.equals("DOUBLE")){
+            str = "_d";
+        }
+        else if(valueQualifier.equals("STRING")){
+            str = "_s";
+        }
+        else if(valueQualifier.equals("STRING_TRANSLATABLE")){
+            str = "_st";
+        }
+        else if(valueQualifier.equals("BOOLEAN")){
+            str = "_b";
+        }
+        else if(valueQualifier.equals("QUANTITY")){
+            str = "_q";
+        }
+        return formatNameQualifier(name) + str;
     }
 }

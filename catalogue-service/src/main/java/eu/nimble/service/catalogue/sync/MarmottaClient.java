@@ -78,7 +78,7 @@ public class MarmottaClient {
         }
 
         for (CatalogueLineType catalogueLine:catalogue.getCatalogueLine()){
-            SolrClient.indexProperties(catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty());
+            UBLPropertyIndexing.indexProperties(catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty());
         }
     }
 

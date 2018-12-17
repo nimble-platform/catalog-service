@@ -58,7 +58,7 @@
     "id": "ubl_item_price",
     "preferredName": [
       {
-        "value": "Item price",
+        "value": "Price",
         "languageID": "en"
       }
     ],
@@ -69,7 +69,7 @@
     "id": "ubl_item_price_currency",
     "preferredName": [
       {
-        "value": "Item price currency",
+        "value": "Currency",
         "languageID": "en"
       }
     ],
@@ -80,7 +80,7 @@
     "id": "ubl_item_free_of_charge_indicator",
     "preferredName": [
       {
-        "value": "Item free of charge indicator",
+        "value": "Free Sample",
         "languageID": "en"
       }
     ],
@@ -91,7 +91,7 @@
     "id": "ubl_item_certificate",
     "preferredName": [
       {
-        "value": "Item certificate",
+        "value": "Product / Service Certificate",
         "languageID": "en"
       }
     ],
@@ -102,7 +102,7 @@
     "id": "ubl_item_applicable_countries",
     "preferredName": [
       {
-        "value": "Item applicable countries",
+        "value": "Destination Country",
         "languageID": "en"
       }
     ],
@@ -113,7 +113,7 @@
     "id": "ubl_item_manufacturer_name",
     "preferredName": [
       {
-        "value": "Item manufacturer name",
+        "value": "Vendor Name",
         "languageID": "en"
       }
     ],
@@ -135,7 +135,7 @@
     "id": "ubl_item_manufacturer_origin",
     "preferredName": [
       {
-        "value": "Item manufacturer origin",
+        "value": "Vendor Origin",
         "languageID": "en"
       }
     ],
@@ -146,7 +146,7 @@
     "id": "ubl_manufacturer_certificate",
     "preferredName": [
       {
-        "value": "Manufacturer certificate",
+        "value": "Vendor Certificate",
         "languageID": "en"
       }
     ],
@@ -157,7 +157,7 @@
     "id": "ubl_manufacturer_ppap_compliance_level",
     "preferredName": [
       {
-        "value": "PPAP compliance level",
+        "value": "PPAP Compliance Level",
         "languageID": "en"
       }
     ],
@@ -168,7 +168,7 @@
     "id": "ubl_manufacturer_ppap_document",
     "preferredName": [
       {
-        "value": "PPAP document",
+        "value": "PPAP Document",
         "languageID": "en"
       }
     ],
@@ -209,17 +209,6 @@
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
   },
   {
-    "id": "ubl_item_estimated_delivery_time_unit",
-    "preferredName": [
-      {
-        "value": "Estimated delivery time unit",
-        "languageID": "en"
-      }
-    ],
-    "shortName": "item_estimated_delivery_time_unit",
-    "dataType": "http://www.w3.org/2001/XMLSchema#string"
-  },
-  {
     "id": "ubl_item_package_amount",
     "preferredName": [
       {
@@ -229,17 +218,6 @@
     ],
     "shortName": "item_package_amount",
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
-  },
-  {
-    "id": "ubl_item_package_amount_unit",
-    "preferredName": [
-      {
-        "value": "Package amount unit",
-        "languageID": "en"
-      }
-    ],
-    "shortName": "item_package_amount_unit",
-    "dataType": "http://www.w3.org/2001/XMLSchema#string"
   },
   {
     "id": "ubl_item_package_type",
@@ -396,21 +374,10 @@
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
   },
   {
-    "id": "ubl_estimated_duration_unit",
-    "preferredName": [
-      {
-        "value": "Estimated duration unit",
-        "languageID": "en"
-      }
-    ],
-    "shortName": "estimated_duration_unit",
-    "dataType": "http://www.w3.org/2001/XMLSchema#string"
-  },
-  {
     "id": "ubl_trust_company_trust_score",
     "preferredName": [
       {
-        "value": "Company trust score",
+        "value": "Trust Score",
         "languageID": "en"
       }
     ],
@@ -421,7 +388,7 @@
     "id": "ubl_trust_company_rating",
     "preferredName": [
       {
-        "value": "Company rating",
+        "value": "Overall Rating",
         "languageID": "en"
       }
     ],
@@ -432,7 +399,7 @@
     "id": "ubl_trust_company_trading_volume",
     "preferredName": [
       {
-        "value": "Company trading volume",
+        "value": "Trading Volume",
         "languageID": "en"
       }
     ],
@@ -443,7 +410,7 @@
     "id": "ubl_trust_company_seller_communication",
     "preferredName": [
       {
-        "value": "Company seller communication",
+        "value": "Seller Communication",
         "languageID": "en"
       }
     ],
@@ -454,7 +421,7 @@
     "id": "ubl_trust_company_fulfillment_of_terms",
     "preferredName": [
       {
-        "value": "Company fulfillment of terms",
+        "value": "Fulfillment of terms",
         "languageID": "en"
       }
     ],
@@ -465,7 +432,7 @@
     "id": "ubl_trust_company_delivery_packaging",
     "preferredName": [
       {
-        "value": "Company delivery packaging",
+        "value": "Delivery & Packaging",
         "languageID": "en"
       }
     ],

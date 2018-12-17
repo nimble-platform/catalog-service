@@ -1,8 +1,7 @@
 package eu.nimble.service.catalogue;
 
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
-import eu.nimble.service.catalogue.sync.SolrClient;
-import eu.nimble.utility.HibernateUtility;
+import eu.nimble.service.catalogue.sync.UBLPropertyIndexing;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
@@ -54,7 +53,7 @@ public class CatalogueApp implements CommandLineRunner {
 //        HibernateUtility.getInstance(eu.nimble.utility.Configuration.UBL_PERSISTENCE_UNIT_NAME);
         MarmottaSynchronizer.getInstance().startSynchronization();
         // index catalogue properties
-        SolrClient.indexCatalogueProperties();
+        UBLPropertyIndexing.indexCatalogueProperties();
     }
 
     @EventListener({ContextClosedEvent.class})
