@@ -1,4 +1,4 @@
-package eu.nimble.service.catalogue;
+package eu.nimble.service.catalogue.persistence;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,8 +6,6 @@ import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.QualityIndicatorType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
-import eu.nimble.utility.Configuration;
-import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JsonSerializationUtility;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;

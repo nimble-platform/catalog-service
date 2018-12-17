@@ -1,6 +1,6 @@
 package eu.nimble.service.catalogue.util;
 
-import eu.nimble.service.catalogue.CatalogueDatabaseAdapter;
+import eu.nimble.service.catalogue.persistence.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.category.CategoryServiceManager;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;

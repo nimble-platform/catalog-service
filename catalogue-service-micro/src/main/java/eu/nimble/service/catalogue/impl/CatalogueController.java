@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.common.rest.identity.IdentityClientTyped;
 import eu.nimble.data.transformer.ontmalizer.XML2OWLMapper;
-import eu.nimble.service.catalogue.CatalogueDatabaseAdapter;
+import eu.nimble.service.catalogue.persistence.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;

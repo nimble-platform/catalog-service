@@ -1,6 +1,6 @@
 package eu.nimble.service.catalogue.sync;
 
-import eu.nimble.service.catalogue.CatalogueDatabaseAdapter;
+import eu.nimble.service.catalogue.persistence.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.util.SpringBridge;
