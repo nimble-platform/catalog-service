@@ -89,8 +89,8 @@ node('nimble-jenkins-slave') {
         }
 
         stage('Push Docker') {
-            sh 'mvn -f catalogue-service-micro/pom.xml docker:build docker:push -P docker'
-            sh 'mvn -f catalogue-service-micro/pom.xml docker:build docker:push -P docker -Ddocker.image.tag=' + env.TAG_NAME
+            sh 'docker push nimbleplatform/catalogue-service-micro:' + env.TAG_NAME
+            sh 'docker push nimbleplatform/catalogue-service-micro:latest'
         }
 
         stage('Deploy MVP') {
