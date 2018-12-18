@@ -121,8 +121,8 @@ public class MigrationUtil {
                 JsonSerializationUtility.removeHjidFields(object);
                 partyType = objectMapper.readValue(object.toString(), PartyType.class);
                 HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).persist(partyType);
-                map.put(partyType.getID(),partyType.getHjid().toString());
-                logger.info("Persisted party with id: "+ partyType.getID() + " with hjid: "+partyType.getHjid());
+                map.put(partyType.getPartyIdentification().get(0).getID(),partyType.getHjid().toString());
+                logger.info("Persisted party with id: "+ partyType.getPartyIdentification().get(0).getID() + " with hjid: "+partyType.getHjid());
             }
             // traverse the map
             for (Map.Entry<String, String> entry : map.entrySet())

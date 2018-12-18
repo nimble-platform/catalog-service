@@ -21,21 +21,21 @@ public interface CatalogueRepository extends JpaRepository<CatalogueType, Long>,
 
     @Query(value =
             "SELECT catalogue FROM CatalogueType as catalogue "
-            + " JOIN catalogue.providerParty as catalogue_provider_party"
+            + " JOIN catalogue.providerParty.partyIdentification as partyIdentification"
             + " WHERE catalogue.ID = :catalogueId"
-            + " AND catalogue_provider_party.ID = :partyId")
+            + " AND partyIdentification.ID = :partyId")
     CatalogueType getCatalogueForParty(@Param("catalogueId") String catalogueId, @Param("partyId") String partyId);
 
-    @Query(value = "SELECT COUNT(c) FROM CatalogueType c WHERE c.ID = :id and c.providerParty.ID = :partyId")
+    @Query(value = "SELECT COUNT(c) FROM CatalogueType as c JOIN c.providerParty.partyIdentification pi WHERE c.ID = :id and pi.ID = :partyId")
     Long checkCatalogueExistenceByID(@Param("id") String id, @Param("partyId") String partyId);
 
-    @Query(value = "SELECT party FROM PartyType party WHERE party.ID = :id")
+    @Query(value = "SELECT party FROM PartyType party JOIN party.partyIdentification as partyIdentification WHERE partyIdentification.ID = :id")
     PartyType getPartyByID(@Param("id") String id);
 
     @Query(value =
     "SELECT catalogue.UUID FROM CatalogueType as catalogue" +
-            " JOIN catalogue.providerParty as catalogue_provider_party " +
-            " WHERE catalogue_provider_party.ID = :partyId")
+            " JOIN catalogue.providerParty.partyIdentification as partyIdentification " +
+            " WHERE partyIdentification.ID = :partyId")
     List<String> getCatalogueIdsForParty(@Param("partyId") String partyId);
 
     @Query(value =

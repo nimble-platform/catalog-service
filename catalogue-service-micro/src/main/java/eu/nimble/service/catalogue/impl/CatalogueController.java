@@ -208,7 +208,7 @@ public class CatalogueController {
                 }
 
                 // check catalogue with the same id exists
-                boolean catalogueExists = CatalogueDatabaseAdapter.catalogueExists(ublCatalogue.getProviderParty().getID(), ublCatalogue.getID());
+                boolean catalogueExists = CatalogueDatabaseAdapter.catalogueExists(ublCatalogue.getProviderParty().getPartyIdentification().get(0).getID(), ublCatalogue.getID());
                 if (catalogueExists) {
                     return HttpResponseUtil.createResponseEntityAndLog(String.format("Catalogue with ID: '%s' already exists", ublCatalogue.getID()), null, HttpStatus.CONFLICT, LogLevel.INFO);
                 }

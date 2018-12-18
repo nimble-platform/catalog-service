@@ -66,7 +66,7 @@ public class CatalogueLineValidator {
 
     private void manufacturerIdExists() {
         ItemType item = catalogueLine.getGoodsItem().getItem();
-        if (Strings.isNullOrEmpty(item.getManufacturerParty().getID())) {
+        if (Strings.isNullOrEmpty(item.getManufacturerParty().getPartyIdentification().get(0).getID())) {
             errorMessages.add(String.format("No manufacturer party id set for catalogue line: %s", extractedLineId));
         }
     }
@@ -104,8 +104,8 @@ public class CatalogueLineValidator {
 
     private void partyIdsMatch() {
         ItemType item = catalogueLine.getGoodsItem().getItem();
-        String catalogueProviderPartyId = owningCatalogue.getProviderParty().getID();
-        String itemManufacturerPartyId = item.getManufacturerParty().getID();
+        String catalogueProviderPartyId = owningCatalogue.getProviderParty().getPartyIdentification().get(0).getID();
+        String itemManufacturerPartyId = item.getManufacturerParty().getPartyIdentification().get(0).getID();
         if (!catalogueProviderPartyId.contentEquals(itemManufacturerPartyId)) {
             errorMessages.add(String.format("Catalogue provider party and manufacturer party ids do no match for catalogue line. id: %s, catalogue provider party id: %s, line manufacturer party id: %s", extractedLineId, catalogueProviderPartyId, itemManufacturerPartyId));
         }

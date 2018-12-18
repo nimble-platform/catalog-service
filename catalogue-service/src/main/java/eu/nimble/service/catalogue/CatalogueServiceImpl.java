@@ -316,7 +316,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     @Override
     public CatalogueType parseCatalogue(InputStream catalogueTemplate, String uploadMode, PartyType party) {
-        CatalogueType catalogue = getCatalogue("default", party.getID());
+        CatalogueType catalogue = getCatalogue("default", party.getPartyIdentification().get(0).getID());
         boolean newCatalogue = false;
         if (catalogue == null) {
             newCatalogue = true;
