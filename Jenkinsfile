@@ -63,14 +63,14 @@ node('nimble-jenkins-slave') {
     if( env.TAG_NAME ==~ /^\d+.\d+.\d+$/) {
 
         stage('Clone and Update') {
-            git(url: 'https://github.com/nimble-platform/catalog-service.git', branch: env.BRANCH_NAME)
+            git(url: 'https://github.com/nimble-platform/catalog-service.git', branch: 'master')
         }
 
         stage('Build Dependencies') {
             sh 'rm -rf common'
             sh 'git clone https://github.com/nimble-platform/common'
             dir('common') {
-                sh 'git checkout ' + env.BRANCH_NAME
+                sh 'git checkout master'
                 sh 'mvn clean install'
             }
         }
