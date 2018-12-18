@@ -1,4 +1,4 @@
-package eu.nimble.utility.config;
+package eu.nimble.service.catalogue.config;
 
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;

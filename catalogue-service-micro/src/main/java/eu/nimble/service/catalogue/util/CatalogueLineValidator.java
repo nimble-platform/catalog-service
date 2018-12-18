@@ -43,13 +43,23 @@ public class CatalogueLineValidator {
         commodityClassificationExists();
         partyIdsMatch();
         fileSizesLessThanTheMaximum();
+        checkReferenceToCatalogue();
 
-        return  errorMessages;
+        return errorMessages;
     }
 
     private void idExists() {
         if (extractedLineId == null) {
             errorMessages.add(String.format("No id set for catalogue line."));
+        }
+    }
+
+    private void checkReferenceToCatalogue() {
+        if(owningCatalogue.getUUID() != null){
+            ItemType item = catalogueLine.getGoodsItem().getItem();
+            if (!item.getCatalogueDocumentReference().getID().equals(owningCatalogue.getUUID())) {
+                errorMessages.add(String.format("Catalogue uuid and catalogue document reference id do not match for catalogue line: %s", extractedLineId));
+            }
         }
     }
 
@@ -63,7 +73,7 @@ public class CatalogueLineValidator {
     private void lineIdManufacturerIdMatches() {
         ItemType item = catalogueLine.getGoodsItem().getItem();
         if (!Strings.isNullOrEmpty(catalogueLine.getID()) && !Strings.isNullOrEmpty(item.getManufacturersItemIdentification().getID())) {
-            if(!catalogueLine.getID().contentEquals(item.getManufacturersItemIdentification().getID())) {
+            if (!catalogueLine.getID().contentEquals(item.getManufacturersItemIdentification().getID())) {
                 errorMessages.add(String.format("Catalogue line id and manufacturer id do not match. line id: %s, manufacturer id: %s", extractedLineId, item.getManufacturersItemIdentification().getID()));
             }
         }
@@ -94,17 +104,17 @@ public class CatalogueLineValidator {
 
     private void fileSizesLessThanTheMaximum() {
         // validate images
-        for(BinaryObjectType bo : catalogueLine.getGoodsItem().getItem().getProductImage()) {
-            if(bo.getValue().length > MAX_FILE_SIZE) {
+        for (BinaryObjectType bo : catalogueLine.getGoodsItem().getItem().getProductImage()) {
+            if (bo.getValue().length > MAX_FILE_SIZE) {
                 errorMessages.add(String.format("%s is larger than the allowed size: %s", bo.getFileName(), MAX_FILE_SIZE));
             }
         }
 
         // validate properties getting binary content
-        for(ItemPropertyType itemProperty : catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty()) {
-            if(itemProperty.getValueQualifier().contentEquals("BINARY")) {
-                for(BinaryObjectType bo : itemProperty.getValueBinary()) {
-                    if(bo.getValue().length > MAX_FILE_SIZE) {
+        for (ItemPropertyType itemProperty : catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty()) {
+            if (itemProperty.getValueQualifier().contentEquals("BINARY")) {
+                for (BinaryObjectType bo : itemProperty.getValueBinary()) {
+                    if (bo.getValue().length > MAX_FILE_SIZE) {
                         errorMessages.add(String.format("%s is larger than the allowed size: %s", bo.getFileName(), MAX_FILE_SIZE));
                     }
                 }

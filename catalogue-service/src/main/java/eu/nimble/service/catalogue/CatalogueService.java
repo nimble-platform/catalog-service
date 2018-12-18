@@ -34,6 +34,8 @@ public interface CatalogueService {
 
     public <T> T addCatalogue(T catalogue, Configuration.Standard standard);
 
+    public <T> T addCatalogueWithUUID(T catalogue, Configuration.Standard standard, String uuid);
+
     public <T> T getCatalogue(String uuid, Configuration.Standard standard);
 
     public <T> T getCatalogue(String id, String partyId, Configuration.Standard standard);
@@ -63,6 +65,7 @@ public interface CatalogueService {
     /**
      * Adds the provided images to the relevant products in the catalogue.
      * !!! This method does not update the database
+     *
      * @param imagePackage
      * @param catalogueUuid
      * @return
@@ -82,6 +85,4 @@ public interface CatalogueService {
     public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine);
 
     public void deleteCatalogueLineById(String catalogueId, String lineId);
-
-    public boolean existCatalogueLineById(String catalogueId,String lineId,Long hjid);
 }

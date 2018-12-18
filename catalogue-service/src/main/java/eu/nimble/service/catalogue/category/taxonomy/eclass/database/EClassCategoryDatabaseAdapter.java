@@ -2,10 +2,9 @@ package eu.nimble.service.catalogue.category.taxonomy.eclass.database;
 
 import eu.nimble.service.catalogue.model.category.*;
 import eu.nimble.service.catalogue.util.SpringBridge;
-import eu.nimble.utility.config.CatalogueServiceConfig;
+import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.exception.CategoryDatabaseException;
 import eu.nimble.service.catalogue.template.TemplateConfig;
-import org.apache.commons.collections4.ListUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

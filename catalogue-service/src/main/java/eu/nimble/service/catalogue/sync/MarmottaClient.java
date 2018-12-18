@@ -174,9 +174,9 @@ public class MarmottaClient {
         mapping.convertXSD2OWL();
 
         // log the ontology generated based on the XSD schema
-        StringWriter serializedOntology = new StringWriter();
-        mapping.writeOntology(serializedOntology, "N3");
-        //logger.debug("Serialized ontology:\n{}", serializedOntology.toString());
+        //StringWriter serializedOntology = new StringWriter();
+        //mapping.writeOntology(serializedOntology, "RDF/XML");
+        //logger.info("Serialized ontology:\n{}", serializedOntology.toString());
         //serializedOntology.flush();
 
         return mapping;

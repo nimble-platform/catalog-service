@@ -4,12 +4,13 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
+import eu.nimble.service.catalogue.persistence.CatalogueRepository;
 import eu.nimble.service.catalogue.util.CatalogueLineValidator;
-import eu.nimble.service.catalogue.util.CatalogueValidator;
 import eu.nimble.service.catalogue.util.HttpResponseUtil;
+import eu.nimble.service.catalogue.util.TransactionEnabledSerializationUtility;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
-import eu.nimble.utility.config.CatalogueServiceConfig;
+import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -25,7 +26,6 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,11 +37,16 @@ import java.util.List;
  */
 @Controller
 @RequestMapping(value = "/catalogue/{catalogueUuid}")
+//@Transactional(transactionManager = "ubldbTransactionManager")
 public class CatalogueLineController {
     private static Logger log = LoggerFactory.getLogger(CatalogueLineController.class);
 
     @Autowired
     private CatalogueServiceConfig catalogueServiceConfig;
+    @Autowired
+    private CatalogueRepository catalogueRepository;
+    @Autowired
+    private TransactionEnabledSerializationUtility serializationUtility;
 
     private CatalogueService service = CatalogueServiceImpl.getInstance();
 
@@ -84,7 +89,7 @@ public class CatalogueLineController {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(String.format("There does not exist a catalogue line with lineId %s", lineId));
         }
         log.info("Completed the request to get catalogue line with lineId: {}", lineId);
-        return ResponseEntity.ok(catalogueLine);
+        return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLine));
     }
 
     @CrossOrigin(origins = {"*"})
@@ -127,7 +132,7 @@ public class CatalogueLineController {
         }
 
         log.info("Completed the request to get catalogue lines with lineId: {}", lineIds);
-        return ResponseEntity.ok(catalogueLines);
+        return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLines));
     }
 
     /**
@@ -184,7 +189,8 @@ public class CatalogueLineController {
             }
 
             // check duplicate line
-            boolean lineExists = service.existCatalogueLineById(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid());
+//            boolean lineExists = service.existCatalogueLineById(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid());
+            boolean lineExists = catalogueRepository.checkCatalogueLineExistence(catalogueUuid, catalogueLine.getID()) == 0 ? false : true;
             if (!lineExists) {
                 catalogueLine = service.addLineToCatalogue(catalogue, catalogueLine);
             } else {
@@ -210,13 +216,13 @@ public class CatalogueLineController {
             log.warn(msg, e);
             try {
                 log.info("Completed request to add catalogue line with an empty URI, catalogue uuid: {}, lineId: {}", catalogueUuid, line.getID());
-                return ResponseEntity.created(new URI("")).body(line);
+                return ResponseEntity.created(new URI("")).body(serializationUtility.serializeUBLObject(line));
             } catch (URISyntaxException e1) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("WTF");
             }
         }
         log.info("Completed request to add catalogue, catalogue uuid: {}, lineId: {}", catalogueUuid, line.getID());
-        return ResponseEntity.created(lineURI).body(line);
+        return ResponseEntity.created(lineURI).body(serializationUtility.serializeUBLObject(line));
     }
 
     /**
@@ -272,7 +278,8 @@ public class CatalogueLineController {
             }
 
             // consider the case of an updated line id conflicting with the id of an existing line
-            boolean lineExists = service.existCatalogueLineById(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid());
+//            boolean lineExists = service.existCatalogueLineById(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid());
+            boolean lineExists = catalogueRepository.checkCatalogueLineExistence(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid()) == 0 ? false : true;
             if (!lineExists) {
                 service.updateCatalogueLine(catalogueLine);
             } else {
@@ -280,7 +287,7 @@ public class CatalogueLineController {
             }
 
             log.info("Completed the request to add catalogue line catalogue uuid, line lineId: {}", catalogueUuid, catalogueLine.getID());
-            return ResponseEntity.ok(catalogueLine);
+            return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLine));
 
         } catch (Exception e) {
             log.warn("The following catalogue line could not be updated: {}", catalogueLineJson);
