@@ -76,8 +76,8 @@ node('nimble-jenkins-slave') {
         }
 
         stage('Set version') {
-            sh 'mvn versions:set -DnewVersion=' + env.TAG_NAME
-            sh 'mvn -f catalogue-service-micro/pom.xml versions:set -DnewVersion=' + env.TAG_NAME
+            sh 'mvn org.codehaus.mojo:versions-maven-plugin:2.1:set -DnewVersion=' + env.TAG_NAME
+            sh 'mvn -f catalogue-service-micro/pom.xml org.codehaus.mojo:versions-maven-plugin:2.1:set -DnewVersion=' + env.TAG_NAME
         }
 
         stage('Build Java') {
