@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
+import eu.nimble.service.catalogue.util.HttpResponseUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
@@ -14,6 +15,8 @@ import eu.nimble.utility.JsonSerializationUtility;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.logging.LogLevel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -27,8 +30,17 @@ public class ImportExportController {
 
     private CatalogueService service = CatalogueServiceImpl.getInstance();
 
+    /**
+     * This service accepts a serialized catalogue with database identifiers and imports it to the configured database
+     * after removing the database identifiers. The service replaces the {@link PartyType} information in the given
+     * catalogue with the {@link PartyType} obtained from the identity service based on the user calling the service.
+     *
+     * @param serializedCatalogue
+     * @param bearerToken
+     * @return
+     */
     @CrossOrigin(origins = {"*"})
-    @RequestMapping(value = "/import",
+    @RequestMapping(value = "/catalogue/import",
             method = RequestMethod.POST,
             consumes = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity importCatalogue(@RequestBody String serializedCatalogue,
@@ -56,12 +68,14 @@ public class ImportExportController {
                 catalogueLineType.getGoodsItem().getItem().setManufacturerParty(party);
             }
             // add the catalogue
-            service.addCatalogueWithUUID(catalogue, Configuration.Standard.UBL, catalogue.getUUID());
+            catalogue = service.addCatalogueWithUUID(catalogue, Configuration.Standard.UBL, catalogue.getUUID());
             log.info("Imported the catalogue successfully");
-            return ResponseEntity.ok(null);
+            return ResponseEntity.ok().body(JsonSerializationUtility.serializeEntity(catalogue));
+
         } catch (Exception e) {
-            System.out.println(e);
+            String msg = String.format("Failed to import catalogue: %s", serializedCatalogue);
+            log.error(msg, e);
+            return HttpResponseUtil.createResponseEntityAndLog(msg, e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
         }
-        return ResponseEntity.ok(null);
     }
 }

@@ -9,10 +9,11 @@ import eu.nimble.service.catalogue.persistence.CatalogueLineRepository;
 import eu.nimble.service.catalogue.persistence.CatalogueRepository;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
 import eu.nimble.service.catalogue.util.HttpResponseUtil;
-import eu.nimble.service.catalogue.util.HyperJaxbSerializationUtil;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PriceOptionType;
+import eu.nimble.utility.Configuration;
 import eu.nimble.utility.JsonSerializationUtility;
+import eu.nimble.utility.persistence.resource.ResourceValidationUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -26,7 +27,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
@@ -71,6 +71,12 @@ public class PriceConfigurationController {
                 String msg = String.format("Catalogue with uuid : {} does not exist", catalogueUuid);
                 log.info(msg);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
+            }
+
+            // check the entity ids
+            boolean hjidsExists = ResourceValidationUtil.hjidsExit(priceOption);
+            if(hjidsExists) {
+                return HttpResponseUtil.createResponseEntityAndLog(String.format("Entity IDs (hjid fields) found in the passed price option: %s. Make sure they are null", JsonSerializationUtility.serializeEntitySilently(priceOption)), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
             }
 
             // check catalogue line
@@ -183,15 +189,9 @@ public class PriceConfigurationController {
             method = RequestMethod.PUT)
     public ResponseEntity updatePricingOption(@PathVariable("catalogueUuid") String catalogueUuid,
                                               @PathVariable("lineId") String lineId,
-                                              @RequestBody String priceOptionJson,
+                                              @RequestBody PriceOptionType priceOption,
                                               @RequestHeader(value = "Authorization") String bearerToken) {
-        log.info("Incoming request to delete pricing option. catalogueId: {}, lineId: {}, option: {}", catalogueUuid, lineId, priceOptionJson);
-        PriceOptionType priceOption = null;
-        try {
-            priceOption = HyperJaxbSerializationUtil.checkBuiltInLists(priceOptionJson, PriceOptionType.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        log.info("Incoming request to delete pricing option. catalogueId: {}, lineId: {}, optionId: {}", catalogueUuid, lineId, priceOption.getHjid());
 
         try {
             // check catalogue
@@ -207,6 +207,12 @@ public class PriceConfigurationController {
                 String msg = String.format("Catalogue line does not exist. catalogueId: %s, lineId: %s", catalogueUuid, lineId);
                 log.info(msg);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+            }
+
+            // validate the entity ids
+            boolean hjidsBelongToCompany = ResourceValidationUtil.hjidsBelongsToParty(priceOption, catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID(), Configuration.Standard.UBL.toString());
+            if(!hjidsBelongToCompany) {
+                return HttpResponseUtil.createResponseEntityAndLog(String.format("Some of the identifiers (hjid fields) do not belong to the party in the passed catalogue: %s", JsonSerializationUtility.serializeEntitySilently(priceOption)), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
             }
 
             // check option
