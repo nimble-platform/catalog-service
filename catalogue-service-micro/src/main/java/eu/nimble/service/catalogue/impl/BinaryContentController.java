@@ -88,37 +88,4 @@ public class BinaryContentController {
             }
         }
     }
-//
-//    @CrossOrigin(origins = {"*"})
-//    @RequestMapping(value = "/binary-content",
-//            method = RequestMethod.GET)
-//    public void createContent() {
-//        try {
-//            BinaryObjectType bi = new BinaryObjectType();
-//            File f = new File("C:\\Users\\suat\\Desktop\\08.docx");
-//            Path path = f.toPath();
-//            bi.setValue(FileUtils.readFileToByteArray(f));
-//            bi.setFileName(f.getName());
-//            bi.setMimeCode(Files.probeContentType(path));
-//            bi.setUri("uri");
-//
-//            binaryContentService.createContent(bi);
-//
-//        } catch (Exception e) {
-//
-//        }
-//    }
-//
-//    @CrossOrigin(origins = {"*"})
-//    @RequestMapping(value = "/binary-content",
-//            method = RequestMethod.DELETE)
-//    public void delete() {
-//        try {
-//
-//            binaryContentService.deleteContent("uri");
-//
-//        } catch (Exception e) {
-//
-//        }
-//    }
 }

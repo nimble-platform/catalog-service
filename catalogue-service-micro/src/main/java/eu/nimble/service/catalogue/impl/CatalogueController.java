@@ -61,8 +61,6 @@ public class CatalogueController {
     private CatalogueService service = CatalogueServiceImpl.getInstance();
 
     @Autowired
-    private CatalogueServiceConfig catalogueServiceConfig;
-    @Autowired
     private IdentityClientTyped identityClient;
     @Autowired
     private TransactionEnabledSerializationUtility serializationUtility;

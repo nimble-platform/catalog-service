@@ -1,8 +1,10 @@
 package eu.nimble.service.catalogue.persistence;
 
+import eu.nimble.utility.Configuration;
 import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.persistence.GenericJPARepository;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtil;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,15 +30,19 @@ import java.util.List;
  * <p>
  * Created by suat on 17-Dec-18.
  */
-public class EntityIdAwareRepositoryWrapper implements GenericJPARepository, JpaRepository{
+public class EntityIdAwareRepositoryWrapper<T> implements GenericJPARepository, JpaRepository<T, Long> {
     private GenericJPARepository genericJPARepository;
-    private JpaRepository jpaRepository;
+    private JpaRepository<T, Long> jpaRepository;
     private String partyId;
     private String userId;
     private String repositoryName;
 
     public EntityIdAwareRepositoryWrapper(GenericJPARepository genericJPARepository) {
-        this(genericJPARepository, null, null, null);
+        this(genericJPARepository, null, null, Configuration.Standard.UBL.toString());
+    }
+
+    public EntityIdAwareRepositoryWrapper(GenericJPARepository genericJPARepository, String partyId) {
+        this(genericJPARepository, partyId, null, Configuration.Standard.UBL.toString());
     }
 
     public EntityIdAwareRepositoryWrapper(GenericJPARepository genericJPARepository, String partyId, String repositoryName) {
@@ -51,7 +57,11 @@ public class EntityIdAwareRepositoryWrapper implements GenericJPARepository, Jpa
     }
 
     public EntityIdAwareRepositoryWrapper(JpaRepository jpaRepository) {
-        this(jpaRepository, null, null, null);
+        this(jpaRepository, null, null, Configuration.Standard.UBL.toString());
+    }
+
+    public EntityIdAwareRepositoryWrapper(JpaRepository jpaRepository, String partyId) {
+        this(jpaRepository, partyId, null, Configuration.Standard.UBL.toString());
     }
 
     public EntityIdAwareRepositoryWrapper(JpaRepository jpaRepository, String partyId, String repositoryName) {
@@ -122,37 +132,37 @@ public class EntityIdAwareRepositoryWrapper implements GenericJPARepository, Jpa
     }
 
     @Override
-    public List findAll() {
+    public List<T> findAll() {
         return jpaRepository.findAll();
     }
 
     @Override
-    public List findAll(Sort sort) {
-        throw new RuntimeException("This method has not been implemented");
+    public List<T> findAll(Sort sort) {
+        return jpaRepository.findAll(sort);
     }
 
     @Override
-    public List findAll(Iterable iterable) {
-        throw new RuntimeException("This method has not been implemented");
+    public List<T> findAll(Iterable<Long> longs) {
+        return jpaRepository.findAll(longs);
     }
 
     @Override
-    public List save(Iterable entities) {
+    public <S extends T> List<S> save(Iterable<S> entities) {
         throw new RuntimeException("This method has not been implemented");
     }
 
     @Override
     public void flush() {
+        jpaRepository.flush();
+    }
+
+    @Override
+    public <S extends T> S saveAndFlush(S entity) {
         throw new RuntimeException("This method has not been implemented");
     }
 
     @Override
-    public Object saveAndFlush(Object entity) {
-        throw new RuntimeException("This method has not been implemented");
-    }
-
-    @Override
-    public void deleteInBatch(Iterable entities) {
+    public void deleteInBatch(Iterable<T> entities) {
         throw new RuntimeException("This method has not been implemented");
     }
 
@@ -162,27 +172,27 @@ public class EntityIdAwareRepositoryWrapper implements GenericJPARepository, Jpa
     }
 
     @Override
-    public Object getOne(Serializable serializable) {
-        throw new RuntimeException("This method has not been implemented");
+    public T getOne(Long aLong) {
+        return jpaRepository.getOne(aLong);
     }
 
     @Override
-    public List findAll(Example example) {
-        throw new RuntimeException("This method has not been implemented");
+    public <S extends T> List<S> findAll(Example<S> example) {
+        return jpaRepository.findAll(example);
     }
 
     @Override
-    public List findAll(Example example, Sort sort) {
-        throw new RuntimeException("This method has not been implemented");
+    public <S extends T> List<S> findAll(Example<S> example, Sort sort) {
+        return jpaRepository.findAll(example, sort);
     }
 
     @Override
-    public Page findAll(Pageable pageable) {
-        throw new RuntimeException("This method has not been implemented");
+    public Page<T> findAll(Pageable pageable) {
+        return jpaRepository.findAll(pageable);
     }
 
     @Override
-    public Object save(Object entity) {
+    public <S extends T> S save(S entity) {
         checkHjidAssociation(entity);
         ResourceValidationUtil.removeHjidsForObject(entity, repositoryName);
         entity = jpaRepository.save(entity);
@@ -191,34 +201,35 @@ public class EntityIdAwareRepositoryWrapper implements GenericJPARepository, Jpa
     }
 
     @Override
-    public Object findOne(Serializable serializable) {
-        throw new RuntimeException("This method has not been implemented");
+    public T findOne(Long aLong) {
+        return jpaRepository.findOne(aLong);
     }
 
     @Override
-    public boolean exists(Serializable serializable) {
-        throw new RuntimeException("This method has not been implemented");
+    public boolean exists(Long aLong) {
+        return jpaRepository.exists(aLong);
     }
 
     @Override
     public long count() {
-        throw new RuntimeException("This method has not been implemented");
+        return jpaRepository.count();
     }
 
     @Override
-    public void delete(Serializable serializable) {
-        throw new RuntimeException("This method has not been implemented");
+    public void delete(Long aLong) {
+        T entity = findOne(aLong);
+        delete(entity);
     }
 
     @Override
-    public void delete(Object entity) {
+    public void delete(T entity) {
         checkHjidAssociation(entity);
-        genericJPARepository.deleteEntity(entity);
+        jpaRepository.delete(entity);
         ResourceValidationUtil.removeHjidsForObject(entity, repositoryName);
     }
 
     @Override
-    public void delete(Iterable entities) {
+    public void delete(Iterable<? extends T> entities) {
         throw new RuntimeException("This method has not been implemented");
     }
 
@@ -228,23 +239,23 @@ public class EntityIdAwareRepositoryWrapper implements GenericJPARepository, Jpa
     }
 
     @Override
-    public Object findOne(Example example) {
-        throw new RuntimeException("This method has not been implemented");
+    public <S extends T> S findOne(Example<S> example) {
+        return jpaRepository.findOne(example);
     }
 
     @Override
-    public Page findAll(Example example, Pageable pageable) {
-        throw new RuntimeException("This method has not been implemented");
+    public <S extends T> Page<S> findAll(Example<S> example, Pageable pageable) {
+        return jpaRepository.findAll(example, pageable);
     }
 
     @Override
-    public long count(Example example) {
-        throw new RuntimeException("This method has not been implemented");
+    public <S extends T> long count(Example<S> example) {
+        return jpaRepository.count(example);
     }
 
     @Override
-    public boolean exists(Example example) {
-        throw new RuntimeException("This method has not been implemented");
+    public <S extends T> boolean exists(Example<S> example) {
+        return jpaRepository.exists(example);
     }
 
     public <T> void checkHjidAssociation(T entity) {

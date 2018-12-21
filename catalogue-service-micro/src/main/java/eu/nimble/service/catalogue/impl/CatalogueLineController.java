@@ -4,13 +4,13 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
+import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.persistence.CatalogueRepository;
 import eu.nimble.service.catalogue.util.CatalogueLineValidator;
 import eu.nimble.service.catalogue.util.HttpResponseUtil;
 import eu.nimble.service.catalogue.util.TransactionEnabledSerializationUtility;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
-import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtil;
 import io.swagger.annotations.ApiOperation;
@@ -39,7 +39,6 @@ import java.util.List;
  */
 @Controller
 @RequestMapping(value = "/catalogue/{catalogueUuid}")
-//@Transactional(transactionManager = "ubldbTransactionManager")
 public class CatalogueLineController {
     private static Logger log = LoggerFactory.getLogger(CatalogueLineController.class);
 

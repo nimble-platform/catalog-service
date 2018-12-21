@@ -7,12 +7,14 @@ import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.persistence.CatalogueLineRepository;
 import eu.nimble.service.catalogue.persistence.CatalogueRepository;
+import eu.nimble.service.catalogue.persistence.EntityIdAwareRepositoryWrapper;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
 import eu.nimble.service.catalogue.util.HttpResponseUtil;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PriceOptionType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.JsonSerializationUtility;
+import eu.nimble.utility.persistence.GenericJPARepository;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -21,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.logging.LogLevel;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -88,11 +91,13 @@ public class PriceConfigurationController {
             }
 
             // first persist the price options
-            catalogueRepository.persistEntity(priceOption);
+            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper((GenericJPARepository) catalogueRepository, catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
+            repositoryWrapper.persistEntity(priceOption);
 
             // update the catalogue line
             catalogueLine.getPriceOption().add(priceOption);
-            catalogueLineRepository.save(catalogueLine);
+            repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLineRepository, catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
+            repositoryWrapper.save(catalogueLine);
 
             // update the index
             MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueUuid);
@@ -163,8 +168,8 @@ public class PriceConfigurationController {
             }
 
             // remove the option and update the line
-//            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).delete(PriceOptionType.class, optionId);
-            catalogueRepository.deleteEntityByHjid(PriceOptionType.class, optionId);
+            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper((JpaRepository) catalogueRepository, catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
+            repositoryWrapper.delete(optionId);
 
             // update the index
             MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueUuid);
@@ -231,7 +236,8 @@ public class PriceConfigurationController {
             }
 
             // remove the option and update the line
-            priceOption = catalogueRepository.updateEntity(priceOption);
+            EntityIdAwareRepositoryWrapper<PriceOptionType> repositoryWrapper = new EntityIdAwareRepositoryWrapper((JpaRepository) catalogueRepository, catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
+            priceOption = repositoryWrapper.updateEntity(priceOption);
 
             // update the index
             MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueUuid);

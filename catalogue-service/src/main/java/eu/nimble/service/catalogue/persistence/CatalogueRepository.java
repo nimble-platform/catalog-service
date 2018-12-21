@@ -1,9 +1,10 @@
 package eu.nimble.service.catalogue.persistence;
 
-import eu.nimble.service.catalogue.model.category.Unit;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
-import eu.nimble.service.model.ubl.orderresponsesimple.OrderResponseSimpleType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.UnitType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.UnitTypeUnitCodeItem;
 import eu.nimble.utility.persistence.GenericJPARepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
