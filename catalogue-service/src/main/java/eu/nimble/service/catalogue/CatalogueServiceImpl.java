@@ -6,7 +6,6 @@ import eu.nimble.service.catalogue.category.CategoryServiceManager;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
 import eu.nimble.service.catalogue.model.category.Category;
-import eu.nimble.service.catalogue.persistence.EntityIdAwareRepositoryWrapper;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
 import eu.nimble.service.catalogue.template.TemplateGenerator;
 import eu.nimble.service.catalogue.template.TemplateParser;
@@ -23,7 +22,7 @@ import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
 import eu.nimble.utility.persistence.GenericJPARepository;
-import eu.nimble.utility.persistence.resource.ResourceValidationUtil;
+import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
@@ -32,7 +31,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.activation.MimetypesFileTypeMap;
-import javax.swing.*;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -203,8 +201,8 @@ public class CatalogueServiceImpl implements CatalogueService {
             }
 
             // persist the catalogue in relational DB
-            EntityIdAwareRepositoryWrapper<CatalogueType> repositoryWrapper = new EntityIdAwareRepositoryWrapper((JpaRepository) SpringBridge.getInstance().getCatalogueRepository(), ublCatalogue.getProviderParty().getID());
-            repositoryWrapper.updateEntity(ublCatalogue);
+            EntityIdAwareRepositoryWrapper<CatalogueType> repositoryWrapper = new EntityIdAwareRepositoryWrapper((GenericJPARepository) SpringBridge.getInstance().getCatalogueRepository(), ublCatalogue.getProviderParty().getID());
+            catalogue = repositoryWrapper.updateEntity((T) ublCatalogue);
             logger.info("Catalogue with uuid: {} persisted in DB", uuid.toString());
 
             // add synchronization record

@@ -4,9 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemPropertyType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.ResourceType;
+import eu.nimble.utility.JsonSerializationUtility;
+import eu.nimble.utility.persistence.resource.ResourceTypeRepository;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -22,6 +24,10 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.io.InputStream;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -29,10 +35,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @ActiveProfiles("local_dev")
 @RunWith(SpringJUnit4ClassRunner.class)
-public class Test04_TemplatePublishingTest {
+public class Test05_TemplatePublishingTest {
 
     @Autowired
     private MockMvc mockMvc;
+    @Autowired
+    private ResourceTypeRepository resourceTypeRepository;
     private ObjectMapper mapper = new ObjectMapper();
 
     final private String partyName = "alpCompany";
@@ -51,7 +59,7 @@ public class Test04_TemplatePublishingTest {
 
     @Test
     public void test1_uploadTemplate() throws Exception {
-        InputStream is = Test04_TemplatePublishingTest.class.getResourceAsStream("/template/product_data_template.xlsx");
+        InputStream is = Test05_TemplatePublishingTest.class.getResourceAsStream("/template/product_data_template.xlsx");
         MockMultipartFile mutipartFile = new MockMultipartFile("file", fileName, contentType, is);
 
         MvcResult result = this.mockMvc.perform(MockMvcRequestBuilders
@@ -103,6 +111,16 @@ public class Test04_TemplatePublishingTest {
         Assert.assertSame(usagePropertyExists,true);
         // check incoterms
         Assert.assertSame(true,catalogueLineType3.getGoodsItem().getDeliveryTerms().getIncoterms().equals(incoterms));
+
+        // check that resources have been managed properly
+        List<ResourceType> allResources = resourceTypeRepository.findAll();
+        Set<Long> catalogueIds = JsonSerializationUtility.extractAllHjidsExcludingPartyRelatedOnes(catalogue);
+
+        Set<Long> managedIds = new HashSet<>();
+        for(ResourceType resource : allResources) {
+            managedIds.add(resource.getEntityID());
+        }
+        Assert.assertTrue("Managed ids do not contain the catalogue ids", managedIds.containsAll(catalogueIds));
     }
 
 }

@@ -7,7 +7,6 @@ import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.persistence.CatalogueLineRepository;
 import eu.nimble.service.catalogue.persistence.CatalogueRepository;
-import eu.nimble.service.catalogue.persistence.EntityIdAwareRepositoryWrapper;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
 import eu.nimble.service.catalogue.util.HttpResponseUtil;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
@@ -15,6 +14,7 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.PriceOptionType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.persistence.GenericJPARepository;
+import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -23,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.logging.LogLevel;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -168,8 +167,8 @@ public class PriceConfigurationController {
             }
 
             // remove the option and update the line
-            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper((JpaRepository) catalogueRepository, catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
-            repositoryWrapper.delete(optionId);
+            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper((GenericJPARepository) catalogueRepository, catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
+            repositoryWrapper.deleteEntityByHjid(PriceOptionType.class, optionId);
 
             // update the index
             MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueUuid);
@@ -236,7 +235,7 @@ public class PriceConfigurationController {
             }
 
             // remove the option and update the line
-            EntityIdAwareRepositoryWrapper<PriceOptionType> repositoryWrapper = new EntityIdAwareRepositoryWrapper((JpaRepository) catalogueRepository, catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
+            EntityIdAwareRepositoryWrapper<PriceOptionType> repositoryWrapper = new EntityIdAwareRepositoryWrapper((GenericJPARepository) catalogueRepository, catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
             priceOption = repositoryWrapper.updateEntity(priceOption);
 
             // update the index

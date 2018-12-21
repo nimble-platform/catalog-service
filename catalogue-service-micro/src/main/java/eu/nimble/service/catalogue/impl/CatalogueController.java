@@ -473,9 +473,9 @@ public class CatalogueController {
             // save catalogue
             // check whether an insert or update operations is needed
             if(catalogue.getHjid() == null) {
-                service.addCatalogue(catalogue, Configuration.Standard.UBL);
+                catalogue = service.addCatalogue(catalogue, Configuration.Standard.UBL);
             } else {
-                service.updateCatalogue(catalogue);
+                catalogue = service.updateCatalogue(catalogue);
             }
 
             URI catalogueURI;

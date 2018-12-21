@@ -8,6 +8,7 @@ import eu.nimble.utility.persistence.resource.ResourceTypeRepository;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -54,6 +55,17 @@ public class Test01_CatalogueControllerTest {
 
         CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
         createdCatalogueId = catalogue.getUUID();
+
+        // check that resources have been managed properly
+        List<ResourceType> allResources = resourceTypeRepository.findAll();
+        Set<Long> catalogueIds = JsonSerializationUtility.extractAllHjidsExcludingPartyRelatedOnes(catalogue);
+
+        Assert.assertEquals("Resource numbers and managed id sizes do not match", allResources.size(), catalogueIds.size());
+        Set<Long> managedIds = new HashSet<>();
+        for(ResourceType resource : allResources) {
+            managedIds.add(resource.getEntityID());
+        }
+        Assert.assertTrue("Managed ids and catalogue ids do not match", managedIds.containsAll(catalogueIds) && catalogueIds.containsAll(managedIds));
     }
 
     @Test
@@ -75,25 +87,6 @@ public class Test01_CatalogueControllerTest {
     }
 
     @Test
-    public void test30_updateJsonCatalogueWithErroneousData() throws Exception {
-        MockHttpServletRequestBuilder request = get("/catalogue/ubl/" + createdCatalogueId);
-        MvcResult result = this.mockMvc.perform(request).andReturn();
-        CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
-
-        // update party address
-        catalogue.getCatalogueLine().get(0).setHjid(Long.MAX_VALUE);
-
-        // get Json version of the updated catalogue
-        String catalogueTypeAsString = mapper.writeValueAsString(catalogue);
-
-        // make request
-        request = put("/catalogue/ubl")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(catalogueTypeAsString);
-        this.mockMvc.perform(request).andDo(print()).andExpect(status().isBadRequest()).andReturn();
-    }
-
-    @Test
     public void test31_updateJsonCatalogue() throws Exception {
         MockHttpServletRequestBuilder request = get("/catalogue/ubl/" + createdCatalogueId);
         MvcResult result = this.mockMvc.perform(request).andReturn();
@@ -105,6 +98,9 @@ public class Test01_CatalogueControllerTest {
         // get Json version of the updated catalogue
         String catalogueTypeAsString = mapper.writeValueAsString(catalogue);
 
+        List<ResourceType> allResources = resourceTypeRepository.findAll();
+        Set<Long> catalogueIds = JsonSerializationUtility.extractAllHjidsExcludingPartyRelatedOnes(catalogue);
+
         // make request
         request = put("/catalogue/ubl")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -114,6 +110,17 @@ public class Test01_CatalogueControllerTest {
 
         // check whether it is updated or not
         Assert.assertEquals("Updated product name", catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getName());
+
+        // check that resources have been managed properly
+        allResources = resourceTypeRepository.findAll();
+        catalogueIds = JsonSerializationUtility.extractAllHjidsExcludingPartyRelatedOnes(catalogue);
+
+        Assert.assertEquals("Resource numbers and managed id sizes do not match", allResources.size(), catalogueIds.size());
+        Set<Long> managedIds = new HashSet<>();
+        for(ResourceType resource : allResources) {
+            managedIds.add(resource.getEntityID());
+        }
+        Assert.assertTrue("Managed ids and catalogue ids do not match", managedIds.containsAll(catalogueIds) && catalogueIds.containsAll(managedIds));
     }
 
     @Test
@@ -138,7 +145,7 @@ public class Test01_CatalogueControllerTest {
 
         // check that resources have been managed properly
         List<ResourceType> allResources = resourceTypeRepository.findAll();
-        Set<Long> catalogueIds = JsonSerializationUtility.extractAllHjids(catalogue);
+        Set<Long> catalogueIds = JsonSerializationUtility.extractAllHjidsExcludingPartyRelatedOnes(catalogue);
 
         Assert.assertEquals("Resource numbers and managed id sizes do not match", allResources.size(), catalogueIds.size());
         Set<Long> managedIds = new HashSet<>();
