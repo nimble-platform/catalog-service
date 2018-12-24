@@ -55,7 +55,8 @@ public class ImportExportController {
             // get person using the given bearer token
             PersonType person = SpringBridge.getInstance().getIdentityClientTyped().getPerson(bearerToken);
             // get party for the person
-            PartyType party = SpringBridge.getInstance().getIdentityClientTyped().getPartyByPersonID(person.getID());
+            PartyType party = SpringBridge.getInstance().getIdentityClientTyped().getPartyByPersonID(person.getID()).get(0);
+
             // remove hjid fields of party
             JSONObject partyObject = new JSONObject(party);
             JsonSerializationUtility.removeHjidFields(partyObject);
