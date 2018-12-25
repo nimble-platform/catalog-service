@@ -1,8 +1,8 @@
 package eu.nimble.service.catalogue.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.nimble.service.catalogue.util.HttpResponseUtil;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
+import eu.nimble.utility.HttpResponseUtil;
 import eu.nimble.utility.persistence.binary.BinaryContentService;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
