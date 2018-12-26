@@ -4,15 +4,14 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.common.rest.identity.IdentityClientTyped;
 import eu.nimble.data.transformer.ontmalizer.XML2OWLMapper;
-import eu.nimble.service.catalogue.persistence.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
+import eu.nimble.service.catalogue.persistence.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.sync.MarmottaClient;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizationException;
 import eu.nimble.service.catalogue.util.CatalogueValidator;
 import eu.nimble.service.catalogue.util.TransactionEnabledSerializationUtility;
-import eu.nimble.service.catalogue.util.Utils;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
@@ -217,7 +216,7 @@ public class CatalogueController {
 
             catalogue = service.addCatalogue(catalogue, std);
 
-            return createCreatedCatalogueResponse(catalogue, Utils.baseUrl(request));
+            return createCreatedCatalogueResponse(catalogue, HttpResponseUtil.baseUrl(request));
 
         } catch (Exception e) {
             return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while adding the catalogue: %s", serializedCatalogue), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
@@ -479,7 +478,7 @@ public class CatalogueController {
 
             URI catalogueURI;
             try {
-                catalogueURI = new URI(Utils.baseUrl(request) + catalogue.getUUID());
+                catalogueURI = new URI(HttpResponseUtil.baseUrl(request) + catalogue.getUUID());
             } catch (URISyntaxException e) {
                 return createErrorResponseEntity("Failed to generate a URI for the newly created item", HttpStatus.INTERNAL_SERVER_ERROR, e);
             }
