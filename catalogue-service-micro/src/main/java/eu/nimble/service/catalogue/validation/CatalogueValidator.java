@@ -1,4 +1,4 @@
-package eu.nimble.service.catalogue.util;
+package eu.nimble.service.catalogue.validation;
 
 import com.google.common.base.Strings;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
