@@ -90,7 +90,7 @@ public class PriceConfigurationController {
             }
 
             // first persist the price options
-            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper((GenericJPARepository) catalogueRepository, catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
+            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
             repositoryWrapper.persistEntity(priceOption);
 
             // update the catalogue line
@@ -167,8 +167,10 @@ public class PriceConfigurationController {
             }
 
             // remove the option and update the line
-            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper((GenericJPARepository) catalogueRepository, catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
+            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
             repositoryWrapper.deleteEntityByHjid(PriceOptionType.class, optionId);
+//            catalogueLine.getPriceOption().remove(optionIndex.intValue());
+//            repositoryWrapper.updateEntity(catalogueLine);
 
             // update the index
             MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueUuid);
@@ -235,7 +237,7 @@ public class PriceConfigurationController {
             }
 
             // remove the option and update the line
-            EntityIdAwareRepositoryWrapper<PriceOptionType> repositoryWrapper = new EntityIdAwareRepositoryWrapper((GenericJPARepository) catalogueRepository, catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
+            EntityIdAwareRepositoryWrapper<PriceOptionType> repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
             priceOption = repositoryWrapper.updateEntity(priceOption);
 
             // update the index

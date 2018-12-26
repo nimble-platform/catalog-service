@@ -9,7 +9,6 @@ import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
 import eu.nimble.service.catalogue.template.TemplateGenerator;
 import eu.nimble.service.catalogue.template.TemplateParser;
-import eu.nimble.service.catalogue.util.BinaryContentUtil;
 import eu.nimble.service.catalogue.util.DataIntegratorUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
@@ -21,7 +20,6 @@ import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
-import eu.nimble.utility.persistence.GenericJPARepository;
 import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -109,37 +107,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     @Override
     public CatalogueType updateCatalogue(CatalogueType catalogue) {
         logger.info("Catalogue with uuid: {} will be updated", catalogue.getUUID());
-
-        // get the original object to all the hjids
-        CatalogueType originalCatalogue = SpringBridge.getInstance().getCatalogueRepository().getCatalogueByUuid(catalogue.getUUID());
-
         DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(catalogue);
-        // merge the hibernate object
-//        catalogue = (CatalogueType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
-
-        // while updating catalogue, be sure that binary contents are updated as well
-        // compare the existing catalogue with the updated one
-        // get uris of binary contents in existing catalogue
-        List<String> existingUris = SpringBridge.getInstance().getTransactionEnabledSerializationUtilityBinary().serializeBinaryObject(originalCatalogue);
-        // get uris of binary contents in the updated catalogue
-        List<String> uris = SpringBridge.getInstance().getTransactionEnabledSerializationUtilityBinary().serializeBinaryObject(catalogue);
-
-        // remove binary contents which do not exist in the updated catalogue
-        List<String> urisToBeDeleted = new ArrayList<>();
-        for (String uri : existingUris) {
-            if (!uris.contains(uri)) {
-                urisToBeDeleted.add(uri);
-            }
-        }
-        BinaryContentUtil.removeBinaryContentFromDatabase(urisToBeDeleted);
-
-        // then, add new binary contents to database
-        try {
-            catalogue = BinaryContentUtil.removeBinaryContentFromCatalogue(new ObjectMapper().writeValueAsString(catalogue));
-        } catch (Exception e) {
-            logger.error("Failed to remove binary contents from the catalogue with id {}: ", catalogue.getUUID(), e);
-        }
-
         EntityIdAwareRepositoryWrapper<CatalogueType> repositoryWrapper = new EntityIdAwareRepositoryWrapper((JpaRepository) SpringBridge.getInstance().getCatalogueRepository(), catalogue.getProviderParty().getID());
         catalogue = repositoryWrapper.save(catalogue);
 
@@ -193,15 +161,9 @@ public class CatalogueServiceImpl implements CatalogueService {
             }
 
             DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(ublCatalogue);
-            // before adding catalogue, remove binary contents from it and save them to binary content database
-            try {
-                ublCatalogue = BinaryContentUtil.removeBinaryContentFromCatalogue(new ObjectMapper().writeValueAsString(ublCatalogue));
-            } catch (Exception e) {
-                logger.error("Failed to remove binary content from the catalogue with id:{}", ublCatalogue.getUUID(), e);
-            }
 
             // persist the catalogue in relational DB
-            EntityIdAwareRepositoryWrapper<CatalogueType> repositoryWrapper = new EntityIdAwareRepositoryWrapper((GenericJPARepository) SpringBridge.getInstance().getCatalogueRepository(), ublCatalogue.getProviderParty().getID());
+            EntityIdAwareRepositoryWrapper<CatalogueType> repositoryWrapper = new EntityIdAwareRepositoryWrapper(ublCatalogue.getProviderParty().getID());
             catalogue = repositoryWrapper.updateEntity((T) ublCatalogue);
             logger.info("Catalogue with uuid: {} persisted in DB", uuid.toString());
 
@@ -286,12 +248,6 @@ public class CatalogueServiceImpl implements CatalogueService {
                 logger.info("Deleted catalogue with uuid: {}", uuid);
             } else {
                 logger.info("No catalogue for uuid: {}", uuid);
-            }
-            // remove binary contents of the catalogue from the binary content database
-            try {
-                BinaryContentUtil.removeBinaryContentFromDatabase(catalogue);
-            } catch (Exception e) {
-                logger.error("Failed to remove binary contents from the database for catalogue with id: {}", catalogue.getUUID(), e);
             }
 
         } else if (standard == Configuration.Standard.MODAML) {
@@ -515,16 +471,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine) {
         catalogue.getCatalogueLine().add(catalogueLine);
         DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(catalogue);
-
-//        catalogue = (CatalogueType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogue);
-        // before saving the catalogue catalogue, we remove binary contents from the catalogue and save them to binary content database
-        try {
-            catalogue = BinaryContentUtil.removeBinaryContentFromCatalogue(new ObjectMapper().writeValueAsString(catalogue));
-        } catch (Exception e) {
-            logger.error("Failed to remove binary content from the catalogue with id {} : ", catalogue.getUUID(), e);
-        }
-
-        EntityIdAwareRepositoryWrapper<CatalogueType> repositoryWrapper = new EntityIdAwareRepositoryWrapper((GenericJPARepository) SpringBridge.getInstance().getCatalogueRepository(), catalogue.getProviderParty().getID());
+        EntityIdAwareRepositoryWrapper<CatalogueType> repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogue.getProviderParty().getID());
         catalogue = repositoryWrapper.updateEntity(catalogue);
         catalogueLine = catalogue.getCatalogueLine().get(catalogue.getCatalogueLine().size() - 1);
 
@@ -538,38 +485,6 @@ public class CatalogueServiceImpl implements CatalogueService {
     public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine) {
         CatalogueType catalogue = getCatalogue(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID());
         DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(catalogueLine, catalogue);
-
-//        catalogueLine = (CatalogueLineType) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueLine);
-        // firstly, remove all binary contents belong to the catalogue line from the database
-
-        // get existing catalogue line
-        CatalogueLineType existingCatalogueLine = null;
-        for (CatalogueLineType catalogueLineType : catalogue.getCatalogueLine()) {
-            if (catalogueLineType.getID().equals(catalogueLine.getID())) {
-                existingCatalogueLine = catalogueLineType;
-            }
-        }
-
-        // before updating catalogue line, be sure that we update binary contents as well.
-        // get uris of binary contents of existing catalogue line
-        List<String> existingUris = SpringBridge.getInstance().getTransactionEnabledSerializationUtilityBinary().serializeBinaryObject(existingCatalogueLine);
-        // get uris of binary contents of the updated catalogue line
-        List<String> uris = SpringBridge.getInstance().getTransactionEnabledSerializationUtilityBinary().serializeBinaryObject(catalogueLine);
-        // remove binary contents which do not exist in the updated catalogue line
-        List<String> urisToBeDeleted = new ArrayList<>();
-        for (String uri : existingUris) {
-            if (!uris.contains(uri)) {
-                urisToBeDeleted.add(uri);
-            }
-        }
-        BinaryContentUtil.removeBinaryContentFromDatabase(urisToBeDeleted);
-        // then, add new binary contents to database
-        try {
-            catalogueLine = BinaryContentUtil.removeBinaryContentFromCatalogueLine(new ObjectMapper().writeValueAsString(catalogueLine));
-        } catch (Exception e) {
-            logger.error("Failed to remove binary content from the catalogue line with id:{}", catalogueLine.getID(), e);
-        }
-
         EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(SpringBridge.getInstance().getCatalogueLineRepository(), catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
         catalogueLine = (CatalogueLineType) repositoryWrapper.save(catalogueLine);
 
@@ -590,13 +505,6 @@ public class CatalogueServiceImpl implements CatalogueService {
             Long hjid = catalogueLine.getHjid();
             EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(SpringBridge.getInstance().getCatalogueLineRepository(), catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
             repositoryWrapper.delete(hjid);
-
-            // delete binary content from the database
-            try {
-                BinaryContentUtil.removeBinaryContentFromDatabase(catalogueLine);
-            } catch (JsonProcessingException e) {
-                logger.error("Failed to remove binary content from database for catalogue line with id: {}", catalogueId, e);
-            }
 
             // add synchronization record
             MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueId);
