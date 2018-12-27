@@ -1,7 +1,5 @@
 package eu.nimble.service.catalogue;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.category.CategoryServiceManager;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
@@ -183,14 +181,6 @@ public class CatalogueServiceImpl implements CatalogueService {
 
         String query;
         if (standard == Configuration.Standard.UBL) {
-//            query = "SELECT catalogue FROM CatalogueType catalogue "
-//                    + " WHERE catalogue.UUID = '" + uuid + "'";
-//
-//            resultSet = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
-//                    .loadAll(query);
-//            if (resultSet.size() > 0) {
-//                catalogue = (T) resultSet.get(0);
-//            }
             catalogue = (T) SpringBridge.getInstance().getCatalogueRepository().getCatalogueByUuid(uuid);
 
         } else if (standard == Configuration.Standard.MODAML) {
@@ -212,15 +202,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     public <T> T getCatalogue(String id, String partyId, Configuration.Standard standard) {
         T catalogue = null;
 
-        String query;
         if (standard == Configuration.Standard.UBL) {
-//            query = "SELECT catalogue FROM CatalogueType as catalogue "
-//                    + " JOIN catalogue.providerParty as catalogue_provider_party"
-//                    + " WHERE catalogue.ID = '" + id + "'"
-//                    + " AND catalogue_provider_party.ID = '" + partyId + "'";
-//
-//            resultSet = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
-//                    .loadAll(query);
             catalogue = (T) SpringBridge.getInstance().getCatalogueRepository().getCatalogueForParty(id, partyId);
 
         } else if (standard == Configuration.Standard.MODAML) {
@@ -411,20 +393,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     @Override
     public <T> T getCatalogueLine(String catalogueId, String catalogueLineId) {
-        T catalogueLine = null;
-
-        String query = "SELECT cl FROM CatalogueLineType as cl, CatalogueType as c "
-                + " JOIN c.catalogueLine as clj"
-                + " WHERE c.UUID = '" + catalogueId + "' "
-                + " AND cl.ID = '" + catalogueLineId + "' "
-                + " AND clj.ID = cl.ID ";
-
-//        resultSet = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
-//                .loadAll(query);
-//        if (resultSet.size() > 0) {
-//            catalogueLine = (T) resultSet.get(0);
-//        }
-        catalogueLine = (T) SpringBridge.getInstance().getCatalogueRepository().getCatalogueLine(catalogueId, catalogueLineId);
+        T catalogueLine = (T) SpringBridge.getInstance().getCatalogueRepository().getCatalogueLine(catalogueId, catalogueLineId);
         return catalogueLine;
     }
 
@@ -460,8 +429,6 @@ public class CatalogueServiceImpl implements CatalogueService {
         }
         query += " AND clj.ID = cl.ID ";
 
-//        catalogueLines = (List<T>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME)
-//                .loadAll(query);
         catalogueLines = SpringBridge.getInstance().getCatalogueRepository().getEntities(query, parameterNames.toArray(new String[parameterNames.size()]), parameterValues.toArray());
 
         return catalogueLines;

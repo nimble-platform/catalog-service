@@ -1,7 +1,6 @@
 package eu.nimble.service.catalogue;
 
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
-import eu.nimble.utility.HibernateUtility;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;

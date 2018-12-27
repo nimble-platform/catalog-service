@@ -16,18 +16,12 @@ import java.util.List;
 
 @Component
 public class UnitManager {
-    private static UnitManager instance;
-
-    @Autowired
-    private PersistenceConfig config;
     @Autowired
     private CatalogueRepository catalogueRepository;
 
     @PostConstruct
     private void checkUnits(){
         List<UnitType> resultSet;
-//        String query = "SELECT ut FROM UnitType ut WHERE ut.ID = 'NIMBLE_quantity'";
-//        resultSet = (List<UnitType>) hibernateUtility.loadAll(query);
         resultSet = catalogueRepository.getUnitMarker();
         if(resultSet.size() > 0){
             return;
@@ -89,8 +83,6 @@ public class UnitManager {
 
     public List<String> getValues(String unitListId){
         List<UnitType> resultSet;
-//        String query = "SELECT ut FROM UnitType ut WHERE ut.ID = '"+unitListId+"'";
-//        resultSet = (List<UnitType>) hibernateUtility.loadAll(query);
         resultSet = catalogueRepository.getUnitsInList(unitListId);
         return resultSet.get(0).getUnitCode();
     }
@@ -98,8 +90,6 @@ public class UnitManager {
 
     public List<UnitList> getAllUnitList(){
         List<UnitType> resultSet;
-//        String query = "FROM UnitType WHERE ID != 'NIMBLE_quantity'";
-//        resultSet = (List<UnitType>) hibernateUtility.loadAll(query);
         resultSet = catalogueRepository.getAllUnits();
 
         List<UnitList> list = new ArrayList<>();
@@ -116,8 +106,6 @@ public class UnitManager {
 
     public List<String> addUnitToList(String unit,String unitListId){
         List<UnitTypeUnitCodeItem> resultSet;
-//        String query = "SELECT ut.unitCodeItems FROM UnitType ut WHERE ut.ID = '"+unitListId+"'";
-//        resultSet = (List<UnitTypeUnitCodeItem>) hibernateUtility.loadAll(query);
         resultSet = catalogueRepository.getUnitCodesInList(unitListId);
 
         UnitTypeUnitCodeItem unitTypeUnitCodeItem = new UnitTypeUnitCodeItem();
@@ -129,15 +117,12 @@ public class UnitManager {
         unitType.setID(unitListId);
         unitType.setHjid(getHjid(unitListId));
         unitType.setUnitCodeItems(resultSet);
-//        hibernateUtility.update(unitType);
         unitType = catalogueRepository.updateEntity(unitType);
         return unitType.getUnitCode();
     }
 
     public List<String> deleteUnitFromList(String unit,String unitListId){
         List<UnitTypeUnitCodeItem> resultSet;
-//        String query = "SELECT ut.unitCodeItems FROM UnitType ut WHERE ut.ID = '"+unitListId+"'";
-//        resultSet = (List<UnitTypeUnitCodeItem>) hibernateUtility.loadAll(query);
         resultSet = catalogueRepository.getUnitCodesInList(unitListId);
 
         Long hjid = null;
@@ -150,7 +135,6 @@ public class UnitManager {
 
         UnitTypeUnitCodeItem unitTypeUnitCodeItemn = new UnitTypeUnitCodeItem();
         unitTypeUnitCodeItemn.setHjid(hjid);
-//        hibernateUtility.delete(unitTypeUnitCodeItemn);
         catalogueRepository.deleteEntity(unitTypeUnitCodeItemn);
         return getValues(unitListId);
     }
@@ -159,7 +143,6 @@ public class UnitManager {
         UnitType unitType = new UnitType();
         unitType.setID(unitListId);
         unitType.setUnitCode(units);
-//        hibernateUtility.persist(unitType);
         catalogueRepository.persistEntity(unitType);
         return units;
     }
@@ -168,8 +151,6 @@ public class UnitManager {
     // checks whether unit list with unitListId exists or not
     public Boolean checkUnitListId(String unitListId){
         List<UnitType> resultSet;
-//        String query = "SELECT ut FROM UnitType ut WHERE ut.ID = '"+unitListId+"'";
-//        resultSet = (List<UnitType>) hibernateUtility.loadAll(query);
         resultSet = catalogueRepository.getUnitsInList(unitListId);
         if(resultSet.size() > 0){
             return true;
@@ -181,8 +162,6 @@ public class UnitManager {
     // check whether unit exists or not for given unitListId
     public Boolean checkUnit(String unit,String unitListId){
         List<UnitType> resultSet;
-//        String query = "SELECT ut FROM UnitType ut WHERE ut.ID = '"+unitListId+"'";
-//        resultSet = (List<UnitType>) hibernateUtility.loadAll(query);
         resultSet = catalogueRepository.getUnitsInList(unitListId);
         if(resultSet.get(0).getUnitCode().contains(unit)){
             return true;
@@ -192,19 +171,12 @@ public class UnitManager {
 
     private List<String> getAllUnitListIds(){
         List<String> resultSet;
-//        String query = "SELECT ut.ID FROM UnitType ut WHERE ut.ID != 'NIMBLE_quantity'";
-//        resultSet = (List<String>) hibernateUtility.loadAll(query);
         resultSet = catalogueRepository.getAllUnitListIds();
         return resultSet;
     }
 
     private Long getHjid(String unitListId){
-//        List<Long> resultSet;
-//        String query = "SELECT ut.hjid FROM UnitType ut WHERE ut.ID = '"+unitListId+"'";
-//        resultSet = (List<Long>) hibernateUtility.loadAll(query);
-//        return resultSet.get(0);
         Long hjid = catalogueRepository.getListUniqueId(unitListId);
         return hjid;
     }
-
 }
