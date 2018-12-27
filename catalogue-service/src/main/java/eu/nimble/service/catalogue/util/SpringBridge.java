@@ -6,7 +6,6 @@ import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.persistence.CatalogueLineRepository;
 import eu.nimble.service.catalogue.persistence.CatalogueRepository;
 import eu.nimble.utility.persistence.binary.BinaryContentService;
-import eu.nimble.utility.persistence.binary.BinaryObjectSerializerDelete;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -40,12 +39,6 @@ public class SpringBridge implements ApplicationContextAware {
     @Autowired
     private CatalogueLineRepository catalogueLineRepository;
 
-    @Autowired
-    private BinaryContentService binaryContentService;
-
-    @Autowired
-    private BinaryObjectSerializerDelete binaryObjectSerializerDelete;
-
     @Override
     public void setApplicationContext(ApplicationContext applicationContext)
             throws BeansException {
@@ -70,13 +63,5 @@ public class SpringBridge implements ApplicationContextAware {
 
     public CatalogueLineRepository getCatalogueLineRepository() {
         return catalogueLineRepository;
-    }
-
-    public BinaryContentService getBinaryContentService() {
-        return binaryContentService;
-    }
-
-    public BinaryObjectSerializerDelete getBinaryObjectSerializerDelete() {
-        return binaryObjectSerializerDelete;
     }
 }
