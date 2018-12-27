@@ -45,8 +45,8 @@ public class CatalogueDatabaseAdapter {
             SpringBridge.getInstance().getCatalogueRepository().persistEntity(identityParty);
 
         } else {
-            DataModelUtility.nullifyPartyFields(catalogueParty);
-            DataModelUtility.copyParty(catalogueParty, identityParty);
+            DataModelUtility.nullifyPartyFieldsExceptHjid(catalogueParty);
+            DataModelUtility.copyPartyExceptHjid(catalogueParty, identityParty);
             SpringBridge.getInstance().getCatalogueRepository().updateEntity(catalogueParty);
         }
     }
