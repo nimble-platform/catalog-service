@@ -5,7 +5,6 @@ import eu.nimble.common.rest.trust.TrustClient;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.persistence.CatalogueLineRepository;
 import eu.nimble.service.catalogue.persistence.CatalogueRepository;
-import eu.nimble.utility.persistence.binary.BinaryContentService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
