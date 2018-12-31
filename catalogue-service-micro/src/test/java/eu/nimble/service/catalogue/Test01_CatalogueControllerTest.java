@@ -8,7 +8,6 @@ import eu.nimble.utility.persistence.resource.ResourceTypeRepository;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -165,8 +164,62 @@ public class Test01_CatalogueControllerTest {
     }
 
     @Test
-    public void test5_getJsonNonExistingCatalogue() throws Exception {
+    public void test50_getJsonNonExistingCatalogue() throws Exception {
         MockHttpServletRequestBuilder request = get("/catalogue/ubl/" + createdCatalogueId);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isNoContent()).andReturn();
     }
+
+    /*
+    * Tests for catalogue with item properties
+    * */
+    @Test
+    public void test51_postJsonCatalogue() throws Exception {
+        String catalogueJson = IOUtils.toString(Test01_CatalogueControllerTest.class.getResourceAsStream("/example_catalogue_item_property.json"));
+
+        MockHttpServletRequestBuilder request = post("/catalogue/ubl")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(catalogueJson);
+        MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isCreated()).andReturn();
+
+        CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
+        createdCatalogueId = catalogue.getUUID();
+
+        Assert.assertEquals(1,catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getAdditionalItemProperty().size());
+        Assert.assertEquals("Color",catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getAdditionalItemProperty().get(0).getName());
+        Assert.assertEquals(2,catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getAdditionalItemProperty().get(0).getValue().size());
+        Assert.assertEquals("Red",catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getAdditionalItemProperty().get(0).getValue().get(0));
+        Assert.assertEquals("Green",catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getAdditionalItemProperty().get(0).getValue().get(1));
+    }
+
+    @Test
+    public void test52_updateJsonCatalogue() throws Exception {
+        MockHttpServletRequestBuilder request = get("/catalogue/ubl/" + createdCatalogueId);
+        MvcResult result = this.mockMvc.perform(request).andReturn();
+        CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
+
+        // update item properties
+        catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getAdditionalItemProperty().get(0).getValue().clear();
+        catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getAdditionalItemProperty().get(0).getValue().add("Blue");
+
+        // get Json version of the updated catalogue
+        String catalogueTypeAsString = mapper.writeValueAsString(catalogue);
+
+        // make request
+        request = put("/catalogue/ubl")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(catalogueTypeAsString);
+        result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+
+        // get the catalogue
+        request = get("/catalogue/ubl/" + createdCatalogueId);
+        result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+        catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
+        Assert.assertEquals(1,catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getAdditionalItemProperty().get(0).getValue().size());
+        Assert.assertEquals("Blue",catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getAdditionalItemProperty().get(0).getValue().get(0));
+
+        // delete the catalogue
+        request = delete("/catalogue/ubl/" + createdCatalogueId);
+        this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+    }
+
 }
