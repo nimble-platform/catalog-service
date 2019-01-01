@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("local_dev")
 @RunWith(SpringJUnit4ClassRunner.class)
 public class Test01_CatalogueControllerTest {
-gi
+
     @Autowired
     private MockMvc mockMvc;
     @Autowired
