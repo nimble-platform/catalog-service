@@ -1,11 +1,12 @@
 package eu.nimble.service.catalogue.impl;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
-import eu.nimble.service.catalogue.persistence.CatalogueRepository;
+import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.catalogue.validation.CatalogueLineValidator;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
@@ -45,9 +46,9 @@ public class CatalogueLineController {
     @Autowired
     private CatalogueServiceConfig catalogueServiceConfig;
     @Autowired
-    private CatalogueRepository catalogueRepository;
-    @Autowired
     private TransactionEnabledSerializationUtility serializationUtility;
+    @Autowired
+    private ResourceValidationUtil resourceValidationUtil;
 
     private CatalogueService service = CatalogueServiceImpl.getInstance();
 
@@ -190,14 +191,14 @@ public class CatalogueLineController {
             }
 
             // check the entity ids
-            boolean hjidsExists = ResourceValidationUtil.hjidsExit(catalogueLine);
+            boolean hjidsExists = resourceValidationUtil.hjidsExit(catalogueLine);
             if(hjidsExists) {
                 return HttpResponseUtil.createResponseEntityAndLog(String.format("Entity IDs (hjid fields) found in the passed catalogue line: %s. Make sure they are null", catalogueLineJson), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
             }
 
             // check duplicate line
 //            boolean lineExists = service.existCatalogueLineById(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid());
-            boolean lineExists = catalogueRepository.checkCatalogueLineExistence(catalogueUuid, catalogueLine.getID()) == 0 ? false : true;
+            boolean lineExists = CatalogueLinePersistenceUtil.checkCatalogueLineExistence(catalogueUuid, catalogueLine.getID());
             if (!lineExists) {
                 catalogueLine = service.addLineToCatalogue(catalogue, catalogueLine);
             } else {
@@ -254,6 +255,20 @@ public class CatalogueLineController {
             method = RequestMethod.PUT)
     public ResponseEntity updateCatalogueLine(@PathVariable String catalogueUuid, @RequestBody String catalogueLineJson) {
         try {
+
+            CatalogueLineType catalogueLine;
+
+            //parse catalogue line
+            try {
+                ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                objectMapper.configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true);
+                catalogueLine = objectMapper.readValue(catalogueLineJson, CatalogueLineType.class);
+
+            } catch (IOException e) {
+                log.warn("The following catalogue line could not be updated: {}", catalogueLineJson);
+                return HttpResponseUtil.createResponseEntityAndLog(String.format("Failed to deserialize catalogue line from json string: %s", catalogueLineJson), e, HttpStatus.BAD_REQUEST, LogLevel.ERROR);
+            }
+
             log.info("Incoming request to update catalogue line. Catalogue uuid: {}", catalogueUuid);
             CatalogueType catalogue = service.getCatalogue(catalogueUuid);
             if (catalogue == null) {
@@ -261,17 +276,7 @@ public class CatalogueLineController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
             }
 
-            CatalogueLineType catalogueLine;
 
-            //parse catalogue line
-            try {
-                catalogueLine = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                        .readValue(catalogueLineJson, CatalogueLineType.class);
-
-            } catch (IOException e) {
-                log.warn("The following catalogue line could not be updated: {}", catalogueLineJson);
-                return HttpResponseUtil.createResponseEntityAndLog(String.format("Failed to deserialize catalogue line from json string: %s", catalogueLineJson), e, HttpStatus.BAD_REQUEST, LogLevel.ERROR);
-            }
 
             // validate the incoming content
             CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogue, catalogueLine);
@@ -285,14 +290,14 @@ public class CatalogueLineController {
             }
 
             // validate the entity ids
-            boolean hjidsBelongToCompany = ResourceValidationUtil.hjidsBelongsToParty(catalogueLine, catalogue.getProviderParty().getID(), Configuration.Standard.UBL.toString());
+            boolean hjidsBelongToCompany = resourceValidationUtil.hjidsBelongsToParty(catalogueLine, catalogue.getProviderParty().getID(), Configuration.Standard.UBL.toString());
             if(!hjidsBelongToCompany) {
                 return HttpResponseUtil.createResponseEntityAndLog(String.format("Some of the identifiers (hjid fields) do not belong to the party in the passed catalogue line: %s.", catalogueLineJson), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
             }
 
             // consider the case of an updated line id conflicting with the id of an existing line
 //            boolean lineExists = service.existCatalogueLineById(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid());
-            boolean lineExists = catalogueRepository.checkCatalogueLineExistence(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid()) == 0 ? false : true;
+            boolean lineExists = CatalogueLinePersistenceUtil.checkCatalogueLineExistence(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid());
             if (!lineExists) {
                 service.updateCatalogueLine(catalogueLine);
             } else {

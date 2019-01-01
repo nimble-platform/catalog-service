@@ -8,6 +8,8 @@ import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.persistence.CatalogueDatabaseAdapter;
+import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
+import eu.nimble.service.catalogue.persistence.util.PartyTypePersistenceUtil;
 import eu.nimble.service.catalogue.sync.MarmottaClient;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizationException;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
@@ -32,7 +34,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -51,7 +52,7 @@ import java.util.zip.ZipInputStream;
  * can be executed. A catalogue contains contains catalogue lines each of which corresponds to a product or service.
  */
 @Controller
-@Transactional(transactionManager = "ubldbTransactionManager")
+//@Transactional(transactionManager = "ubldbTransactionManager")
 public class CatalogueController {
 
     private static Logger log = LoggerFactory.getLogger(CatalogueController.class);
@@ -62,6 +63,8 @@ public class CatalogueController {
     private IdentityClientTyped identityClient;
     @Autowired
     private TransactionEnabledSerializationUtility serializationUtility;
+    @Autowired
+    private ResourceValidationUtil resourceValidationUtil;
 
     /**
      * Retrieves the default catalogue for the specified party. The catalogue is supposed to have and ID field with
@@ -202,13 +205,13 @@ public class CatalogueController {
                 }
 
                 // check catalogue with the same id exists
-                boolean catalogueExists = CatalogueDatabaseAdapter.catalogueExists(ublCatalogue.getProviderParty().getID(), ublCatalogue.getID());
+                boolean catalogueExists = CataloguePersistenceUtil.checkCatalogueExistenceById(ublCatalogue.getID(), ublCatalogue.getProviderParty().getID());
                 if (catalogueExists) {
                     return HttpResponseUtil.createResponseEntityAndLog(String.format("Catalogue with ID: '%s' already exists", ublCatalogue.getID()), null, HttpStatus.CONFLICT, LogLevel.INFO);
                 }
 
                 // check the entity ids
-                boolean hjidsExists = ResourceValidationUtil.hjidsExit(catalogue);
+                boolean hjidsExists = resourceValidationUtil.hjidsExit(catalogue);
                 if(hjidsExists) {
                     return HttpResponseUtil.createResponseEntityAndLog(String.format("Entity IDs (hjid fields) found in the passed catalogue: %s. Make sure they are null", serializedCatalogue), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
                 }
@@ -322,7 +325,7 @@ public class CatalogueController {
             }
 
             // validate the entity ids
-            boolean hjidsBelongToCompany = ResourceValidationUtil.hjidsBelongsToParty(catalogue, catalogue.getProviderParty().getID(), Configuration.Standard.UBL.toString());
+            boolean hjidsBelongToCompany = resourceValidationUtil.hjidsBelongsToParty(catalogue, catalogue.getProviderParty().getID(), Configuration.Standard.UBL.toString());
             if(!hjidsBelongToCompany) {
                 return HttpResponseUtil.createResponseEntityAndLog(String.format("Some of the identifiers (hjid fields) do not belong to the party in the passed catalogue: %s", catalogueJson), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
             }
@@ -454,7 +457,7 @@ public class CatalogueController {
         try {
             log.info("Incoming request to upload template upload mode: {}, party id: {}, party name: {}", uploadMode, partyId, partyName);
             CatalogueType catalogue;
-            PartyType party = CatalogueDatabaseAdapter.getParty(partyId);
+            PartyType party = PartyTypePersistenceUtil.getPartyById(partyId);
             if(party == null) {
                 party = identityClient.getParty(bearerToken, partyId);
                 party = CatalogueDatabaseAdapter.syncPartyInUBLDB(party);

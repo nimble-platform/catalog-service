@@ -5,15 +5,12 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
-import eu.nimble.service.catalogue.persistence.CatalogueLineRepository;
-import eu.nimble.service.catalogue.persistence.CatalogueRepository;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PriceOptionType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HttpResponseUtil;
 import eu.nimble.utility.JsonSerializationUtility;
-import eu.nimble.utility.persistence.GenericJPARepository;
 import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtil;
 import io.swagger.annotations.ApiOperation;
@@ -46,12 +43,10 @@ import java.util.List;
 public class PriceConfigurationController {
     private static Logger log = LoggerFactory.getLogger(PriceConfigurationController.class);
 
-    private CatalogueService service = CatalogueServiceImpl.getInstance();
+    @Autowired
+    private ResourceValidationUtil resourceValidationUtil;
 
-    @Autowired
-    private CatalogueRepository catalogueRepository;
-    @Autowired
-    private CatalogueLineRepository catalogueLineRepository;
+    private CatalogueService service = CatalogueServiceImpl.getInstance();
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Adds the given pricing option to the specified catalogue line (i.e. product/service)")
@@ -76,7 +71,7 @@ public class PriceConfigurationController {
             }
 
             // check the entity ids
-            boolean hjidsExists = ResourceValidationUtil.hjidsExit(priceOption);
+            boolean hjidsExists = resourceValidationUtil.hjidsExit(priceOption);
             if(hjidsExists) {
                 return HttpResponseUtil.createResponseEntityAndLog(String.format("Entity IDs (hjid fields) found in the passed price option: %s. Make sure they are null", JsonSerializationUtility.serializeEntitySilently(priceOption)), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
             }
@@ -95,8 +90,8 @@ public class PriceConfigurationController {
 
             // update the catalogue line
             catalogueLine.getPriceOption().add(priceOption);
-            repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLineRepository, catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
-            repositoryWrapper.save(catalogueLine);
+            repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
+            repositoryWrapper.updateEntity(catalogueLine);
 
             // update the index
             MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueUuid);
@@ -216,7 +211,7 @@ public class PriceConfigurationController {
             }
 
             // validate the entity ids
-            boolean hjidsBelongToCompany = ResourceValidationUtil.hjidsBelongsToParty(priceOption, catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID(), Configuration.Standard.UBL.toString());
+            boolean hjidsBelongToCompany = resourceValidationUtil.hjidsBelongsToParty(priceOption, catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID(), Configuration.Standard.UBL.toString());
             if(!hjidsBelongToCompany) {
                 return HttpResponseUtil.createResponseEntityAndLog(String.format("Some of the identifiers (hjid fields) do not belong to the party in the passed catalogue: %s", JsonSerializationUtility.serializeEntitySilently(priceOption)), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
             }
@@ -237,7 +232,7 @@ public class PriceConfigurationController {
             }
 
             // remove the option and update the line
-            EntityIdAwareRepositoryWrapper<PriceOptionType> repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
+            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
             priceOption = repositoryWrapper.updateEntity(priceOption);
 
             // update the index

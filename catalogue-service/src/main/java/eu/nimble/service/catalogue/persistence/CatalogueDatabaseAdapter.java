@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue.persistence;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.nimble.service.catalogue.persistence.util.PartyTypePersistenceUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.QualityIndicatorType;
@@ -24,13 +25,8 @@ import java.util.List;
 public class CatalogueDatabaseAdapter {
     private static final Logger logger = LoggerFactory.getLogger(CatalogueDatabaseAdapter.class);
 
-    public static boolean catalogueExists(String partyId, String partySpecificCatalogueId) {
-        long catalogueExists = SpringBridge.getInstance().getCatalogueRepository().checkCatalogueExistenceByID(partySpecificCatalogueId, partyId);
-        return catalogueExists == 1 ? true : false;
-    }
-
     public static void syncPartyInUBLDB(String partyId, String bearerToken) {
-        PartyType catalogueParty = getParty(partyId);
+        PartyType catalogueParty = PartyTypePersistenceUtil.getPartyById(partyId);
         PartyType identityParty;
         try {
             identityParty = SpringBridge.getInstance().getIdentityClientTyped().getParty(bearerToken, partyId);
@@ -42,12 +38,12 @@ public class CatalogueDatabaseAdapter {
         }
 
         if(catalogueParty == null) {
-            SpringBridge.getInstance().getCatalogueRepository().persistEntity(identityParty);
+            SpringBridge.getInstance().getGenericJPARepository().persistEntity(identityParty);
 
         } else {
             DataModelUtility.nullifyPartyFieldsExceptHjid(catalogueParty);
             DataModelUtility.copyPartyExceptHjid(catalogueParty, identityParty);
-            SpringBridge.getInstance().getCatalogueRepository().updateEntity(catalogueParty);
+            SpringBridge.getInstance().getGenericJPARepository().updateEntity(catalogueParty);
         }
     }
 
@@ -72,7 +68,7 @@ public class CatalogueDatabaseAdapter {
             return;
         }
 
-        PartyType catalogueParty = getParty(trustParty.getID());
+        PartyType catalogueParty = PartyTypePersistenceUtil.getPartyById(trustParty.getID());
         if(catalogueParty == null) {
             logger.warn("No party available in UBLDB with id: {}", partyId);
             return;
@@ -111,31 +107,21 @@ public class CatalogueDatabaseAdapter {
             }
         }
 
-        SpringBridge.getInstance().getCatalogueRepository().updateEntity(catalogueParty);
+        SpringBridge.getInstance().getGenericJPARepository().updateEntity(catalogueParty);
     }
 
     public static PartyType syncPartyInUBLDB(PartyType party) {
         if (party == null) {
             return null;
         }
-        PartyType catalogueParty = getParty(party.getID());
+        PartyType catalogueParty = PartyTypePersistenceUtil.getPartyById(party.getID());
         if(catalogueParty != null) {
             return catalogueParty;
         } else {
             party = checkPartyIntegrity(party);
-            SpringBridge.getInstance().getCatalogueRepository().persistEntity(party);
+            SpringBridge.getInstance().getGenericJPARepository().persistEntity(party);
             return party;
         }
-    }
-
-    public static PartyType getParty(String partyId) {
-        PartyType party = SpringBridge.getInstance().getCatalogueRepository().getPartyByID(partyId);
-        return party;
-    }
-
-    public static List<String> getCatalogueIdsOfParty(String partyId) {
-        List<String> catalogueIds = SpringBridge.getInstance().getCatalogueRepository().getCatalogueIdsForParty(partyId);
-        return catalogueIds;
     }
 
     private static PartyType checkPartyIntegrity(PartyType party) {

@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue.sync;
 import eu.nimble.service.catalogue.persistence.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
+import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
@@ -198,7 +199,7 @@ public class MarmottaSynchronizer {
     }
 
     public void addRecord(String partyId) {
-        List<String> catalogueIds = CatalogueDatabaseAdapter.getCatalogueIdsOfParty(partyId);
+        List<String> catalogueIds = CataloguePersistenceUtil.getCatalogueIdsForParty(partyId);
         for(String catalogueId : catalogueIds) {
             addRecord(SyncStatus.UPDATE, catalogueId);
         }

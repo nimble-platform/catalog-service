@@ -5,8 +5,8 @@ import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemPropertyType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ResourceType;
-import eu.nimble.utility.JsonSerializationUtility;
-import eu.nimble.utility.persistence.resource.ResourceTypeRepository;
+import eu.nimble.utility.persistence.GenericJPARepository;
+import eu.nimble.utility.persistence.resource.ResourceValidationUtil;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -40,7 +40,10 @@ public class Test05_TemplatePublishingTest {
     @Autowired
     private MockMvc mockMvc;
     @Autowired
-    private ResourceTypeRepository resourceTypeRepository;
+    private GenericJPARepository genericJpaRepository;
+    @Autowired
+    private ResourceValidationUtil resourceValidationUtil;
+
     private ObjectMapper mapper = new ObjectMapper();
 
     final private String partyName = "alpCompany";
@@ -113,8 +116,8 @@ public class Test05_TemplatePublishingTest {
         Assert.assertSame(true,catalogueLineType3.getGoodsItem().getDeliveryTerms().getIncoterms().equals(incoterms));
 
         // check that resources have been managed properly
-        List<ResourceType> allResources = resourceTypeRepository.findAll();
-        Set<Long> catalogueIds = JsonSerializationUtility.extractAllHjidsExcludingPartyRelatedOnes(catalogue);
+        List<ResourceType> allResources = genericJpaRepository.withEmf("ubldbEntityManagerFactory").getEntities(ResourceType.class);
+        Set<Long> catalogueIds = resourceValidationUtil.extractAllHjidsExcludingPartyRelatedOnes(catalogue);
 
         Set<Long> managedIds = new HashSet<>();
         for(ResourceType resource : allResources) {
