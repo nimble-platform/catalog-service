@@ -287,4 +287,5 @@ persistence:
 nimble:
   identity:
     url: ${IDENTITY_URL:localhost:9096}
+  test-token: ${NIMBLE_TEST_TOKEN}
 
