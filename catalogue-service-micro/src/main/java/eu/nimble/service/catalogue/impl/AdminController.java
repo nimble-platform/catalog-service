@@ -8,6 +8,7 @@ import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.sync.MarmottaClient;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizationException;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.persistence.binary.ImageScaler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +50,7 @@ public class AdminController {
         String contentType = request.getContentType();
         CatalogueType catalogue;
         try {
-            catalogue = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(serializedCatalogue, CatalogueType.class);
+            catalogue = JsonSerializationUtility.getObjectMapper().readValue(serializedCatalogue, CatalogueType.class);
         } catch (IOException e) {
             log.error("Failed to parse the catalogue: {}", serializedCatalogue, e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to parse the catalogue");

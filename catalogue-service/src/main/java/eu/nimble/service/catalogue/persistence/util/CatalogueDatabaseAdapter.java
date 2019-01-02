@@ -60,7 +60,7 @@ public class CatalogueDatabaseAdapter {
         }
 
         try {
-            trustParty = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(partyStr, PartyType.class);
+            trustParty = JsonSerializationUtility.getObjectMapper().readValue(partyStr, PartyType.class);
         }
         catch (Exception e){
             logger.error("Failed to deserialize party with id: {}, serialization: {}", partyId, partyStr, e);
@@ -132,8 +132,7 @@ public class CatalogueDatabaseAdapter {
 
     private static PartyType removePartyHjids(PartyType party) {
         try {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper = objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        ObjectMapper objectMapper = JsonSerializationUtility.getObjectMapper();
         JSONObject object = new JSONObject(objectMapper.writeValueAsString(party));
         JsonSerializationUtility.removeHjidFields(object);
         party = objectMapper.readValue(object.toString(), PartyType.class);

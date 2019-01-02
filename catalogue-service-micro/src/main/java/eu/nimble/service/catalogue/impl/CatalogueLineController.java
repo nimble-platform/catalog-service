@@ -12,6 +12,7 @@ import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HttpResponseUtil;
+import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtil;
 import eu.nimble.utility.serialization.TransactionEnabledSerializationUtility;
 import io.swagger.annotations.ApiOperation;
@@ -172,8 +173,7 @@ public class CatalogueLineController {
 
             // parse catalogue line
             try {
-                catalogueLine = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                        .readValue(catalogueLineJson, CatalogueLineType.class);
+                catalogueLine = JsonSerializationUtility.getObjectMapper().readValue(catalogueLineJson, CatalogueLineType.class);
             } catch (IOException e) {
                 log.warn("The following catalogue line could not be created: {}", catalogueLineJson);
                 return HttpResponseUtil.createResponseEntityAndLog(String.format("Failed to deserialize catalogue line: %s", catalogueLineJson), e, HttpStatus.BAD_REQUEST, LogLevel.ERROR);
@@ -260,8 +260,7 @@ public class CatalogueLineController {
 
             //parse catalogue line
             try {
-                ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-                objectMapper.configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, true);
+                ObjectMapper objectMapper = JsonSerializationUtility.getObjectMapper();
                 catalogueLine = objectMapper.readValue(catalogueLineJson, CatalogueLineType.class);
 
             } catch (IOException e) {

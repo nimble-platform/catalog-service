@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ResourceType;
+import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtil;
 import org.apache.commons.io.IOUtils;
@@ -44,7 +45,7 @@ public class Test01_CatalogueControllerTest {
     @Autowired
     private ResourceValidationUtil resourceValidationUtil;
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
     private static String createdCatalogueId;
 
     @Test

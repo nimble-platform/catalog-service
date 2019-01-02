@@ -19,6 +19,7 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HttpResponseUtil;
 import eu.nimble.utility.JAXBUtility;
+import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtil;
 import eu.nimble.utility.serialization.TransactionEnabledSerializationUtility;
 import io.swagger.annotations.ApiOperation;
@@ -238,7 +239,7 @@ public class CatalogueController {
             }
 
         } else if (contentType.contentEquals(MediaType.APPLICATION_JSON_VALUE)) {
-            catalogue = (T) new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(serializedCatalogue, CatalogueType.class);
+            catalogue = (T) JsonSerializationUtility.getObjectMapper().readValue(serializedCatalogue, CatalogueType.class);
         }
         return catalogue;
     }
@@ -308,7 +309,7 @@ public class CatalogueController {
             // parse catalogue
             CatalogueType catalogue;
             try {
-                catalogue = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(catalogueJson, CatalogueType.class);
+                catalogue = JsonSerializationUtility.getObjectMapper().readValue(catalogueJson, CatalogueType.class);
             } catch (IOException e) {
                 return createErrorResponseEntity(String.format("Failed to deserialize catalogue: %s", catalogueJson), HttpStatus.INTERNAL_SERVER_ERROR, e);
             }

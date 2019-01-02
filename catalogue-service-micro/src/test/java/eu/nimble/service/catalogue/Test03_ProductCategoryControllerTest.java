@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import eu.nimble.service.catalogue.model.category.Category;
+import eu.nimble.utility.JsonSerializationUtility;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -40,7 +41,7 @@ public class Test03_ProductCategoryControllerTest {
     public void test1_getAvailableTaxonomies() throws Exception {
         MockHttpServletRequestBuilder request = get("/catalogue/category/taxonomies");
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
         JsonParser parser = mapper.getFactory().createParser(result.getResponse().getContentAsString());
         ArrayNode taxonomies = mapper.readTree(parser);
         Assert.assertEquals(2, taxonomies.size());
@@ -50,7 +51,7 @@ public class Test03_ProductCategoryControllerTest {
     public void test2_getCategoriesByName() throws Exception {
         MockHttpServletRequestBuilder request = get("/catalogue/category").param("categoryNames", "die");
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
         List<Category> categories = mapper.readValue(result.getResponse().getContentAsString(), new TypeReference<List<Category>>() {});
 
         // check existence duplicate categories
@@ -63,7 +64,7 @@ public class Test03_ProductCategoryControllerTest {
     public void test3_getCategoriesByIds() throws Exception {
         MockHttpServletRequestBuilder request = get("/catalogue/category").param("categoryIds", "0173-1#01-BAA975#013").param("taxonomyIds", "eClass");
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
         List<Category> categories = mapper.readValue(result.getResponse().getContentAsString(), new TypeReference<List<Category>>() {});
         Assert.assertEquals("Die-cutter and stamping machines (post press)", categories.get(0).getPreferredName());
     }

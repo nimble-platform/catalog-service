@@ -96,7 +96,7 @@ public class PriceConfigurationController {
             // update the index
             MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueUuid);
 
-            ObjectMapper objectMapper = new ObjectMapper();
+            ObjectMapper objectMapper = JsonSerializationUtility.getObjectMapper();
             objectMapper.configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, false);
 
             log.info("Completed request to add pricing option. catalogueId: {}, lineId: {}", catalogueUuid, lineId);
@@ -105,7 +105,7 @@ public class PriceConfigurationController {
         } catch (Exception e) {
             String serializedOption;
             try {
-                serializedOption = new ObjectMapper().writeValueAsString(priceOption);
+                serializedOption = JsonSerializationUtility.getObjectMapper().writeValueAsString(priceOption);
                 String msg = String.format("Failed to add pricing option for catalogueId: %s, lineId: %s, pricingOption: %s", catalogueUuid, lineId, serializedOption);
                 return HttpResponseUtil.createResponseEntityAndLog(msg, e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
             } catch (JsonProcessingException e1) {

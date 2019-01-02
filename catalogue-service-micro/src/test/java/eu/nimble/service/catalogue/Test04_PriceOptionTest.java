@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PriceOptionType;
+import eu.nimble.utility.JsonSerializationUtility;
 import org.apache.commons.io.IOUtils;
 import org.junit.*;
 import org.junit.runner.RunWith;
@@ -37,7 +38,7 @@ public class Test04_PriceOptionTest {
 
     @BeforeClass
     public static void init() {
-        mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper = JsonSerializationUtility.getObjectMapper();
     }
 
     @Test

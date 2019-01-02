@@ -5,6 +5,7 @@ import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemPropertyType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ResourceType;
+import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtil;
 import org.junit.Assert;
@@ -46,7 +47,7 @@ public class Test05_TemplatePublishingTest {
     private ResourceValidationUtil resourceValidationUtil;
     @Autowired
     private Environment environment;
-    private ObjectMapper mapper = new ObjectMapper();
+    private ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
 
     final private String partyName = "alpCompany";
     final private String partyId = "381";
