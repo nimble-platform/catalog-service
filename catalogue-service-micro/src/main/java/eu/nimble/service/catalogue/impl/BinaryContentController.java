@@ -35,6 +35,12 @@ public class BinaryContentController {
         try {
             logger.info("Request to retrieve binary content for uri: {}", uri);
             BinaryObjectType result = binaryContentService.retrieveContent(uri);
+            // check whether the binary content exists or not
+            if(result == null){
+                String msg = String.format("There does not exist a binary content for uri: %s", uri);
+                logger.error(msg);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+            }
 
             ObjectMapper objectMapper = new ObjectMapper();
             String response = objectMapper.writeValueAsString(result);
@@ -57,7 +63,17 @@ public class BinaryContentController {
         try {
             logger.info("Request to retrieve raw binary content for uri: {}", uri);
             BinaryObjectType result = binaryContentService.retrieveContent(uri);
-
+            // check whether the binary content exists or not
+            if(result == null){
+                String msg = String.format("There does not exist a binary content for uri: %s", uri);
+                logger.error(msg);
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                try {
+                    response.getOutputStream().write(msg.getBytes());
+                } catch (IOException e1) {
+                    logger.error("Failed to write the error message to the output stream", e1);
+                }
+            }
             try {
                 response.setHeader("Content-disposition", "attachment; filename=" + result.getFileName());
                 response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");

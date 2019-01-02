@@ -45,7 +45,7 @@ public class Test06_BinaryContentTest {
 
     private static String firstProductImageUri;
     private static String secondProductImageUri;
-    private static String uuid;
+    private static String catalogueId;
 
     @Test
     public void test10_postJsonCatalogue() throws Exception {
@@ -57,28 +57,28 @@ public class Test06_BinaryContentTest {
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isCreated()).andReturn();
 
         CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
-        Assert.assertEquals(1,catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().size());
-        Assert.assertNotEquals("",catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().get(0).getUri());
+        Assert.assertEquals(1, catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().size());
+        Assert.assertNotEquals("", catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().get(0).getUri());
 
         firstProductImageUri = catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().get(0).getUri();
-        uuid = catalogue.getUUID();
+        catalogueId = catalogue.getUUID();
     }
 
     @Test
-    public void test11_retrieveBinaryContent() throws Exception{
+    public void test11_retrieveBinaryContent() throws Exception {
         MockHttpServletRequestBuilder request = get("/binary-content")
-                .header("Authorization",environment.getProperty("nimble.test-token"))
+                .header("Authorization", environment.getProperty("nimble.test-token"))
                 .param("uri", firstProductImageUri);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
 
         BinaryObjectType binaryObject = mapper.readValue(result.getResponse().getContentAsString(), BinaryObjectType.class);
-        Assert.assertEquals(fileName,binaryObject.getFileName());
+        Assert.assertEquals(fileName, binaryObject.getFileName());
     }
 
     @Test
-    public void test12_updateJsonCatalogue() throws Exception{
+    public void test12_updateJsonCatalogue() throws Exception {
         // get the catalogue
-        MockHttpServletRequestBuilder request = get("/catalogue/UBL/"+uuid);
+        MockHttpServletRequestBuilder request = get("/catalogue/UBL/" + catalogueId);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
 
@@ -93,32 +93,32 @@ public class Test06_BinaryContentTest {
         catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().add(binaryObject);
 
         request = put("/catalogue/UBL")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(mapper.writeValueAsString(catalogue));
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(catalogue));
         result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
 
-        Assert.assertEquals(1,catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().size());
-        Assert.assertEquals(secondFileName,catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().get(0).getFileName());
+        Assert.assertEquals(1, catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().size());
+        Assert.assertEquals(secondFileName, catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().get(0).getFileName());
         secondProductImageUri = catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().get(0).getUri();
     }
 
     @Test
-    public void test13_retrieveBinaryContent() throws Exception{
+    public void test13_retrieveBinaryContentNotFound() throws Exception {
         MockHttpServletRequestBuilder request = get("/binary-content")
-                .header("Authorization",environment.getProperty("nimble.test-token"))
+                .header("Authorization", environment.getProperty("nimble.test-token"))
                 .param("uri", firstProductImageUri);
+        MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isNotFound()).andReturn();
+    }
+
+    @Test
+    public void test14_retrieveBinaryContent() throws Exception {
+        MockHttpServletRequestBuilder request = get("/binary-content")
+                .header("Authorization", environment.getProperty("nimble.test-token"))
+                .param("uri", secondProductImageUri);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
 
         BinaryObjectType binaryObject = mapper.readValue(result.getResponse().getContentAsString(), BinaryObjectType.class);
-        Assert.assertEquals(null,binaryObject);
-
-        request = get("/binary-content")
-                .header("Authorization",environment.getProperty("nimble.test-token"))
-                .param("uri", secondProductImageUri);
-        result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
-
-         binaryObject = mapper.readValue(result.getResponse().getContentAsString(), BinaryObjectType.class);
-        Assert.assertEquals(secondFileName,binaryObject.getFileName());
+        Assert.assertEquals(secondFileName, binaryObject.getFileName());
     }
 }
