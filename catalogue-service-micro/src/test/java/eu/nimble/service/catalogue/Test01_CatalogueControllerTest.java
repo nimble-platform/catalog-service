@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ResourceType;
-import eu.nimble.utility.persistence.GenericJPARepository;
+import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtil;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -40,7 +40,7 @@ public class Test01_CatalogueControllerTest {
     @Autowired
     private MockMvc mockMvc;
     @Autowired
-    private GenericJPARepository genericJpaRepository;
+    private JPARepositoryFactory repoFactory;
     @Autowired
     private ResourceValidationUtil resourceValidationUtil;
 
@@ -60,7 +60,7 @@ public class Test01_CatalogueControllerTest {
         createdCatalogueId = catalogue.getUUID();
 
         // check that resources have been managed properly
-        List<ResourceType> allResources = genericJpaRepository.withEmf("ubldbEntityManagerFactory").getEntities(ResourceType.class);
+        List<ResourceType> allResources = repoFactory.forCatalogueRepository().getEntities(ResourceType.class);
         Set<Long> catalogueIds = resourceValidationUtil.extractAllHjidsExcludingPartyRelatedOnes(catalogue);
 
         Assert.assertEquals("Resource numbers and managed id sizes do not match", allResources.size(), catalogueIds.size());
@@ -71,7 +71,7 @@ public class Test01_CatalogueControllerTest {
         Assert.assertTrue("Managed ids and catalogue ids do not match", managedIds.containsAll(catalogueIds) && catalogueIds.containsAll(managedIds));
 
         // check that only a single party instance is created
-        List<PartyType> parties = genericJpaRepository.withEmf("ubldbEntityManagerFactory").getEntities(PartyType.class);
+        List<PartyType> parties = repoFactory.forCatalogueRepository().getEntities(PartyType.class);
         Assert.assertEquals(1, parties.size());
     }
 
@@ -93,7 +93,7 @@ public class Test01_CatalogueControllerTest {
         Assert.assertEquals(createdCatalogueId, catalogue.getUUID());
 
         // check that only a single party instance is created
-        List<PartyType> parties = genericJpaRepository.withEmf("ubldbEntityManagerFactory").getEntities(PartyType.class);
+        List<PartyType> parties = repoFactory.forCatalogueRepository().getEntities(PartyType.class);
         Assert.assertEquals(1, parties.size());
     }
 
@@ -120,7 +120,7 @@ public class Test01_CatalogueControllerTest {
         Assert.assertEquals("Updated product name", catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getName());
 
         // check that resources have been managed properly
-        List<ResourceType> allResources = genericJpaRepository.withEmf("ubldbEntityManagerFactory").getEntities(ResourceType.class);
+        List<ResourceType> allResources = repoFactory.forCatalogueRepository().getEntities(ResourceType.class);
         Set<Long> catalogueIds = resourceValidationUtil.extractAllHjidsExcludingPartyRelatedOnes(catalogue);
 
         Assert.assertEquals("Resource numbers and managed id sizes do not match", allResources.size(), catalogueIds.size());
@@ -131,7 +131,7 @@ public class Test01_CatalogueControllerTest {
         Assert.assertTrue("Managed ids and catalogue ids do not match", managedIds.containsAll(catalogueIds) && catalogueIds.containsAll(managedIds));
 
         // check that only a single party instance is created
-        List<PartyType> parties = genericJpaRepository.withEmf("ubldbEntityManagerFactory").getEntities(PartyType.class);
+        List<PartyType> parties = repoFactory.forCatalogueRepository().getEntities(PartyType.class);
         Assert.assertEquals(1, parties.size());
     }
 
@@ -156,7 +156,7 @@ public class Test01_CatalogueControllerTest {
         Assert.assertEquals("Updated product name", catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getName());
 
         // check that resources have been managed properly
-        List<ResourceType> allResources = genericJpaRepository.withEmf("ubldbEntityManagerFactory").getEntities(ResourceType.class);
+        List<ResourceType> allResources = repoFactory.forCatalogueRepository().getEntities(ResourceType.class);
         Set<Long> catalogueIds = resourceValidationUtil.extractAllHjidsExcludingPartyRelatedOnes(catalogue);
 
         Assert.assertEquals("Resource numbers and managed id sizes do not match", allResources.size(), catalogueIds.size());
@@ -167,7 +167,7 @@ public class Test01_CatalogueControllerTest {
         Assert.assertTrue("Managed ids and catalogue ids do not match", managedIds.containsAll(catalogueIds) && catalogueIds.containsAll(managedIds));
 
         // check that only a single party instance is created
-        List<PartyType> parties = genericJpaRepository.withEmf("ubldbEntityManagerFactory").getEntities(PartyType.class);
+        List<PartyType> parties = repoFactory.forCatalogueRepository().getEntities(PartyType.class);
         Assert.assertEquals(1, parties.size());
     }
 

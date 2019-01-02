@@ -5,6 +5,7 @@ import eu.nimble.service.catalogue.persistence.util.UnitPersistenceUtil;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.UnitType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.UnitTypeUnitCodeItem;
 import eu.nimble.utility.persistence.GenericJPARepository;
+import eu.nimble.utility.persistence.JPARepositoryFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,12 +18,12 @@ import java.util.List;
 @Component
 public class UnitManager {
     @Autowired
-    private GenericJPARepository genericJPARepository;
+    private JPARepositoryFactory repoFactory;
 
     @PostConstruct
     private void checkUnits(){
         List<UnitType> resultSet;
-        resultSet = UnitPersistenceUtil.getUnitMarker(genericJPARepository.withEmf("ubldbEntityManagerFactory"));
+        resultSet = UnitPersistenceUtil.getUnitMarker(repoFactory.forCatalogueRepository());
         if(resultSet.size() > 0){
             return;
         }
@@ -37,47 +38,47 @@ public class UnitManager {
         // insert flag
         unitType.setID("NIMBLE_quantity");
         unitType.setUnitCode(Collections.singletonList("NIMBLE_flag"));
-        genericJPARepository.withEmf("ubldbEntityManagerFactory").persistEntity(unitType);
+        repoFactory.forCatalogueRepository().persistEntity(unitType);
 
         UnitType unitType2 = new UnitType();
         unitType2.setID("currency_quantity");
         unitType2.setUnitCode(Arrays.asList("EUR","USD","SEK"));
-        genericJPARepository.withEmf("ubldbEntityManagerFactory").persistEntity(unitType2);
+        repoFactory.forCatalogueRepository().persistEntity(unitType2);
 
         UnitType unitType3 = new UnitType();
         unitType3.setID("time_quantity");
         unitType3.setUnitCode(Arrays.asList("working days","days","weeks"));
-        genericJPARepository.withEmf("ubldbEntityManagerFactory").persistEntity(unitType3);
+        repoFactory.forCatalogueRepository().persistEntity(unitType3);
 
         UnitType unitType4 = new UnitType();
         unitType4.setID("volume_quantity");
         unitType4.setUnitCode(Arrays.asList("L, m3"));
-        genericJPARepository.withEmf("ubldbEntityManagerFactory").persistEntity(unitType4);
+        repoFactory.forCatalogueRepository().persistEntity(unitType4);
 
         UnitType unitType5 = new UnitType();
         unitType5.setID("weight_quantity");
         unitType5.setUnitCode(Arrays.asList("g","kg", "ton"));
-        genericJPARepository.withEmf("ubldbEntityManagerFactory").persistEntity(unitType5);
+        repoFactory.forCatalogueRepository().persistEntity(unitType5);
 
         UnitType unitType6 = new UnitType();
         unitType6.setID("length_quantity");
         unitType6.setUnitCode(Arrays.asList("mm","cm","m"));
-        genericJPARepository.withEmf("ubldbEntityManagerFactory").persistEntity(unitType6);
+        repoFactory.forCatalogueRepository().persistEntity(unitType6);
 
         UnitType unitType7 = new UnitType();
         unitType7.setID("package_quantity");
         unitType7.setUnitCode(Arrays.asList("box", "unit"));
-        genericJPARepository.withEmf("ubldbEntityManagerFactory").persistEntity(unitType7);
+        repoFactory.forCatalogueRepository().persistEntity(unitType7);
 
         UnitType unitType8 = new UnitType();
         unitType8.setID("dimensions");
         unitType8.setUnitCode(Arrays.asList("length","width","height","depth"));
-        genericJPARepository.withEmf("ubldbEntityManagerFactory").persistEntity(unitType8);
+        repoFactory.forCatalogueRepository().persistEntity(unitType8);
 
         UnitType unitType9 = new UnitType();
         unitType9.setID("warranty_period");
         unitType9.setUnitCode(Arrays.asList("month","year"));
-        genericJPARepository.withEmf("ubldbEntityManagerFactory").persistEntity(unitType9);
+        repoFactory.forCatalogueRepository().persistEntity(unitType9);
     }
 
 
@@ -117,7 +118,7 @@ public class UnitManager {
         unitType.setID(unitListId);
         unitType.setHjid(getHjid(unitListId));
         unitType.setUnitCodeItems(resultSet);
-        unitType = genericJPARepository.withEmf("ubldbEntityManagerFactory").updateEntity(unitType);
+        unitType = repoFactory.forCatalogueRepository().updateEntity(unitType);
         return unitType.getUnitCode();
     }
 
@@ -135,7 +136,7 @@ public class UnitManager {
 
         UnitTypeUnitCodeItem unitTypeUnitCodeItemn = new UnitTypeUnitCodeItem();
         unitTypeUnitCodeItemn.setHjid(hjid);
-        genericJPARepository.withEmf("ubldbEntityManagerFactory").deleteEntity(unitTypeUnitCodeItemn);
+        repoFactory.forCatalogueRepository().deleteEntity(unitTypeUnitCodeItemn);
         return getValues(unitListId);
     }
 
@@ -143,7 +144,7 @@ public class UnitManager {
         UnitType unitType = new UnitType();
         unitType.setID(unitListId);
         unitType.setUnitCode(units);
-        genericJPARepository.withEmf("ubldbEntityManagerFactory").persistEntity(unitType);
+        repoFactory.forCatalogueRepository().persistEntity(unitType);
         return units;
     }
 

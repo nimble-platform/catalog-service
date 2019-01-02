@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue.persistence.util;
 
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.utility.persistence.JPARepositoryFactory;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -23,19 +24,19 @@ public class CataloguePersistenceUtil {
 
 
     public static CatalogueType getCatalogueByUuid(String catalogueUuid) {
-        return SpringBridge.getInstance().getGenericJPARepository().getSingleEntity(QUERY_GET_BY_UUID, new String[]{"uuid"}, new Object[]{catalogueUuid});
+        return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_BY_UUID, new String[]{"uuid"}, new Object[]{catalogueUuid});
     }
 
     public static CatalogueType getCatalogueForParty(String catalogueId, String partyId) {
-        return SpringBridge.getInstance().getGenericJPARepository().getSingleEntity(QUERY_GET_FOR_PARTY, new String[]{"catalogueId", "partyId"}, new Object[]{catalogueId, partyId});
+        return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_FOR_PARTY, new String[]{"catalogueId", "partyId"}, new Object[]{catalogueId, partyId});
     }
 
     public static Boolean checkCatalogueExistenceById(String catalogueId, String partyId) {
-        long catalogueExists = SpringBridge.getInstance().getGenericJPARepository().getSingleEntity(QUERY_CHECK_EXISTENCE_BY_ID, new String[]{"catalogueId", "partyId"}, new Object[]{catalogueId, partyId});
+        long catalogueExists = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_CHECK_EXISTENCE_BY_ID, new String[]{"catalogueId", "partyId"}, new Object[]{catalogueId, partyId});
         return catalogueExists == 1 ? true : false;
     }
 
     public static List<String> getCatalogueIdsForParty(String partyId) {
-        return SpringBridge.getInstance().getGenericJPARepository().getEntities(QUERY_GET_CATALOGUE_IDS_FOR_PARTY, new String[]{"partyId"}, new Object[]{partyId});
+        return new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_CATALOGUE_IDS_FOR_PARTY, new String[]{"partyId"}, new Object[]{partyId});
     }
 }

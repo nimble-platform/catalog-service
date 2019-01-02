@@ -31,9 +31,6 @@ public class SpringBridge implements ApplicationContextAware {
     @Autowired
     private TrustClient trustClient;
 
-    @Autowired
-    private GenericJPARepository genericJPARepository;
-
     @Override
     public void setApplicationContext(ApplicationContext applicationContext)
             throws BeansException {
@@ -52,7 +49,4 @@ public class SpringBridge implements ApplicationContextAware {
         return trustClient;
     }
 
-    public GenericJPARepository getGenericJPARepository() {
-        return genericJPARepository.withEmf("ubldbEntityManagerFactory");
-    }
 }

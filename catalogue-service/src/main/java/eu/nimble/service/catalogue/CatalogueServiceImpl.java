@@ -21,6 +21,7 @@ import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
+import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -430,7 +431,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         }
         query += " AND clj.ID = cl.ID ";
 
-        catalogueLines = SpringBridge.getInstance().getGenericJPARepository().withEmf("ubldbEntityManagerFactory").getEntities(query, parameterNames.toArray(new String[parameterNames.size()]), parameterValues.toArray());
+        catalogueLines = new JPARepositoryFactory().forCatalogueRepository().getEntities(query, parameterNames.toArray(new String[parameterNames.size()]), parameterValues.toArray());
 
         return catalogueLines;
     }

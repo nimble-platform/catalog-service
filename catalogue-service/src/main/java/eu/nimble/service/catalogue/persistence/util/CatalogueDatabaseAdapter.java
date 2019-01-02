@@ -1,13 +1,13 @@
-package eu.nimble.service.catalogue.persistence;
+package eu.nimble.service.catalogue.persistence.util;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.nimble.service.catalogue.persistence.util.PartyTypePersistenceUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.QualityIndicatorType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
 import eu.nimble.utility.JsonSerializationUtility;
+import eu.nimble.utility.persistence.JPARepositoryFactory;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -17,7 +17,6 @@ import util.DataModelUtility;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by suat on 07-Aug-18.
@@ -38,12 +37,12 @@ public class CatalogueDatabaseAdapter {
         }
 
         if(catalogueParty == null) {
-            SpringBridge.getInstance().getGenericJPARepository().persistEntity(identityParty);
+            new JPARepositoryFactory().forCatalogueRepository().persistEntity(identityParty);
 
         } else {
             DataModelUtility.nullifyPartyFieldsExceptHjid(catalogueParty);
             DataModelUtility.copyPartyExceptHjid(catalogueParty, identityParty);
-            SpringBridge.getInstance().getGenericJPARepository().updateEntity(catalogueParty);
+            new JPARepositoryFactory().forCatalogueRepository().updateEntity(catalogueParty);
         }
     }
 
@@ -107,7 +106,7 @@ public class CatalogueDatabaseAdapter {
             }
         }
 
-        SpringBridge.getInstance().getGenericJPARepository().updateEntity(catalogueParty);
+        new JPARepositoryFactory().forCatalogueRepository().updateEntity(catalogueParty);
     }
 
     public static PartyType syncPartyInUBLDB(PartyType party) {
@@ -119,7 +118,7 @@ public class CatalogueDatabaseAdapter {
             return catalogueParty;
         } else {
             party = checkPartyIntegrity(party);
-            SpringBridge.getInstance().getGenericJPARepository().persistEntity(party);
+            new JPARepositoryFactory().forCatalogueRepository().persistEntity(party);
             return party;
         }
     }
