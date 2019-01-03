@@ -50,7 +50,7 @@ public class ImportExportController {
             // remove hjid fields of catalogue
             JSONObject object = new JSONObject(serializedCatalogue);
             JsonSerializationUtility.removeHjidFields(object);
-            CatalogueType catalogue = new ObjectMapper().readValue(object.toString(), CatalogueType.class);
+            CatalogueType catalogue = JsonSerializationUtility.getObjectMapper().readValue(object.toString(), CatalogueType.class);
 
             // get person using the given bearer token
             PersonType person = SpringBridge.getInstance().getIdentityClientTyped().getPerson(bearerToken);
@@ -60,7 +60,7 @@ public class ImportExportController {
             // remove hjid fields of party
             JSONObject partyObject = new JSONObject(party);
             JsonSerializationUtility.removeHjidFields(partyObject);
-            party = new ObjectMapper().configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true).readValue(partyObject.toString(), PartyType.class);
+            party = JsonSerializationUtility.getObjectMapper().readValue(partyObject.toString(), PartyType.class);
 
             // replaced provider party of the catalogue with the party
             catalogue.setProviderParty(party);

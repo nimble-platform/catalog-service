@@ -20,9 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -45,7 +43,7 @@ public class Test06_BinaryContentTest {
 
     private static String firstProductImageUri;
     private static String secondProductImageUri;
-    private static String catalogueId;
+    private static String catalogueUuid;
 
     @Test
     public void test10_postJsonCatalogue() throws Exception {
@@ -61,7 +59,7 @@ public class Test06_BinaryContentTest {
         Assert.assertNotEquals("", catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().get(0).getUri());
 
         firstProductImageUri = catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().get(0).getUri();
-        catalogueId = catalogue.getUUID();
+        catalogueUuid = catalogue.getUUID();
     }
 
     @Test
@@ -78,7 +76,7 @@ public class Test06_BinaryContentTest {
     @Test
     public void test12_updateJsonCatalogue() throws Exception {
         // get the catalogue
-        MockHttpServletRequestBuilder request = get("/catalogue/UBL/" + catalogueId);
+        MockHttpServletRequestBuilder request = get("/catalogue/UBL/"+ catalogueUuid);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
 
@@ -119,6 +117,15 @@ public class Test06_BinaryContentTest {
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
 
         BinaryObjectType binaryObject = mapper.readValue(result.getResponse().getContentAsString(), BinaryObjectType.class);
-        Assert.assertEquals(secondFileName, binaryObject.getFileName());
+        Assert.assertEquals(secondFileName,binaryObject.getFileName());
+    }
+
+    @Test
+    public void test15_deleteCatalogue() throws Exception {
+        MockHttpServletRequestBuilder request = delete("/catalogue/ubl/" + catalogueUuid);
+        this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+
+        request = get("/catalogue/ubl/" + catalogueUuid);
+        this.mockMvc.perform(request).andDo(print()).andExpect(status().isNoContent()).andReturn();
     }
 }

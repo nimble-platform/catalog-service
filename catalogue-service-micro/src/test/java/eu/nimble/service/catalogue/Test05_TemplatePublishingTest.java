@@ -6,16 +6,17 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemPropertyType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ResourceType;
 import eu.nimble.utility.JsonSerializationUtility;
-import eu.nimble.utility.persistence.resource.ResourceTypeRepository;
+import eu.nimble.utility.persistence.JPARepositoryFactory;
+import eu.nimble.utility.persistence.resource.ResourceValidationUtil;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
-import org.springframework.core.env.Environment;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
@@ -41,10 +42,12 @@ public class Test05_TemplatePublishingTest {
     @Autowired
     private MockMvc mockMvc;
     @Autowired
-    private Environment environment;
+    private JPARepositoryFactory repoFactory;
     @Autowired
-    private ResourceTypeRepository resourceTypeRepository;
-    private ObjectMapper mapper = new ObjectMapper();
+    private ResourceValidationUtil resourceValidationUtil;
+    @Autowired
+    private Environment environment;
+    private ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
 
     final private String partyName = "alpCompany";
     final private String partyId = "381";
@@ -115,8 +118,8 @@ public class Test05_TemplatePublishingTest {
         Assert.assertSame(true,catalogueLineType3.getGoodsItem().getDeliveryTerms().getIncoterms().equals(incoterms));
 
         // check that resources have been managed properly
-        List<ResourceType> allResources = resourceTypeRepository.findAll();
-        Set<Long> catalogueIds = JsonSerializationUtility.extractAllHjidsExcludingPartyRelatedOnes(catalogue);
+        List<ResourceType> allResources = repoFactory.forCatalogueRepository().getEntities(ResourceType.class);
+        Set<Long> catalogueIds = resourceValidationUtil.extractAllHjidsExcludingPartyRelatedOnes(catalogue);
 
         Set<Long> managedIds = new HashSet<>();
         for(ResourceType resource : allResources) {

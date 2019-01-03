@@ -41,7 +41,7 @@ public class Test02_CatalogueLineControllerTest {
 
     @BeforeClass
     public static void init() {
-        mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper = JsonSerializationUtility.getObjectMapper();
     }
 
     @Test

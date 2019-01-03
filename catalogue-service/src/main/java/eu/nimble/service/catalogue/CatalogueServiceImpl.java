@@ -4,6 +4,9 @@ import eu.nimble.service.catalogue.category.CategoryServiceManager;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
 import eu.nimble.service.catalogue.model.category.Category;
+import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
+import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
+import eu.nimble.service.catalogue.persistence.util.UnitPersistenceUtil;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
 import eu.nimble.service.catalogue.template.TemplateGenerator;
 import eu.nimble.service.catalogue.template.TemplateParser;
@@ -18,12 +21,12 @@ import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
+import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.jpa.repository.JpaRepository;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.activation.MimetypesFileTypeMap;
@@ -106,8 +109,8 @@ public class CatalogueServiceImpl implements CatalogueService {
     public CatalogueType updateCatalogue(CatalogueType catalogue) {
         logger.info("Catalogue with uuid: {} will be updated", catalogue.getUUID());
         DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(catalogue);
-        EntityIdAwareRepositoryWrapper<CatalogueType> repositoryWrapper = new EntityIdAwareRepositoryWrapper((JpaRepository) SpringBridge.getInstance().getCatalogueRepository(), catalogue.getProviderParty().getID());
-        catalogue = repositoryWrapper.save(catalogue);
+        EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogue.getProviderParty().getID());
+        catalogue = repositoryWrapper.updateEntity(catalogue);
 
         // add synchronization record
         MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogue.getUUID());
@@ -161,8 +164,8 @@ public class CatalogueServiceImpl implements CatalogueService {
             DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(ublCatalogue);
 
             // persist the catalogue in relational DB
-            EntityIdAwareRepositoryWrapper<CatalogueType> repositoryWrapper = new EntityIdAwareRepositoryWrapper(ublCatalogue.getProviderParty().getID());
-            catalogue = repositoryWrapper.updateEntity((T) ublCatalogue);
+            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(ublCatalogue.getProviderParty().getID());
+            catalogue = repositoryWrapper.updateEntityForPersistCases((T) ublCatalogue);
             logger.info("Catalogue with uuid: {} persisted in DB", uuid.toString());
 
             // add synchronization record
@@ -181,7 +184,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
         String query;
         if (standard == Configuration.Standard.UBL) {
-            catalogue = (T) SpringBridge.getInstance().getCatalogueRepository().getCatalogueByUuid(uuid);
+            catalogue = (T) CataloguePersistenceUtil.getCatalogueByUuid(uuid);
 
         } else if (standard == Configuration.Standard.MODAML) {
             query = "SELECT catalogue FROM TEXCatalogType catalogue "
@@ -203,7 +206,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         T catalogue = null;
 
         if (standard == Configuration.Standard.UBL) {
-            catalogue = (T) SpringBridge.getInstance().getCatalogueRepository().getCatalogueForParty(id, partyId);
+            catalogue = (T) CataloguePersistenceUtil.getCatalogueForParty(id, partyId);
 
         } else if (standard == Configuration.Standard.MODAML) {
             logger.warn("Fetching catalogues with id and party id from MODAML repository is not implemented yet");
@@ -221,9 +224,8 @@ public class CatalogueServiceImpl implements CatalogueService {
             CatalogueType catalogue = getCatalogue(uuid);
 
             if (catalogue != null) {
-                Long hjid = catalogue.getHjid();
-                EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper((JpaRepository) SpringBridge.getInstance().getCatalogueRepository(), catalogue.getProviderParty().getID());
-                repositoryWrapper.delete(hjid);
+                EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogue.getProviderParty().getID());
+                repositoryWrapper.deleteEntity(catalogue);
 
                 // add synchronization record
                 MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.DELETE, uuid);
@@ -393,7 +395,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     @Override
     public <T> T getCatalogueLine(String catalogueId, String catalogueLineId) {
-        T catalogueLine = (T) SpringBridge.getInstance().getCatalogueRepository().getCatalogueLine(catalogueId, catalogueLineId);
+        T catalogueLine = (T) CatalogueLinePersistenceUtil.getCatalogueLine(catalogueId, catalogueLineId);
         return catalogueLine;
     }
 
@@ -429,7 +431,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         }
         query += " AND clj.ID = cl.ID ";
 
-        catalogueLines = SpringBridge.getInstance().getCatalogueRepository().getEntities(query, parameterNames.toArray(new String[parameterNames.size()]), parameterValues.toArray());
+        catalogueLines = new JPARepositoryFactory().forCatalogueRepository().getEntities(query, parameterNames.toArray(new String[parameterNames.size()]), parameterValues.toArray());
 
         return catalogueLines;
     }
@@ -438,7 +440,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine) {
         catalogue.getCatalogueLine().add(catalogueLine);
         DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(catalogue);
-        EntityIdAwareRepositoryWrapper<CatalogueType> repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogue.getProviderParty().getID());
+        EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogue.getProviderParty().getID());
         catalogue = repositoryWrapper.updateEntity(catalogue);
         catalogueLine = catalogue.getCatalogueLine().get(catalogue.getCatalogueLine().size() - 1);
 
@@ -452,8 +454,8 @@ public class CatalogueServiceImpl implements CatalogueService {
     public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine) {
         CatalogueType catalogue = getCatalogue(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID());
         DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(catalogueLine, catalogue);
-        EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(SpringBridge.getInstance().getCatalogueLineRepository(), catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
-        catalogueLine = (CatalogueLineType) repositoryWrapper.save(catalogueLine);
+        EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
+        catalogueLine = repositoryWrapper.updateEntity(catalogueLine);
 
         // add synchronization record
         // Not UUID but ID of the document reference should be used.
@@ -470,8 +472,8 @@ public class CatalogueServiceImpl implements CatalogueService {
 
         if (catalogueLine != null) {
             Long hjid = catalogueLine.getHjid();
-            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(SpringBridge.getInstance().getCatalogueLineRepository(), catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
-            repositoryWrapper.delete(hjid);
+            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
+            repositoryWrapper.deleteEntityByHjid(CatalogueLineType.class, hjid);
 
             // add synchronization record
             MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueId);

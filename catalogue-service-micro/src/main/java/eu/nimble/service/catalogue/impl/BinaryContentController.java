@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.HttpResponseUtil;
+import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.persistence.binary.BinaryContentService;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -42,7 +43,7 @@ public class BinaryContentController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
             }
 
-            ObjectMapper objectMapper = new ObjectMapper();
+            ObjectMapper objectMapper = JsonSerializationUtility.getObjectMapper();
             String response = objectMapper.writeValueAsString(result);
 
             logger.info("Completed request to retrieve binary content for uri: {}", uri);

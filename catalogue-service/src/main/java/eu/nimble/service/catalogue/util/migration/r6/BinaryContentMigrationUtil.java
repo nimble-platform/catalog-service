@@ -1,7 +1,7 @@
 package eu.nimble.service.catalogue.util.migration.r6;
 
-import eu.nimble.service.catalogue.persistence.BinaryObjectRepository;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
+import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.persistence.binary.BinaryContentService;
 import eu.nimble.utility.persistence.binary.ImageScaler;
 import org.slf4j.Logger;
@@ -33,14 +33,14 @@ public class BinaryContentMigrationUtil {
     private BinaryContentService binaryContentService;
 
     @Autowired
-    private BinaryObjectRepository binaryObjectRepository;
+    private JPARepositoryFactory repoFactory;
 
     @Autowired
     private ImageScaler imageScaler;
 
     public void migrateBinaryObjects() {
 
-        List<BinaryObjectType> binaryObjects = binaryObjectRepository.findAll();
+        List<BinaryObjectType> binaryObjects = repoFactory.forCatalogueRepository().getEntities(BinaryObjectType.class);
         logger.info("Total binary documents: {}", binaryObjects.size());
 
         for(int i=0; i<binaryObjects.size(); i++) {
@@ -119,7 +119,7 @@ public class BinaryContentMigrationUtil {
 
             // refer to the original content from the initial binary object
             binaryObject.setUri(originalBinaryObject.getUri());
-            binaryObject = binaryObjectRepository.save(binaryObject);
+            binaryObject = repoFactory.forCatalogueRepository().updateEntity(binaryObject);
 
             logger.info("Processed binary content: {}, hjid: {}", i, binaryObject.getHjid());
         }
