@@ -4,10 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemPropertyType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.ResourceType;
 import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
-import eu.nimble.utility.persistence.resource.ResourceValidationUtil;
+import eu.nimble.utility.persistence.resource.Resource;
+import eu.nimble.utility.persistence.resource.ResourcePersistenceUtility;
+import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -44,7 +45,7 @@ public class Test05_TemplatePublishingTest {
     @Autowired
     private JPARepositoryFactory repoFactory;
     @Autowired
-    private ResourceValidationUtil resourceValidationUtil;
+    private ResourceValidationUtility resourceValidationUtil;
     @Autowired
     private Environment environment;
     private ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
@@ -118,12 +119,12 @@ public class Test05_TemplatePublishingTest {
         Assert.assertSame(true,catalogueLineType3.getGoodsItem().getDeliveryTerms().getIncoterms().equals(incoterms));
 
         // check that resources have been managed properly
-        List<ResourceType> allResources = repoFactory.forCatalogueRepository().getEntities(ResourceType.class);
+        List<Resource> allResources = ResourcePersistenceUtility.getAllResources();
         Set<Long> catalogueIds = resourceValidationUtil.extractAllHjidsExcludingPartyRelatedOnes(catalogue);
 
         Set<Long> managedIds = new HashSet<>();
-        for(ResourceType resource : allResources) {
-            managedIds.add(resource.getEntityID());
+        for(Resource resource : allResources) {
+            managedIds.add(resource.getEntityId());
         }
         Assert.assertTrue("Managed ids do not contain the catalogue ids", managedIds.containsAll(catalogueIds));
     }
