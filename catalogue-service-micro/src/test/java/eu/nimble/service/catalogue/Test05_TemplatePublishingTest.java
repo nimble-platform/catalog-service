@@ -118,15 +118,18 @@ public class Test05_TemplatePublishingTest {
         // check incoterms
         Assert.assertSame(true,catalogueLineType3.getGoodsItem().getDeliveryTerms().getIncoterms().equals(incoterms));
 
-        // check that resources have been managed properly
-        List<Resource> allResources = ResourcePersistenceUtility.getAllResources();
-        Set<Long> catalogueIds = resourceValidationUtil.extractAllHjidsExcludingPartyRelatedOnes(catalogue);
+        boolean checkEntityIds = Boolean.valueOf(environment.getProperty("nimble.check-entity-ids"));
+        if(checkEntityIds) {
+            // check that resources have been managed properly
+            List<Resource> allResources = ResourcePersistenceUtility.getAllResources();
+            Set<Long> catalogueIds = resourceValidationUtil.extractAllHjidsExcludingPartyRelatedOnes(catalogue);
 
-        Set<Long> managedIds = new HashSet<>();
-        for(Resource resource : allResources) {
-            managedIds.add(resource.getEntityId());
+            Set<Long> managedIds = new HashSet<>();
+            for (Resource resource : allResources) {
+                managedIds.add(resource.getEntityId());
+            }
+            Assert.assertTrue("Managed ids do not contain the catalogue ids", managedIds.containsAll(catalogueIds));
         }
-        Assert.assertTrue("Managed ids do not contain the catalogue ids", managedIds.containsAll(catalogueIds));
     }
 
 }

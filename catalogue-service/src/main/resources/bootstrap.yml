@@ -161,6 +161,7 @@ nimble:
     topics:
       companyUpdates: ${KAFKA_TOPIC_COMPANY_UPDATES:company-updates}
       trustScoreUpdates: ${KAFKA_TOPIC_TRUST_SCORE_UPDATES:trust-score-updates}
+  check-entity-ids: ${CHECK_ENTITY_IDS:false}
 
 ################################################################################################
 ################################## KUBERNETES CONFIG ###########################################

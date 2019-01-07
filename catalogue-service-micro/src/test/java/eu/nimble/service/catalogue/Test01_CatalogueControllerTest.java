@@ -17,6 +17,7 @@ import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -45,6 +46,8 @@ public class Test01_CatalogueControllerTest {
     private JPARepositoryFactory repoFactory;
     @Autowired
     private ResourceValidationUtility resourceValidationUtil;
+    @Autowired
+    private Environment environment;
 
     private ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
     private static String createdCatalogueId;
@@ -61,16 +64,19 @@ public class Test01_CatalogueControllerTest {
         CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
         createdCatalogueId = catalogue.getUUID();
 
-        // check that resources have been managed properly
-        List<Resource> allResources = ResourcePersistenceUtility.getAllResources();
-        Set<Long> catalogueIds = resourceValidationUtil.extractAllHjidsExcludingPartyRelatedOnes(catalogue);
+        boolean checkEntityIds = Boolean.valueOf(environment.getProperty("nimble.check-entity-ids"));
+        if(checkEntityIds) {
+            // check that resources have been managed properly
+            List<Resource> allResources = ResourcePersistenceUtility.getAllResources();
+            Set<Long> catalogueIds = resourceValidationUtil.extractAllHjidsExcludingPartyRelatedOnes(catalogue);
 
-        Assert.assertEquals("Resource numbers and managed id sizes do not match", allResources.size(), catalogueIds.size());
-        Set<Long> managedIds = new HashSet<>();
-        for(Resource resource : allResources) {
-            managedIds.add(resource.getEntityId());
+            Assert.assertEquals("Resource numbers and managed id sizes do not match", allResources.size(), catalogueIds.size());
+            Set<Long> managedIds = new HashSet<>();
+            for(Resource resource : allResources) {
+                managedIds.add(resource.getEntityId());
+            }
+            Assert.assertTrue("Managed ids and catalogue ids do not match", managedIds.containsAll(catalogueIds) && catalogueIds.containsAll(managedIds));
         }
-        Assert.assertTrue("Managed ids and catalogue ids do not match", managedIds.containsAll(catalogueIds) && catalogueIds.containsAll(managedIds));
 
         // check that only a single party instance is created
         List<PartyType> parties = repoFactory.forCatalogueRepository().getEntities(PartyType.class);
@@ -121,16 +127,19 @@ public class Test01_CatalogueControllerTest {
         // check whether it is updated or not
         Assert.assertEquals("Updated product name", catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getName());
 
-        // check that resources have been managed properly
-        List<Resource> allResources = ResourcePersistenceUtility.getAllResources();
-        Set<Long> catalogueIds = resourceValidationUtil.extractAllHjidsExcludingPartyRelatedOnes(catalogue);
+        boolean checkEntityIds = Boolean.valueOf(environment.getProperty("nimble.check-entity-ids"));
+        if(checkEntityIds) {
+            // check that resources have been managed properly
+            List<Resource> allResources = ResourcePersistenceUtility.getAllResources();
+            Set<Long> catalogueIds = resourceValidationUtil.extractAllHjidsExcludingPartyRelatedOnes(catalogue);
 
-        Assert.assertEquals("Resource numbers and managed id sizes do not match", allResources.size(), catalogueIds.size());
-        Set<Long> managedIds = new HashSet<>();
-        for(Resource resource : allResources) {
-            managedIds.add(resource.getEntityId());
+            Assert.assertEquals("Resource numbers and managed id sizes do not match", allResources.size(), catalogueIds.size());
+            Set<Long> managedIds = new HashSet<>();
+            for (Resource resource : allResources) {
+                managedIds.add(resource.getEntityId());
+            }
+            Assert.assertTrue("Managed ids and catalogue ids do not match", managedIds.containsAll(catalogueIds) && catalogueIds.containsAll(managedIds));
         }
-        Assert.assertTrue("Managed ids and catalogue ids do not match", managedIds.containsAll(catalogueIds) && catalogueIds.containsAll(managedIds));
 
         // check that only a single party instance is created
         List<PartyType> parties = repoFactory.forCatalogueRepository().getEntities(PartyType.class);
@@ -157,16 +166,19 @@ public class Test01_CatalogueControllerTest {
         // check whether it is updated or not
         Assert.assertEquals("Updated product name", catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getName());
 
-        // check that resources have been managed properly
-        List<Resource> allResources = ResourcePersistenceUtility.getAllResources();
-        Set<Long> catalogueIds = resourceValidationUtil.extractAllHjidsExcludingPartyRelatedOnes(catalogue);
+        boolean checkEntityIds = Boolean.valueOf(environment.getProperty("nimble.check-entity-ids"));
+        if(checkEntityIds) {
+            // check that resources have been managed properly
+            List<Resource> allResources = ResourcePersistenceUtility.getAllResources();
+            Set<Long> catalogueIds = resourceValidationUtil.extractAllHjidsExcludingPartyRelatedOnes(catalogue);
 
-        Assert.assertEquals("Resource numbers and managed id sizes do not match", allResources.size(), catalogueIds.size());
-        Set<Long> managedIds = new HashSet<>();
-        for(Resource resource : allResources) {
-            managedIds.add(resource.getEntityId());
+            Assert.assertEquals("Resource numbers and managed id sizes do not match", allResources.size(), catalogueIds.size());
+            Set<Long> managedIds = new HashSet<>();
+            for (Resource resource : allResources) {
+                managedIds.add(resource.getEntityId());
+            }
+            Assert.assertTrue("Managed ids and catalogue ids do not match", managedIds.containsAll(catalogueIds) && catalogueIds.containsAll(managedIds));
         }
-        Assert.assertTrue("Managed ids and catalogue ids do not match", managedIds.containsAll(catalogueIds) && catalogueIds.containsAll(managedIds));
 
         // check that only a single party instance is created
         List<PartyType> parties = repoFactory.forCatalogueRepository().getEntities(PartyType.class);
