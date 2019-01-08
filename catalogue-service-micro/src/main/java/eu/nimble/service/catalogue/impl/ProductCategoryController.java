@@ -28,41 +28,26 @@ public class ProductCategoryController {
     private CategoryServiceManager csm = CategoryServiceManager.getInstance();
 
     /**
-     * Retrieves a list of {@link Category}. This method takes either a list of names or a list (category id/taxonomy id)
-     * pairs. When the category names are provided, they are looked for in all managed taxonomies. For the other option,
-     * (i.e. get by id option) the taxonomy id is already provided along with the category id. See the examples in
-     * parameter definitions.
-     *
-     * @param categoryNames List of names.
-     *                      Example: "wood, mdf"
+     * Retrieves a list of {@link Category}. This method takes a list (category id/taxonomy id)
+     * pairs.See the examples in parameter definitions.
      * @param taxonomyIds   List of taxonomy ids. IDs must indicate the taxonomies containing the corresponding category
      *                      in the categoryIds parameter.
      *                      Example: eClass, eClass
      * @param categoryIds   List of category ids.
      *                      Example: 0173-1#01-BAC439#012,0173-1#01-AJZ694#013
-     * @param forLogistics  Optional parameter to indicate to restrict the results specific to logistics services or
-     *                      regular products. If not specified, all matched categories are returned
      * @return <li>200 along with the list of categories retrieved for the given parameters</li>
-     * <li>400 if none of category names or (taxonomyId/categoryId) pairs are provided; number of elements in taxonomy id and category id lists do not match</li>
+     * <li>400 if (taxonomyId/categoryId) pairs are not provided; number of elements in taxonomy id and category id lists do not match</li>
      */
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieve a list of categories")
     @RequestMapping(value = "/catalogue/category",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getCategories(@RequestParam(required = false) List<String> categoryNames,
-                                        @RequestParam(required = false) List<String> taxonomyIds,
-                                        @RequestParam(required = false) List<String> categoryIds,
-                                        @RequestParam(required = false) Boolean forLogistics) {
-        log.info("Incoming request to get categories category names");
+    public ResponseEntity getCategories(@RequestParam(required = false) List<String> taxonomyIds,
+                                        @RequestParam(required = false) List<String> categoryIds) {
+        log.info("Incoming request to get categories");
         List<Category> categories = new ArrayList<>();
-        if (categoryNames != null && categoryNames.size() > 0) {
-            log.info("Getting categories for name: {}", categoryNames);
-            for (String name : categoryNames) {
-                categories.addAll(csm.getProductCategories(name, forLogistics));
-            }
-
-        } else if (taxonomyIds != null && taxonomyIds.size() > 0 && categoryIds != null && categoryIds.size() > 0) {
+        if (taxonomyIds != null && taxonomyIds.size() > 0 && categoryIds != null && categoryIds.size() > 0) {
             if (taxonomyIds.size() != categoryIds.size()) {
                 String msg = "Number of elements in taxonomy ids list and  category ids list does not match";
                 log.info(msg);
@@ -79,12 +64,52 @@ public class ProductCategoryController {
             }
 
         } else {
-            String msg = "Neither category names nor (taxonomy id / category id) pairs provided";
+            String msg = "(taxonomy id / category id) pairs should be provided";
             log.info(msg);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(msg);
         }
 
         log.info("Completed request to get categories. size: {}", categories.size());
+        return ResponseEntity.ok(categories);
+    }
+
+    /**
+     * Retrieves a list of {@link Category}. This method takes a name and taxonomy id.If a valid taxonomy id is provided,then category name
+     * is looked for in that taxonomy.If no taxonomy id is provided,then category name is looked for in all managed taxonomies.
+     * See the examples in parameter definitions.
+     * @param name          name of the category
+     *                      Example: "wood, mdf"
+     * @param taxonomyId   taxonomy id.
+     *                      Example: eClass, FurnitureOntology
+     * @param forLogistics  Optional parameter to indicate to restrict the results specific to logistics services or
+     *                      regular products. If not specified, all matched categories are returned
+     * @return <li>200 along with the list of categories retrieved for the given parameters</li>
+     * <li>404 if the given taxonomy id is not valid</li>
+     */
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieve a list of categories by name")
+    @RequestMapping(value = "catalogue/taxonomies/{taxonomyId}",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity getCategoriesByName(@RequestParam String name,
+                                              @PathVariable String taxonomyId,
+                                              @RequestParam(required = false) Boolean forLogistics) {
+        log.info("Incoming request to get categories by name");
+        // check whether the taxonomy id is valid or not
+        if(!taxonomyId.contentEquals("All") && !taxonomyIdExists(taxonomyId)){
+            log.error("The given taxonomy id : {} is not valid", taxonomyId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("The given taxonomy id %s is not valid", taxonomyId));
+        }
+        List<Category> categories = new ArrayList<>();
+        if(taxonomyId.contentEquals("All")){
+            log.info("Getting categories for name: {}", name);
+            categories.addAll(csm.getProductCategories(name,null,forLogistics));
+        }
+        else {
+            log.info("Getting categories for name: {}, taxonomyId: {}", name,taxonomyId);
+            categories.addAll(csm.getProductCategories(name,taxonomyId,forLogistics));
+        }
+        log.info("Completed request to get categories by name. size: {}", categories.size());
         return ResponseEntity.ok(categories);
     }
 
