@@ -50,6 +50,7 @@ public class Test06_BinaryContentTest {
         String catalogueJson = IOUtils.toString(Test01_CatalogueControllerTest.class.getResourceAsStream("/example_catalogue_binary_content.json"));
 
         MockHttpServletRequestBuilder request = post("/catalogue/ubl")
+                .header("Authorization", environment.getProperty("nimble.test-token"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(catalogueJson);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isCreated()).andReturn();
@@ -76,7 +77,8 @@ public class Test06_BinaryContentTest {
     @Test
     public void test12_updateJsonCatalogue() throws Exception {
         // get the catalogue
-        MockHttpServletRequestBuilder request = get("/catalogue/UBL/"+ catalogueUuid);
+        MockHttpServletRequestBuilder request = get("/catalogue/UBL/"+ catalogueUuid)
+                .header("Authorization", environment.getProperty("nimble.test-token"));
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
 
@@ -91,6 +93,7 @@ public class Test06_BinaryContentTest {
         catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().add(binaryObject);
 
         request = put("/catalogue/UBL")
+                .header("Authorization", environment.getProperty("nimble.test-token"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(catalogue));
         result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
@@ -122,10 +125,12 @@ public class Test06_BinaryContentTest {
 
     @Test
     public void test15_deleteCatalogue() throws Exception {
-        MockHttpServletRequestBuilder request = delete("/catalogue/ubl/" + catalogueUuid);
+        MockHttpServletRequestBuilder request = delete("/catalogue/ubl/" + catalogueUuid)
+                .header("Authorization", environment.getProperty("nimble.test-token"));
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
 
-        request = get("/catalogue/ubl/" + catalogueUuid);
+        request = get("/catalogue/ubl/" + catalogueUuid)
+                .header("Authorization", environment.getProperty("nimble.test-token"));
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isNoContent()).andReturn();
     }
 }

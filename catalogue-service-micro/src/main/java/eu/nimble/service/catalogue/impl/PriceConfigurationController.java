@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
+import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PriceOptionType;
 import eu.nimble.utility.Configuration;
@@ -63,6 +64,13 @@ public class PriceConfigurationController {
                                            @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to add pricing option. catalogueId: {}, lineId: {}", catalogueUuid, lineId);
         try {
+            // check token
+            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
+            if(!isValid){
+                String msg = String.format("No user exists for the given token : %s",bearerToken);
+                log.error(msg);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+            }
             // check catalogue
             if (service.getCatalogue(catalogueUuid) == null) {
                 String msg = String.format("Catalogue with uuid : {} does not exist", catalogueUuid);
@@ -131,6 +139,13 @@ public class PriceConfigurationController {
                                               @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to delete pricing option. catalogueId: {}, lineId: {}, optionId: {}", catalogueUuid, lineId, optionId);
         try {
+            // check token
+            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
+            if(!isValid){
+                String msg = String.format("No user exists for the given token : %s",bearerToken);
+                log.error(msg);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+            }
             // check catalogue
             if (service.getCatalogue(catalogueUuid) == null) {
                 String msg = String.format("Catalogue with uuid : {} does not exist", catalogueUuid);
@@ -195,6 +210,13 @@ public class PriceConfigurationController {
         log.info("Incoming request to delete pricing option. catalogueId: {}, lineId: {}, optionId: {}", catalogueUuid, lineId, priceOption.getHjid());
 
         try {
+            // check token
+            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
+            if(!isValid){
+                String msg = String.format("No user exists for the given token : %s",bearerToken);
+                log.error(msg);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+            }
             // check catalogue
             if (service.getCatalogue(catalogueUuid) == null) {
                 String msg = String.format("Catalogue with uuid : {} does not exist", catalogueUuid);

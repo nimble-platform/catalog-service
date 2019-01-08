@@ -5,6 +5,7 @@ import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
+import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.catalogue.validation.CatalogueLineValidator;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
@@ -70,9 +71,21 @@ public class CatalogueLineController {
     @RequestMapping(value = "/catalogueline/{lineId}",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getCatalogueLine(@PathVariable String catalogueUuid, @PathVariable String lineId) {
+    public ResponseEntity getCatalogueLine(@PathVariable String catalogueUuid, @PathVariable String lineId,@RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to get catalogue line with lineId: {}", lineId);
-
+        try {
+            // check token
+            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
+            if(!isValid){
+                String msg = String.format("No user exists for the given token : %s",bearerToken);
+                log.error(msg);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+            }
+        } catch (IOException e){
+            String msg = String.format("Failed to retrieve catalogue line: %s for catalogue uuid: %s",lineId,catalogueUuid);
+            log.error(msg,e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(msg);
+        }
         if (service.getCatalogue(catalogueUuid) == null) {
             log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
@@ -104,9 +117,21 @@ public class CatalogueLineController {
     @RequestMapping(value = "/cataloguelines/{lineIds}",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getCatalogueLines(@PathVariable String catalogueUuid, @PathVariable List<String> lineIds) {
+    public ResponseEntity getCatalogueLines(@PathVariable String catalogueUuid, @PathVariable List<String> lineIds,@RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to get catalogue line with lineIds: {}", lineIds);
-
+        try {
+            // check token
+            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
+            if(!isValid){
+                String msg = String.format("No user exists for the given token : %s",bearerToken);
+                log.error(msg);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+            }
+        } catch (IOException e){
+            String msg = String.format("Failed to retrieve catalogue lines: %s for catalogue uuid: %s",lineIds.toString(),catalogueUuid);
+            log.error(msg,e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(msg);
+        }
         if (service.getCatalogue(catalogueUuid) == null) {
             log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
@@ -156,12 +181,19 @@ public class CatalogueLineController {
             consumes = {"application/json"},
             produces = {"application/json"},
             method = RequestMethod.POST)
-    public ResponseEntity addCatalogueLine(@PathVariable String catalogueUuid, @RequestBody String catalogueLineJson) {
+    public ResponseEntity addCatalogueLine(@PathVariable String catalogueUuid, @RequestBody String catalogueLineJson,@RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to add catalogue line to catalogue: {}", catalogueUuid);
         CatalogueType catalogue;
         CatalogueLineType catalogueLine;
 
         try {
+            // check token
+            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
+            if(!isValid){
+                String msg = String.format("No user exists for the given token : %s",bearerToken);
+                log.error(msg);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+            }
             // get owning catalogue
             catalogue = service.getCatalogue(catalogueUuid);
             if (catalogue == null) {
@@ -251,9 +283,15 @@ public class CatalogueLineController {
             consumes = {"application/json"},
             produces = {"application/json"},
             method = RequestMethod.PUT)
-    public ResponseEntity updateCatalogueLine(@PathVariable String catalogueUuid, @RequestBody String catalogueLineJson) {
+    public ResponseEntity updateCatalogueLine(@PathVariable String catalogueUuid, @RequestBody String catalogueLineJson,@RequestHeader(value = "Authorization") String bearerToken) {
         try {
-
+            // check token
+            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
+            if(!isValid){
+                String msg = String.format("No user exists for the given token : %s",bearerToken);
+                log.error(msg);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+            }
             CatalogueLineType catalogueLine;
 
             //parse catalogue line
@@ -327,9 +365,21 @@ public class CatalogueLineController {
     @RequestMapping(value = "/catalogueline/{lineId}",
             produces = {"application/json"},
             method = RequestMethod.DELETE)
-    public ResponseEntity deleteCatalogueLineById(@PathVariable String catalogueUuid, @PathVariable String lineId) {
+    public ResponseEntity deleteCatalogueLineById(@PathVariable String catalogueUuid, @PathVariable String lineId,@RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to delete catalogue line. catalogue uuid: {}: line lineId {}", catalogueUuid, lineId);
-
+        try {
+            // check token
+            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
+            if(!isValid){
+                String msg = String.format("No user exists for the given token : %s",bearerToken);
+                log.error(msg);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+            }
+        } catch (IOException e){
+            String msg = String.format("Failed to delete catalogue line: %s for catalogue uuid: %s",lineId,catalogueUuid);
+            log.error(msg,e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(msg);
+        }
         if (service.getCatalogue(catalogueUuid) == null) {
             log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));

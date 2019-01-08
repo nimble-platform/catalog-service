@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.HttpResponseUtil;
 import eu.nimble.utility.JsonSerializationUtility;
@@ -35,6 +36,13 @@ public class BinaryContentController {
                                      @RequestHeader(value = "Authorization") String bearerToken) {
         try {
             logger.info("Request to retrieve binary content for uri: {}", uri);
+            // check token
+            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
+            if(!isValid){
+                String msg = String.format("No user exists for the given token : %s",bearerToken);
+                logger.error(msg);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+            }
             BinaryObjectType result = binaryContentService.retrieveContent(uri);
             // check whether the binary content exists or not
             if(result == null){
@@ -63,6 +71,18 @@ public class BinaryContentController {
                            HttpServletResponse response) {
         try {
             logger.info("Request to retrieve raw binary content for uri: {}", uri);
+            // check token
+            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
+            if(!isValid){
+                String msg = String.format("No user exists for the given token : %s",bearerToken);
+                logger.error(msg);
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                try {
+                    response.getOutputStream().write(msg.getBytes());
+                } catch (IOException e1) {
+                    logger.error("Failed to write the error message to the output stream", e1);
+                }
+            }
             BinaryObjectType result = binaryContentService.retrieveContent(uri);
             // check whether the binary content exists or not
             if(result == null){

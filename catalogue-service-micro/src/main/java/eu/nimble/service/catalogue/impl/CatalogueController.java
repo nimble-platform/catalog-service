@@ -10,6 +10,7 @@ import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.PartyTypePersistenceUtil;
 import eu.nimble.service.catalogue.sync.MarmottaClient;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizationException;
+import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
@@ -21,6 +22,7 @@ import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import eu.nimble.utility.serialization.TransactionEnabledSerializationUtility;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.io.IOUtils;
@@ -83,8 +85,20 @@ public class CatalogueController {
     @RequestMapping(value = "/catalogue/{partyId}/default",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getDefaultCatalogue(@PathVariable String partyId) {
+    public ResponseEntity getDefaultCatalogue(@PathVariable String partyId,
+                                              @ApiParam(value = "The Bearer token provided by the identity service" ,required=true ) @RequestHeader(value="Authorization", required=true) String bearerToken) {
         log.info("Incoming request to get default catalogue for party: {}", partyId);
+        try {
+            // check token
+            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
+            if(!isValid){
+                String msg = String.format("No user exists for the given token : %s",bearerToken);
+                return createErrorResponseEntity(msg, HttpStatus.NOT_FOUND, null);
+            }
+        } catch (IOException e){
+            String msg = String.format("Failed to get default catalogue for party: %s",partyId);
+            return createErrorResponseEntity(msg, HttpStatus.INTERNAL_SERVER_ERROR, null);
+        }
         // TODO : Check whether the given party id is valid or not.
         CatalogueType catalogue;
         try {
@@ -123,8 +137,20 @@ public class CatalogueController {
     @RequestMapping(value = "/catalogue/{standard}/{uuid}",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getCatalogue(@PathVariable String standard, @PathVariable String uuid) {
+    public ResponseEntity getCatalogue(@PathVariable String standard, @PathVariable String uuid,
+                                       @ApiParam(value = "The Bearer token provided by the identity service" ,required=true ) @RequestHeader(value="Authorization", required=true) String bearerToken) {
         log.info("Incoming request to get catalogue for standard: {}, uuid: {}", standard, uuid);
+        try {
+            // check token
+            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
+            if(!isValid){
+                String msg = String.format("No user exists for the given token : %s",bearerToken);
+                return createErrorResponseEntity(msg, HttpStatus.NOT_FOUND, null);
+            }
+        } catch (IOException e){
+            String msg = String.format("Failed to get catalogue: %s, standard: %s",uuid,standard);
+            return createErrorResponseEntity(msg, HttpStatus.INTERNAL_SERVER_ERROR, null);
+        }
         Configuration.Standard std;
         try {
             std = getStandardEnum(standard);
@@ -167,9 +193,22 @@ public class CatalogueController {
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
             method = RequestMethod.POST)
     public <T> ResponseEntity addXMLCatalogue(@PathVariable String standard,
-                                              @RequestBody String serializedCatalogue, HttpServletRequest request) {
+                                              @RequestBody String serializedCatalogue,
+                                              @ApiParam(value = "The Bearer token provided by the identity service" ,required=true ) @RequestHeader(value="Authorization", required=true) String bearerToken,HttpServletRequest request) {
         try {
             log.info("Incoming request to post catalogue with standard: {} standard", standard);
+
+            try {
+                // check token
+                boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
+                if(!isValid){
+                    String msg = String.format("No user exists for the given token : %s",bearerToken);
+                    return createErrorResponseEntity(msg, HttpStatus.NOT_FOUND, null);
+                }
+            } catch (IOException e){
+                String msg = String.format("Failed to add catalogue: %s, standard: %s",serializedCatalogue,standard);
+                return createErrorResponseEntity(msg, HttpStatus.INTERNAL_SERVER_ERROR, null);
+            }
 
             // get standard
             Configuration.Standard std;
@@ -287,9 +326,22 @@ public class CatalogueController {
             consumes = {"application/json"},
             produces = {"application/json"},
             method = RequestMethod.PUT)
-    public ResponseEntity updateJSONCatalogue(@PathVariable String standard, @RequestBody String catalogueJson) {
+    public ResponseEntity updateJSONCatalogue(@PathVariable String standard, @RequestBody String catalogueJson,
+                                              @ApiParam(value = "The Bearer token provided by the identity service" ,required=true ) @RequestHeader(value="Authorization", required=true) String bearerToken) {
         try {
             log.info("Incoming request to update catalogue");
+
+            try {
+                // check token
+                boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
+                if(!isValid){
+                    String msg = String.format("No user exists for the given token : %s",bearerToken);
+                    return createErrorResponseEntity(msg, HttpStatus.NOT_FOUND, null);
+                }
+            } catch (IOException e){
+                String msg = String.format("Failed to update catalogue: %s",catalogueJson);
+                return createErrorResponseEntity(msg, HttpStatus.INTERNAL_SERVER_ERROR, null);
+            }
 
             // check standard
             Configuration.Standard std;
@@ -353,8 +405,21 @@ public class CatalogueController {
     })
     @RequestMapping(value = "/catalogue/{standard}/{uuid}",
             method = RequestMethod.DELETE)
-    public ResponseEntity deleteCatalogue(@PathVariable String standard, @PathVariable String uuid) {
+    public ResponseEntity deleteCatalogue(@PathVariable String standard, @PathVariable String uuid,
+                                          @ApiParam(value = "The Bearer token provided by the identity service" ,required=true ) @RequestHeader(value="Authorization", required=true) String bearerToken) {
         log.info("Incoming request to delete catalogue with uuid: {}", uuid);
+
+        try {
+            // check token
+            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
+            if(!isValid){
+                String msg = String.format("No user exists for the given token : %s",bearerToken);
+                return createErrorResponseEntity(msg, HttpStatus.NOT_FOUND, null);
+            }
+        } catch (IOException e){
+            String msg = String.format("Failed to delete catalogue: %s",uuid);
+            return createErrorResponseEntity(msg, HttpStatus.INTERNAL_SERVER_ERROR, null);
+        }
 
         Configuration.Standard std;
         try {
@@ -455,6 +520,12 @@ public class CatalogueController {
             HttpServletRequest request) {
         try {
             log.info("Incoming request to upload template upload mode: {}, party id: {}, party name: {}", uploadMode, partyId, partyName);
+            // check token
+            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
+            if(!isValid){
+                String msg = String.format("No user exists for the given token : %s",bearerToken);
+                return createErrorResponseEntity(msg, HttpStatus.NOT_FOUND, null);
+            }
             CatalogueType catalogue;
             PartyType party = PartyTypePersistenceUtil.getPartyById(partyId);
             if(party == null) {
@@ -513,9 +584,22 @@ public class CatalogueController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             method = RequestMethod.POST)
     public ResponseEntity uploadImages(
+            @ApiParam(value = "The Bearer token provided by the identity service" ,required=true ) @RequestHeader(value="Authorization", required=true) String bearerToken,
             @RequestParam("package") MultipartFile pack,
             @RequestParam("catalogueUuid") String catalogueUuid) {
         log.info("Incoming request to upload images for catalogue: {}", catalogueUuid);
+
+        try {
+            // check token
+            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
+            if(!isValid){
+                String msg = String.format("No user exists for the given token : %s",bearerToken);
+                return createErrorResponseEntity(msg, HttpStatus.NOT_FOUND, null);
+            }
+        } catch (IOException e){
+            String msg = String.format("Failed to upload images for catalogue: %s",catalogueUuid);
+            return createErrorResponseEntity(msg, HttpStatus.INTERNAL_SERVER_ERROR, null);
+        }
 
         if (service.getCatalogue(catalogueUuid) == null) {
             log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
@@ -632,6 +716,12 @@ public class CatalogueController {
                                                        HttpServletResponse response) {
         try {
             log.info("Incoming request to get catalogue in semantic format, uuid: {}, content type: {}", uuid, semanticContentType);
+            // check token
+            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(authorization);
+            if(!isValid){
+                String msg = String.format("No user exists for the given token : %s",authorization);
+                return createErrorResponseEntity(msg, HttpStatus.NOT_FOUND, null);
+            }
             Object catalogue;
             try {
                 catalogue = service.getCatalogue(uuid, Configuration.Standard.UBL);
@@ -668,8 +758,13 @@ public class CatalogueController {
 
 
     private ResponseEntity createErrorResponseEntity(String msg, HttpStatus status, Exception e) {
-        msg = msg + e.getMessage();
-        log.error(msg, e);
+        if(e != null){
+            msg = msg + e.getMessage();
+            log.error(msg, e);
+        }
+        else {
+            log.error(msg);
+        }
         return ResponseEntity.status(status).body(msg);
     }
 

@@ -47,6 +47,13 @@ public class ImportExportController {
                                           @RequestHeader(value = "Authorization") String bearerToken) {
         try {
             log.info("Importing catalogue ...");
+            // check token
+            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
+            if(!isValid){
+                String msg = String.format("No user exists for the given token : %s",bearerToken);
+                log.error(msg);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+            }
             // remove hjid fields of catalogue
             JSONObject object = new JSONObject(serializedCatalogue);
             JsonSerializationUtility.removeHjidFields(object);
@@ -75,7 +82,6 @@ public class ImportExportController {
 
         } catch (Exception e) {
             String msg = String.format("Failed to import catalogue: %s", serializedCatalogue);
-            log.error(msg, e);
             return HttpResponseUtil.createResponseEntityAndLog(msg, e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
         }
     }
