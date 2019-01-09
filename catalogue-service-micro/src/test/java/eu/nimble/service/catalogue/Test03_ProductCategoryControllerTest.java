@@ -61,7 +61,31 @@ public class Test03_ProductCategoryControllerTest {
     }
 
     @Test
-    public void test3_getCategoriesByIds() throws Exception {
+    public void test3_getCategoriesByName() throws Exception {
+        // get logistic categories for warehouse
+        MockHttpServletRequestBuilder request = get("/catalogue/taxonomies/eClass")
+                .param("name", "warehouse")
+                .param("forLogistics","true");
+        MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+        ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
+        List<Category> categories = mapper.readValue(result.getResponse().getContentAsString(), new TypeReference<List<Category>>() {});
+
+        // check the categories size
+        Assert.assertEquals(2,categories.size());
+
+        // get logistic categories for mdf
+        request = get("/catalogue/taxonomies/eClass")
+                .param("name", "mdf")
+                .param("forLogistics","true");
+        result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+        categories = mapper.readValue(result.getResponse().getContentAsString(), new TypeReference<List<Category>>() {});
+
+        // check the categories size
+        Assert.assertEquals(0,categories.size());
+    }
+
+    @Test
+    public void test4_getCategoriesByIds() throws Exception {
         MockHttpServletRequestBuilder request = get("/catalogue/category").param("categoryIds", "0173-1#01-BAA975#013").param("taxonomyIds", "eClass");
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
