@@ -10,7 +10,6 @@ import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.PartyTypePersistenceUtil;
 import eu.nimble.service.catalogue.sync.MarmottaClient;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizationException;
-import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
@@ -25,7 +24,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,10 +39,9 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipInputStream;
 
@@ -67,39 +64,25 @@ public class CatalogueController {
     @Autowired
     private ResourceValidationUtility resourceValidationUtil;
 
-    /**
-     * Retrieves the default catalogue for the specified party. The catalogue is supposed to have and ID field with
-     * "default" value and be compliant with UBL standard.
-     *
-     * @param partyId
-     * @return <li>200 along with the requested catalogue</li>
-     * <li>204 if there is no UBL catalogue with "default" as the id value</li>
-     */
     @CrossOrigin(origins = {"*"})
-    @ApiOperation(value = "", notes = "Retrieve the default catalogue for the specified party")
+    @ApiOperation(value = "", notes = "Retrieves the default catalogue for the specified party. The catalogue is supposed to have and id field with \"default\" value and be compliant with UBL standard.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieved the default catalogue for the specified party successfully", response = CatalogueType.class),
             @ApiResponse(code = 204, message = "No default catalogue for the party"),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
             @ApiResponse(code = 500, message = "Failed to get default catalogue for the party")
     })
     @RequestMapping(value = "/catalogue/{partyId}/default",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getDefaultCatalogue(@PathVariable String partyId,
-                                              @ApiParam(value = "The Bearer token provided by the identity service" ,required=true ) @RequestHeader(value="Authorization", required=true) String bearerToken) {
+    public ResponseEntity getDefaultCatalogue(@ApiParam(value = "Identifier of the party for which the catalogue to be retrieved") @PathVariable String partyId,
+                                              @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         log.info("Incoming request to get default catalogue for party: {}", partyId);
-        try {
-            // check token
-            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
-            if(!isValid){
-                String msg = String.format("No user exists for the given token : %s",bearerToken);
-                return createErrorResponseEntity(msg, HttpStatus.NOT_FOUND, null);
-            }
-        } catch (IOException e){
-            String msg = String.format("Failed to get default catalogue for party: %s",partyId);
-            return createErrorResponseEntity(msg, HttpStatus.INTERNAL_SERVER_ERROR, null);
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return tokenCheck;
         }
-        // TODO : Check whether the given party id is valid or not.
+
         CatalogueType catalogue;
         try {
             catalogue = service.getCatalogue("default", partyId);
@@ -116,41 +99,27 @@ public class CatalogueController {
         return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogue));
     }
 
-    /**
-     * Retrieves the catalogue for the given standard and uuid.
-     *
-     * @param standard
-     * @param uuid
-     * @return <li>200 along with the requested catalogue</li>
-     * <li>204 if there is no catalogue for the specified parameters</li>
-     * <li>400 if an invalid standard is provided</li>
-     * @see @link getSupportedStandards method for supported standards
-     */
     @CrossOrigin(origins = {"*"})
-    @ApiOperation(value = "", notes = "Retrieve the catalogue for the given standard and uuid")
+    @ApiOperation(value = "", notes = "Retrieves the catalogue for the given standard and uuid.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieved the catalogue successfully", response = CatalogueType.class),
-            @ApiResponse(code = 204, message = "No default catalogue for the given uuid"),
-            @ApiResponse(code = 500, message = "Failed to get catalogue for the given standard and uuid"),
+            @ApiResponse(code = 204, message = "No catalogue for the given uuid and standard"),
             @ApiResponse(code = 400, message = "Invalid standard"),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 500, message = "Unexpected error while getting catalogue")
     })
     @RequestMapping(value = "/catalogue/{standard}/{uuid}",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getCatalogue(@PathVariable String standard, @PathVariable String uuid,
-                                       @ApiParam(value = "The Bearer token provided by the identity service" ,required=true ) @RequestHeader(value="Authorization", required=true) String bearerToken) {
+    public ResponseEntity getCatalogue(@ApiParam(value = "Data model standard that the provided catalogue is compatible with.", defaultValue = "ubl") @PathVariable String standard,
+                                       @ApiParam(value = "uuid of the catalogue to be retrieved.") @PathVariable String uuid,
+                                       @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         log.info("Incoming request to get catalogue for standard: {}, uuid: {}", standard, uuid);
-        try {
-            // check token
-            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
-            if(!isValid){
-                String msg = String.format("No user exists for the given token : %s",bearerToken);
-                return createErrorResponseEntity(msg, HttpStatus.NOT_FOUND, null);
-            }
-        } catch (IOException e){
-            String msg = String.format("Failed to get catalogue: %s, standard: %s",uuid,standard);
-            return createErrorResponseEntity(msg, HttpStatus.INTERNAL_SERVER_ERROR, null);
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return tokenCheck;
         }
+
         Configuration.Standard std;
         try {
             std = getStandardEnum(standard);
@@ -171,97 +140,6 @@ public class CatalogueController {
 
         log.info("Completed request to get catalogue for standard: {}, uuid: {}", standard, uuid);
         return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogue));
-    }
-
-    /**
-     * Adds the catalogue passed in a serialized form. The serialized catalogue should be compliant with the specified
-     * standard
-     *
-     * @param standard
-     * @param serializedCatalogue
-     * @return <li>200 along with the requested catalogue</li>
-     * <li>400 if an invalid content type header or standard is provided</li>
-     */
-    @CrossOrigin(origins = {"*"})
-    @ApiOperation(value = "", notes = "Add the catalogue passed in a serialized form")
-    @ApiResponses(value = {
-            @ApiResponse(code = 400, message = "Invalid content type"),
-            @ApiResponse(code = 409, message = "A catalogue with the same ID exists for the publisher party")
-    })
-    @RequestMapping(value = "/catalogue/{standard}",
-            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
-            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
-            method = RequestMethod.POST)
-    public <T> ResponseEntity addXMLCatalogue(@PathVariable String standard,
-                                              @RequestBody String serializedCatalogue,
-                                              @ApiParam(value = "The Bearer token provided by the identity service" ,required=true ) @RequestHeader(value="Authorization", required=true) String bearerToken,HttpServletRequest request) {
-        try {
-            log.info("Incoming request to post catalogue with standard: {} standard", standard);
-
-            try {
-                // check token
-                boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
-                if(!isValid){
-                    String msg = String.format("No user exists for the given token : %s",bearerToken);
-                    return createErrorResponseEntity(msg, HttpStatus.NOT_FOUND, null);
-                }
-            } catch (IOException e){
-                String msg = String.format("Failed to add catalogue: %s, standard: %s",serializedCatalogue,standard);
-                return createErrorResponseEntity(msg, HttpStatus.INTERNAL_SERVER_ERROR, null);
-            }
-
-            // get standard
-            Configuration.Standard std;
-            try {
-                std = getStandardEnum(standard);
-            } catch (Exception e) {
-                return createErrorResponseEntity("Invalid standard: " + standard, HttpStatus.BAD_REQUEST, e);
-            }
-
-            String contentType = request.getContentType();
-            // get catalogue
-            T catalogue;
-            try {
-                catalogue = parseCatalogue(contentType, serializedCatalogue, std);
-            } catch (Exception e) {
-                return createErrorResponseEntity(String.format("Failed to deserialize catalogue: %s", serializedCatalogue), HttpStatus.BAD_REQUEST, e);
-            }
-
-            // for ubl catalogues, do the following validations
-            if (std.equals(Configuration.Standard.UBL)) {
-                CatalogueType ublCatalogue = (CatalogueType) catalogue;
-
-                // validate the content of the catalogue
-                CatalogueValidator catalogueValidator = new CatalogueValidator(ublCatalogue);
-                List<String> errors = catalogueValidator.validate();
-                if (errors.size() > 0) {
-                    StringBuilder sb = new StringBuilder("");
-                    for (String error : errors) {
-                        sb.append(error).append(System.lineSeparator());
-                    }
-                    return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
-                }
-
-                // check catalogue with the same id exists
-                boolean catalogueExists = CataloguePersistenceUtil.checkCatalogueExistenceById(ublCatalogue.getID(), ublCatalogue.getProviderParty().getID());
-                if (catalogueExists) {
-                    return HttpResponseUtil.createResponseEntityAndLog(String.format("Catalogue with ID: '%s' already exists", ublCatalogue.getID()), null, HttpStatus.CONFLICT, LogLevel.INFO);
-                }
-
-                // check the entity ids
-                boolean hjidsExists = resourceValidationUtil.hjidsExit(catalogue);
-                if(hjidsExists) {
-                    return HttpResponseUtil.createResponseEntityAndLog(String.format("Entity IDs (hjid fields) found in the passed catalogue: %s. Make sure they are null", serializedCatalogue), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
-                }
-            }
-
-            catalogue = service.addCatalogue(catalogue, std);
-
-            return createCreatedCatalogueResponse(catalogue, HttpResponseUtil.baseUrl(request));
-
-        } catch (Exception e) {
-            return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while adding the catalogue: %s", serializedCatalogue), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
-        }
     }
 
     private <T> T parseCatalogue(String contentType, String serializedCatalogue, Configuration.Standard standard) throws IOException {
@@ -306,19 +184,93 @@ public class CatalogueController {
         return ResponseEntity.created(catalogueURI).body(serializationUtility.serializeUBLObject(catalogue));
     }
 
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Adds the catalogue passed in a serialized form. The serialized catalogue should be compliant with the specified standard.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Provided catalogue has been persisted."),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 400, message = "Invalid standard or invalid content"),
+            @ApiResponse(code = 409, message = "A catalogue with the same id exists for the publisher party"),
+            @ApiResponse(code = 500, message = "Unexpected error while publishing the catalogue")
+    })
+    @RequestMapping(value = "/catalogue/{standard}",
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
+            method = RequestMethod.POST)
+    public <T> ResponseEntity addCatalogue(@ApiParam(value = "Data model standard that the provided catalogue is compatible with.", defaultValue = "ubl") @PathVariable String standard,
+                                           @ApiParam(value = "Serialized form of the catalogue. Valid serializations can be achieved via JsonSerializationUtility.getObjectMapper method located in the utility module") @RequestBody String serializedCatalogue,
+                                           @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken, HttpServletRequest request) {
+        try {
+            log.info("Incoming request to post catalogue with standard: {} standard", standard);
+            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+            if (tokenCheck != null) {
+                return tokenCheck;
+            }
+
+            // get standard
+            Configuration.Standard std;
+            try {
+                std = getStandardEnum(standard);
+            } catch (Exception e) {
+                return createErrorResponseEntity("Invalid standard: " + standard, HttpStatus.BAD_REQUEST, e);
+            }
+
+            String contentType = request.getContentType();
+            // get catalogue
+            T catalogue;
+            try {
+                catalogue = parseCatalogue(contentType, serializedCatalogue, std);
+            } catch (Exception e) {
+                return createErrorResponseEntity(String.format("Failed to deserialize catalogue: %s", serializedCatalogue), HttpStatus.BAD_REQUEST, e);
+            }
+
+            // for ubl catalogues, do the following validations
+            if (std.equals(Configuration.Standard.UBL)) {
+                CatalogueType ublCatalogue = (CatalogueType) catalogue;
+
+                // validate the content of the catalogue
+                CatalogueValidator catalogueValidator = new CatalogueValidator(ublCatalogue);
+                List<String> errors = catalogueValidator.validate();
+                if (errors.size() > 0) {
+                    StringBuilder sb = new StringBuilder("");
+                    for (String error : errors) {
+                        sb.append(error).append(System.lineSeparator());
+                    }
+                    return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
+                }
+
+                // check catalogue with the same id exists
+                boolean catalogueExists = CataloguePersistenceUtil.checkCatalogueExistenceById(ublCatalogue.getID(), ublCatalogue.getProviderParty().getID());
+                if (catalogueExists) {
+                    return HttpResponseUtil.createResponseEntityAndLog(String.format("Catalogue with ID: '%s' already exists for the publishing party", ublCatalogue.getID()), null, HttpStatus.CONFLICT, LogLevel.INFO);
+                }
+
+                // check the entity ids
+                boolean hjidsExists = resourceValidationUtil.hjidsExit(catalogue);
+                if (hjidsExists) {
+                    return HttpResponseUtil.createResponseEntityAndLog(String.format("Entity IDs (hjid fields) found in the passed catalogue: %s. Make sure they are null", serializedCatalogue), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                }
+            }
+
+            catalogue = service.addCatalogue(catalogue, std);
+
+            return createCreatedCatalogueResponse(catalogue, HttpResponseUtil.baseUrl(request));
+
+        } catch (Exception e) {
+            return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while adding the catalogue: %s", serializedCatalogue), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+        }
+    }
+
     /**
-     * Updates the catalogue represented in JSON serialization. The serialization should be compliant with the default standard, which is UBL
-     *
      * @param catalogueJson
      * @return <li>200 along with the updated catalogue</li>
      * <li>400 in case of an invalid standard or invalid catalogue serialization</li>
      * <li>501 if a standard than ubl is passed</li>
      */
     @CrossOrigin(origins = {"*"})
-    @ApiOperation(value = "", notes = "Update the catalogue represented in JSON serialization")
+    @ApiOperation(value = "", notes = "Updates the catalogue represented in JSON serialization. The serialization should be compliant with the UBL standard.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Updated the catalogue successfully", response = CatalogueType.class),
-            @ApiResponse(code = 501, message = "Update operation is not support for the given standard"),
             @ApiResponse(code = 400, message = "Invalid standard"),
             @ApiResponse(code = 500, message = "Failed to update the catalogue")
     })
@@ -326,21 +278,14 @@ public class CatalogueController {
             consumes = {"application/json"},
             produces = {"application/json"},
             method = RequestMethod.PUT)
-    public ResponseEntity updateJSONCatalogue(@PathVariable String standard, @RequestBody String catalogueJson,
-                                              @ApiParam(value = "The Bearer token provided by the identity service" ,required=true ) @RequestHeader(value="Authorization", required=true) String bearerToken) {
+    public ResponseEntity updateCatalogue(@ApiParam(value = "Data model standard that the provided catalogue is compatible with.", defaultValue = "ubl") @PathVariable String standard,
+                                          @ApiParam(value = "Serialized form of the catalogue. Valid serializations can be achieved via JsonSerializationUtility.getObjectMapper method located in the utility module") @RequestBody String catalogueJson,
+                                          @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         try {
             log.info("Incoming request to update catalogue");
-
-            try {
-                // check token
-                boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
-                if(!isValid){
-                    String msg = String.format("No user exists for the given token : %s",bearerToken);
-                    return createErrorResponseEntity(msg, HttpStatus.NOT_FOUND, null);
-                }
-            } catch (IOException e){
-                String msg = String.format("Failed to update catalogue: %s",catalogueJson);
-                return createErrorResponseEntity(msg, HttpStatus.INTERNAL_SERVER_ERROR, null);
+            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+            if (tokenCheck != null) {
+                return tokenCheck;
             }
 
             // check standard
@@ -350,7 +295,7 @@ public class CatalogueController {
                 if (std != Configuration.Standard.UBL) {
                     String msg = "Update operation is not support for " + standard;
                     log.info(msg);
-                    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(msg);
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(msg);
                 }
             } catch (Exception e) {
                 return createErrorResponseEntity("Invalid standard: " + standard, HttpStatus.BAD_REQUEST, e);
@@ -377,7 +322,7 @@ public class CatalogueController {
 
             // validate the entity ids
             boolean hjidsBelongToCompany = resourceValidationUtil.hjidsBelongsToParty(catalogue, catalogue.getProviderParty().getID(), Configuration.Standard.UBL.toString());
-            if(!hjidsBelongToCompany) {
+            if (!hjidsBelongToCompany) {
                 return HttpResponseUtil.createResponseEntityAndLog(String.format("Some of the identifiers (hjid fields) do not belong to the party in the passed catalogue: %s", catalogueJson), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
             }
 
@@ -397,28 +342,21 @@ public class CatalogueController {
     }
 
     @CrossOrigin(origins = {"*"})
-    @ApiOperation(value = "", notes = "Delete the given catalogue")
+    @ApiOperation(value = "", notes = "Deletes the specified catalogue")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Deleted the given catalogue successfully"),
+            @ApiResponse(code = 200, message = "Specified catalogue has been deleted successfully"),
             @ApiResponse(code = 400, message = "Invalid standard"),
-            @ApiResponse(code = 500, message = "Failed to delete catalogue")
+            @ApiResponse(code = 500, message = "Unexpected error while deleting the catalogue")
     })
     @RequestMapping(value = "/catalogue/{standard}/{uuid}",
             method = RequestMethod.DELETE)
-    public ResponseEntity deleteCatalogue(@PathVariable String standard, @PathVariable String uuid,
-                                          @ApiParam(value = "The Bearer token provided by the identity service" ,required=true ) @RequestHeader(value="Authorization", required=true) String bearerToken) {
+    public ResponseEntity deleteCatalogue(@ApiParam(value = "Data model standard that the provided catalogue is compatible with.", defaultValue = "ubl") @PathVariable String standard,
+                                          @ApiParam(value = "uuid of the catalogue to be retrieved.") @PathVariable(value = "uuid") String uuid,
+                                          @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         log.info("Incoming request to delete catalogue with uuid: {}", uuid);
-
-        try {
-            // check token
-            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
-            if(!isValid){
-                String msg = String.format("No user exists for the given token : %s",bearerToken);
-                return createErrorResponseEntity(msg, HttpStatus.NOT_FOUND, null);
-            }
-        } catch (IOException e){
-            String msg = String.format("Failed to delete catalogue: %s",uuid);
-            return createErrorResponseEntity(msg, HttpStatus.INTERNAL_SERVER_ERROR, null);
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return tokenCheck;
         }
 
         Configuration.Standard std;
@@ -438,25 +376,29 @@ public class CatalogueController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    /**
-     * Generates an excel-based template for the specified categories. Category ids and taxonomy ids must be provided in
-     * comma separated manner and they must have the same number of elements. Taxonomy id must be provided such that
-     * they specify the taxonomies including the specified categories. See the examples in parameter definitions.
-     *
-     * @param categoryIds Example category ids: http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard,0173-1#01-ACH237#011
-     * @param taxonomyIds Example taxonomy ids: FurnitureOntology,eClass
-     * @param response
-     */
-    @ApiOperation(value = "", notes = "Generate an excel-based template for the specified categories")
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Generates an excel-based template for the specified categories. Category ids and " +
+            "taxonomy ids must be provided in comma separated manner and they must have the same number of elements. " +
+            "Taxonomy id must be provided such that they specify the taxonomies including the specified categories. See " +
+            "the examples in parameter definitions.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Generated the template for the given categories and taxonomy ids", response = CatalogueType.class),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 500, message = "Unexpected error while generating template"),
+    })
     @RequestMapping(value = "/catalogue/template",
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public void downloadTemplate(
-            @RequestParam("categoryIds") List<String> categoryIds,
-            @RequestParam("taxonomyIds") List<String> taxonomyIds,
+            @ApiParam(value = "Category ids for which the properties to be generated in the template. Examples: http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard,0173-1#01-ACH237#011") @RequestParam("categoryIds") List<String> categoryIds,
+            @ApiParam(value = "Taxonomy ids corresponding to the categories specified in the categoryIds parameter") @RequestParam("taxonomyIds") List<String> taxonomyIds,
+            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
             HttpServletResponse response) {
         log.info("Incoming request to generate a template. Category ids: {}, taxonomy ids: {}", categoryIds, taxonomyIds);
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return;
+        }
 
         Workbook template;
         try {
@@ -492,43 +434,37 @@ public class CatalogueController {
         }
     }
 
-    /**
-     * Adds the catalogue specified with the provided template. The created catalogue is compliant with the default
-     * standard, which is UBL. If there is a published catalogue already, the type of update is realized according to
-     * the update mode. There are two update modes: append and replace. In the former mode, if some of the products were
-     * already published, they are replaced with the new ones; furthermore, the brand new ones are appended to the
-     * existing product list. In the latter mode, all previously published products are deleted, the new list of products is set as it is.
-     *
-     * @param file       Filled in excel-based template
-     * @param uploadMode Upload mode. Default value is "append"
-     * @param partyId    Identifier of the party submitting the template
-     * @param partyName  Name of the party submitting the template
-     * @return 200 along with the added catalogue
-     * @see @link downloadTemplate method to download an empty template
-     */
-    @ApiOperation(value = "", notes = "Add the catalogue specified with the provided template")
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Adds the catalogue specified with the provided template. The created catalogue is compliant with the default " +
+            "standard, which is UBL. If there is a published catalogue already, the type of update is realized according to " +
+            "the update mode. There are two update modes: append and replace. In the former mode, if some of the products were " +
+            "already published, they are replaced with the new ones; furthermore, the brand new ones are appended to the " +
+            "existing product list. In the latter mode, all previously published products are deleted, the new list of products is set as it is.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Persisted uploaded template successfully and returned the corresponding catalogue", response = CatalogueType.class),
+            @ApiResponse(code = 400, message = "Invalid template content"),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 500, message = "Unexpected error while uploading the template")
+    })
     @RequestMapping(value = "/catalogue/template/upload",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             method = RequestMethod.POST)
     public ResponseEntity uploadTemplate(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam(value = "uploadMode", defaultValue = "append") String uploadMode,
-            @RequestParam("partyId") String partyId,
-            @RequestParam("partyName") String partyName,
-            @RequestHeader(value = "Authorization", required = true) String bearerToken,
+            @ApiParam(value = "Filled in excel-based template") @RequestParam("file") MultipartFile file,
+            @ApiParam(value = "Upload mode for the catalogue. Possible options are: append and replace", defaultValue = "append") @RequestParam(value = "uploadMode", defaultValue = "append") String uploadMode,
+            @ApiParam(value = "Identifier of the party for which the catalogue will be published") @RequestParam("partyId") String partyId,
+            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
             HttpServletRequest request) {
         try {
-            log.info("Incoming request to upload template upload mode: {}, party id: {}, party name: {}", uploadMode, partyId, partyName);
-            // check token
-            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
-            if(!isValid){
-                String msg = String.format("No user exists for the given token : %s",bearerToken);
-                return createErrorResponseEntity(msg, HttpStatus.NOT_FOUND, null);
+            log.info("Incoming request to upload template upload mode: {}, party id: {}", uploadMode, partyId);
+            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+            if (tokenCheck != null) {
+                return tokenCheck;
             }
+
             CatalogueType catalogue;
             PartyType party = PartyTypePersistenceUtil.getPartyById(partyId);
-            if(party == null) {
+            if (party == null) {
                 party = identityClient.getParty(bearerToken, partyId);
                 party = CatalogueDatabaseAdapter.syncPartyInUBLDB(party);
             }
@@ -538,12 +474,12 @@ public class CatalogueController {
                 catalogue = service.parseCatalogue(file.getInputStream(), uploadMode, party);
             } catch (Exception e) {
                 String msg = e.getMessage() != null ? e.getMessage() : "Failed to retrieve the template";
-                return HttpResponseUtil.createResponseEntityAndLog(msg, e, HttpStatus.BAD_REQUEST, LogLevel.ERROR);
+                return HttpResponseUtil.createResponseEntityAndLog(msg, e, HttpStatus.BAD_REQUEST, LogLevel.INFO);
             }
 
             // save catalogue
             // check whether an insert or update operations is needed
-            if(catalogue.getHjid() == null) {
+            if (catalogue.getHjid() == null) {
                 catalogue = service.addCatalogue(catalogue, Configuration.Standard.UBL);
             } else {
                 catalogue = service.updateCatalogue(catalogue);
@@ -564,138 +500,28 @@ public class CatalogueController {
         }
     }
 
-    /**
-     * Adds the images provided in the {@code pack} package object to relevant products. Each file in the package must start
-     * with the manufacturer item identification of the product for which the image is provided. Otherwise, the image
-     * would be ignored.
-     *
-     * @param pack          The package compressed as a Zip file, including the images
-     * @param catalogueUuid Unique identifier of the catalogue including the products for which the images are provided
-     * @return 200 along with the added catalogue
-     */
     @CrossOrigin(origins = {"*"})
-    @ApiOperation(value = "", notes = "Add the images provided in the package object to relevant products")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Added the images provided in the package object to relevant products successfully"),
-            @ApiResponse(code = 400, message = "Failed obtain a Zip package from the provided data"),
-            @ApiResponse(code = 404, message = "Catalogue with the given uuid does not exist")
-    })
-    @RequestMapping(value = "/catalogue/image/upload",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-            method = RequestMethod.POST)
-    public ResponseEntity uploadImages(
-            @ApiParam(value = "The Bearer token provided by the identity service" ,required=true ) @RequestHeader(value="Authorization", required=true) String bearerToken,
-            @RequestParam("package") MultipartFile pack,
-            @RequestParam("catalogueUuid") String catalogueUuid) {
-        log.info("Incoming request to upload images for catalogue: {}", catalogueUuid);
-
-        try {
-            // check token
-            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
-            if(!isValid){
-                String msg = String.format("No user exists for the given token : %s",bearerToken);
-                return createErrorResponseEntity(msg, HttpStatus.NOT_FOUND, null);
-            }
-        } catch (IOException e){
-            String msg = String.format("Failed to upload images for catalogue: %s",catalogueUuid);
-            return createErrorResponseEntity(msg, HttpStatus.INTERNAL_SERVER_ERROR, null);
-        }
-
-        if (service.getCatalogue(catalogueUuid) == null) {
-            log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
-        }
-
-        ZipInputStream zis = null;
-        try {
-            zis = new ZipInputStream(pack.getInputStream());
-            CatalogueType catalogue = service.addImagesToProducts(zis, catalogueUuid);
-            CatalogueValidator catalogueValidator = new CatalogueValidator(catalogue);
-            List<String> errors = catalogueValidator.validate();
-            if (errors.size() > 0) {
-                StringBuilder sb = new StringBuilder("");
-                for (String error : errors) {
-                    sb.append(error).append(System.lineSeparator());
-                }
-                return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
-            }
-            service.updateCatalogue(catalogue);
-
-        } catch (IOException e) {
-            return createErrorResponseEntity("Failed obtain a Zip package from the provided data", HttpStatus.BAD_REQUEST, e);
-        } catch (CatalogueServiceException e) {
-            return createErrorResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST, e);
-        }finally {
-            try {
-                zis.close();
-            } catch (IOException e) {
-                log.warn("Failed to close Zip stream", e);
-            }
-        }
-
-        log.info("Completed the request to upload images for catalogue: {}", catalogueUuid);
-        return ResponseEntity.ok().build();
-    }
-
-    /**
-     * Returns the example filled in template
-     *
-     * @return 200 along with the added catalogue
-     */
-    @CrossOrigin(origins = {"*"})
-    @ApiOperation(value = "", notes = "Return the example filled in template")
-    @ApiResponses(value = {
-            @ApiResponse(code = 500, message = "Failed to write the template content to the response output stream")
-    })
-    @RequestMapping(value = "/catalogue/template/example",
-            method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public void downloadExampleTemplate(HttpServletResponse response) {
-        log.info("Incoming request to get the example filled in template");
-
-        InputStream is = CatalogueController.class.getResourceAsStream("/template/wooden_mallet_template.xlsx");
-
-        try {
-            String fileName = "wooden_mallet_template.xlsx";
-            response.setHeader("Content-disposition", "attachment; filename=" + fileName);
-            response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
-            IOUtils.copy(is, response.getOutputStream());
-            response.flushBuffer();
-            is.close();
-            log.info("Completed the request to get the example template");
-
-        } catch (IOException e) {
-            String msg = "Failed to write the template content to the response output stream\n" + e.getMessage();
-            log.error(msg, e);
-            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            try {
-                response.getOutputStream().write(msg.getBytes());
-            } catch (IOException e1) {
-                log.error("Failed to write the error message to the output stream", e);
-            }
-        }
-    }
-
-    /**
-     * Returns the supported standards
-     *
-     * @return
-     */
-    @CrossOrigin(origins = {"*"})
-    @ApiOperation(value = "", notes = "Retrieve the supported standards")
+    @ApiOperation(value = "", notes = "Returns the supported catalogue data model standards. Only the UBL standard is supported for the being considering " +
+            "the full-fledged catalogue management services as well as connection of published products with the business processes.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieve the supported standards successfully", response = String.class, responseContainer = "List"),
-            @ApiResponse(code = 500, message = "Failed to get supported standards")
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 500, message = "Unexpected error while getting the supported standards")
     })
     @RequestMapping(value = "/catalogue/standards",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getSupportedStandards() {
+    public ResponseEntity getSupportedStandards(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String authorization) {
         log.info("Incoming request to retrieve the supported standards");
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(authorization);
+        if (tokenCheck != null) {
+            return tokenCheck;
+        }
 
-        List<Configuration.Standard> standards;
+        List<Configuration.Standard> standards = new ArrayList<>();
         try {
-            standards = Arrays.asList(Configuration.Standard.values());
+//            standards = Arrays.asList(Configuration.Standard.values());
+            standards.add(Configuration.Standard.UBL);
         } catch (Exception e) {
             return createErrorResponseEntity("Failed to get supported standards", HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
@@ -704,24 +530,92 @@ public class CatalogueController {
         return ResponseEntity.ok(standards);
     }
 
-    /**
-     * Returns a catalogue in semantic format
-     */
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Associate the images provided in a ZIP package to relevant products. The images " +
+            "are associated with the target products via the product ids. For this, the image names should start with a " +
+            "valid product id. Specifically image name format should be as follows: <productId>.<imageName>.<imageFormat> " +
+            "e.g. product1_image.jpg")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Added the images provided in the package object to relevant products successfully."),
+            @ApiResponse(code = 400, message = "Failed obtain a Zip package from the provided data"),
+            @ApiResponse(code = 404, message = "Catalogue with the given uuid does not exist"),
+            @ApiResponse(code = 500, message = "Unexpected error while uploading images")
+    })
+    @RequestMapping(value = "/catalogue/{uuid}/image/upload",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            method = RequestMethod.POST)
+    public ResponseEntity uploadImages(
+            @ApiParam(value = "The package compressed as a Zip file, including the images") @RequestParam("package") MultipartFile pack,
+            @ApiParam(value = "uuid of the catalogue to be retrieved.") @PathVariable("uuid") String uuid,
+            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        try {
+            log.info("Incoming request to upload images for catalogue: {}", uuid);
+            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+            if (tokenCheck != null) {
+                return tokenCheck;
+            }
+
+            if (service.getCatalogue(uuid) == null) {
+                log.error("Catalogue with uuid : {} does not exist", uuid);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", uuid));
+            }
+
+            ZipInputStream zis = null;
+            try {
+                zis = new ZipInputStream(pack.getInputStream());
+                CatalogueType catalogue = service.addImagesToProducts(zis, uuid);
+                CatalogueValidator catalogueValidator = new CatalogueValidator(catalogue);
+                List<String> errors = catalogueValidator.validate();
+                if (errors.size() > 0) {
+                    StringBuilder sb = new StringBuilder("");
+                    for (String error : errors) {
+                        sb.append(error).append(System.lineSeparator());
+                    }
+                    return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
+                }
+                service.updateCatalogue(catalogue);
+
+            } catch (IOException e) {
+                return createErrorResponseEntity("Failed obtain a Zip package from the provided data", HttpStatus.BAD_REQUEST, e);
+            } catch (CatalogueServiceException e) {
+                return createErrorResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST, e);
+            } finally {
+                try {
+                    zis.close();
+                } catch (IOException e) {
+                    log.warn("Failed to close Zip stream", e);
+                }
+            }
+
+            log.info("Completed the request to upload images for catalogue: {}", uuid);
+            return ResponseEntity.ok().build();
+
+        } catch (Exception e) {
+            return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while uploading images. uuid: %s", uuid), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+        }
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieves the specified UBL-compliant catalogue in the specified semantic format. If no format is specified, RDF/XML is used.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved the catalogue successfully"),
+            @ApiResponse(code = 204, message = "No catalogue for the given uuid"),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 500, message = "Unexpected error while getting catalogue")
+    })
     @RequestMapping(value = "/catalogue/semantic/{uuid}",
             method = RequestMethod.GET)
-    public ResponseEntity getCatalogueInSemanticFormat(@PathVariable String uuid,
-                                                       @RequestParam(value = "semanticContentType", required = false) String semanticContentType,
-                                                       @RequestHeader("Authorization") String authorization,
+    public ResponseEntity getCatalogueInSemanticFormat(@ApiParam(value = "uuid of the catalogue to be retrieved.") @PathVariable String uuid,
+                                                       @ApiParam(value = "Target content type for the serialization.", defaultValue = "RDF/XML") @RequestParam(value = "semanticContentType", required = false) String semanticContentType,
+                                                       @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String authorization,
                                                        HttpServletResponse response) {
         try {
             log.info("Incoming request to get catalogue in semantic format, uuid: {}, content type: {}", uuid, semanticContentType);
-            // check token
-            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(authorization);
-            if(!isValid){
-                String msg = String.format("No user exists for the given token : %s",authorization);
-                return createErrorResponseEntity(msg, HttpStatus.NOT_FOUND, null);
+            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(authorization);
+            if (tokenCheck != null) {
+                return tokenCheck;
             }
+
             Object catalogue;
             try {
                 catalogue = service.getCatalogue(uuid, Configuration.Standard.UBL);
@@ -758,11 +652,10 @@ public class CatalogueController {
 
 
     private ResponseEntity createErrorResponseEntity(String msg, HttpStatus status, Exception e) {
-        if(e != null){
+        if (e != null) {
             msg = msg + e.getMessage();
             log.error(msg, e);
-        }
-        else {
+        } else {
             log.error(msg);
         }
         return ResponseEntity.status(status).body(msg);

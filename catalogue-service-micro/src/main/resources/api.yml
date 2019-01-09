@@ -32,7 +32,7 @@ paths:
           description: No default catalogue exists for the specified party
   /catalogue/{standard}:
     post:
-      operationId: addXMLCatalogue
+      operationId: addCatalogue
       summary: Add catalogue
       description: Adds the catalogue represented in XML format. The serialized catalogue should be compliant with the specified standard
       consumes: [application/json, application/xml]
@@ -50,7 +50,7 @@ paths:
         400:
           description: Invalid content type header or invalid standard
     put:
-      operationId: updateJSONCatalogue
+      operationId: updateCatalogue
       summary: Update JSON catalogue
       description: Updates the catalogue represented in JSON serialization. The serialization should be compliant with the default standard, which is UBL
       consumes: [application/json]

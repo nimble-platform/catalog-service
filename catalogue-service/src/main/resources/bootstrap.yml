@@ -287,6 +287,13 @@ persistence:
 
 nimble:
   identity:
-    url: ${IDENTITY_URL:localhost:9096}
+    url: ${IDENTITY_SERVICE_URL:localhost:9096}
   test-token: ${NIMBLE_TEST_TOKEN}
 
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 10000
