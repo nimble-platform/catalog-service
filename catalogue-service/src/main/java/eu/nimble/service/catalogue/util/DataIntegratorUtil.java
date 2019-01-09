@@ -101,7 +101,7 @@ public class DataIntegratorUtil {
             CategoryServiceManager csm = CategoryServiceManager.getInstance();
             List<Category> parentCategories = csm.getParentCategories(cct.getItemClassificationCode().getListID(),cct.getItemClassificationCode().getValue());
 
-            for(int i = 0; i< parentCategories.size()-1;i++){
+            for(int i = 0; i< parentCategories.size();i++){
                 Category category = parentCategories.get(i);
                 CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
                 CodeType codeType = new CodeType();
