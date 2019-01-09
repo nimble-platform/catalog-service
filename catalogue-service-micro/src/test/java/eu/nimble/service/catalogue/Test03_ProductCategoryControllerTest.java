@@ -49,7 +49,7 @@ public class Test03_ProductCategoryControllerTest {
 
     @Test
     public void test2_getCategoriesByName() throws Exception {
-        MockHttpServletRequestBuilder request = get("/catalogue/category").param("categoryNames", "die");
+        MockHttpServletRequestBuilder request = get("/catalogue/taxonomies/eClass").param("name", "die");
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
         List<Category> categories = mapper.readValue(result.getResponse().getContentAsString(), new TypeReference<List<Category>>() {});
