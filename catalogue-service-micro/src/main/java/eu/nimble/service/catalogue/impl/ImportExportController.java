@@ -1,7 +1,5 @@
 package eu.nimble.service.catalogue.impl;
 
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.util.SpringBridge;
@@ -12,6 +10,10 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.PersonType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HttpResponseUtil;
 import eu.nimble.utility.JsonSerializationUtility;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,21 +32,20 @@ public class ImportExportController {
 
     private CatalogueService service = CatalogueServiceImpl.getInstance();
 
-    /**
-     * This service accepts a serialized catalogue with database identifiers and imports it to the configured database
-     * after removing the database identifiers. The service replaces the {@link PartyType} information in the given
-     * catalogue with the {@link PartyType} obtained from the identity service based on the user calling the service.
-     *
-     * @param serializedCatalogue
-     * @param bearerToken
-     * @return
-     */
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "This service imports the provided UBL catalogue. The service replaces the PartyType" +
+            " information in the given catalogue with the PartyType obtained from the currently configured identity service." +
+            " Party information is deduced from the authorization token of the user issuing the call.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Imported the catalogue succesfully"),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 500, message = "Unexpected error while importing catalogue")
+    })
     @RequestMapping(value = "/catalogue/import",
             method = RequestMethod.POST,
             consumes = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity importCatalogue(@RequestBody String serializedCatalogue,
-                                          @RequestHeader(value = "Authorization") String bearerToken) {
+    public ResponseEntity importCatalogue(@ApiParam(value = "Serialized form of the catalogue.") @RequestBody String serializedCatalogue,
+                                          @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         try {
             log.info("Importing catalogue ...");
             // check token
@@ -52,7 +53,7 @@ public class ImportExportController {
             if(!isValid){
                 String msg = String.format("No user exists for the given token : %s",bearerToken);
                 log.error(msg);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(msg);
             }
             // remove hjid fields of catalogue
             JSONObject object = new JSONObject(serializedCatalogue);
