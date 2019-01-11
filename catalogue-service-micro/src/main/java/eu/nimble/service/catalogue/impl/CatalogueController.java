@@ -197,8 +197,8 @@ public class CatalogueController {
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
             method = RequestMethod.POST)
-    public <T> ResponseEntity addCatalogue(@ApiParam(value = "Data model standard that the provided catalogue is compatible with.", defaultValue = "ubl") @PathVariable String standard,
-                                           @ApiParam(value = "Serialized form of the catalogue. Valid serializations can be achieved via JsonSerializationUtility.getObjectMapper method located in the utility module") @RequestBody String serializedCatalogue,
+    public <T> ResponseEntity addCatalogue(@ApiParam(value = "Data model standard that the provided catalogue is compatible with.", defaultValue = "ubl", required = true) @PathVariable String standard,
+                                           @ApiParam(value = "Serialized form of the catalogue. Valid serializations can be achieved via JsonSerializationUtility.getObjectMapper method located in the utility module", required = true) @RequestBody String serializedCatalogue,
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken, HttpServletRequest request) {
         try {
             log.info("Incoming request to post catalogue with standard: {} standard", standard);
@@ -278,8 +278,8 @@ public class CatalogueController {
             consumes = {"application/json"},
             produces = {"application/json"},
             method = RequestMethod.PUT)
-    public ResponseEntity updateCatalogue(@ApiParam(value = "Data model standard that the provided catalogue is compatible with.", defaultValue = "ubl") @PathVariable String standard,
-                                          @ApiParam(value = "Serialized form of the catalogue. Valid serializations can be achieved via JsonSerializationUtility.getObjectMapper method located in the utility module") @RequestBody String catalogueJson,
+    public ResponseEntity updateCatalogue(@ApiParam(value = "Data model standard that the provided catalogue is compatible with.", defaultValue = "ubl", required = true) @PathVariable String standard,
+                                          @ApiParam(value = "Serialized form of the catalogue. Valid serializations can be achieved via JsonSerializationUtility.getObjectMapper method located in the utility module", required = true) @RequestBody String catalogueJson,
                                           @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         try {
             log.info("Incoming request to update catalogue");
@@ -350,8 +350,8 @@ public class CatalogueController {
     })
     @RequestMapping(value = "/catalogue/{standard}/{uuid}",
             method = RequestMethod.DELETE)
-    public ResponseEntity deleteCatalogue(@ApiParam(value = "Data model standard that the provided catalogue is compatible with.", defaultValue = "ubl") @PathVariable String standard,
-                                          @ApiParam(value = "uuid of the catalogue to be retrieved.") @PathVariable(value = "uuid") String uuid,
+    public ResponseEntity deleteCatalogue(@ApiParam(value = "Data model standard that the provided catalogue is compatible with.", defaultValue = "ubl", required = true) @PathVariable String standard,
+                                          @ApiParam(value = "uuid of the catalogue to be retrieved.") @PathVariable(value = "uuid", required = true) String uuid,
                                           @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         log.info("Incoming request to delete catalogue with uuid: {}", uuid);
         ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
@@ -390,8 +390,8 @@ public class CatalogueController {
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public void downloadTemplate(
-            @ApiParam(value = "Category ids for which the properties to be generated in the template. Examples: http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard,0173-1#01-ACH237#011") @RequestParam("categoryIds") List<String> categoryIds,
-            @ApiParam(value = "Taxonomy ids corresponding to the categories specified in the categoryIds parameter") @RequestParam("taxonomyIds") List<String> taxonomyIds,
+            @ApiParam(value = "Category ids for which the properties to be generated in the template. Examples: http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard,0173-1#01-ACH237#011", required = true) @RequestParam("categoryIds") List<String> categoryIds,
+            @ApiParam(value = "Taxonomy ids corresponding to the categories specified in the categoryIds parameter", required = true) @RequestParam("taxonomyIds") List<String> taxonomyIds,
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
             HttpServletResponse response) {
         log.info("Incoming request to generate a template. Category ids: {}, taxonomy ids: {}", categoryIds, taxonomyIds);
@@ -450,9 +450,9 @@ public class CatalogueController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             method = RequestMethod.POST)
     public ResponseEntity uploadTemplate(
-            @ApiParam(value = "Filled in excel-based template") @RequestParam("file") MultipartFile file,
+            @ApiParam(value = "Filled in excel-based template", required = true) @RequestParam("file") MultipartFile file,
             @ApiParam(value = "Upload mode for the catalogue. Possible options are: append and replace", defaultValue = "append") @RequestParam(value = "uploadMode", defaultValue = "append") String uploadMode,
-            @ApiParam(value = "Identifier of the party for which the catalogue will be published") @RequestParam("partyId") String partyId,
+            @ApiParam(value = "Identifier of the party for which the catalogue will be published", required = true) @RequestParam("partyId") String partyId,
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
             HttpServletRequest request) {
         try {
@@ -545,8 +545,8 @@ public class CatalogueController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             method = RequestMethod.POST)
     public ResponseEntity uploadImages(
-            @ApiParam(value = "The package compressed as a Zip file, including the images") @RequestParam("package") MultipartFile pack,
-            @ApiParam(value = "uuid of the catalogue to be retrieved.") @PathVariable("uuid") String uuid,
+            @ApiParam(value = "The package compressed as a Zip file, including the images", required = true) @RequestParam("package") MultipartFile pack,
+            @ApiParam(value = "uuid of the catalogue to be retrieved.", required = true) @PathVariable("uuid") String uuid,
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         try {
             log.info("Incoming request to upload images for catalogue: {}", uuid);
@@ -605,7 +605,7 @@ public class CatalogueController {
     })
     @RequestMapping(value = "/catalogue/semantic/{uuid}",
             method = RequestMethod.GET)
-    public ResponseEntity getCatalogueInSemanticFormat(@ApiParam(value = "uuid of the catalogue to be retrieved.") @PathVariable String uuid,
+    public ResponseEntity getCatalogueInSemanticFormat(@ApiParam(value = "uuid of the catalogue to be retrieved.", required = true) @PathVariable String uuid,
                                                        @ApiParam(value = "Target content type for the serialization.", defaultValue = "RDF/XML") @RequestParam(value = "semanticContentType", required = false) String semanticContentType,
                                                        @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String authorization,
                                                        HttpServletResponse response) {

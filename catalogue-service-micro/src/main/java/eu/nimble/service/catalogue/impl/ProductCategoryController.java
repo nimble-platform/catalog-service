@@ -39,8 +39,8 @@ public class ProductCategoryController {
     @RequestMapping(value = "/catalogue/category",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getSpecificCategories(@ApiParam(value = "Comma-separated category ids to be retrieved e.g. 0173-1#01-BAC439#012,0173-1#01-AJZ694#013") @RequestParam(required = false) List<String> categoryIds,
-                                                @ApiParam(value = "Comma-separated taxonomy ids corresponding to the specified category ids e.g. eClass, eClass") @RequestParam(required = false) List<String> taxonomyIds) {
+    public ResponseEntity getSpecificCategories(@ApiParam(value = "Comma-separated category ids to be retrieved e.g. 0173-1#01-BAC439#012,0173-1#01-AJZ694#013", required = true) @RequestParam(required = false) List<String> categoryIds,
+                                                @ApiParam(value = "Comma-separated taxonomy ids corresponding to the specified category ids e.g. eClass, eClass", required = true) @RequestParam(required = false) List<String> taxonomyIds) {
         log.info("Incoming request to get categories");
         List<Category> categories = new ArrayList<>();
         if (taxonomyIds != null && taxonomyIds.size() > 0 && categoryIds != null && categoryIds.size() > 0) {
@@ -80,9 +80,9 @@ public class ProductCategoryController {
     @RequestMapping(value = "catalogue/taxonomies/{taxonomyId}",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getCategoriesByName(@ApiParam(value = "A name describing the categories to be retrieved. This parameter does not necessarily have to be the exact name of the category.") @RequestParam String name,
+    public ResponseEntity getCategoriesByName(@ApiParam(value = "A name describing the categories to be retrieved. This parameter does not necessarily have to be the exact name of the category.", required = true) @RequestParam String name,
                                               @ApiParam(value = "Taxonomy id from which categories would be retrieved. If no taxonomy id is specified, all available taxonomies are considered.") @PathVariable String taxonomyId,
-                                              @ApiParam(value = "An indicatgor for retrieving categories for logistics service or regular products. If not specified, no such distinction is considered.") @RequestParam(required = false) Boolean forLogistics) {
+                                              @ApiParam(value = "An indicator for retrieving categories for logistics service or regular products. If not specified, no such distinction is considered.") @RequestParam(required = false) Boolean forLogistics) {
         log.info("Incoming request to get categories by name");
         // check whether the taxonomy id is valid or not
         if(!taxonomyId.contentEquals("All") && !taxonomyIdExists(taxonomyId)){
@@ -132,7 +132,7 @@ public class ProductCategoryController {
     @RequestMapping(value = "/catalogue/category/{taxonomyId}/root-categories",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getRootCategories(@ApiParam(value = "Taxonomy id from which categories would be retrieved.") @PathVariable String taxonomyId) {
+    public ResponseEntity getRootCategories(@ApiParam(value = "Taxonomy id from which categories would be retrieved.", required = true) @PathVariable String taxonomyId) {
         if (!taxonomyIdExists(taxonomyId)) {
             log.error("The given taxonomy id : {} is not valid", taxonomyId);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("The given taxonomy id %s is not valid", taxonomyId));
@@ -151,7 +151,8 @@ public class ProductCategoryController {
     @RequestMapping(value = "/catalogue/category/children-categories",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getChildrenCategories(@RequestParam("taxonomyId") String taxonomyId, @RequestParam("categoryId") String categoryId) {
+    public ResponseEntity getChildrenCategories(@ApiParam(value = "Taxonomy id containing the category for which children categories to be retrieved", required = true) @RequestParam("taxonomyId") String taxonomyId,
+                                                @ApiParam(value = "Category ifd for which the children categories to be retrieved", required = true) @RequestParam("categoryId") String categoryId) {
         if (!taxonomyIdExists(taxonomyId)) {
             log.error("The given taxonomy id : {} is not valid", taxonomyId);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("The given taxonomy id %s is not valid", taxonomyId));
@@ -180,7 +181,8 @@ public class ProductCategoryController {
     @RequestMapping(value = "/catalogue/category/tree",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getCategoryTree(@RequestParam("taxonomyId") String taxonomyId, @RequestParam("categoryId") String categoryId) {
+    public ResponseEntity getCategoryTree(@ApiParam(value = "Taxonomy id containing the category for which children categories to be retrieved", required = true) @RequestParam("taxonomyId") String taxonomyId,
+                                          @ApiParam(value = "Category ifd for which the children categories to be retrieved", required = true) @RequestParam("categoryId") String categoryId) {
         if (!taxonomyIdExists(taxonomyId)) {
             log.error("The given taxonomy id : {} is not valid", taxonomyId);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("The given taxonomy id %s is not valid", taxonomyId));

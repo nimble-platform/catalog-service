@@ -61,9 +61,9 @@ public class PriceConfigurationController {
     @RequestMapping(consumes = {MediaType.APPLICATION_JSON_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE},
             method = RequestMethod.POST)
-    public ResponseEntity addPricingOption(@ApiParam(value = "uuid of the catalogue containing the line for which the price option to be added. (catalogue.uuid)") @PathVariable("catalogueUuid") String catalogueUuid,
-                                           @ApiParam(value = "Identifier of the catalogue line to which the price option to be added. (lineId.id)") @PathVariable("lineId") String lineId,
-                                           @ApiParam(value = "Serialized form of PriceOptionType instance") @RequestBody PriceOptionType priceOption,
+    public ResponseEntity addPricingOption(@ApiParam(value = "uuid of the catalogue containing the line for which the price option to be added. (catalogue.uuid)", required = true) @PathVariable("catalogueUuid") String catalogueUuid,
+                                           @ApiParam(value = "Identifier of the catalogue line to which the price option to be added. (lineId.id)", required = true) @PathVariable("lineId") String lineId,
+                                           @ApiParam(value = "Serialized form of PriceOptionType instance", required = true) @RequestBody PriceOptionType priceOption,
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to add pricing option. catalogueId: {}, lineId: {}", catalogueUuid, lineId);
         try {
@@ -136,9 +136,9 @@ public class PriceConfigurationController {
     })
     @RequestMapping(value = "/{optionId}",
             method = RequestMethod.DELETE)
-    public ResponseEntity deletePricingOption(@ApiParam(value = "uuid of the catalogue containing the line for which the price option to be deleted. (catalogue.uuid)") @PathVariable("catalogueUuid") String catalogueUuid,
-                                              @ApiParam(value = "Identifier of the catalogue line from which the price option to be deleted. (lineId.id)") @PathVariable("lineId") String lineId,
-                                              @ApiParam(value = "Identifier of the price option to be deleted. (priceOption.hjid)") @PathVariable("optionId") Long optionId,
+    public ResponseEntity deletePricingOption(@ApiParam(value = "uuid of the catalogue containing the line for which the price option to be deleted. (catalogue.uuid)", required = true) @PathVariable("catalogueUuid") String catalogueUuid,
+                                              @ApiParam(value = "Identifier of the catalogue line from which the price option to be deleted. (lineId.id)", required = true) @PathVariable("lineId") String lineId,
+                                              @ApiParam(value = "Identifier of the price option to be deleted. (priceOption.hjid)", required = true) @PathVariable("optionId") Long optionId,
                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to delete pricing option. catalogueId: {}, lineId: {}, optionId: {}", catalogueUuid, lineId, optionId);
         try {
@@ -208,9 +208,9 @@ public class PriceConfigurationController {
     @RequestMapping(consumes = {MediaType.APPLICATION_JSON_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE},
             method = RequestMethod.PUT)
-    public ResponseEntity updatePricingOption(@ApiParam(value = "uuid of the catalogue containing the line for which the price option to be deleted. (catalogue.uuid)") @PathVariable("catalogueUuid") String catalogueUuid,
-                                              @ApiParam(value = "Identifier of the catalogue line to which the price option to be updated. (lineId.id)") @PathVariable("lineId") String lineId,
-                                              @ApiParam(value = "Serialized form of PriceOptionType instance to be updated") @RequestBody PriceOptionType priceOption,
+    public ResponseEntity updatePricingOption(@ApiParam(value = "uuid of the catalogue containing the line for which the price option to be deleted. (catalogue.uuid)", required = true) @PathVariable("catalogueUuid") String catalogueUuid,
+                                              @ApiParam(value = "Identifier of the catalogue line to which the price option to be updated. (lineId.id)", required = true) @PathVariable("lineId") String lineId,
+                                              @ApiParam(value = "Serialized form of PriceOptionType instance to be updated", required = true) @RequestBody PriceOptionType priceOption,
                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to delete pricing option. catalogueId: {}, lineId: {}, optionId: {}", catalogueUuid, lineId, priceOption.getHjid());
 

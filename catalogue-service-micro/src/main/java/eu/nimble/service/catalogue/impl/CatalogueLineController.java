@@ -65,8 +65,8 @@ public class CatalogueLineController {
     @RequestMapping(value = "/catalogueline/{lineId}",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getCatalogueLine(@ApiParam(value = "uuid of the catalogue containing the line to be retrieved. (catalogue.uuid)") @PathVariable String catalogueUuid,
-                                           @ApiParam(value = "Identifier of the catalogue line to be retrieved. (line.id)") @PathVariable String lineId,
+    public ResponseEntity getCatalogueLine(@ApiParam(value = "uuid of the catalogue containing the line to be retrieved. (catalogue.uuid)", required = true) @PathVariable String catalogueUuid,
+                                           @ApiParam(value = "Identifier of the catalogue line to be retrieved. (line.id)", required = true) @PathVariable String lineId,
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to get catalogue line with lineId: {}", lineId);
         ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
@@ -107,8 +107,8 @@ public class CatalogueLineController {
             consumes = {"application/json"},
             produces = {"application/json"},
             method = RequestMethod.POST)
-    public ResponseEntity addCatalogueLine(@ApiParam(value = "uuid of the catalogue containing the line to be retrieved. (catalogue.uuid)") @PathVariable String catalogueUuid,
-                                           @ApiParam(value = "Serialized form of the catalogue line. Valid serializations can be achieved via JsonSerializationUtility.getObjectMapper method located in the utility module") @RequestBody String catalogueLineJson,
+    public ResponseEntity addCatalogueLine(@ApiParam(value = "uuid of the catalogue containing the line to be retrieved. (catalogue.uuid)", required = true) @PathVariable String catalogueUuid,
+                                           @ApiParam(value = "Serialized form of the catalogue line. Valid serializations can be achieved via JsonSerializationUtility.getObjectMapper method located in the utility module", required = true) @RequestBody String catalogueLineJson,
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to add catalogue line to catalogue: {}", catalogueUuid);
         CatalogueType catalogue;
@@ -203,8 +203,8 @@ public class CatalogueLineController {
             consumes = {"application/json"},
             produces = {"application/json"},
             method = RequestMethod.PUT)
-    public ResponseEntity updateCatalogueLine(@ApiParam(value = "uuid of the catalogue containing the line to be retrieved. (catalogue.uuid)") @PathVariable String catalogueUuid,
-                                              @ApiParam(value = "Serialized form of the catalogue line. Valid serializations can be achieved via JsonSerializationUtility.getObjectMapper method located in the utility module") @RequestBody String catalogueLineJson,
+    public ResponseEntity updateCatalogueLine(@ApiParam(value = "uuid of the catalogue containing the line to be retrieved. (catalogue.uuid)", required = true) @PathVariable String catalogueUuid,
+                                              @ApiParam(value = "Serialized form of the catalogue line. Valid serializations can be achieved via JsonSerializationUtility.getObjectMapper method located in the utility module", required = true) @RequestBody String catalogueLineJson,
                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         try {
             // check token
@@ -279,8 +279,8 @@ public class CatalogueLineController {
     @RequestMapping(value = "/catalogueline/{lineId}",
             produces = {"application/json"},
             method = RequestMethod.DELETE)
-    public ResponseEntity deleteCatalogueLine(@ApiParam(value = "uuid of the catalogue containing the line to be retrieved. (catalogue.uuid)") @PathVariable String catalogueUuid,
-                                              @ApiParam(value = "Identifier of the catalogue line to be retrieved. (line.id)") @PathVariable String lineId,
+    public ResponseEntity deleteCatalogueLine(@ApiParam(value = "uuid of the catalogue containing the line to be retrieved. (catalogue.uuid)", required = true) @PathVariable String catalogueUuid,
+                                              @ApiParam(value = "Identifier of the catalogue line to be retrieved. (line.id)", required = true) @PathVariable String lineId,
                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to delete catalogue line. catalogue uuid: {}: line lineId {}", catalogueUuid, lineId);
         try {
