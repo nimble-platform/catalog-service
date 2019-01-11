@@ -44,7 +44,7 @@ public class ImportExportController {
     @RequestMapping(value = "/catalogue/import",
             method = RequestMethod.POST,
             consumes = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity importCatalogue(@ApiParam(value = "Serialized form of the catalogue.") @RequestBody String serializedCatalogue,
+    public ResponseEntity importCatalogue(@ApiParam(value = "Serialized form of the catalogue.", required = true) @RequestBody String serializedCatalogue,
                                           @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         try {
             log.info("Importing catalogue ...");

@@ -44,7 +44,7 @@ public class UnitServiceController {
     @RequestMapping(value = "/unit-lists/{unitListId}",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getValues(@ApiParam(value = "List id for which the contained units to be retrieved") @PathVariable String unitListId) {
+    public ResponseEntity getValues(@ApiParam(value = "List id for which the contained units to be retrieved", required = true) @PathVariable String unitListId) {
         logger.info("All units will be received for unitListId: {}", unitListId);
 
         if (!unitManager.checkUnitListId(unitListId)) {
@@ -66,8 +66,8 @@ public class UnitServiceController {
     @RequestMapping(value = "/unit-lists/{unitListId}",
             produces = {"application/json"},
             method = RequestMethod.PATCH)
-    public ResponseEntity addUnitToList(@ApiParam(value = "List id to which the specified unit to be added") @PathVariable String unitListId,
-                                        @ApiParam(value = "Unit to be added") @RequestParam("unit") String unit) {
+    public ResponseEntity addUnitToList(@ApiParam(value = "List id to which the specified unit to be added", required = true) @PathVariable String unitListId,
+                                        @ApiParam(value = "Unit to be added", required = true) @RequestParam("unit") String unit) {
         logger.info("Unit '{}' will be added to unit list with id: {}", unit, unitListId);
 
         if (!unitManager.checkUnitListId(unitListId)) {
@@ -91,7 +91,8 @@ public class UnitServiceController {
     @RequestMapping(value = "/unit-lists/{unitListId}/unit/{unit}",
             produces = {"application/json"},
             method = RequestMethod.DELETE)
-    public ResponseEntity deleteUnitFromList(@PathVariable String unit, @PathVariable String unitListId) {
+    public ResponseEntity deleteUnitFromList(@ApiParam(value = "List id from which the specified unit to be deleted", required = true) @PathVariable String unitListId,
+                                             @ApiParam(value = "Unit to be added", required = true) @PathVariable String unit) {
         logger.info("Unit '{}' will be deleted from unit list with id: {}", unit, unitListId);
 
         if (!unitManager.checkUnitListId(unitListId)) {
@@ -115,8 +116,8 @@ public class UnitServiceController {
     @RequestMapping(value = "/unit-lists",
             produces = {"application/json"},
             method = RequestMethod.POST)
-    public ResponseEntity addUnitList(@ApiParam(value = "Id for the unit list to be created") @RequestParam("unitListId") String unitListId,
-                                      @ApiParam(value = "Comma-separated units to be included in the unit list") @RequestParam("units") List<String> units) {
+    public ResponseEntity addUnitList(@ApiParam(value = "Id for the unit list to be created", required = true) @RequestParam("unitListId") String unitListId,
+                                      @ApiParam(value = "Comma-separated units to be included in the unit list", required = true) @RequestParam("units") List<String> units) {
         logger.info("Unit list with id: {} will be persisted in DB", unitListId);
 
         if (unitManager.checkUnitListId(unitListId)) {

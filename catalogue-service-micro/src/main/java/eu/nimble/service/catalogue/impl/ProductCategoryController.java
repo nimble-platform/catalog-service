@@ -82,7 +82,7 @@ public class ProductCategoryController {
             method = RequestMethod.GET)
     public ResponseEntity getCategoriesByName(@ApiParam(value = "A name describing the categories to be retrieved. This parameter does not necessarily have to be the exact name of the category.", required = true) @RequestParam String name,
                                               @ApiParam(value = "Taxonomy id from which categories would be retrieved. If no taxonomy id is specified, all available taxonomies are considered.") @PathVariable String taxonomyId,
-                                              @ApiParam(value = "An indicator for retrieving categories for logistics service or regular products. If not specified, no such distinction is considered.") @RequestParam(required = false) Boolean forLogistics) {
+                                              @ApiParam(value = "An indicator for retrieving categories for logistics service or regular products. If not specified, no such distinction is considered.", defaultValue = "false") @RequestParam(required = false) Boolean forLogistics) {
         log.info("Incoming request to get categories by name");
         // check whether the taxonomy id is valid or not
         if(!taxonomyId.contentEquals("All") && !taxonomyIdExists(taxonomyId)){

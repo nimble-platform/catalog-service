@@ -75,7 +75,7 @@ public class CatalogueController {
     @RequestMapping(value = "/catalogue/{partyId}/default",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getDefaultCatalogue(@ApiParam(value = "Identifier of the party for which the catalogue to be retrieved") @PathVariable String partyId,
+    public ResponseEntity getDefaultCatalogue(@ApiParam(value = "Identifier of the party for which the catalogue to be retrieved", required = true) @PathVariable String partyId,
                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         log.info("Incoming request to get default catalogue for party: {}", partyId);
         ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
@@ -111,8 +111,8 @@ public class CatalogueController {
     @RequestMapping(value = "/catalogue/{standard}/{uuid}",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getCatalogue(@ApiParam(value = "Data model standard that the provided catalogue is compatible with.", defaultValue = "ubl") @PathVariable String standard,
-                                       @ApiParam(value = "uuid of the catalogue to be retrieved.") @PathVariable String uuid,
+    public ResponseEntity getCatalogue(@ApiParam(value = "Data model standard that the provided catalogue is compatible with.", defaultValue = "ubl", required = true) @PathVariable String standard,
+                                       @ApiParam(value = "uuid of the catalogue to be retrieved.", required = true) @PathVariable String uuid,
                                        @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         log.info("Incoming request to get catalogue for standard: {}, uuid: {}", standard, uuid);
         ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
@@ -198,7 +198,7 @@ public class CatalogueController {
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
             method = RequestMethod.POST)
     public <T> ResponseEntity addCatalogue(@ApiParam(value = "Data model standard that the provided catalogue is compatible with.", defaultValue = "ubl", required = true) @PathVariable String standard,
-                                           @ApiParam(value = "Serialized form of the catalogue. Valid serializations can be achieved via JsonSerializationUtility.getObjectMapper method located in the utility module", required = true) @RequestBody String serializedCatalogue,
+                                           @ApiParam(value = "Serialized form of the catalogue. Valid serializations can be achieved via JsonSerializationUtility.getObjectMapper method located in the utility module. An example catalogue serialization can be found in: https://github.com/nimble-platform/catalog-service/tree/staging/catalogue-service-micro/src/main/resources/example_content/catalogue.json", required = true) @RequestBody String serializedCatalogue,
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken, HttpServletRequest request) {
         try {
             log.info("Incoming request to post catalogue with standard: {} standard", standard);
@@ -279,7 +279,7 @@ public class CatalogueController {
             produces = {"application/json"},
             method = RequestMethod.PUT)
     public ResponseEntity updateCatalogue(@ApiParam(value = "Data model standard that the provided catalogue is compatible with.", defaultValue = "ubl", required = true) @PathVariable String standard,
-                                          @ApiParam(value = "Serialized form of the catalogue. Valid serializations can be achieved via JsonSerializationUtility.getObjectMapper method located in the utility module", required = true) @RequestBody String catalogueJson,
+                                          @ApiParam(value = "Serialized form of the catalogue. Valid serializations can be achieved via JsonSerializationUtility.getObjectMapper method located in the utility module. An example catalogue serialization can be found in: https://github.com/nimble-platform/catalog-service/tree/staging/catalogue-service-micro/src/main/resources/example_content/catalogue.json", required = true) @RequestBody String catalogueJson,
                                           @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         try {
             log.info("Incoming request to update catalogue");
@@ -351,7 +351,7 @@ public class CatalogueController {
     @RequestMapping(value = "/catalogue/{standard}/{uuid}",
             method = RequestMethod.DELETE)
     public ResponseEntity deleteCatalogue(@ApiParam(value = "Data model standard that the provided catalogue is compatible with.", defaultValue = "ubl", required = true) @PathVariable String standard,
-                                          @ApiParam(value = "uuid of the catalogue to be retrieved.") @PathVariable(value = "uuid", required = true) String uuid,
+                                          @ApiParam(value = "uuid of the catalogue to be retrieved.", required = true) @PathVariable(value = "uuid", required = true) String uuid,
                                           @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         log.info("Incoming request to delete catalogue with uuid: {}", uuid);
         ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
@@ -450,7 +450,7 @@ public class CatalogueController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             method = RequestMethod.POST)
     public ResponseEntity uploadTemplate(
-            @ApiParam(value = "Filled in excel-based template", required = true) @RequestParam("file") MultipartFile file,
+            @ApiParam(value = "Filled in excel-based template. An example filled in template can be found in: https://github.com/nimble-platform/catalog-service/tree/staging/catalogue-service-micro/src/main/resources/example_content/product_data_template.xlsx . Check the \"Information\" tab for detailed instructions. Furthermore, example instantiations can be found in the \"Product Properties Example\" and \"Trading and Delivery Terms Example\" tabs.", required = true) @RequestParam("file") MultipartFile file,
             @ApiParam(value = "Upload mode for the catalogue. Possible options are: append and replace", defaultValue = "append") @RequestParam(value = "uploadMode", defaultValue = "append") String uploadMode,
             @ApiParam(value = "Identifier of the party for which the catalogue will be published", required = true) @RequestParam("partyId") String partyId,
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
@@ -533,8 +533,8 @@ public class CatalogueController {
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Associate the images provided in a ZIP package to relevant products. The images " +
             "are associated with the target products via the product ids. For this, the image names should start with a " +
-            "valid product id. Specifically image name format should be as follows: <productId>.<imageName>.<imageFormat> " +
-            "e.g. product1_image.jpg")
+            "valid product id. Specifically image name format should be as follows: &lt;productId&gt;.&lt;imageName&gt;.&lt;imageFormat&gt; " +
+            "e.g. Product_id1.product1_image.jpg")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Added the images provided in the package object to relevant products successfully."),
             @ApiResponse(code = 400, message = "Failed obtain a Zip package from the provided data"),
@@ -545,7 +545,7 @@ public class CatalogueController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             method = RequestMethod.POST)
     public ResponseEntity uploadImages(
-            @ApiParam(value = "The package compressed as a Zip file, including the images", required = true) @RequestParam("package") MultipartFile pack,
+            @ApiParam(value = "The package compressed as a Zip file, including the images. An example image package can be found in: https://github.com/nimble-platform/catalog-service/tree/staging/catalogue-service-micro/src/main/resources/example_content/images.zip", required = true) @RequestParam("package") MultipartFile pack,
             @ApiParam(value = "uuid of the catalogue to be retrieved.", required = true) @PathVariable("uuid") String uuid,
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         try {

@@ -63,7 +63,7 @@ public class PriceConfigurationController {
             method = RequestMethod.POST)
     public ResponseEntity addPricingOption(@ApiParam(value = "uuid of the catalogue containing the line for which the price option to be added. (catalogue.uuid)", required = true) @PathVariable("catalogueUuid") String catalogueUuid,
                                            @ApiParam(value = "Identifier of the catalogue line to which the price option to be added. (lineId.id)", required = true) @PathVariable("lineId") String lineId,
-                                           @ApiParam(value = "Serialized form of PriceOptionType instance", required = true) @RequestBody PriceOptionType priceOption,
+                                           @ApiParam(value = "Serialized form of PriceOptionType instance. An example price serialization can be found in: https://github.com/nimble-platform/catalog-service/tree/staging/catalogue-service-micro/src/main/resources/example_content/price_option.json", required = true) @RequestBody PriceOptionType priceOption,
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to add pricing option. catalogueId: {}, lineId: {}", catalogueUuid, lineId);
         try {
@@ -210,7 +210,7 @@ public class PriceConfigurationController {
             method = RequestMethod.PUT)
     public ResponseEntity updatePricingOption(@ApiParam(value = "uuid of the catalogue containing the line for which the price option to be deleted. (catalogue.uuid)", required = true) @PathVariable("catalogueUuid") String catalogueUuid,
                                               @ApiParam(value = "Identifier of the catalogue line to which the price option to be updated. (lineId.id)", required = true) @PathVariable("lineId") String lineId,
-                                              @ApiParam(value = "Serialized form of PriceOptionType instance to be updated", required = true) @RequestBody PriceOptionType priceOption,
+                                              @ApiParam(value = "Serialized form of PriceOptionType instance to be updated. An example price serialization can be found in: https://github.com/nimble-platform/catalog-service/tree/staging/catalogue-service-micro/src/main/resources/example_content/price_option.json", required = true) @RequestBody PriceOptionType priceOption,
                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to delete pricing option. catalogueId: {}, lineId: {}, optionId: {}", catalogueUuid, lineId, priceOption.getHjid());
 

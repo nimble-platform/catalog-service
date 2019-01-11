@@ -108,7 +108,7 @@ public class CatalogueLineController {
             produces = {"application/json"},
             method = RequestMethod.POST)
     public ResponseEntity addCatalogueLine(@ApiParam(value = "uuid of the catalogue containing the line to be retrieved. (catalogue.uuid)", required = true) @PathVariable String catalogueUuid,
-                                           @ApiParam(value = "Serialized form of the catalogue line. Valid serializations can be achieved via JsonSerializationUtility.getObjectMapper method located in the utility module", required = true) @RequestBody String catalogueLineJson,
+                                           @ApiParam(value = "Serialized form of the catalogue line. Valid serializations can be achieved via JsonSerializationUtility.getObjectMapper method located in the utility module. An example catalogue line serialization can be found in: https://github.com/nimble-platform/catalog-service/tree/staging/catalogue-service-micro/src/main/resources/example_content/catalogue_line.json", required = true) @RequestBody String catalogueLineJson,
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to add catalogue line to catalogue: {}", catalogueUuid);
         CatalogueType catalogue;
@@ -204,7 +204,7 @@ public class CatalogueLineController {
             produces = {"application/json"},
             method = RequestMethod.PUT)
     public ResponseEntity updateCatalogueLine(@ApiParam(value = "uuid of the catalogue containing the line to be retrieved. (catalogue.uuid)", required = true) @PathVariable String catalogueUuid,
-                                              @ApiParam(value = "Serialized form of the catalogue line. Valid serializations can be achieved via JsonSerializationUtility.getObjectMapper method located in the utility module", required = true) @RequestBody String catalogueLineJson,
+                                              @ApiParam(value = "Serialized form of the catalogue line. Valid serializations can be achieved via JsonSerializationUtility.getObjectMapper method located in the utility module. An example catalogue line serialization can be found in: https://github.com/nimble-platform/catalog-service/tree/staging/catalogue-service-micro/src/main/resources/example_content/catalogue_line.json.", required = true) @RequestBody String catalogueLineJson,
                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         try {
             // check token
