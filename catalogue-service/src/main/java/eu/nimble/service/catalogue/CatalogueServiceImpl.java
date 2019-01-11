@@ -400,43 +400,6 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public <T> List<T> getCatalogueLines(String catalogueId, List<String> catalogueLineIds) {
-
-        if (catalogueLineIds.size() == 0) {
-            return null;
-        }
-
-        List<T> catalogueLines = null;
-        List<String> parameterNames = new ArrayList<>();
-        List<Object> parameterValues = new ArrayList<>();
-
-        String query = "SELECT cl FROM CatalogueLineType as cl, CatalogueType as c "
-                + " JOIN c.catalogueLine as clj"
-                + " WHERE c.UUID = :catalogueId "
-                + " AND (";
-
-        parameterNames.add("catalogueId");
-        parameterValues.add(catalogueId);
-
-        int size = catalogueLineIds.size();
-        for (int i = 0; i < size; i++) {
-            if (i == size - 1) {
-                query += "cl.ID = :lineId" + i + ")";
-            } else {
-                query += "cl.ID = :lineId" + i + " OR ";
-            }
-
-            parameterNames.add("lineId" + i);
-            parameterValues.add(catalogueLineIds.get(i));
-        }
-        query += " AND clj.ID = cl.ID ";
-
-        catalogueLines = new JPARepositoryFactory().forCatalogueRepository().getEntities(query, parameterNames.toArray(new String[parameterNames.size()]), parameterValues.toArray());
-
-        return catalogueLines;
-    }
-
-    @Override
     public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine) {
         catalogue.getCatalogueLine().add(catalogueLine);
         DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(catalogue);

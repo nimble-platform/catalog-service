@@ -65,7 +65,7 @@ public class CatalogueController {
     private ResourceValidationUtility resourceValidationUtil;
 
     @CrossOrigin(origins = {"*"})
-    @ApiOperation(value = "", notes = "Retrieves the default catalogue for the specified party. The catalogue is supposed to have and id field with \"default\" value and be compliant with UBL standard.")
+    @ApiOperation(value = "", notes = "Retrieves the default catalogue for the specified party. The catalogue is supposed to have \"default\" value in the id field and be compliant with UBL standard.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieved the default catalogue for the specified party successfully", response = CatalogueType.class),
             @ApiResponse(code = 204, message = "No default catalogue for the party"),

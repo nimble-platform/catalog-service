@@ -15,6 +15,7 @@ import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.slf4j.Logger;
@@ -50,18 +51,20 @@ public class PriceConfigurationController {
     private CatalogueService service = CatalogueServiceImpl.getInstance();
 
     @CrossOrigin(origins = {"*"})
-    @ApiOperation(value = "", notes = "Adds the given pricing option to the specified catalogue line (i.e. product/service)")
+    @ApiOperation(value = "", notes = "Adds the provided price option to the specified catalogue line (i.e. product/service)")
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Added the pricing option successfully", response = PriceOptionType.class),
-            @ApiResponse(code = 404, message = "No catalogue or catalogue line found for the specified parameters")
+            @ApiResponse(code = 400, message = "Invalid price option serialization"),
+            @ApiResponse(code = 404, message = "No catalogue or catalogue line found for the specified parameters"),
+            @ApiResponse(code = 500, message = "Unexpected error while adding price option")
     })
     @RequestMapping(consumes = {MediaType.APPLICATION_JSON_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE},
             method = RequestMethod.POST)
-    public ResponseEntity addPricingOption(@PathVariable("catalogueUuid") String catalogueUuid,
-                                           @PathVariable("lineId") String lineId,
-                                           @RequestBody PriceOptionType priceOption,
-                                           @RequestHeader(value = "Authorization") String bearerToken) {
+    public ResponseEntity addPricingOption(@ApiParam(value = "uuid of the catalogue containing the line for which the price option to be added. (catalogue.uuid)") @PathVariable("catalogueUuid") String catalogueUuid,
+                                           @ApiParam(value = "Identifier of the catalogue line to which the price option to be added. (lineId.id)") @PathVariable("lineId") String lineId,
+                                           @ApiParam(value = "Serialized form of PriceOptionType instance") @RequestBody PriceOptionType priceOption,
+                                           @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to add pricing option. catalogueId: {}, lineId: {}", catalogueUuid, lineId);
         try {
             // check token
@@ -133,10 +136,10 @@ public class PriceConfigurationController {
     })
     @RequestMapping(value = "/{optionId}",
             method = RequestMethod.DELETE)
-    public ResponseEntity deletePricingOption(@PathVariable("catalogueUuid") String catalogueUuid,
-                                              @PathVariable("lineId") String lineId,
-                                              @PathVariable("optionId") Long optionId,
-                                              @RequestHeader(value = "Authorization") String bearerToken) {
+    public ResponseEntity deletePricingOption(@ApiParam(value = "uuid of the catalogue containing the line for which the price option to be deleted. (catalogue.uuid)") @PathVariable("catalogueUuid") String catalogueUuid,
+                                              @ApiParam(value = "Identifier of the catalogue line from which the price option to be deleted. (lineId.id)") @PathVariable("lineId") String lineId,
+                                              @ApiParam(value = "Identifier of the price option to be deleted. (priceOption.hjid)") @PathVariable("optionId") Long optionId,
+                                              @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to delete pricing option. catalogueId: {}, lineId: {}, optionId: {}", catalogueUuid, lineId, optionId);
         try {
             // check token
@@ -198,15 +201,17 @@ public class PriceConfigurationController {
     @ApiOperation(value = "", notes = "Adds the given pricing option to the specified catalogue line (i.e. product/service)")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Added the pricing option successfully", response = PriceOptionType.class),
-            @ApiResponse(code = 404, message = "No catalogue or catalogue line found for the specified parameters")
+            @ApiResponse(code = 400, message = "Invalid price option serialization"),
+            @ApiResponse(code = 404, message = "No catalogue or catalogue line found for the specified parameters"),
+            @ApiResponse(code = 500, message = "Unexpected error while updating price option")
     })
     @RequestMapping(consumes = {MediaType.APPLICATION_JSON_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE},
             method = RequestMethod.PUT)
-    public ResponseEntity updatePricingOption(@PathVariable("catalogueUuid") String catalogueUuid,
-                                              @PathVariable("lineId") String lineId,
-                                              @RequestBody PriceOptionType priceOption,
-                                              @RequestHeader(value = "Authorization") String bearerToken) {
+    public ResponseEntity updatePricingOption(@ApiParam(value = "uuid of the catalogue containing the line for which the price option to be deleted. (catalogue.uuid)") @PathVariable("catalogueUuid") String catalogueUuid,
+                                              @ApiParam(value = "Identifier of the catalogue line to which the price option to be updated. (lineId.id)") @PathVariable("lineId") String lineId,
+                                              @ApiParam(value = "Serialized form of PriceOptionType instance to be updated") @RequestBody PriceOptionType priceOption,
+                                              @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to delete pricing option. catalogueId: {}, lineId: {}, optionId: {}", catalogueUuid, lineId, priceOption.getHjid());
 
         try {
