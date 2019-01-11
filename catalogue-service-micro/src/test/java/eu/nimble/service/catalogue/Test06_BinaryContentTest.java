@@ -109,7 +109,7 @@ public class Test06_BinaryContentTest {
         MockHttpServletRequestBuilder request = get("/binary-content")
                 .header("Authorization", environment.getProperty("nimble.test-token"))
                 .param("uri", firstProductImageUri);
-        MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isNotFound()).andReturn();
+        MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isNoContent()).andReturn();
     }
 
     @Test
