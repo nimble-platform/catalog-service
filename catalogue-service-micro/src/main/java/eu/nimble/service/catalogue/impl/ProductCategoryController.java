@@ -40,7 +40,8 @@ public class ProductCategoryController {
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity getSpecificCategories(@ApiParam(value = "Comma-separated category ids to be retrieved e.g. 0173-1#01-BAC439#012,0173-1#01-AJZ694#013", required = true) @RequestParam(required = false) List<String> categoryIds,
-                                                @ApiParam(value = "Comma-separated taxonomy ids corresponding to the specified category ids e.g. eClass, eClass", required = true) @RequestParam(required = false) List<String> taxonomyIds) {
+                                                @ApiParam(value = "Comma-separated taxonomy ids corresponding to the specified category ids e.g. eClass, eClass", required = true) @RequestParam(required = false) List<String> taxonomyIds,
+                                                @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         log.info("Incoming request to get categories");
         List<Category> categories = new ArrayList<>();
         if (taxonomyIds != null && taxonomyIds.size() > 0 && categoryIds != null && categoryIds.size() > 0) {
@@ -82,7 +83,8 @@ public class ProductCategoryController {
             method = RequestMethod.GET)
     public ResponseEntity getCategoriesByName(@ApiParam(value = "A name describing the categories to be retrieved. This parameter does not necessarily have to be the exact name of the category.", required = true) @RequestParam String name,
                                               @ApiParam(value = "Taxonomy id from which categories would be retrieved. If no taxonomy id is specified, all available taxonomies are considered.") @PathVariable String taxonomyId,
-                                              @ApiParam(value = "An indicator for retrieving categories for logistics service or regular products. If not specified, no such distinction is considered.", defaultValue = "false") @RequestParam(required = false) Boolean forLogistics) {
+                                              @ApiParam(value = "An indicator for retrieving categories for logistics service or regular products. If not specified, no such distinction is considered.", defaultValue = "false") @RequestParam(required = false) Boolean forLogistics,
+                                              @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         log.info("Incoming request to get categories by name");
         // check whether the taxonomy id is valid or not
         if(!taxonomyId.contentEquals("All") && !taxonomyIdExists(taxonomyId)){
@@ -111,7 +113,7 @@ public class ProductCategoryController {
     @RequestMapping(value = "/catalogue/category/taxonomies",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getAvailableTaxonomyIds() {
+    public ResponseEntity getAvailableTaxonomyIds(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         List<String> taxonomies;
         try {
             taxonomies = csm.getAvailableTaxonomies();
@@ -132,7 +134,8 @@ public class ProductCategoryController {
     @RequestMapping(value = "/catalogue/category/{taxonomyId}/root-categories",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getRootCategories(@ApiParam(value = "Taxonomy id from which categories would be retrieved.", required = true) @PathVariable String taxonomyId) {
+    public ResponseEntity getRootCategories(@ApiParam(value = "Taxonomy id from which categories would be retrieved.", required = true) @PathVariable String taxonomyId,
+                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         if (!taxonomyIdExists(taxonomyId)) {
             log.error("The given taxonomy id : {} is not valid", taxonomyId);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("The given taxonomy id %s is not valid", taxonomyId));
@@ -152,7 +155,8 @@ public class ProductCategoryController {
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity getChildrenCategories(@ApiParam(value = "Taxonomy id containing the category for which children categories to be retrieved", required = true) @RequestParam("taxonomyId") String taxonomyId,
-                                                @ApiParam(value = "Category ifd for which the children categories to be retrieved", required = true) @RequestParam("categoryId") String categoryId) {
+                                                @ApiParam(value = "Category ifd for which the children categories to be retrieved", required = true) @RequestParam("categoryId") String categoryId,
+                                                @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         if (!taxonomyIdExists(taxonomyId)) {
             log.error("The given taxonomy id : {} is not valid", taxonomyId);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("The given taxonomy id %s is not valid", taxonomyId));
@@ -182,7 +186,8 @@ public class ProductCategoryController {
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity getCategoryTree(@ApiParam(value = "Taxonomy id containing the category for which children categories to be retrieved", required = true) @RequestParam("taxonomyId") String taxonomyId,
-                                          @ApiParam(value = "Category ifd for which the children categories to be retrieved", required = true) @RequestParam("categoryId") String categoryId) {
+                                          @ApiParam(value = "Category ifd for which the children categories to be retrieved", required = true) @RequestParam("categoryId") String categoryId,
+                                          @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         if (!taxonomyIdExists(taxonomyId)) {
             log.error("The given taxonomy id : {} is not valid", taxonomyId);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("The given taxonomy id %s is not valid", taxonomyId));

@@ -28,7 +28,7 @@ public class UnitServiceController {
     @RequestMapping(value = "/unit-lists",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity<List<UnitList>> getAllUnitLists() {
+    public ResponseEntity<List<UnitList>> getAllUnitLists(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         logger.info("All unit lists will be received");
         List<UnitList> resultSet = unitManager.getAllUnitList();
         logger.info("All unit lists are received");
@@ -44,7 +44,8 @@ public class UnitServiceController {
     @RequestMapping(value = "/unit-lists/{unitListId}",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getValues(@ApiParam(value = "List id for which the contained units to be retrieved", required = true) @PathVariable String unitListId) {
+    public ResponseEntity getValues(@ApiParam(value = "List id for which the contained units to be retrieved", required = true) @PathVariable String unitListId,
+                                    @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         logger.info("All units will be received for unitListId: {}", unitListId);
 
         if (!unitManager.checkUnitListId(unitListId)) {
@@ -67,8 +68,13 @@ public class UnitServiceController {
             produces = {"application/json"},
             method = RequestMethod.PATCH)
     public ResponseEntity addUnitToList(@ApiParam(value = "List id to which the specified unit to be added", required = true) @PathVariable String unitListId,
-                                        @ApiParam(value = "Unit to be added", required = true) @RequestParam("unit") String unit) {
+                                        @ApiParam(value = "Unit to be added", required = true) @RequestParam("unit") String unit,
+                                        @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         logger.info("Unit '{}' will be added to unit list with id: {}", unit, unitListId);
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return tokenCheck;
+        }
 
         if (!unitManager.checkUnitListId(unitListId)) {
             return createErrorResponseEntity("No unit list with id: " + unitListId, HttpStatus.NO_CONTENT);
@@ -92,8 +98,13 @@ public class UnitServiceController {
             produces = {"application/json"},
             method = RequestMethod.DELETE)
     public ResponseEntity deleteUnitFromList(@ApiParam(value = "List id from which the specified unit to be deleted", required = true) @PathVariable String unitListId,
-                                             @ApiParam(value = "Unit to be added", required = true) @PathVariable String unit) {
+                                             @ApiParam(value = "Unit to be added", required = true) @PathVariable String unit,
+                                             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         logger.info("Unit '{}' will be deleted from unit list with id: {}", unit, unitListId);
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return tokenCheck;
+        }
 
         if (!unitManager.checkUnitListId(unitListId)) {
             return createErrorResponseEntity("No unit list with id: " + unitListId, HttpStatus.NO_CONTENT);
@@ -117,8 +128,13 @@ public class UnitServiceController {
             produces = {"application/json"},
             method = RequestMethod.POST)
     public ResponseEntity addUnitList(@ApiParam(value = "Id for the unit list to be created", required = true) @RequestParam("unitListId") String unitListId,
-                                      @ApiParam(value = "Comma-separated units to be included in the unit list", required = true) @RequestParam("units") List<String> units) {
+                                      @ApiParam(value = "Comma-separated units to be included in the unit list", required = true) @RequestParam("units") List<String> units,
+                                      @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         logger.info("Unit list with id: {} will be persisted in DB", unitListId);
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return tokenCheck;
+        }
 
         if (unitManager.checkUnitListId(unitListId)) {
             return createErrorResponseEntity(String.format("Unit list with id %s already exists", unitListId), HttpStatus.CONFLICT);

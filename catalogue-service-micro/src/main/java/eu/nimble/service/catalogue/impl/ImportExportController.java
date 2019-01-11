@@ -49,12 +49,11 @@ public class ImportExportController {
         try {
             log.info("Importing catalogue ...");
             // check token
-            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
-            if(!isValid){
-                String msg = String.format("No user exists for the given token : %s",bearerToken);
-                log.error(msg);
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(msg);
+            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+            if (tokenCheck != null) {
+                return tokenCheck;
             }
+
             // remove hjid fields of catalogue
             JSONObject object = new JSONObject(serializedCatalogue);
             JsonSerializationUtility.removeHjidFields(object);

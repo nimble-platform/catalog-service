@@ -69,6 +69,7 @@ public class CatalogueLineController {
                                            @ApiParam(value = "Identifier of the catalogue line to be retrieved. (line.id)", required = true) @PathVariable String lineId,
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to get catalogue line with lineId: {}", lineId);
+        // check token
         ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
         if (tokenCheck != null) {
             return tokenCheck;
@@ -116,12 +117,11 @@ public class CatalogueLineController {
 
         try {
             // check token
-            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
-            if(!isValid){
-                String msg = String.format("No user exists for the given token : %s",bearerToken);
-                log.error(msg);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+            if (tokenCheck != null) {
+                return tokenCheck;
             }
+
             // get owning catalogue
             catalogue = service.getCatalogue(catalogueUuid);
             if (catalogue == null) {
@@ -208,12 +208,11 @@ public class CatalogueLineController {
                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         try {
             // check token
-            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
-            if(!isValid){
-                String msg = String.format("No user exists for the given token : %s",bearerToken);
-                log.error(msg);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+            if (tokenCheck != null) {
+                return tokenCheck;
             }
+
             CatalogueLineType catalogueLine;
 
             //parse catalogue line
@@ -232,8 +231,6 @@ public class CatalogueLineController {
                 log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
             }
-
-
 
             // validate the incoming content
             CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogue, catalogueLine);
@@ -283,19 +280,12 @@ public class CatalogueLineController {
                                               @ApiParam(value = "Identifier of the catalogue line to be retrieved. (line.id)", required = true) @PathVariable String lineId,
                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to delete catalogue line. catalogue uuid: {}: line lineId {}", catalogueUuid, lineId);
-        try {
-            // check token
-            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
-            if(!isValid){
-                String msg = String.format("No user exists for the given token : %s",bearerToken);
-                log.error(msg);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
-            }
-        } catch (IOException e){
-            String msg = String.format("Failed to delete catalogue line: %s for catalogue uuid: %s",lineId,catalogueUuid);
-            log.error(msg,e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(msg);
+        // check token
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return tokenCheck;
         }
+
         if (service.getCatalogue(catalogueUuid) == null) {
             log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
