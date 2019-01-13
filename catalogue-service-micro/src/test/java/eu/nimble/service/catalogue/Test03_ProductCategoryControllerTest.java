@@ -14,6 +14,7 @@ import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.env.Environment;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -36,10 +37,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class Test03_ProductCategoryControllerTest {
     @Autowired
     private MockMvc mockMvc;
+    @Autowired
+    private Environment environment;
 
     @Test
     public void test1_getAvailableTaxonomies() throws Exception {
-        MockHttpServletRequestBuilder request = get("/catalogue/category/taxonomies");
+        MockHttpServletRequestBuilder request = get("/taxonomies/id")
+                .header("Authorization", environment.getProperty("nimble.test-token"));
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
         JsonParser parser = mapper.getFactory().createParser(result.getResponse().getContentAsString());
@@ -49,7 +53,8 @@ public class Test03_ProductCategoryControllerTest {
 
     @Test
     public void test2_getCategoriesByName() throws Exception {
-        MockHttpServletRequestBuilder request = get("/catalogue/taxonomies/eClass").param("name", "die");
+        MockHttpServletRequestBuilder request = get("/taxonomies/eClass/categories").param("name", "die")
+                .header("Authorization", environment.getProperty("nimble.test-token"));
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
         List<Category> categories = mapper.readValue(result.getResponse().getContentAsString(), new TypeReference<List<Category>>() {});
@@ -63,7 +68,8 @@ public class Test03_ProductCategoryControllerTest {
     @Test
     public void test3_getCategoriesByName() throws Exception {
         // get logistic categories for warehouse
-        MockHttpServletRequestBuilder request = get("/catalogue/taxonomies/eClass")
+        MockHttpServletRequestBuilder request = get("/taxonomies/eClass/categories")
+                .header("Authorization", environment.getProperty("nimble.test-token"))
                 .param("name", "warehouse")
                 .param("forLogistics","true");
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
@@ -74,7 +80,8 @@ public class Test03_ProductCategoryControllerTest {
         Assert.assertEquals(2,categories.size());
 
         // get logistic categories for mdf
-        request = get("/catalogue/taxonomies/eClass")
+        request = get("/taxonomies/eClass/categories")
+                .header("Authorization", environment.getProperty("nimble.test-token"))
                 .param("name", "mdf")
                 .param("forLogistics","true");
         result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
@@ -86,7 +93,10 @@ public class Test03_ProductCategoryControllerTest {
 
     @Test
     public void test4_getCategoriesByIds() throws Exception {
-        MockHttpServletRequestBuilder request = get("/catalogue/category").param("categoryIds", "0173-1#01-BAA975#013").param("taxonomyIds", "eClass");
+        MockHttpServletRequestBuilder request = get("/categories")
+                .header("Authorization", environment.getProperty("nimble.test-token"))
+                .param("categoryIds", "0173-1#01-BAA975#013")
+                .param("taxonomyIds", "eClass");
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
         List<Category> categories = mapper.readValue(result.getResponse().getContentAsString(), new TypeReference<List<Category>>() {});
