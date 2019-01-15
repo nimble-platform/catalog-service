@@ -58,8 +58,7 @@ public class CatalogueLineController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieved catalogue line successfully", response = CatalogueLineType.class),
             @ApiResponse(code = 400, message = "Failed to get catalogue line"),
-            @ApiResponse(code = 404, message = "Catalogue with the given uuid does not exist"),
-            @ApiResponse(code = 204, message = "There does not exist a catalogue line with the given lineId"),
+            @ApiResponse(code = 404, message = "Specified catalogue or catalogue line does not exist"),
             @ApiResponse(code = 500, message = "Unexpected error while getting catalogue line")
     })
     @RequestMapping(value = "/catalogueline/{lineId}",
@@ -89,7 +88,7 @@ public class CatalogueLineController {
 
         if (catalogueLine == null) {
             log.error("There does not exist a catalogue line with lineId {}", lineId);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(String.format("There does not exist a catalogue line with lineId %s", lineId));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("There does not exist a catalogue line with lineId %s", lineId));
         }
         log.info("Completed the request to get catalogue line with lineId: {}", lineId);
         return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLine));

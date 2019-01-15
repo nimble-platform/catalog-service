@@ -148,8 +148,8 @@ public class ProductCategoryController {
     @ApiOperation(value = "", notes = "Retrieves children categories for the specified category")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieved children categories successfully", response = Category.class, responseContainer = "List"),
-            @ApiResponse(code = 204, message = "There does not exist a category with the given id"),
-            @ApiResponse(code = 400, message = "Invalid taxonomy id")
+            @ApiResponse(code = 400, message = "Invalid taxonomy id"),
+            @ApiResponse(code = 404, message = "There does not exist a category with the given id")
     })
     @RequestMapping(value = "/taxonomies/{taxonomyId}/categories/children-categories",
             produces = {"application/json"},
@@ -164,7 +164,7 @@ public class ProductCategoryController {
 
         if (!categoryExists(taxonomyId, categoryId)) {
             log.error("There does not exist a category with the id : {}", categoryId);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(String.format("There does not exist a category with the id %s", categoryId));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("There does not exist a category with the id %s", categoryId));
         }
 
         List<Category> categories = csm.getChildrenCategories(taxonomyId, categoryId);
@@ -179,8 +179,8 @@ public class ProductCategoryController {
             " specified in the parents list.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieved the parents of the category and their siblings successfully", response = CategoryTreeResponse.class),
-            @ApiResponse(code = 204, message = "There does not exist a category with the given id"),
-            @ApiResponse(code = 400, message = "Invalid taxonomy id")
+            @ApiResponse(code = 400, message = "Invalid taxonomy id"),
+            @ApiResponse(code = 404, message = "There does not exist a category with the given id")
     })
     @RequestMapping(value = "/taxonomies/{taxonomyId}/categories/tree",
             produces = {"application/json"},
@@ -195,7 +195,7 @@ public class ProductCategoryController {
 
         if (!categoryExists(taxonomyId, categoryId)) {
             log.error("There does not exist a category with the id : {}", categoryId);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(String.format("There does not exist a category with the id %s", categoryId));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("There does not exist a category with the id %s", categoryId));
         }
 
         CategoryTreeResponse categories = csm.getCategoryTree(taxonomyId, categoryId);

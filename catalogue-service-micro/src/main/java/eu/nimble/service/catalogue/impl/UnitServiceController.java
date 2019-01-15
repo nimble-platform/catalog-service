@@ -39,7 +39,7 @@ public class UnitServiceController {
     @ApiOperation(value = "", notes = "Gets units of the specified list")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieved all units for the given unit list id successfully", response = String.class, responseContainer = "List"),
-            @ApiResponse(code = 204, message = "No unit list with the given id")
+            @ApiResponse(code = 404, message = "No unit list with the given id")
     })
     @RequestMapping(value = "/unit-lists/{unitListId}",
             produces = {"application/json"},
@@ -49,7 +49,7 @@ public class UnitServiceController {
         logger.info("All units will be received for unitListId: {}", unitListId);
 
         if (!unitManager.checkUnitListId(unitListId)) {
-            return createErrorResponseEntity("No unit list with id: " + unitListId, HttpStatus.NO_CONTENT);
+            return createErrorResponseEntity("No unit list with id: " + unitListId, HttpStatus.NOT_FOUND);
         }
 
         List<String> resultSet = unitManager.getValues(unitListId);
@@ -61,7 +61,7 @@ public class UnitServiceController {
     @ApiOperation(value = "", notes = "Adds a unit to a specified list")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Added unit successfully", response = String.class, responseContainer = "List"),
-            @ApiResponse(code = 204, message = "No unit list with the given id"),
+            @ApiResponse(code = 404, message = "No unit list with the given id"),
             @ApiResponse(code = 409, message = "Unit already exists for unit list with the given id")
     })
     @RequestMapping(value = "/unit-lists/{unitListId}",
@@ -77,7 +77,7 @@ public class UnitServiceController {
         }
 
         if (!unitManager.checkUnitListId(unitListId)) {
-            return createErrorResponseEntity("No unit list with id: " + unitListId, HttpStatus.NO_CONTENT);
+            return createErrorResponseEntity("No unit list with id: " + unitListId, HttpStatus.NOT_FOUND);
         }
         if (unitManager.checkUnit(unit, unitListId)) {
             return createErrorResponseEntity("Unit '" + unit + "' already exists for unit list with id: " + unitListId, HttpStatus.CONFLICT);
@@ -92,7 +92,7 @@ public class UnitServiceController {
     @ApiOperation(value = "", notes = "Deletes a unit from a specified list")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Deleted unit successfully", response = String.class, responseContainer = "List"),
-            @ApiResponse(code = 204, message = "No unit list with the given id or no such unis available in the specified list")
+            @ApiResponse(code = 404, message = "No unit list with the given id or no such unis available in the specified list")
     })
     @RequestMapping(value = "/unit-lists/{unitListId}/unit/{unit}",
             produces = {"application/json"},
@@ -107,10 +107,10 @@ public class UnitServiceController {
         }
 
         if (!unitManager.checkUnitListId(unitListId)) {
-            return createErrorResponseEntity("No unit list with id: " + unitListId, HttpStatus.NO_CONTENT);
+            return createErrorResponseEntity("No unit list with id: " + unitListId, HttpStatus.NOT_FOUND);
         }
         if (!unitManager.checkUnit(unit, unitListId)) {
-            return createErrorResponseEntity("Unit '" + unit + "' does not exist for unit list with id: " + unitListId, HttpStatus.NO_CONTENT);
+            return createErrorResponseEntity("Unit '" + unit + "' does not exist for unit list with id: " + unitListId, HttpStatus.NOT_FOUND);
         }
 
         List<String> resultSet = unitManager.deleteUnitFromList(unit, unitListId);

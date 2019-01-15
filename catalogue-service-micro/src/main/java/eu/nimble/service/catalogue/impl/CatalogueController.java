@@ -68,8 +68,8 @@ public class CatalogueController {
     @ApiOperation(value = "", notes = "Retrieves the default catalogue for the specified party. The catalogue is supposed to have \"default\" value in the id field and be compliant with UBL standard.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieved the default catalogue for the specified party successfully", response = CatalogueType.class),
-            @ApiResponse(code = 204, message = "No default catalogue for the party"),
             @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 404, message = "No default catalogue for the party"),
             @ApiResponse(code = 500, message = "Failed to get default catalogue for the party")
     })
     @RequestMapping(value = "/catalogue/{partyId}/default",
@@ -92,7 +92,7 @@ public class CatalogueController {
 
         if (catalogue == null) {
             log.info("No default catalogue for party: {}", partyId);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(String.format("No default catalogue for party: %s", partyId));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("No default catalogue for party: %s", partyId));
         }
 
         log.info("Completed request to get default catalogue for party: {}", partyId);
@@ -103,9 +103,9 @@ public class CatalogueController {
     @ApiOperation(value = "", notes = "Retrieves the catalogue for the given standard and uuid.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieved the catalogue successfully", response = CatalogueType.class),
-            @ApiResponse(code = 204, message = "No catalogue for the given uuid and standard"),
             @ApiResponse(code = 400, message = "Invalid standard"),
             @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 404, message = "No catalogue for the given uuid and standard"),
             @ApiResponse(code = 500, message = "Unexpected error while getting catalogue")
     })
     @RequestMapping(value = "/catalogue/{standard}/{uuid}",
@@ -135,7 +135,7 @@ public class CatalogueController {
 
         if (catalogue == null) {
             log.info("No catalogue for uuid: {}", uuid);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(String.format("No catalogue for uuid: %s", uuid));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("No catalogue for uuid: %s", uuid));
         }
 
         log.info("Completed request to get catalogue for standard: {}, uuid: {}", standard, uuid);
@@ -599,8 +599,8 @@ public class CatalogueController {
     @ApiOperation(value = "", notes = "Retrieves the specified UBL-compliant catalogue in the specified semantic format. If no format is specified, RDF/XML is used.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieved the catalogue successfully"),
-            @ApiResponse(code = 204, message = "No catalogue for the given uuid"),
             @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 404, message = "No catalogue for the given uuid"),
             @ApiResponse(code = 500, message = "Unexpected error while getting catalogue")
     })
     @RequestMapping(value = "/catalogue/semantic/{uuid}",
@@ -625,7 +625,7 @@ public class CatalogueController {
 
             if (catalogue == null) {
                 log.info("No catalogue for uuid: {}", uuid);
-                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(String.format("No default catalogue for uuid: %s", uuid));
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("No default catalogue for uuid: %s", uuid));
             }
 
             // transform content to other semantic formats

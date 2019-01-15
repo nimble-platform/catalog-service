@@ -37,8 +37,8 @@ public class BinaryContentController {
     @ApiOperation(value = "", notes = "Retrieves a specified binary content wrapped inside a BinaryCbjectType instance.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieved the binary content successfully", response = CatalogueType.class),
-            @ApiResponse(code = 204, message = "No binary content exists for the specified uri"),
             @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 404, message = "No binary content exists for the specified uri"),
             @ApiResponse(code = 500, message = "Unexpected error while getting binary content"),
     })
     @RequestMapping(value = "/binary-content",
@@ -60,7 +60,7 @@ public class BinaryContentController {
             if(result == null){
                 String msg = String.format("There does not exist a binary content for uri: %s", uri);
                 logger.error(msg);
-                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(msg);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
             }
 
             ObjectMapper objectMapper = JsonSerializationUtility.getObjectMapper();
@@ -78,8 +78,8 @@ public class BinaryContentController {
     @ApiOperation(value = "", notes = "Retrieves a specified binary content in raw Base64 encoded format.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieved the binary content successfully", response = CatalogueType.class),
-            @ApiResponse(code = 204, message = "No binary content exists for the specified uri"),
             @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 404, message = "No binary content exists for the specified uri"),
             @ApiResponse(code = 500, message = "Unexpected error while getting binary content"),
     })
     @RequestMapping(value = "/binary-content/raw",
@@ -107,7 +107,7 @@ public class BinaryContentController {
             if(result == null){
                 String msg = String.format("There does not exist a binary content for uri: %s", uri);
                 logger.error(msg);
-                response.setStatus(HttpStatus.NO_CONTENT.value());
+                response.setStatus(HttpStatus.NOT_FOUND.value());
                 try {
                     response.getOutputStream().write(msg.getBytes());
                 } catch (IOException e1) {
