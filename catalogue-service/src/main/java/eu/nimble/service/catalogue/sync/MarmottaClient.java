@@ -77,9 +77,7 @@ public class MarmottaClient {
             }
         }
 
-        for (CatalogueLineType catalogueLine:catalogue.getCatalogueLine()){
-            SolrClient.indexProperties(catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty());
-        }
+        SolrClient.indexProperties(catalogue);
     }
 
     public void deleteCatalogueFromMarmotta(String uuid) throws MarmottaSynchronizationException {
