@@ -4,9 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
-import eu.nimble.service.catalogue.CatalogueServiceImpl;
-import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
-import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PriceOptionType;
 import eu.nimble.utility.Configuration;
@@ -47,8 +44,8 @@ public class PriceConfigurationController {
 
     @Autowired
     private ResourceValidationUtility resourceValidationUtil;
-
-    private CatalogueService service = CatalogueServiceImpl.getInstance();
+    @Autowired
+    private CatalogueService service;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Adds the provided price option to the specified catalogue line (i.e. product/service)")
@@ -102,9 +99,6 @@ public class PriceConfigurationController {
             catalogueLine.getPriceOption().add(priceOption);
             repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
             repositoryWrapper.updateEntity(catalogueLine);
-
-            // update the index
-            MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueUuid);
 
             ObjectMapper objectMapper = JsonSerializationUtility.getObjectMapper();
             objectMapper.configure(MapperFeature.PROPAGATE_TRANSIENT_MARKER, false);
@@ -183,9 +177,6 @@ public class PriceConfigurationController {
 //            catalogueLine.getPriceOption().remove(optionIndex.intValue());
 //            repositoryWrapper.updateEntity(catalogueLine);
 
-            // update the index
-            MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueUuid);
-
             log.info("Completed request to delete pricing option. catalogueId: {}, lineId: {}, optionId: {}", catalogueUuid, lineId, optionId);
             return ResponseEntity.ok().build();
 
@@ -258,9 +249,6 @@ public class PriceConfigurationController {
             // remove the option and update the line
             EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
             priceOption = repositoryWrapper.updateEntity(priceOption);
-
-            // update the index
-            MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueUuid);
 
             log.info("Completed request to update price option. catalogueId: {}, lineId: {}, optionId: {}", catalogueUuid, lineId, priceOption.getHjid());
             return ResponseEntity.ok().body(JsonSerializationUtility.getMapperForTransientFields().writeValueAsString(priceOption));

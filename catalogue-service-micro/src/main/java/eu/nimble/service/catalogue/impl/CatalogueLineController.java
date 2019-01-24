@@ -50,8 +50,8 @@ public class CatalogueLineController {
     private TransactionEnabledSerializationUtility serializationUtility;
     @Autowired
     private ResourceValidationUtility resourceValidationUtil;
-
-    private CatalogueService service = CatalogueServiceImpl.getInstance();
+    @Autowired
+    private CatalogueService service;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves the catalogue line specified with the catalogueUuid and lineId parameters")

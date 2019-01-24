@@ -3,13 +3,11 @@ package eu.nimble.service.catalogue.impl;
 import eu.nimble.common.rest.identity.IdentityClientTyped;
 import eu.nimble.data.transformer.ontmalizer.XML2OWLMapper;
 import eu.nimble.service.catalogue.CatalogueService;
-import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.PartyTypePersistenceUtil;
-import eu.nimble.service.catalogue.sync.MarmottaClient;
-import eu.nimble.service.catalogue.sync.MarmottaSynchronizationException;
+import eu.nimble.service.catalogue.util.SemanticTransformationUtil;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
@@ -55,8 +53,8 @@ public class CatalogueController {
 
     private static Logger log = LoggerFactory.getLogger(CatalogueController.class);
 
-    private CatalogueService service = CatalogueServiceImpl.getInstance();
-
+    @Autowired
+    private CatalogueService service;
     @Autowired
     private IdentityClientTyped identityClient;
     @Autowired
@@ -633,12 +631,12 @@ public class CatalogueController {
                 semanticContentType = "RDF/XML";
             }
 
-            MarmottaClient marmottaClient = new MarmottaClient();
+            SemanticTransformationUtil semanticTransformationUtil = new SemanticTransformationUtil();
             try {
-                XML2OWLMapper rdfGenerator = marmottaClient.transformCatalogueToRDF((CatalogueType) catalogue);
+                XML2OWLMapper rdfGenerator = semanticTransformationUtil.transformCatalogueToRDF((CatalogueType) catalogue);
                 rdfGenerator.writeModel(response.getOutputStream(), semanticContentType);
                 response.flushBuffer();
-            } catch (IOException | MarmottaSynchronizationException e) {
+            } catch (IOException e) {
                 return HttpResponseUtil.createResponseEntityAndLog(String.format("Failed to get catalogue with uuid: %s", uuid), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
             }
 

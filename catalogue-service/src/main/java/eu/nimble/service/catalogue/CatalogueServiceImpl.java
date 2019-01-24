@@ -6,12 +6,9 @@ import eu.nimble.service.catalogue.exception.TemplateParseException;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
-import eu.nimble.service.catalogue.persistence.util.UnitPersistenceUtil;
-import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
 import eu.nimble.service.catalogue.template.TemplateGenerator;
 import eu.nimble.service.catalogue.template.TemplateParser;
 import eu.nimble.service.catalogue.util.DataIntegratorUtil;
-import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
@@ -21,12 +18,12 @@ import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
-import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.activation.MimetypesFileTypeMap;
@@ -44,22 +41,11 @@ import java.util.zip.ZipInputStream;
 /**
  * @author yildiray
  */
+@Component
 public class CatalogueServiceImpl implements CatalogueService {
 
     private static final Logger logger = LoggerFactory.getLogger(CatalogueServiceImpl.class);
-    private static CatalogueService instance = null;
     private static CategoryServiceManager csmInstance = CategoryServiceManager.getInstance();
-
-    private CatalogueServiceImpl() {
-    }
-
-    public static CatalogueService getInstance() {
-        if (instance == null) {
-            return new CatalogueServiceImpl();
-        } else {
-            return instance;
-        }
-    }
 
     public static void main(String[] args) throws IOException {
         CatalogueServiceImpl csi = new CatalogueServiceImpl();
@@ -111,9 +97,8 @@ public class CatalogueServiceImpl implements CatalogueService {
         DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(catalogue);
         EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogue.getProviderParty().getID());
         catalogue = repositoryWrapper.updateEntity(catalogue);
+        logger.info("Catalogue with uuid: {} updated in DB", catalogue.getUUID());
 
-        // add synchronization record
-        MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogue.getUUID());
         logger.info("Catalogue with uuid: {} updated", catalogue.getUUID());
         return catalogue;
     }
@@ -167,9 +152,6 @@ public class CatalogueServiceImpl implements CatalogueService {
             EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(ublCatalogue.getProviderParty().getID());
             catalogue = repositoryWrapper.updateEntityForPersistCases((T) ublCatalogue);
             logger.info("Catalogue with uuid: {} persisted in DB", uuid.toString());
-
-            // add synchronization record
-            MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.ADD, uuid);
 
         } else if (standard == Configuration.Standard.MODAML) {
             HibernateUtility.getInstance(Configuration.MODAML_PERSISTENCE_UNIT_NAME).persist(catalogue);
@@ -227,8 +209,6 @@ public class CatalogueServiceImpl implements CatalogueService {
                 EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogue.getProviderParty().getID());
                 repositoryWrapper.deleteEntity(catalogue);
 
-                // add synchronization record
-                MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.DELETE, uuid);
                 logger.info("Deleted catalogue with uuid: {}", uuid);
             } else {
                 logger.info("No catalogue for uuid: {}", uuid);
@@ -407,9 +387,6 @@ public class CatalogueServiceImpl implements CatalogueService {
         catalogue = repositoryWrapper.updateEntity(catalogue);
         catalogueLine = catalogue.getCatalogueLine().get(catalogue.getCatalogueLine().size() - 1);
 
-        // add synchronization record
-        MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogue.getUUID());
-
         return catalogueLine;
     }
 
@@ -419,11 +396,6 @@ public class CatalogueServiceImpl implements CatalogueService {
         DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(catalogueLine, catalogue);
         EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
         catalogueLine = repositoryWrapper.updateEntity(catalogueLine);
-
-        // add synchronization record
-        // Not UUID but ID of the document reference should be used.
-        // While UUID is the unique identifier of the reference itself, ID keeps the unique identifier of the catalogue.
-        MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID());
 
         return catalogueLine;
     }
@@ -437,9 +409,6 @@ public class CatalogueServiceImpl implements CatalogueService {
             Long hjid = catalogueLine.getHjid();
             EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
             repositoryWrapper.deleteEntityByHjid(CatalogueLineType.class, hjid);
-
-            // add synchronization record
-            MarmottaSynchronizer.getInstance().addRecord(MarmottaSynchronizer.SyncStatus.UPDATE, catalogueId);
         }
     }
 }
