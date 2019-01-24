@@ -18,15 +18,14 @@ import java.util.Map;
 import java.util.Properties;
 
 @Configuration
-@EnableTransactionManagement
 @EnableConfigurationProperties
 @PropertySource("classpath:bootstrap.yml")
-@EnableJpaRepositories(
-        entityManagerFactoryRef = "ubldbEntityManagerFactory",
-        transactionManagerRef = "ubldbTransactionManager",
-        basePackages = {"eu.nimble.service.catalogue.persistence"}
-)
-@ComponentScan(basePackages = {"eu.nimble.utility.config"})
+//@EnableJpaRepositories(
+//        entityManagerFactoryRef = "ubldbEntityManagerFactory",
+//        transactionManagerRef = "ubldbTransactionManager",
+//        basePackages = {"eu.nimble.service.catalogue.persistence", "eu.nimble.utility.persistence.resource"}
+//)
+@ComponentScan(basePackages = {"eu.nimble.service.catalogue.persistence"})
 class UBLDBConfig {
 
     @Autowired
@@ -63,10 +62,10 @@ class UBLDBConfig {
     public EntityManagerFactory ubldbEntityManagerFactory(@Qualifier("ubldbEmfBean") LocalContainerEntityManagerFactoryBean emfBean) {
         return emfBean.getObject();
     }
-
-    @Bean(name = "ubldbTransactionManager")
-    PlatformTransactionManager ubldbTransactionManager(
-            @Qualifier("ubldbEntityManagerFactory") EntityManagerFactory entityManagerFactory) {
-        return new JpaTransactionManager(entityManagerFactory);
-    }
+//
+//    @Bean(name = "ubldbTransactionManager")
+//    PlatformTransactionManager ubldbTransactionManager(
+//            @Qualifier("ubldbEntityManagerFactory") EntityManagerFactory entityManagerFactory) {
+//        return new JpaTransactionManager(entityManagerFactory);
+//    }
 }

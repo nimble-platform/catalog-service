@@ -1,4 +1,4 @@
-package eu.nimble.service.catalogue;
+package eu.nimble.service.catalogue.persistence.util;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,9 +6,8 @@ import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.QualityIndicatorType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
-import eu.nimble.utility.Configuration;
-import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JsonSerializationUtility;
+import eu.nimble.utility.persistence.JPARepositoryFactory;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -18,7 +17,6 @@ import util.DataModelUtility;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by suat on 07-Aug-18.
@@ -26,20 +24,8 @@ import java.util.List;
 public class CatalogueDatabaseAdapter {
     private static final Logger logger = LoggerFactory.getLogger(CatalogueDatabaseAdapter.class);
 
-    private static final String CATALOGUE_EXISTS_QUERY = "SELECT COUNT(c) FROM CatalogueType c WHERE c.ID = ? and c.providerParty.ID = ?";
-    private static final String GET_PARTY_QUERY = "SELECT party FROM PartyType party WHERE party.ID = ? ORDER BY party.hjid ASC";
-    private static final String GET_PARTY_CATALOGUES_QUERY = "SELECT catalogue.UUID FROM CatalogueType as catalogue" +
-            " JOIN catalogue.providerParty as catalogue_provider_party " +
-            " WHERE catalogue_provider_party.ID = ?";
-
-    public static boolean catalogueExists(String partyId, String partySpecificCatalogueId) {
-//        int catalogueExists = ((Long) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).load(CATALOGUE_EXISTS_QUERY, partySpecificCatalogueId, partyId)).intValue();
-        long catalogueExists = SpringBridge.getInstance().getCatalogueRepository().checkCatalogueExistenceByID(partySpecificCatalogueId, partyId);
-        return catalogueExists == 1 ? true : false;
-    }
-
     public static void syncPartyInUBLDB(String partyId, String bearerToken) {
-        PartyType catalogueParty = getParty(partyId);
+        PartyType catalogueParty = PartyTypePersistenceUtil.getPartyById(partyId);
         PartyType identityParty;
         try {
             identityParty = SpringBridge.getInstance().getIdentityClientTyped().getParty(bearerToken, partyId);
@@ -51,14 +37,12 @@ public class CatalogueDatabaseAdapter {
         }
 
         if(catalogueParty == null) {
-//            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).persist(identityParty);
-            SpringBridge.getInstance().getCatalogueRepository().persistEntity(identityParty);
+            new JPARepositoryFactory().forCatalogueRepository().persistEntity(identityParty);
 
         } else {
-            DataModelUtility.nullifyPartyFields(catalogueParty);
-            DataModelUtility.copyParty(catalogueParty, identityParty);
-//            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueParty);
-            SpringBridge.getInstance().getCatalogueRepository().updateEntity(catalogueParty);
+            DataModelUtility.nullifyPartyFieldsExceptHjid(catalogueParty);
+            DataModelUtility.copyPartyExceptHjid(catalogueParty, identityParty);
+            new JPARepositoryFactory().forCatalogueRepository().updateEntity(catalogueParty);
         }
     }
 
@@ -76,14 +60,14 @@ public class CatalogueDatabaseAdapter {
         }
 
         try {
-            trustParty = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(partyStr, PartyType.class);
+            trustParty = JsonSerializationUtility.getObjectMapper().readValue(partyStr, PartyType.class);
         }
         catch (Exception e){
             logger.error("Failed to deserialize party with id: {}, serialization: {}", partyId, partyStr, e);
             return;
         }
 
-        PartyType catalogueParty = getParty(trustParty.getPartyIdentification().get(0).getID());
+        PartyType catalogueParty = PartyTypePersistenceUtil.getPartyById(trustParty.getPartyIdentification().get(0).getID());
         if(catalogueParty == null) {
             logger.warn("No party available in UBLDB with id: {}", partyId);
             return;
@@ -122,39 +106,21 @@ public class CatalogueDatabaseAdapter {
             }
         }
 
-//        HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).update(catalogueParty);
-        SpringBridge.getInstance().getCatalogueRepository().updateEntity(catalogueParty);
+        new JPARepositoryFactory().forCatalogueRepository().updateEntity(catalogueParty);
     }
 
     public static PartyType syncPartyInUBLDB(PartyType party) {
         if (party == null) {
             return null;
         }
-        PartyType catalogueParty = getParty(party.getPartyIdentification().get(0).getID());
+        PartyType catalogueParty = PartyTypePersistenceUtil.getPartyById(party.getPartyIdentification().get(0).getID());
         if(catalogueParty != null) {
             return catalogueParty;
         } else {
             party = checkPartyIntegrity(party);
-//            HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).persist(party);
-            SpringBridge.getInstance().getCatalogueRepository().persistEntity(party);
+            new JPARepositoryFactory().forCatalogueRepository().persistEntity(party);
             return party;
         }
-    }
-
-    public static PartyType getParty(String partyId) {
-//        List<PartyType>  partyTypes = (List<PartyType>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).loadAll(GET_PARTY_QUERY, partyId);
-        PartyType party = SpringBridge.getInstance().getCatalogueRepository().getPartyByID(partyId);
-//        if(partyTypes.size() == 0){
-//            return null;
-//        }
-//        return partyTypes.get(0);
-        return party;
-    }
-
-    public static List<String> getCatalogueIdsOfParty(String partyId) {
-//        List<String> catalogueIds = (List<String>) HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).loadAll(GET_PARTY_CATALOGUES_QUERY, partyId);
-        List<String> catalogueIds = SpringBridge.getInstance().getCatalogueRepository().getCatalogueIdsForParty(partyId);
-        return catalogueIds;
     }
 
     private static PartyType checkPartyIntegrity(PartyType party) {
@@ -166,8 +132,7 @@ public class CatalogueDatabaseAdapter {
 
     private static PartyType removePartyHjids(PartyType party) {
         try {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper = objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        ObjectMapper objectMapper = JsonSerializationUtility.getObjectMapper();
         JSONObject object = new JSONObject(objectMapper.writeValueAsString(party));
         JsonSerializationUtility.removeHjidFields(object);
         party = objectMapper.readValue(object.toString(), PartyType.class);

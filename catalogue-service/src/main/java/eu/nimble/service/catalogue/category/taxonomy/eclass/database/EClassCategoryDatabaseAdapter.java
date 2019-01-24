@@ -23,6 +23,18 @@ public class EClassCategoryDatabaseAdapter {
     private static final String PROPERTY_BASE_URI = "http://www.nimble-project.org/resource/eclass/property/";
 
     private String defaultLanguage = "en";
+    /**
+     * The record counts below are specified based on the eClass Basic 10.0 version. In case of any eclass taxonomy update,
+     * the numbers should also be updated.
+     */
+    private static final int RECORD_COUNT_CLASSIFICATION_CLASS = 41647;
+    private static final int RECORD_COUNT_CLASSIFICATION_CLASS_PROPERTY = 1274609;
+    private static final int RECORD_COUNT_CLASSIFICATION_CLASS_PROPERTY_VALUE = 9664205;
+    private static final int RECORD_COUNT_ECLASS_VALUE = 15708;
+    private static final int RECORD_COUNT_KEYWORD_SYNONYM = 55497;
+    private static final int RECORD_COUNT_PROPERTY = 17342;
+    private static final int RECORD_COUNT_PROPERTY_VALUE = 7782;
+    private static final int RECORD_COUNT_UNIT = 997;
 
     public static void main(String[] args) throws CategoryDatabaseException, SQLException, ClassNotFoundException {
         /*EClassCategoryDatabaseAdapter e = new EClassCategoryDatabaseAdapter();
@@ -527,5 +539,103 @@ public class EClassCategoryDatabaseAdapter {
                 normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_STRING;
             }
             return normalizedType;
+    }
+
+    public void checkTableCounts() {
+        Connection c = null;
+        Statement s = null;
+        try {
+            c = getConnection();
+            s = c.createStatement();
+
+            String query = "Select Count(*) From classification_class";
+            ResultSet rs = s.executeQuery(query);
+            int count;
+            if(rs.next()) {
+                count = rs.getInt(1);
+                if(count != RECORD_COUNT_CLASSIFICATION_CLASS) {
+                    logger.warn("Number of records in classification_class table is {}, should be {}", count, RECORD_COUNT_CLASSIFICATION_CLASS);
+                }
+            }
+            rs.close();
+
+            query = "Select Count(*) From classification_class_property";
+            rs = s.executeQuery(query);
+            if(rs.next()) {
+                count = rs.getInt(1);
+                if(count != RECORD_COUNT_CLASSIFICATION_CLASS_PROPERTY) {
+                    logger.warn("Number of records in classification_class_property table is {}, should be {}", count, RECORD_COUNT_CLASSIFICATION_CLASS_PROPERTY);
+                }
+            }
+            rs.close();
+
+            query = "Select Count(*) From classification_class_property_value";
+            rs = s.executeQuery(query);
+            if(rs.next()) {
+                count = rs.getInt(1);
+                if(count != RECORD_COUNT_CLASSIFICATION_CLASS_PROPERTY_VALUE) {
+                    logger.warn("Number of records in classification_class_property_value table is {}, should be {}", count, RECORD_COUNT_CLASSIFICATION_CLASS_PROPERTY_VALUE);
+                }
+            }
+            rs.close();
+
+            query = "Select Count(*) From eclass_value";
+            rs = s.executeQuery(query);
+            if(rs.next()) {
+                count = rs.getInt(1);
+                if(count != RECORD_COUNT_ECLASS_VALUE) {
+                    logger.warn("Number of records in eclass_value table is {}, should be {}", count, RECORD_COUNT_ECLASS_VALUE);
+                }
+            }
+            rs.close();
+
+            query = "Select Count(*) From keyword_synonym";
+            rs = s.executeQuery(query);
+            if(rs.next()) {
+                count = rs.getInt(1);
+                if(count != RECORD_COUNT_KEYWORD_SYNONYM) {
+                    logger.warn("Number of records in keyword_synonym table is {}, should be {}", count, RECORD_COUNT_KEYWORD_SYNONYM);
+                }
+            }
+            rs.close();
+
+            query = "Select Count(*) From property";
+            rs = s.executeQuery(query);
+            if(rs.next()) {
+                count = rs.getInt(1);
+                if(count != RECORD_COUNT_PROPERTY) {
+                    logger.warn("Number of records in property table is {}, should be {}", count, RECORD_COUNT_PROPERTY);
+                }
+            }
+            rs.close();
+
+            query = "Select Count(*) From property_value";
+            rs = s.executeQuery(query);
+            if(rs.next()) {
+                count = rs.getInt(1);
+                if(count != RECORD_COUNT_PROPERTY_VALUE) {
+                    logger.warn("Number of records in property_value table is {}, should be {}", count, RECORD_COUNT_PROPERTY_VALUE);
+                }
+            }
+            rs.close();
+
+            query = "Select Count(*) From unit";
+            rs = s.executeQuery(query);
+            if(rs.next()) {
+                count = rs.getInt(1);
+                if(count != RECORD_COUNT_UNIT) {
+                    logger.warn("Number of records in unit table is {}, should be {}", count, RECORD_COUNT_UNIT);
+                }
+            }
+            rs.close();
+            s.close();
+
+            logger.info("Finished count check on eClass database");
+
+        } catch (Exception e) {
+            logger.error("Failed to check record counts from the eclass database", e);
+        } finally {
+            closeConnection(c);
+        }
     }
 }

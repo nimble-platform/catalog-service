@@ -19,7 +19,6 @@ import javax.sql.DataSource;
 @EnableConfigurationProperties
 @PropertySource("classpath:bootstrap.yml")
 @EnableJpaRepositories(
-        entityManagerFactoryRef = "binarycontentdbEmfBean",
         transactionManagerRef = "binarycontentdbTransactionManager",
         basePackages = {"eu.nimble.utility.persistence.binary"}
 )

@@ -114,7 +114,7 @@ public class MigrationUtil {
             HttpResponse<JsonNode> response = Unirest.get(getIdentityServiceUrl() + "parties/"+stringIds)
                     .header("Authorization", token).asJson();
 
-            ObjectMapper objectMapper = new ObjectMapper();
+            ObjectMapper objectMapper = JsonSerializationUtility.getObjectMapper();
             List<PartyType> parties = objectMapper.readValue(response.getBody().toString(),new TypeReference<List<PartyType>>(){});
             logger.info("Obtained parties");
             Map<String,String> map = new HashMap<>();

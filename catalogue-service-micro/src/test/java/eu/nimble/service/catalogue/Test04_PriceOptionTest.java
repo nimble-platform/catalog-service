@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PriceOptionType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
+import eu.nimble.utility.JsonSerializationUtility;
 import org.apache.commons.io.IOUtils;
 import org.junit.*;
 import org.junit.runner.RunWith;
@@ -12,6 +13,7 @@ import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -31,14 +33,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class Test04_PriceOptionTest {
     @Autowired
     private MockMvc mockMvc;
-
+    @Autowired
+    private Environment environment;
     private static ObjectMapper mapper;
     private static CatalogueLineType catalogueLine;
     private static PriceOptionType priceOption;
 
     @BeforeClass
     public static void init() {
-        mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper = JsonSerializationUtility.getObjectMapper();
     }
 
     @Test
@@ -50,6 +53,7 @@ public class Test04_PriceOptionTest {
         catalogueLineJson = mapper.writeValueAsString(line);
 
         MockHttpServletRequestBuilder request = post("/catalogue/" + Test02_CatalogueLineControllerTest.catalogueId + "/catalogueline")
+                .header("Authorization", environment.getProperty("nimble.test-token"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(catalogueLineJson);
         MvcResult result = this.mockMvc.perform(request).andReturn();
@@ -61,7 +65,7 @@ public class Test04_PriceOptionTest {
 
         // post pricing option
         request = post("/catalogue/" + Test02_CatalogueLineControllerTest.catalogueId + "/catalogueline/" + line.getID() + "/price-options")
-                .header("Authorization", "Bearer SOMETHING")
+                .header("Authorization", environment.getProperty("nimble.test-token"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(priceOptionJson);
         result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isCreated()).andReturn();
@@ -78,7 +82,7 @@ public class Test04_PriceOptionTest {
         priceOption.getAdditionalItemProperty().get(0).getValue().set(1, textType);
 
         MockHttpServletRequestBuilder request = put("/catalogue/" + Test02_CatalogueLineControllerTest.catalogueId + "/catalogueline/" + catalogueLine.getID() + "/price-options")
-                .header("Authorization", "Bearer SOMETHING")
+                .header("Authorization", environment.getProperty("nimble.test-token"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(priceOption));
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
@@ -94,11 +98,12 @@ public class Test04_PriceOptionTest {
     public void test3_deletePriceOption() throws Exception {
         // delete the option
         MockHttpServletRequestBuilder request = delete("/catalogue/" + Test02_CatalogueLineControllerTest.catalogueId + "/catalogueline/" + catalogueLine.getID() + "/price-options/" + priceOption.getHjid())
-                .header("Authorization", "Bearer SOMETHING");
+                .header("Authorization", environment.getProperty("nimble.test-token"));
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
 
         // get catalogue line
-        request = get("/catalogue/" + Test02_CatalogueLineControllerTest.catalogueId + "/catalogueline/" + catalogueLine.getID());
+        request = get("/catalogue/" + Test02_CatalogueLineControllerTest.catalogueId + "/catalogueline/" + catalogueLine.getID())
+                .header("Authorization", environment.getProperty("nimble.test-token"));
         MvcResult result = this.mockMvc.perform(request).andReturn();
         CatalogueLineType catalogueLine = mapper.readValue(result.getResponse().getContentAsString(), CatalogueLineType.class);
 

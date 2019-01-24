@@ -78,8 +78,6 @@ public interface CatalogueService {
 
     public <T> T getCatalogueLine(String catalogueId, String catalogueLineId);
 
-    public <T> List<T> getCatalogueLines(String catalogueId, List<String> catalogueLineIds);
-
     public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine);
 
     public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine);
