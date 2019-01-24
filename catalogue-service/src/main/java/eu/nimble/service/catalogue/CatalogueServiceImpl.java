@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue;
 import eu.nimble.service.catalogue.category.CategoryServiceManager;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
+import eu.nimble.service.catalogue.sync.IndexingClient;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
@@ -23,6 +24,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -46,6 +48,9 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     private static final Logger logger = LoggerFactory.getLogger(CatalogueServiceImpl.class);
     private static CategoryServiceManager csmInstance = CategoryServiceManager.getInstance();
+
+    @Autowired
+    private IndexingClient indexingClient;
 
     public static void main(String[] args) throws IOException {
         CatalogueServiceImpl csi = new CatalogueServiceImpl();
@@ -99,7 +104,8 @@ public class CatalogueServiceImpl implements CatalogueService {
         catalogue = repositoryWrapper.updateEntity(catalogue);
         logger.info("Catalogue with uuid: {} updated in DB", catalogue.getUUID());
 
-        logger.info("Catalogue with uuid: {} updated", catalogue.getUUID());
+        // index catalogue
+        indexingClient.indexCatalogue(catalogue);
         return catalogue;
     }
 
@@ -152,6 +158,9 @@ public class CatalogueServiceImpl implements CatalogueService {
             EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(ublCatalogue.getProviderParty().getID());
             catalogue = repositoryWrapper.updateEntityForPersistCases((T) ublCatalogue);
             logger.info("Catalogue with uuid: {} persisted in DB", uuid.toString());
+
+            // index the catalogue
+            indexingClient.indexCatalogue((CatalogueType) catalogue);
 
         } else if (standard == Configuration.Standard.MODAML) {
             HibernateUtility.getInstance(Configuration.MODAML_PERSISTENCE_UNIT_NAME).persist(catalogue);
@@ -209,7 +218,10 @@ public class CatalogueServiceImpl implements CatalogueService {
                 EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogue.getProviderParty().getID());
                 repositoryWrapper.deleteEntity(catalogue);
 
+                // delete indexed catalogue
+                indexingClient.deleteCatalogue(uuid);
                 logger.info("Deleted catalogue with uuid: {}", uuid);
+
             } else {
                 logger.info("No catalogue for uuid: {}", uuid);
             }
@@ -387,6 +399,9 @@ public class CatalogueServiceImpl implements CatalogueService {
         catalogue = repositoryWrapper.updateEntity(catalogue);
         catalogueLine = catalogue.getCatalogueLine().get(catalogue.getCatalogueLine().size() - 1);
 
+        // index the line
+        indexingClient.indexCatalogueLine(catalogueLine);
+
         return catalogueLine;
     }
 
@@ -396,6 +411,11 @@ public class CatalogueServiceImpl implements CatalogueService {
         DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(catalogueLine, catalogue);
         EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
         catalogueLine = repositoryWrapper.updateEntity(catalogueLine);
+
+        // index the line
+        // Not UUID but ID of the document reference should be used.
+        // While UUID is the unique identifier of the reference itself, ID keeps the unique identifier of the catalogue.
+        indexingClient.indexCatalogueLine(catalogueLine);
 
         return catalogueLine;
     }
@@ -409,6 +429,9 @@ public class CatalogueServiceImpl implements CatalogueService {
             Long hjid = catalogueLine.getHjid();
             EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
             repositoryWrapper.deleteEntityByHjid(CatalogueLineType.class, hjid);
+
+            // delete indexed item
+            indexingClient.deleteCatalogueLine(catalogueLine.getHjid());
         }
     }
 }

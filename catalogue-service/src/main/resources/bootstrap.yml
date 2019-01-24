@@ -88,7 +88,6 @@ persistence:
     schema: public
 
   marmotta:
-    sync: true
     url: ${MARMOTTA_URL:http://nimble-staging.salzburgresearch.at/marmotta}
 
   orm:
@@ -157,6 +156,8 @@ nimble:
     url: ${IDENTITY_SERVICE_URL}
   trust:
     url: ${TRUST_SERVICE_URL:http://nimble-staging.salzburgresearch.at/trust}
+  indexing:
+    url: ${INDEXING_SERVICE_URL:http://nimble-staging.salzburgresearch.at/index}
   kafka:
     topics:
       companyUpdates: ${KAFKA_TOPIC_COMPANY_UPDATES:company-updates}
@@ -282,8 +283,6 @@ persistence:
     ubl:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
-  marmotta:
-    sync: false
 
 nimble:
   identity:
