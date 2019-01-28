@@ -47,10 +47,11 @@ import java.util.zip.ZipInputStream;
 public class CatalogueServiceImpl implements CatalogueService {
 
     private static final Logger logger = LoggerFactory.getLogger(CatalogueServiceImpl.class);
-    private static CategoryServiceManager csmInstance = CategoryServiceManager.getInstance();
 
     @Autowired
     private IndexingClient indexingClient;
+    @Autowired
+    private CategoryServiceManager categoryServiceManager;
 
     public static void main(String[] args) throws IOException {
         CatalogueServiceImpl csi = new CatalogueServiceImpl();
@@ -237,7 +238,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     public Workbook generateTemplateForCategory(List<String> categoryIds, List<String> taxonomyIds) {
         List<Category> categories = new ArrayList<>();
         for (int i = 0; i < categoryIds.size(); i++) {
-            Category category = csmInstance.getCategory(taxonomyIds.get(i), categoryIds.get(i));
+            Category category = categoryServiceManager.getCategory(taxonomyIds.get(i), categoryIds.get(i));
             categories.add(category);
         }
 

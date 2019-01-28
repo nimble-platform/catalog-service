@@ -98,7 +98,7 @@ public class DataIntegratorUtil {
             if(cct.getItemClassificationCode().getListID().contentEquals("Default")){
                 continue;
             }
-            CategoryServiceManager csm = CategoryServiceManager.getInstance();
+            CategoryServiceManager csm = SpringBridge.getInstance().getCategoryServiceManager();
             List<Category> parentCategories = csm.getParentCategories(cct.getItemClassificationCode().getListID(),cct.getItemClassificationCode().getValue());
 
             for(int i = 0; i< parentCategories.size();i++){

@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue.util;
 
 import eu.nimble.common.rest.identity.IdentityClientTyped;
 import eu.nimble.common.rest.trust.TrustClient;
+import eu.nimble.service.catalogue.category.CategoryServiceManager;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import eu.nimble.utility.persistence.GenericJPARepository;
 import org.springframework.beans.BeansException;
@@ -24,12 +25,12 @@ public class SpringBridge implements ApplicationContextAware {
 
     @Autowired
     private CatalogueServiceConfig catalogueServiceConfig;
-
     @Autowired
     private IdentityClientTyped identityClientTyped;
-
     @Autowired
     private TrustClient trustClient;
+    @Autowired
+    private CategoryServiceManager categoryServiceManager;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext)
@@ -49,4 +50,15 @@ public class SpringBridge implements ApplicationContextAware {
         return trustClient;
     }
 
+    public CategoryServiceManager getCategoryServiceManager() {
+
+
+
+
+        return categoryServiceManager;
+    }
+
+    public void setCategoryServiceManager(CategoryServiceManager categoryServiceManager) {
+        this.categoryServiceManager = categoryServiceManager;
+    }
 }

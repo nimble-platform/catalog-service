@@ -5,6 +5,7 @@ import eu.nimble.service.catalogue.exception.TemplateParseException;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.model.category.Unit;
+import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.model.ubl.commonbasiccomponents.AmountType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
@@ -685,7 +686,7 @@ public class TemplateParser {
         List<String> categoryIds = Arrays.asList(categoryIdsStr.split(","));
         List<String> taxonomyIds = Arrays.asList(taxonomyIdsStr.split(","));
 
-        CategoryServiceManager csm = CategoryServiceManager.getInstance();
+        CategoryServiceManager csm = SpringBridge.getInstance().getCategoryServiceManager();
         for (int i = 0; i < categoryIds.size(); i++) {
             Category category = csm.getCategory(taxonomyIds.get(i), categoryIds.get(i));
             categories.add(category);

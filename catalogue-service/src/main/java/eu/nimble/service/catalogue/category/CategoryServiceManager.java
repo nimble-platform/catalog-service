@@ -15,23 +15,10 @@ import java.util.*;
  */
 @Component
 public class CategoryServiceManager {
-    private static CategoryServiceManager instance;
-
     @Autowired
     private IndexCategoryService indexCategoryService;
     @Autowired
     private CustomCategoryService customCategoryService;
-
-    public CategoryServiceManager(){
-
-    }
-
-    public static CategoryServiceManager getInstance() {
-        if (instance == null) {
-            instance = new CategoryServiceManager();
-        }
-        return instance;
-    }
 
     public Category getCategory(String taxonomyId, String categoryId) {
         ProductCategoryService pcs = getRequiredService(taxonomyId);
