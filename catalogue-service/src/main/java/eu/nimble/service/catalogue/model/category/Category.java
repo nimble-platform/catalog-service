@@ -5,6 +5,7 @@ import java.util.List;
 /**
  * Created by suat on 03-Mar-17.
  */
+// TODO this class should be eliminated when the front-end uses the indexing service directly to retrieve category details
 public class Category {
     private String id;
     private String preferredName;

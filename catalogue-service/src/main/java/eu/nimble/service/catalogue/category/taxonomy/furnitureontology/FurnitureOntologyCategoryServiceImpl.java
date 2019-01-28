@@ -139,7 +139,7 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
         Category cat = new Category();
         cat.setId(uri);
         cat.setCategoryUri(uri);
-        cat.setTaxonomyId(getTaxonomyId());
+        cat.setTaxonomyId("FurnitureOntology");
         cat.setPreferredName(getRemainder(uri, FURNITURE_NS,FURNITURE_NS2));
         cat.setCode(getRemainder(uri, FURNITURE_NS,FURNITURE_NS2));
         return cat;
@@ -305,11 +305,6 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
             }
         }
         return result;
-    }
-
-    @Override
-    public String getTaxonomyId() {
-        return "FurnitureOntology";
     }
 
     public String getNormalizedDatatype(String dataType) {

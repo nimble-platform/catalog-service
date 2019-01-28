@@ -158,6 +158,10 @@ nimble:
     url: ${TRUST_SERVICE_URL:http://nimble-staging.salzburgresearch.at/trust}
   indexing:
     url: ${INDEXING_SERVICE_URL:http://nimble-staging.salzburgresearch.at/index}
+    solr:
+      url: ${INDEXING_SERVICE_SOLR_USERNAME:http://nimble-staging.salzburgresearch.at/solr}
+      username: ${INDEXING_SERVICE_SOLR_USERNAME}
+      password: ${INDEXING_SERVICE_SOLR_PASSWORD}
   kafka:
     topics:
       companyUpdates: ${KAFKA_TOPIC_COMPANY_UPDATES:company-updates}

@@ -17,8 +17,6 @@ public interface ProductCategoryService {
 
     public List<Category> getProductCategories(String categoryName, boolean forLogistics);
 
-    public String getTaxonomyId();
-
     public CategoryTreeResponse getCategoryTree(String categoryId);
 
     public List<Category> getParentCategories(String categoryId);

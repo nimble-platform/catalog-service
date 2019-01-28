@@ -1,5 +1,8 @@
 package eu.nimble.service.catalogue.category;
 
+import eu.nimble.service.catalogue.category.taxonomy.CustomCategoryService;
+import eu.nimble.service.catalogue.category.taxonomy.IndexCategoryService;
+import eu.nimble.service.catalogue.category.taxonomy.TaxonomyEnum;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,18 +17,10 @@ import java.util.*;
 public class CategoryServiceManager {
     private static CategoryServiceManager instance;
 
-    private Map<String, ProductCategoryService> services = new LinkedHashMap<>();
-
     @Autowired
-    public CategoryServiceManager(List<ProductCategoryService> productCategoryServices){
-        for (ProductCategoryService cp : productCategoryServices) {
-            String taxonomyID = cp.getTaxonomyId();
-            // taxonomy id is null for custom categories
-            if(taxonomyID != null){
-                instance.services.put(cp.getTaxonomyId(), cp);
-            }
-        }
-    }
+    private IndexCategoryService indexCategoryService;
+    @Autowired
+    private CustomCategoryService customCategoryService;
 
     public CategoryServiceManager(){
 
@@ -39,59 +34,59 @@ public class CategoryServiceManager {
     }
 
     public Category getCategory(String taxonomyId, String categoryId) {
-        ProductCategoryService pcs = services.get(taxonomyId);
+        ProductCategoryService pcs = getRequiredService(taxonomyId);
+        // construct uri for eClass categories since they will be queried with uris starting with the namespace of the
+        // eClass taxonomy
+        if(taxonomyId.contentEquals(TaxonomyEnum.eClass.getId())) {
+            categoryId = constructUri(taxonomyId, categoryId);
+        }
         return pcs.getCategory(categoryId);
     }
 
     public List<Category> getProductCategories(String categoryName,String taxonomyId ,Boolean forLogistics) {
-        List<Category> categories = new ArrayList<>();
-        // if taxonomy id is null, then get categories for all available taxonomies
-        if(taxonomyId == null){
-            for(ProductCategoryService pcs : services.values()) {
-                if(forLogistics == null) {
-                    categories.addAll(pcs.getProductCategories(categoryName));
-                } else {
-                    categories.addAll(pcs.getProductCategories(categoryName, forLogistics));
-                }
-            }
-        }
-        // otherwise, get categories only for the given taxonomy id
-        else {
-            for(ProductCategoryService pcs : services.values()) {
-                if(pcs.getTaxonomyId().equals(taxonomyId)){
-                    if(forLogistics == null) {
-                        categories.addAll(pcs.getProductCategories(categoryName));
-                    } else {
-                        categories.addAll(pcs.getProductCategories(categoryName, forLogistics));
-                    }
-                }
-            }
-        }
-
+        List<Category> categories = indexCategoryService.getProductCategories(taxonomyId, categoryName, "en", forLogistics);
         return categories;
     }
 
     public CategoryTreeResponse getCategoryTree(String taxonomyId, String categoryId) {
-        ProductCategoryService pcs = services.get(taxonomyId);
+        ProductCategoryService pcs = getRequiredService(taxonomyId);
         return pcs.getCategoryTree(categoryId);
     }
 
     public List<Category> getParentCategories(String taxonomyId,String categoryId){
-        ProductCategoryService pcs = services.get(taxonomyId);
+        ProductCategoryService pcs = getRequiredService(taxonomyId);
         return pcs.getParentCategories(categoryId);
     }
 
     public List<Category> getChildrenCategories(String taxonomyId,String categoryId){
-        ProductCategoryService pcs = services.get(taxonomyId);
+        ProductCategoryService pcs = getRequiredService(taxonomyId);
         return pcs.getChildrenCategories(categoryId);
     }
 
     public List<Category> getRootCategories(String taxonomyId){
-        ProductCategoryService pcs = services.get(taxonomyId);
+        ProductCategoryService pcs = getRequiredService(taxonomyId);
         return pcs.getRootCategories();
     }
 
     public List<String> getAvailableTaxonomies() {
-        return new ArrayList<>(services.keySet());
+        return Arrays.asList("eClass", "FurnitureOntology");
+    }
+
+    private ProductCategoryService getRequiredService(String taxonomyId) {
+        if(!(taxonomyId == null || taxonomyId.contentEquals("Custom"))) {
+            return indexCategoryService;
+        } else {
+            return customCategoryService;
+        }
+    }
+
+    private static String constructUri(String taxonomyId, String id) {
+        if(taxonomyId.contentEquals(TaxonomyEnum.eClass.getId())) {
+            return TaxonomyEnum.eClass.getNamespace() + id;
+
+        } else if (taxonomyId.contentEquals(TaxonomyEnum.FurnitureOntology.getId())) {
+            return id;
+        }
+        return null;
     }
 }

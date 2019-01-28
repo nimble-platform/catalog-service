@@ -110,9 +110,4 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
         }
         return categories;
     }
-
-    @Override
-    public String getTaxonomyId() {
-        return "eClass";
-    }
 }

@@ -3,6 +3,8 @@ package eu.nimble.service.catalogue.persistence.util;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.springframework.data.repository.query.Param;
 
 import javax.swing.*;

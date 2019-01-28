@@ -1,6 +1,9 @@
 package eu.nimble.service.catalogue.sync;
 
+import eu.nimble.service.catalogue.category.taxonomy.TaxonomyEnum;
+import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.model.solr.item.ItemType;
+import eu.nimble.service.model.solr.owl.ClassType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
@@ -106,5 +109,48 @@ public class IndexingWrapper {
             imagesUris.add(image.getUri());
         }
         return imagesUris;
+    }
+
+    public static Category toCategory(ClassType indexCategory) {
+        Category category = new Category();
+        category.setCategoryUri(indexCategory.getUri());
+        // TODO check which field to set as id. For eClass we have been using 0173-1#01-ACI033#011 kind of identifiers
+        // but the assumption was to use 8-digit codes
+        category.setId(extractIdFromUri(indexCategory.getUri()));
+        category.setDefinition(getFirstLabel(indexCategory.getDescription()));
+        category.setPreferredName(getFirstLabel(indexCategory.getLabel()));
+        category.setLevel(indexCategory.getLevel());
+        category.setCode(indexCategory.getLocalName());
+        category.setCategoryUri(indexCategory.getUri());
+        category.setTaxonomyId(extractTaxonomyFromUri(indexCategory.getUri()).getId());
+        return category;
+    }
+
+    // TODO update when multilinguality branch is merged
+    private static String getFirstLabel(Map<String, String> multilingualLabels) {
+        if(multilingualLabels.size() > 0) {
+            return multilingualLabels.values().iterator().next();
+        }
+        return null;
+    }
+
+    private static TaxonomyEnum extractTaxonomyFromUri(String uri) {
+        if(uri.startsWith(TaxonomyEnum.eClass.getNamespace())) {
+            return TaxonomyEnum.eClass;
+
+        } else if (uri.startsWith(TaxonomyEnum.FurnitureOntology.getNamespace())) {
+            return TaxonomyEnum.FurnitureOntology;
+        }
+        return null;
+    }
+
+    private static String extractIdFromUri(String uri) {
+        if(uri.startsWith(TaxonomyEnum.eClass.getNamespace())) {
+            return uri.substring(TaxonomyEnum.eClass.getNamespace().length());
+
+        } else if (uri.startsWith(TaxonomyEnum.FurnitureOntology.getNamespace())) {
+            return uri;
+        }
+        return null;
     }
 }

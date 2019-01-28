@@ -34,11 +34,6 @@ public class CustomCategoryService implements ProductCategoryService {
     }
 
     @Override
-    public String getTaxonomyId() {
-        return null;
-    }
-
-    @Override
     public CategoryTreeResponse getCategoryTree(String categoryId) {
         return new CategoryTreeResponse();
     }
