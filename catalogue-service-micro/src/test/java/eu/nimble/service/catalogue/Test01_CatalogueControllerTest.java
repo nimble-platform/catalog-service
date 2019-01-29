@@ -135,7 +135,7 @@ public class Test01_CatalogueControllerTest {
         catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
 
         // check whether it is updated or not
-        Assert.assertEquals("Updated product name", catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getName());
+        Assert.assertEquals("Updated product name", catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getName().get(0).getValue());
 
         boolean checkEntityIds = Boolean.valueOf(environment.getProperty("nimble.check-entity-ids"));
         if(checkEntityIds) {
@@ -176,7 +176,7 @@ public class Test01_CatalogueControllerTest {
         catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
 
         // check whether it is updated or not
-        Assert.assertEquals("Updated product name", catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getName());
+        Assert.assertEquals("Updated product name", catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getName().get(0).getValue());
 
         boolean checkEntityIds = Boolean.valueOf(environment.getProperty("nimble.check-entity-ids"));
         if(checkEntityIds) {
@@ -205,14 +205,14 @@ public class Test01_CatalogueControllerTest {
 
         request = get("/catalogue/ubl/" + createdCatalogueId)
                 .header("Authorization", environment.getProperty("nimble.test-token"));
-        this.mockMvc.perform(request).andDo(print()).andExpect(status().isNoContent()).andReturn();
+        this.mockMvc.perform(request).andDo(print()).andExpect(status().isNotFound()).andReturn();
     }
 
     @Test
     public void test50_getJsonNonExistingCatalogue() throws Exception {
         MockHttpServletRequestBuilder request = get("/catalogue/ubl/" + createdCatalogueId)
                 .header("Authorization", environment.getProperty("nimble.test-token"));
-        this.mockMvc.perform(request).andDo(print()).andExpect(status().isNoContent()).andReturn();
+        this.mockMvc.perform(request).andDo(print()).andExpect(status().isNotFound()).andReturn();
     }
 
     /*
@@ -232,10 +232,10 @@ public class Test01_CatalogueControllerTest {
         createdCatalogueId = catalogue.getUUID();
 
         Assert.assertEquals(1,catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getAdditionalItemProperty().size());
-        Assert.assertEquals("Color",catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getAdditionalItemProperty().get(0).getName());
+        Assert.assertEquals("Color",catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getAdditionalItemProperty().get(0).getName().get(0).getValue());
         Assert.assertEquals(2,catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getAdditionalItemProperty().get(0).getValue().size());
-        Assert.assertEquals("Red",catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getAdditionalItemProperty().get(0).getValue().get(0));
-        Assert.assertEquals("Green",catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getAdditionalItemProperty().get(0).getValue().get(1));
+        Assert.assertEquals("Green",catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getAdditionalItemProperty().get(0).getValue().get(0).getValue());
+        Assert.assertEquals("Red",catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getAdditionalItemProperty().get(0).getValue().get(1).getValue());
     }
 
     @Test

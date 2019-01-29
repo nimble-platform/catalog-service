@@ -1,1 +1,220 @@
-{"id":"417045f0-760a-42fb-976d-f115b028b74d","hjid":null,"orderableUnit":null,"freeOfChargeIndicator":false,"warrantyValidityPeriod":{"startDate":null,"startTime":null,"endDate":null,"endTime":null,"durationMeasure":{"value":null,"unitCode":null,"hjid":null},"hjid":null},"warrantyInformation":[],"requiredItemLocationQuantity":{"price":{"priceAmount":{"value":null,"currencyID":""},"baseQuantity":{"value":null,"unitCode":null,"hjid":null}},"applicableTerritoryAddress":[{"cityName":"","postalZone":"","buildingNumber":"","streetName":"","country":{"name":null}}]},"goodsItem":{"id":"417045f0-760a-42fb-976d-f115b028b74d","item":{"name":"mdf board - laminated - test - staging","description":"mdf board - laminated - test - staging description","itemSpecificationDocumentReference":[],"productImage":[],"additionalItemProperty":[],"manufacturerParty":{"id":"381","name":"SRDC","websiteURI":"","preferredItemClassificationCode":[],"postalAddress":{"streetName":"ODTU","buildingNumber":"","cityName":"Ankara","postalZone":"06800","country":{"name":"Turkey"}},"partyTaxScheme":[{"taxScheme":{"taxTypeCode":{"value":"1234","name":"VAT"}}}],"person":[{"id":"379","firstName":"Suat","familyName":"Gonul","role":[],"contact":{"telephone":"","electronicMail":"suat@srdc.com.tr"},"roleItems":[]}],"certificate":[],"qualityIndicator":[{"qualityParameter":""}],"paymentMeans":[{"id":"389","paymentMeansCode":{}}],"deliveryTerms":[{"id":"388"}],"tradingTerms":[],"ppapDocumentReference":[],"cnae":[],"industrySector":[]},"manufacturersItemIdentification":{"id":"417045f0-760a-42fb-976d-f115b028b74d"},"catalogueDocumentReference":{"id":"b5749e3b-2916-4c5d-9947-91b6656d90e5","documentType":null,"attachment":null},"commodityClassification":[{"itemClassificationCode":{"value":"0173-1#01-AKJ052#013","name":"MDF laminated","uri":"http://www.nimble-project.org/resource/eclass/22292803","listID":"eClass","listURI":null},"natureCode":null,"cargoTypeCode":null,"hjid":""}],"certificate":[],"dimension":[],"transportationServiceDetails":null,"trackAndTraceDetails":{"eventURL":null,"masterURL":null,"productionProcessTemplate":null}},"containingPackage":{"quantity":{"value":null,"unitCode":null,"hjid":null},"packagingTypeCode":{"value":"","name":"","uri":"","listID":"","listURI":""},"hjid":null},"deliveryTerms":{"id":null,"estimatedDeliveryPeriod":{"startDate":null,"startTime":null,"endDate":null,"endTime":null,"durationMeasure":{"value":null,"unitCode":null,"hjid":null},"hjid":null},"specialTerms":null,"incoterms":null,"amount":{"value":null,"currencyID":null},"deliveryLocation":{"address":{"cityName":"","postalZone":"","buildingNumber":"","streetName":"","country":{"name":null}}},"hjid":null}}}
+{
+  "id": "417045f0-760a-42fb-976d-f115b028b74d",
+  "hjid": null,
+  "orderableUnit": null,
+  "freeOfChargeIndicator": false,
+  "warrantyValidityPeriod": {
+    "startDate": null,
+    "startTime": null,
+    "endDate": null,
+    "endTime": null,
+    "durationMeasure": {
+      "value": 0,
+      "unitCode": "month(s)",
+      "hjid": null
+    },
+    "hjid": null
+  },
+  "warrantyInformation": [],
+  "requiredItemLocationQuantity": {
+    "price": {
+      "priceAmount": {
+        "value": null,
+        "currencyID": "EUR"
+      },
+      "baseQuantity": {
+        "value": 1,
+        "unitCode": "item(s)",
+        "hjid": null
+      }
+    },
+    "applicableTerritoryAddress": [],
+    "allowanceCharge": [],
+    "minimumQuantity": null
+  },
+  "priceOption": [],
+  "goodsItem": {
+    "id": "417045f0-760a-42fb-976d-f115b028b74d",
+    "item": {
+      "name": [
+        {
+          "value": "QDeneme",
+          "languageID": "en"
+        }
+      ],
+      "description": [],
+      "itemSpecificationDocumentReference": [],
+      "productImage": [],
+      "additionalItemProperty": [],
+      "manufacturerParty": {
+        "nace": [],
+        "description": [],
+        "brandName": [],
+        "partyName": [
+          {
+            "name": {
+              "value": "canCompany",
+              "languageID": "en"
+            }
+          }
+        ],
+        "partyIdentification": [
+          {
+            "id": "706"
+          }
+        ],
+        "websiteURI": "",
+        "industryClassificationCode": {
+          "name": "IndustryClassificationCode"
+        },
+        "ppapCompatibilityLevel": 1,
+        "preferredItemClassificationCode": [
+          {
+            "value": "0173-1#01-AEI956#006::eClass::Notebook::product"
+          }
+        ],
+        "mostRecentItemsClassificationCode": [
+          {
+            "value": "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard::FurnitureOntology::MDFBoard::product::1547034223954"
+          }
+        ],
+        "postalAddress": {
+          "streetName": "abcx",
+          "buildingNumber": "",
+          "cityName": "ankara",
+          "postalZone": "234",
+          "country": {
+            "name": {
+              "value": "turkey"
+            }
+          }
+        },
+        "partyTaxScheme": [
+          {
+            "taxScheme": {
+              "taxTypeCode": {
+                "value": "12",
+                "name": "VAT"
+              }
+            }
+          }
+        ],
+        "contact": {
+          "otherCommunication": []
+        },
+        "person": [
+          {
+            "id": "704",
+            "firstName": "ali",
+            "familyName": "can",
+            "role": [],
+            "contact": {
+              "name": {
+                "languageID": "en"
+              },
+              "telephone": "",
+              "electronicMail": "can@gmail.com",
+              "otherCommunication": []
+            },
+            "roleItems": []
+          }
+        ],
+        "certificate": [],
+        "qualityIndicator": [
+          {
+            "qualityParameter": ""
+          }
+        ],
+        "ppapDocumentReference": [],
+        "documentReference": [],
+        "industrySector": [],
+        "purchaseTerms": {
+          "tradingTerms": [],
+          "deliveryTerms": [],
+          "paymentMeans": []
+        }
+      },
+      "manufacturersItemIdentification": {
+        "id": "417045f0-760a-42fb-976d-f115b028b74d"
+      },
+      "catalogueDocumentReference": {
+        "id": "b5749e3b-2916-4c5d-9947-91b6656d90e5",
+        "documentType": null,
+        "attachment": null
+      },
+      "commodityClassification": [
+        {
+          "itemClassificationCode": {
+            "value": "0173-1#01-AAC168#005",
+            "name": "Automotive technology",
+            "uri": "http://www.nimble-project.org/resource/eclass/28000000",
+            "listID": "eClass",
+            "listURI": null
+          },
+          "natureCode": null,
+          "cargoTypeCode": null,
+          "hjid": ""
+        }
+      ],
+      "certificate": [],
+      "dimension": [],
+      "transportationServiceDetails": null,
+      "trackAndTraceDetails": {
+        "eventURL": null,
+        "masterURL": null,
+        "productionProcessTemplate": null
+      }
+    },
+    "containingPackage": {
+      "quantity": {
+        "value": 1,
+        "unitCode": "item(s)",
+        "hjid": null
+      },
+      "packagingTypeCode": {
+        "value": "",
+        "name": "",
+        "uri": "",
+        "listID": "",
+        "listURI": ""
+      },
+      "hjid": null
+    },
+    "deliveryTerms": {
+      "id": null,
+      "estimatedDeliveryPeriod": {
+        "startDate": null,
+        "startTime": null,
+        "endDate": null,
+        "endTime": null,
+        "durationMeasure": {
+          "value": null,
+          "unitCode": "day(s)",
+          "hjid": null
+        },
+        "hjid": null
+      },
+      "specialTerms": null,
+      "incoterms": null,
+      "amount": {
+        "value": null,
+        "currencyID": null
+      },
+      "deliveryLocation": {
+        "address": {
+          "cityName": "",
+          "postalZone": "",
+          "buildingNumber": "",
+          "streetName": "",
+          "country": {
+            "name": {
+              "value": null,
+              "languageID": "en"
+            }
+          }
+        }
+      },
+      "hjid": null
+    }
+  }
+}
