@@ -22,12 +22,12 @@ spring:
       url: jdbc:postgresql://${UBL_DB_HOST:localhost}:${UBL_DB_HOST_PORT:5432}/${UBL_DB_NAME:ubldb}?currentSchema=public&ApplicationName=catalogue-service-ubldb${APPLICATION_NAME_SUFFIX:}
       username: ${UBL_DB_USERNAME:postgres}
       password: ${UBL_DB_PASSWORD:nimble}
-      driver_class: org.postgresql.Driver
+      driver-class: org.postgresql.Driver
     binarycontentdb:
       url: jdbc:postgresql://${BINARY_CONTENT_DB_HOST:localhost}:${BINARY_CONTENT_DB_PORT:5432}/${BINARY_CONTENT_DB_NAME:binarycontentdb}?currentSchema=public&ApplicationName=catalogue-service-binarycontentdb${APPLICATION_NAME_SUFFIX:}
       username: ${BINARY_CONTENT_DB_USERNAME:postgres}
       password: ${BINARY_CONTENT_DB_PASSWORD:nimble}
-      driver_class: org.postgresql.Driver
+      driver-class: org.postgresql.Driver
     test-on-borrow: true
     test-while-idle: true
     remove-abandoned: true
