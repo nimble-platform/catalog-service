@@ -19,30 +19,34 @@ spring:
       enabled: ${discovery.enabled:${DISCOVERY_ENABLED:false}}
   datasource:
     ubldb:
-      url: jdbc:postgresql://${UBL_DB_HOST:localhost}:${UBL_DB_HOST_PORT:5432}/${UBL_DB_NAME:ubldb}?currentSchema=public
+      url: jdbc:postgresql://${UBL_DB_HOST:localhost}:${UBL_DB_HOST_PORT:5432}/${UBL_DB_NAME:ubldb}?currentSchema=public&ApplicationName=catalogue-service-ubldb${APPLICATION_NAME_SUFFIX:}
       username: ${UBL_DB_USERNAME:postgres}
       password: ${UBL_DB_PASSWORD:nimble}
       driver_class: org.postgresql.Driver
     binarycontentdb:
-      url: jdbc:postgresql://${BINARY_CONTENT_DB_HOST:localhost}:${BINARY_CONTENT_DB_PORT:5432}/${BINARY_CONTENT_DB_NAME:binarycontentdb}?currentSchema=public
+      url: jdbc:postgresql://${BINARY_CONTENT_DB_HOST:localhost}:${BINARY_CONTENT_DB_PORT:5432}/${BINARY_CONTENT_DB_NAME:binarycontentdb}?currentSchema=public&ApplicationName=catalogue-service-binarycontentdb${APPLICATION_NAME_SUFFIX:}
       username: ${BINARY_CONTENT_DB_USERNAME:postgres}
       password: ${BINARY_CONTENT_DB_PASSWORD:nimble}
       driver_class: org.postgresql.Driver
-    tomcat:
-      initial-size: 3
-      test-while-idle: true
-      time-between-eviction-runs-millis: 600000
-      min-evictable-idle-time-millis: 3600000
-    maxActive: 10
-    maxIdle: 3
-    minIdle: 3
+    test-on-borrow: true
+    test-while-idle: true
+    remove-abandoned: true
+    log-abandoned: true
+    initial-size: 3
+    max-active: 3
+    max-idle: 3
+    min-idle: 3
+    max-wait: 90000
+    time-between-eviction-runs-millis: 60000
+    min-evictable-idle-time-millis: 3600000
+    validation-query: "SELECT 1;" # Validation query must be set in order to test connections
   jackson:
     mapper:
       PROPAGATE_TRANSIENT_MARKER: true
   http:
     multipart:
-      max-file-size: 10MB
-      max-request-size: 10MB
+      max-file-size: 100MB
+      max-request-size: 100MB
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
     consumer:
@@ -51,6 +55,9 @@ spring:
       sasl:
         jaas:
           config: ${KAFKA_JAAS_CONFIG}
+  thymeleaf:
+    cache: false
+    mode: HTML
 
 logstash:
   uri: ${LOGSTASH_URI:localhost:5000}
