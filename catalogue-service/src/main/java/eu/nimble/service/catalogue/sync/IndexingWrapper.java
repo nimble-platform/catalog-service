@@ -78,7 +78,7 @@ public class IndexingWrapper {
                 }
 
             } else if(ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.BOOLEAN)) {
-                logger.warn("{} boolean property is not mapped", itemProperty.getName());
+                indexItem.setProperty(itemProperty.getName(), Boolean.valueOf(itemProperty.getValue().get(0)));
 
             } else if(ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.FILE)) {
                 // binary properties are not indexed
@@ -113,7 +113,7 @@ public class IndexingWrapper {
     private static Set<String> getCertificates(CatalogueLineType catalogueLine) {
         Set<String> certificates = new HashSet<>();
         for(CertificateType certificate : catalogueLine.getGoodsItem().getItem().getCertificate()) {
-            certificates.add(certificate.getCertificateTypeCode().getName());
+            certificates.add(certificate.getCertificateType());
         }
         return certificates;
     }
