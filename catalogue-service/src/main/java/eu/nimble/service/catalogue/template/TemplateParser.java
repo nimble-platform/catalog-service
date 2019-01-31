@@ -1,6 +1,6 @@
 package eu.nimble.service.catalogue.template;
 
-import eu.nimble.service.catalogue.category.CategoryServiceManager;
+import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.Property;
@@ -11,7 +11,6 @@ import eu.nimble.service.model.ubl.commonbasiccomponents.AmountType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
-import eu.nimble.utility.JsonSerializationUtility;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.*;
@@ -686,9 +685,9 @@ public class TemplateParser {
         List<String> categoryIds = Arrays.asList(categoryIdsStr.split(","));
         List<String> taxonomyIds = Arrays.asList(taxonomyIdsStr.split(","));
 
-        CategoryServiceManager csm = SpringBridge.getInstance().getCategoryServiceManager();
+        IndexCategoryService categoryServicecsm = SpringBridge.getInstance().getIndexCategoryService();
         for (int i = 0; i < categoryIds.size(); i++) {
-            Category category = csm.getCategory(taxonomyIds.get(i), categoryIds.get(i));
+            Category category = categoryServicecsm.getCategory(taxonomyIds.get(i), categoryIds.get(i));
             categories.add(category);
         }
 

@@ -1,9 +1,12 @@
 package eu.nimble.service.catalogue.sync;
 
-import eu.nimble.service.catalogue.category.taxonomy.TaxonomyEnum;
+import eu.nimble.service.catalogue.category.TaxonomyEnum;
 import eu.nimble.service.catalogue.model.category.Category;
+import eu.nimble.service.catalogue.model.category.Property;
+import eu.nimble.service.catalogue.template.TemplateConfig;
 import eu.nimble.service.model.solr.item.ItemType;
 import eu.nimble.service.model.solr.owl.ClassType;
+import eu.nimble.service.model.solr.owl.PropertyType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
@@ -20,29 +23,40 @@ import java.util.*;
 public class IndexingWrapper {
     private static final Logger logger = LoggerFactory.getLogger(IndexingWrapper.class);
 
+    private static final String XSD_NS = "http://www.w3.org/2001/XMLSchema#";
+
     public static ItemType toIndexItem(CatalogueLineType catalogueLine) {
         ItemType indexItem = new ItemType();
 
         indexItem.setCatalogueId(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID());
         indexItem.setUri(catalogueLine.getHjid().toString());
-        indexItem.setName(getMultilingualLabels(catalogueLine.getGoodsItem().getItem().getName()));
+        indexItem.setLocalName(catalogueLine.getHjid().toString());
+        indexItem.setLabel(getMultilingualLabels(catalogueLine.getGoodsItem().getItem().getName()));
         indexItem.setApplicableCountries(getCountries(catalogueLine));
         indexItem.setCertificateType(getCertificates(catalogueLine));
-        indexItem.addPrice(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getCurrencyID(), catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue().doubleValue());
-        indexItem.addDeliveryTime(catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure().getUnitCode(), catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure().getValue().doubleValue());
+        if(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue() != null) {
+            indexItem.addPrice(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getCurrencyID(), catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue().doubleValue());
+        }
+        if(catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure().getValue() != null) {
+            indexItem.addDeliveryTime(catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure().getUnitCode(), catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure().getValue().doubleValue());
+        }
         indexItem.setDescription(getMultilingualLabels(catalogueLine.getGoodsItem().getItem().getDescription()));
         indexItem.setFreeOfCharge(catalogueLine.isFreeOfChargeIndicator());
         indexItem.setImgageUri(getImageUris(catalogueLine));
         indexItem.setManufacturerId(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
-        indexItem.addPackageAmounts(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getUnitCode(), Arrays.asList(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getValue().doubleValue()));
+        if(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getValue() != null) {
+            indexItem.addPackageAmounts(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getUnitCode(), Arrays.asList(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getValue().doubleValue()));
+        }
         transformCommodityClassifications(indexItem, catalogueLine);
         transformAdditionalItemProperties(indexItem, catalogueLine);
 
         // transport service related parameters
-        indexItem.setEmissionStandard(catalogueLine.getGoodsItem().getItem().getTransportationServiceDetails().getEnvironmentalEmission().get(0).getEnvironmentalEmissionTypeCode().getName());
-        indexItem.setServiceType(new HashSet<>(Arrays.asList(catalogueLine.getGoodsItem().getItem().getTransportationServiceDetails().getTransportServiceCode().getName())));
-        indexItem.setSupportedCargoType(catalogueLine.getGoodsItem().getItem().getTransportationServiceDetails().getSupportedCommodityClassification().get(0).getCargoTypeCode().getName());
-        indexItem.setSupportedProductNature(catalogueLine.getGoodsItem().getItem().getTransportationServiceDetails().getSupportedCommodityClassification().get(0).getNatureCode().getName());
+        if(catalogueLine.getGoodsItem().getItem().getTransportationServiceDetails() != null) {
+            indexItem.setEmissionStandard(catalogueLine.getGoodsItem().getItem().getTransportationServiceDetails().getEnvironmentalEmission().get(0).getEnvironmentalEmissionTypeCode().getName());
+            indexItem.setServiceType(new HashSet<>(Arrays.asList(catalogueLine.getGoodsItem().getItem().getTransportationServiceDetails().getTransportServiceCode().getName())));
+            indexItem.setSupportedCargoType(catalogueLine.getGoodsItem().getItem().getTransportationServiceDetails().getSupportedCommodityClassification().get(0).getCargoTypeCode().getName());
+            indexItem.setSupportedProductNature(catalogueLine.getGoodsItem().getItem().getTransportationServiceDetails().getSupportedCommodityClassification().get(0).getNatureCode().getName());
+        }
 
         return indexItem;
     }
@@ -81,6 +95,7 @@ public class IndexingWrapper {
         indexItem.setClassificationUri(classificationUris);
     }
 
+    // TODO update while switching to multilinguality branch
     private static Map<String, String> getMultilingualLabels(String name) {
         Map<String, String> labels = new HashMap<>();
         labels.put("en", name);
@@ -111,30 +126,64 @@ public class IndexingWrapper {
         return imagesUris;
     }
 
+    public static List<Category> toCategories(List<ClassType> indexCategories) {
+        List<Category> categories = new ArrayList<>();
+        for(ClassType indexCategory : indexCategories) {
+            categories.add(toCategory(indexCategory));
+        }
+        return categories;
+    }
+
     public static Category toCategory(ClassType indexCategory) {
         Category category = new Category();
-        category.setCategoryUri(indexCategory.getUri());
-        // TODO check which field to set as id. For eClass we have been using 0173-1#01-ACI033#011 kind of identifiers
-        // but the assumption was to use 8-digit codes
-        category.setId(extractIdFromUri(indexCategory.getUri()));
+        if(indexCategory.getUri().startsWith(TaxonomyEnum.eClass.getNamespace())) {
+            category.setId(indexCategory.getLocalName());
+            category.setCode(indexCategory.getCode());
+        } else {
+            category.setId(indexCategory.getUri());
+            category.setCode(indexCategory.getLocalName());
+        }
         category.setDefinition(getFirstLabel(indexCategory.getDescription()));
         category.setPreferredName(getFirstLabel(indexCategory.getLabel()));
-        category.setLevel(indexCategory.getLevel());
-        category.setCode(indexCategory.getLocalName());
+        if(indexCategory.getLevel() != null) {
+            category.setLevel(indexCategory.getLevel());
+        }
         category.setCategoryUri(indexCategory.getUri());
         category.setTaxonomyId(extractTaxonomyFromUri(indexCategory.getUri()).getId());
         return category;
     }
 
+    public static List<Property> toProperties(List<PropertyType> indexProperties) {
+        List<Property> properties = new ArrayList<>();
+        for(PropertyType indexProperty : indexProperties) {
+            properties.add(toProperty(indexProperty));
+        }
+        return properties;
+    }
+
+    public static Property toProperty(PropertyType indexProperty) {
+        Property property = new Property();
+        property.setPreferredName(getFirstLabel(indexProperty.getLabel()));
+        property.setDefinition(getFirstLabel(indexProperty.getDescription()));
+        if(indexProperty.getUri().startsWith(TaxonomyEnum.eClass.getNamespace())) {
+            property.setDataType(indexProperty.getValueQualifier());
+        } else {
+            property.setDataType(getNormalizedDatatype(getRemainder(indexProperty.getRange(), XSD_NS)).toUpperCase());
+        }
+        property.setUri(indexProperty.getUri());
+        // units are not supported by the new indexing mechanism
+        return property;
+    }
+
     // TODO update when multilinguality branch is merged
     private static String getFirstLabel(Map<String, String> multilingualLabels) {
-        if(multilingualLabels.size() > 0) {
+        if(multilingualLabels != null && multilingualLabels.size() > 0) {
             return multilingualLabels.values().iterator().next();
         }
         return null;
     }
 
-    private static TaxonomyEnum extractTaxonomyFromUri(String uri) {
+    public static TaxonomyEnum extractTaxonomyFromUri(String uri) {
         if(uri.startsWith(TaxonomyEnum.eClass.getNamespace())) {
             return TaxonomyEnum.eClass;
 
@@ -144,13 +193,30 @@ public class IndexingWrapper {
         return null;
     }
 
-    private static String extractIdFromUri(String uri) {
-        if(uri.startsWith(TaxonomyEnum.eClass.getNamespace())) {
-            return uri.substring(TaxonomyEnum.eClass.getNamespace().length());
+    public static String getNormalizedDatatype(String dataType) {
+        String normalizedType;
+        if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_INT) == 0 ||
+                dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_FLOAT) == 0 ||
+                dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_DOUBLE) == 0) {
+            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_REAL_MEASURE;
 
-        } else if (uri.startsWith(TaxonomyEnum.FurnitureOntology.getNamespace())) {
-            return uri;
+        } else if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_STRING) == 0) {
+            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_STRING;
+
+        } else if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN) == 0) {
+            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN;
+
+        } else {
+            logger.warn("Unknown data type encountered: {}", dataType);
+            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_STRING;
         }
-        return null;
+        return normalizedType;
+    }
+
+    private static String getRemainder(String value, String prefix) {
+        if(value.startsWith(prefix)){
+            return value.substring(prefix.length());
+        }
+        return value;
     }
 }

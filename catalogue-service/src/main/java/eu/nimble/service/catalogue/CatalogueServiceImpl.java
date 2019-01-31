@@ -1,12 +1,12 @@
 package eu.nimble.service.catalogue;
 
-import eu.nimble.service.catalogue.category.CategoryServiceManager;
+import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
-import eu.nimble.service.catalogue.sync.IndexingClient;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
+import eu.nimble.service.catalogue.sync.ItemIndexClient;
 import eu.nimble.service.catalogue.template.TemplateGenerator;
 import eu.nimble.service.catalogue.template.TemplateParser;
 import eu.nimble.service.catalogue.util.DataIntegratorUtil;
@@ -49,9 +49,9 @@ public class CatalogueServiceImpl implements CatalogueService {
     private static final Logger logger = LoggerFactory.getLogger(CatalogueServiceImpl.class);
 
     @Autowired
-    private IndexingClient indexingClient;
+    private ItemIndexClient itemIndexClient;
     @Autowired
-    private CategoryServiceManager categoryServiceManager;
+    private IndexCategoryService indexCategoryService;
 
     public static void main(String[] args) throws IOException {
         CatalogueServiceImpl csi = new CatalogueServiceImpl();
@@ -106,7 +106,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         logger.info("Catalogue with uuid: {} updated in DB", catalogue.getUUID());
 
         // index catalogue
-        indexingClient.indexCatalogue(catalogue);
+        itemIndexClient.indexCatalogue(catalogue);
         return catalogue;
     }
 
@@ -161,7 +161,7 @@ public class CatalogueServiceImpl implements CatalogueService {
             logger.info("Catalogue with uuid: {} persisted in DB", uuid.toString());
 
             // index the catalogue
-            indexingClient.indexCatalogue((CatalogueType) catalogue);
+            itemIndexClient.indexCatalogue((CatalogueType) catalogue);
 
         } else if (standard == Configuration.Standard.MODAML) {
             HibernateUtility.getInstance(Configuration.MODAML_PERSISTENCE_UNIT_NAME).persist(catalogue);
@@ -220,7 +220,7 @@ public class CatalogueServiceImpl implements CatalogueService {
                 repositoryWrapper.deleteEntity(catalogue);
 
                 // delete indexed catalogue
-                indexingClient.deleteCatalogue(uuid);
+                itemIndexClient.deleteCatalogue(uuid);
                 logger.info("Deleted catalogue with uuid: {}", uuid);
 
             } else {
@@ -238,7 +238,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     public Workbook generateTemplateForCategory(List<String> categoryIds, List<String> taxonomyIds) {
         List<Category> categories = new ArrayList<>();
         for (int i = 0; i < categoryIds.size(); i++) {
-            Category category = categoryServiceManager.getCategory(taxonomyIds.get(i), categoryIds.get(i));
+            Category category = indexCategoryService.getCategory(taxonomyIds.get(i), categoryIds.get(i));
             categories.add(category);
         }
 
@@ -401,7 +401,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         catalogueLine = catalogue.getCatalogueLine().get(catalogue.getCatalogueLine().size() - 1);
 
         // index the line
-        indexingClient.indexCatalogueLine(catalogueLine);
+        itemIndexClient.indexCatalogueLine(catalogueLine);
 
         return catalogueLine;
     }
@@ -416,7 +416,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         // index the line
         // Not UUID but ID of the document reference should be used.
         // While UUID is the unique identifier of the reference itself, ID keeps the unique identifier of the catalogue.
-        indexingClient.indexCatalogueLine(catalogueLine);
+        itemIndexClient.indexCatalogueLine(catalogueLine);
 
         return catalogueLine;
     }
@@ -432,7 +432,7 @@ public class CatalogueServiceImpl implements CatalogueService {
             repositoryWrapper.deleteEntityByHjid(CatalogueLineType.class, hjid);
 
             // delete indexed item
-            indexingClient.deleteCatalogueLine(catalogueLine.getHjid());
+            itemIndexClient.deleteCatalogueLine(catalogueLine.getHjid());
         }
     }
 }

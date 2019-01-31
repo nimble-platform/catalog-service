@@ -1,8 +1,10 @@
 package eu.nimble.service.catalogue.impl;
 
-import eu.nimble.service.catalogue.category.CategoryServiceManager;
+import eu.nimble.service.catalogue.category.IndexCategoryService;
+import eu.nimble.service.catalogue.category.TaxonomyEnum;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
+import eu.nimble.service.catalogue.sync.ClassIndexClient;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -28,7 +30,9 @@ public class ProductCategoryController {
             .getLogger(ProductCategoryController.class);
 
     @Autowired
-    private CategoryServiceManager csm;
+    private IndexCategoryService categoryService;
+    @Autowired
+    private ClassIndexClient classIndexClient;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves a list of Category instances. This operation takes a list of category ids and " +
@@ -59,7 +63,8 @@ public class ProductCategoryController {
                     log.error("The given taxonomy id : {} is not valid", taxonomyIds.get(i));
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("The given taxonomy id %s is not valid", taxonomyIds.get(i)));
                 }
-                categories.add(csm.getCategory(taxonomyIds.get(i), categoryIds.get(i)));
+
+                categories.add(categoryService.getCategory(taxonomyIds.get(i), categoryIds.get(i)));
             }
 
         } else {
@@ -96,11 +101,11 @@ public class ProductCategoryController {
         List<Category> categories = new ArrayList<>();
         if(taxonomyId.compareToIgnoreCase("all") == 0 ){
             log.info("Getting categories for name: {}", name);
-            categories.addAll(csm.getProductCategories(name,null,forLogistics));
+            categories.addAll(categoryService.getProductCategories(name,null,forLogistics));
         }
         else {
             log.info("Getting categories for name: {}, taxonomyId: {}", name,taxonomyId);
-            categories.addAll(csm.getProductCategories(name,taxonomyId,forLogistics));
+            categories.addAll(categoryService.getProductCategories(name,taxonomyId,forLogistics));
         }
         log.info("Completed request to get categories by name. size: {}", categories.size());
         return ResponseEntity.ok(categories);
@@ -116,9 +121,12 @@ public class ProductCategoryController {
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity getAvailableTaxonomyIds(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
-        List<String> taxonomies;
+        List<String> taxonomies = new ArrayList<>();
         try {
-            taxonomies = csm.getAvailableTaxonomies();
+            for(TaxonomyEnum taxonomyEnum : TaxonomyEnum.values()) {
+                taxonomies.add(taxonomyEnum.getId());
+            }
+
         } catch (Exception e) {
             String msg = "Failed to get available taxonomies\n" + e.getMessage();
             log.error(msg, e);
@@ -142,7 +150,7 @@ public class ProductCategoryController {
             log.error("The given taxonomy id : {} is not valid", taxonomyId);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("The given taxonomy id %s is not valid", taxonomyId));
         }
-        List<Category> categories = csm.getRootCategories(taxonomyId);
+        List<Category> categories = categoryService.getRootCategories(taxonomyId);
         return ResponseEntity.ok(categories);
     }
 
@@ -169,7 +177,7 @@ public class ProductCategoryController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("There does not exist a category with the id %s", categoryId));
         }
 
-        List<Category> categories = csm.getChildrenCategories(taxonomyId, categoryId);
+        List<Category> categories = categoryService.getChildrenCategories(taxonomyId, categoryId);
         return ResponseEntity.ok(categories);
     }
 
@@ -200,25 +208,26 @@ public class ProductCategoryController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("There does not exist a category with the id %s", categoryId));
         }
 
-        CategoryTreeResponse categories = csm.getCategoryTree(taxonomyId, categoryId);
+        CategoryTreeResponse categories = categoryService.getCategoryTree(taxonomyId, categoryId);
         return ResponseEntity.ok(categories);
     }
 
     private boolean taxonomyIdExists(String taxonomyId) {
-        if (!csm.getAvailableTaxonomies().contains(taxonomyId)) {
-            return false;
+        for(TaxonomyEnum taxonomyEnum : TaxonomyEnum.values()) {
+            if(taxonomyEnum.getId().compareToIgnoreCase(taxonomyId) == 0) {
+                return true;
+            }
         }
-        return true;
+        return false;
     }
 
     private boolean categoryExists(String taxonomyId, String categoryId) {
         try {
-            csm.getCategory(taxonomyId, categoryId);
+            classIndexClient.getIndexCategory(taxonomyId, categoryId);
         } catch (IndexOutOfBoundsException e) {
             log.error("There does not exist a category with the id : {}", categoryId);
             return false;
         }
         return true;
     }
-
 }

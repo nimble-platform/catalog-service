@@ -1,4 +1,4 @@
-package eu.nimble.service.catalogue.category.taxonomy;
+package eu.nimble.service.catalogue.category;
 
 /**
  * Created by suat on 24-Jan-19.
