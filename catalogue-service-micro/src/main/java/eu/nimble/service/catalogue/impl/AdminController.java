@@ -1,6 +1,6 @@
 package eu.nimble.service.catalogue.impl;
 
-import eu.nimble.service.catalogue.sync.ClassIndexClient;
+import eu.nimble.service.catalogue.index.ClassIndexClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;

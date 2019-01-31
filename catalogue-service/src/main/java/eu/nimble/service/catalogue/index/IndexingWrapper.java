@@ -1,4 +1,4 @@
-package eu.nimble.service.catalogue.sync;
+package eu.nimble.service.catalogue.index;
 
 import eu.nimble.service.catalogue.category.TaxonomyEnum;
 import eu.nimble.service.catalogue.model.category.Category;

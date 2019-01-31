@@ -1,4 +1,4 @@
-package eu.nimble.service.catalogue.sync;
+package eu.nimble.service.catalogue.index;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

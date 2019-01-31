@@ -1,4 +1,4 @@
-package eu.nimble.service.catalogue.sync;
+package eu.nimble.service.catalogue.index;
 
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
