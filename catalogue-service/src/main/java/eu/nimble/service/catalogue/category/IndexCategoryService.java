@@ -336,7 +336,7 @@ public class IndexCategoryService {
         return categories;
     }
 
-    public String constructUri(String taxonomyId, String id) {
+    public static String constructUri(String taxonomyId, String id) {
         if (taxonomyId.contentEquals(TaxonomyEnum.eClass.getId())) {
             return TaxonomyEnum.eClass.getNamespace() + id;
 

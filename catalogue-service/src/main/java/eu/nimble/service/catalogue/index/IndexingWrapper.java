@@ -219,4 +219,62 @@ public class IndexingWrapper {
         }
         return value;
     }
+
+    /**
+     * Catalogue service model to index model transformers
+     */
+
+
+    public static ClassType toIndexCategory(Category category, Set<String> parentUris, Set<String> childrenUris) {
+        ClassType indexCategory = new ClassType();
+        indexCategory.setUri(category.getCategoryUri());
+        indexCategory.setCode(category.getCode());
+        if(category.getCategoryUri().startsWith(TaxonomyEnum.eClass.getNamespace())) {
+            indexCategory.setLocalName(category.getId());
+            // TODO update on switching to multilinguality
+            indexCategory.addLabel("en", category.getPreferredName());
+            indexCategory.setLevel(category.getLevel());
+        } else if(category.getCategoryUri().startsWith(TaxonomyEnum.FurnitureOntology.getNamespace())) {
+            indexCategory.setLocalName(getRemainder(category.getCategoryUri(), TaxonomyEnum.FurnitureOntology.getNamespace()));
+            // TODO update on switching to multilinguality
+            indexCategory.addLabel("en", category.getPreferredName());
+        }
+        indexCategory.setParents(parentUris);
+        indexCategory.setChildren(childrenUris);
+
+        // TODO update on switching to multilinguality
+        indexCategory.addDescription("en", category.getDefinition());
+        indexCategory.setLanguages(indexCategory.getLabel().keySet());
+        indexCategory.setProperties(new HashSet<>());
+        category.getProperties().stream().forEach(property -> indexCategory.getProperties().add(property.getUri()));
+        return indexCategory;
+    }
+
+    public static PropertyType toIndexProperty(Property property, Set<String> associatedCategoryUris) {
+        PropertyType indexProperty = new PropertyType();
+        indexProperty.addDescription("en", property.getDefinition());
+        if(property.getUri().startsWith(TaxonomyEnum.eClass.getNamespace())) {
+            indexProperty.setLocalName(property.getId());
+            // TODO update on switching to multilinguality
+            indexProperty.addLabel("en", property.getPreferredName());
+        } else if(property.getUri().startsWith(TaxonomyEnum.FurnitureOntology.getNamespace())) {
+            indexProperty.setLocalName(getRemainder(indexProperty.getUri(), TaxonomyEnum.FurnitureOntology.getNamespace()));
+            // TODO update on switching to multilinguality
+            indexProperty.addLabel("en", property.getPreferredName());
+        }
+        if(property.getUnit() != null) {
+            indexProperty.setValueQualifier(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
+        } else if(ItemPropertyValueQualifier.TEXT.getAlternatives().stream().anyMatch(property.getDataType()::equalsIgnoreCase)) {
+            indexProperty.setValueQualifier(TemplateConfig.TEMPLATE_DATA_TYPE_STRING);
+        } else if(ItemPropertyValueQualifier.NUMBER.getAlternatives().stream().anyMatch(property.getDataType()::equalsIgnoreCase)) {
+            indexProperty.setValueQualifier(TemplateConfig.TEMPLATE_DATA_TYPE_NUMBER);
+        } else if(ItemPropertyValueQualifier.BOOLEAN.getAlternatives().stream().anyMatch(property.getDataType()::equalsIgnoreCase)) {
+            indexProperty.setValueQualifier(TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN);
+        }
+        indexProperty.setPropertyType(property.getDataType());
+        indexProperty.setProduct(associatedCategoryUris);
+        indexProperty.setItemFieldNames(Arrays.asList(ItemType.dynamicFieldPart(property.getPreferredName())));
+        indexProperty.setLanguages(indexProperty.getLabel().keySet());
+        return indexProperty;
+    }
 }

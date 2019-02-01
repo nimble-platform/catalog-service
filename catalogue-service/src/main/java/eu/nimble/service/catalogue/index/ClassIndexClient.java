@@ -6,6 +6,7 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.HttpRequest;
+import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.category.TaxonomyEnum;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.Property;
@@ -22,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -46,9 +48,48 @@ public class ClassIndexClient {
 
     @Autowired
     private ExecutionContext executionContext;
+    @Autowired
+    private PropertyIndexClient propertyIndexClient;
+
+    public void indexCategory(Category category, Set<String> parentUris, Set<String> childrenUris) {
+        try {
+            String categoryJson;
+            try {
+                ClassType indexCategory = IndexingWrapper.toIndexCategory(category, parentUris, childrenUris);
+                categoryJson = JsonSerializationUtility.getObjectMapper().writeValueAsString(indexCategory);
+
+            } catch (Exception e) {
+                String serializedCategory = JsonSerializationUtility.serializeEntitySilently(category);
+                String msg = String.format("Failed to transform Category to ClassType. \n category: %s", serializedCategory);
+                logger.error(msg, e);
+                return;
+            }
+
+            HttpResponse<String> response = Unirest.post(indexingUrl + "/category")
+                    .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken())
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .body(categoryJson)
+                    .asString();
+
+            if (response.getStatus() == HttpStatus.OK.value()) {
+                logger.info("Indexed category successfully. category uri: {}", category.getCategoryUri());
+                return;
+
+            } else {
+                String msg = String.format("Failed to index category. uri: %s, indexing call status: %d, message: %s", category.getCategoryUri(), response.getStatus(), response.getBody());
+                logger.error(msg);
+                return;
+            }
+
+        } catch (UnirestException e) {
+            String msg = String.format("Failed to index category. uri: %s", category.getCategoryUri());
+            logger.error(msg, e);
+            return;
+        }
+    }
 
     public ClassType getIndexCategory(String taxonomyId, String categoryId) {
-        String uri = constructUri(taxonomyId, categoryId);
+        String uri = IndexCategoryService.constructUri(taxonomyId, categoryId);
         return getIndexCategory(uri);
     }
 
@@ -91,7 +132,7 @@ public class ClassIndexClient {
 
         //populate properties
         if(CollectionUtils.isNotEmpty(indexCategory.getProperties())) {
-            List<PropertyType> indexProperties = getIndexPropertiesForCategory(uri);
+            List<PropertyType> indexProperties = propertyIndexClient.getIndexPropertiesForCategory(uri);
             List<Property> properties = IndexingWrapper.toProperties(indexProperties);
             category.setProperties(properties);
         }
@@ -140,102 +181,6 @@ public class ClassIndexClient {
         }
     }
 
-    public Map<String, List<PropertyType>> getIndexPropertiesForCategories(List<ClassType> indexCategories) {
-        Map<String, Collection<String>> categoryPropertyMap = new HashMap<>();
-        Set<String> propertyUris = new HashSet<>();
-        // aggregate the properties to be fetched and keep the mapping between categories and properties
-        for(ClassType indexCategory : indexCategories) {
-            Collection<String> categoryProperties = indexCategory.getProperties();
-            if(categoryProperties != null) {
-                categoryPropertyMap.put(indexCategory.getUri(), categoryProperties);
-                propertyUris.addAll(categoryProperties);
-            }
-        }
-
-        // fetch properties at once
-        List<PropertyType> properties = getProperties(propertyUris);
-        // put properties into a map for easy access
-        Map<String, PropertyType> fetchedPrpoerties = new HashMap<>();
-        for(PropertyType property : properties) {
-            fetchedPrpoerties.put(property.getUri(), property);
-        }
-
-        // populate the category-property map
-        Map<String, List<PropertyType>> categoryProperties = new HashMap<>();
-        for(Map.Entry<String, Collection<String>> mapEntry : categoryPropertyMap.entrySet()) {
-            String categoryUri = mapEntry.getKey();
-            Collection<String> catPropCol = mapEntry.getValue();
-            List<PropertyType> catPropList = new ArrayList<>();
-            for(String propUri : catPropCol) {
-                catPropList.add(fetchedPrpoerties.get(propUri));
-            }
-            categoryProperties.put(categoryUri, catPropList);
-        }
-        return categoryProperties;
-    }
-
-    public List<PropertyType> getIndexPropertiesForCategory(String categoryUri) {
-
-        try {
-            HttpRequest request = Unirest.get(indexingUrl + "/properties")
-                    .queryString("class", categoryUri)
-                    .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken());
-            HttpResponse<String> response = request.asString();
-
-            if (response.getStatus() == HttpStatus.OK.value()) {
-                List<PropertyType> properties = extractIndexPropertiesFromSearchResults(response, categoryUri);
-                logger.info("Retrieved properties for category: {}", categoryUri);
-                return properties;
-
-            } else {
-                String msg = String.format("Failed to retrieve properties for category: %s, indexing call status: %d, message: %s", categoryUri, response.getStatus(), response.getBody());
-                logger.error(msg);
-                throw new RuntimeException(msg);
-            }
-
-        } catch (UnirestException e) {
-            String msg = String.format("Failed to retrieve properties for category: %s", categoryUri);
-            logger.error(msg, e);
-            throw new RuntimeException(msg, e);
-        }
-    }
-
-    public List<PropertyType> getProperties(Set<String> uris) {
-        HttpResponse<String> response;
-        try {
-            response = Unirest.get(indexingUrl + "/properties")
-                    .queryString("uri", uris)
-                    .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken())
-                    .asString();
-
-            if (response.getStatus() == HttpStatus.OK.value()) {
-                List<PropertyType> properties = extractIndexPropertiesFromSearchResults(response, uris.toString());
-                logger.info("Retrieved properties for uris: {}", uris);
-                return properties;
-
-            } else {
-                String msg = String.format("Failed to retrieve properties. uris: %s, indexing call status: %d, message: %s", uris, response.getStatus(), response.getBody());
-                logger.error(msg);
-                throw new RuntimeException(msg);
-            }
-
-        } catch (UnirestException e) {
-            String msg = String.format("Failed to retrieve properties for uris. uris: %s", uris);
-            logger.error(msg, e);
-            throw new RuntimeException(msg, e);
-        }
-    }
-
-    private static String constructUri(String taxonomyId, String id) {
-        if (taxonomyId.contentEquals(TaxonomyEnum.eClass.getId())) {
-            return TaxonomyEnum.eClass.getNamespace() + id;
-
-        } else if (taxonomyId.contentEquals(TaxonomyEnum.FurnitureOntology.getId())) {
-            return id;
-        }
-        return null;
-    }
-
     private List<ClassType> extractIndexCategoriesFromSearchResults(HttpResponse<String> response, String query) {
         ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
         SearchResult<ClassType> searchResult;
@@ -252,24 +197,37 @@ public class ClassIndexClient {
         }
     }
 
-    private List<PropertyType> extractIndexPropertiesFromSearchResults(HttpResponse<String> response, String query) {
-        ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
-        SearchResult<PropertyType> searchResult;
-        List<PropertyType> indexProperties;
-        try {
-            searchResult = mapper.readValue(response.getBody(), new TypeReference<SearchResult<PropertyType>>() {});
-            indexProperties = searchResult.getResult();
-
-            // filter properties so that only datatype properties are included
-            indexProperties = indexProperties.stream()
-                    .filter(indexProperty -> indexProperty.getPropertyType().contentEquals("DatatypeProperty"))
-                    .collect(Collectors.toList());
-            return indexProperties;
-
-        } catch (IOException e) {
-            String msg = String.format("Failed to parse SearchResult while getting properties. query: %s, serialized results: %s", query, response.getBody());
-            logger.error(msg, e);
-            throw new RuntimeException(msg, e);
-        }
-    }
+    //    public Map<String, List<PropertyType>> getIndexPropertiesForCategories(List<ClassType> indexCategories) {
+//        Map<String, Collection<String>> categoryPropertyMap = new HashMap<>();
+//        Set<String> propertyUris = new HashSet<>();
+//        // aggregate the properties to be fetched and keep the mapping between categories and properties
+//        for(ClassType indexCategory : indexCategories) {
+//            Collection<String> categoryProperties = indexCategory.getProperties();
+//            if(categoryProperties != null) {
+//                categoryPropertyMap.put(indexCategory.getUri(), categoryProperties);
+//                propertyUris.addAll(categoryProperties);
+//            }
+//        }
+//
+//        // fetch properties at once
+//        List<PropertyType> properties = getProperties(propertyUris);
+//        // put properties into a map for easy access
+//        Map<String, PropertyType> fetchedPrpoerties = new HashMap<>();
+//        for(PropertyType property : properties) {
+//            fetchedPrpoerties.put(property.getUri(), property);
+//        }
+//
+//        // populate the category-property map
+//        Map<String, List<PropertyType>> categoryProperties = new HashMap<>();
+//        for(Map.Entry<String, Collection<String>> mapEntry : categoryPropertyMap.entrySet()) {
+//            String categoryUri = mapEntry.getKey();
+//            Collection<String> catPropCol = mapEntry.getValue();
+//            List<PropertyType> catPropList = new ArrayList<>();
+//            for(String propUri : catPropCol) {
+//                catPropList.add(fetchedPrpoerties.get(propUri));
+//            }
+//            categoryProperties.put(categoryUri, catPropList);
+//        }
+//        return categoryProperties;
+//    }
 }
