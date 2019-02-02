@@ -7,6 +7,10 @@ import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.model.category.Unit;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.model.ubl.commonbasiccomponents.*;
+import eu.nimble.service.model.ubl.commonbasiccomponents.AmountType;
+import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
+import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
+import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.*;
@@ -113,13 +117,17 @@ public class TemplateParser {
 
     private List<ItemPropertyType> getCategoryRelatedItemProperties(List<Category> categories, int rowIndex) throws TemplateParseException {
         Sheet productPropertiesTab = wb.getSheet(TemplateConfig.TEMPLATE_TAB_PRODUCT_PROPERTIES);
-        int columnIndex = TemplateConfig.getFixedPropertiesForProductPropertyTab().size() + 1;
         List<ItemPropertyType> additionalItemProperties = new ArrayList<>();
         for (Category category : categories) {
             for (Property property : category.getProperties()) {
                 // check unit
                 // if the user provided unit for a number data type
                 Row row = productPropertiesTab.getRow(3);
+                Integer columnIndex = findCellIndexForProperty(property.getPreferredName(defaultLanguage));
+                if(columnIndex == null) {
+                    continue;
+                }
+
                 Cell cell = getCellWithMissingCellPolicy(row, columnIndex);
                 if (cell != null) {
                     String unit = getCellStringValue(cell);
@@ -133,16 +141,41 @@ public class TemplateParser {
                 cell = getCellWithMissingCellPolicy(productPropertiesTab.getRow(rowIndex), columnIndex);
                 List<Object> values = (List<Object>) parseCell(cell,property.getPreferredName(defaultLanguage), property.getDataType(), true);
                 if (values.isEmpty()) {
-                    columnIndex++;
                     continue;
                 }
                 ItemPropertyType itemProp = getItemPropertyFromCategoryProperty(category, property, values);
                 additionalItemProperties.add(itemProp);
-                columnIndex++;
             }
         }
 
         return additionalItemProperties;
+    }
+
+    /**
+     * Identifies the column index for a specific property given the columns allocated for the associated category
+     *
+     * @param propertyName
+     * @return
+     */
+    private Integer findCellIndexForProperty(String propertyName) {
+        // get the row where property names are specified
+        Sheet productPropertiesTab = wb.getSheet(TemplateConfig.TEMPLATE_TAB_PRODUCT_PROPERTIES);
+        Row row = productPropertiesTab.getRow(1);
+
+        // identify the cell with the
+        for(int i = TemplateConfig.getFixedPropertiesForProductPropertyTab().size() + 1; i<row.getLastCellNum(); i++) {
+            Cell cell = getCellWithMissingCellPolicy(row, i);
+            // null cell means we reach to the end of the template
+            if(cell == null) {
+                break;
+            }
+            String value = getCellStringValue(cell);
+            if(value.contentEquals(propertyName)) {
+                return i;
+            }
+        }
+        logger.warn("No column found for property: {}", propertyName);
+        return null;
     }
 
     private ItemPropertyType getItemPropertyFromCategoryProperty(Category category, Property property, Object values) throws TemplateParseException{
