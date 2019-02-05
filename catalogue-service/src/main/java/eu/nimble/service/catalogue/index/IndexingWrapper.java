@@ -225,51 +225,66 @@ public class IndexingWrapper {
      */
 
 
-    public static ClassType toIndexCategory(Category category, Set<String> parentUris, Set<String> childrenUris) {
+    public static ClassType toIndexCategory(Category category, Set<String> directParentUris, Set<String> allParentUris, Set<String> directChildrenUris, Set<String> allChildrenUris) {
         ClassType indexCategory = new ClassType();
         indexCategory.setUri(category.getCategoryUri());
         indexCategory.setCode(category.getCode());
-        if(category.getCategoryUri().startsWith(TaxonomyEnum.eClass.getNamespace())) {
+        if(category.getCategoryUri().contains(TaxonomyEnum.eClass.getId().toLowerCase())) {
             indexCategory.setLocalName(category.getId());
             // TODO update on switching to multilinguality
             indexCategory.addLabel("en", category.getPreferredName());
             indexCategory.setLevel(category.getLevel());
+            indexCategory.setNameSpace(TaxonomyEnum.eClass.getNamespace());
         } else if(category.getCategoryUri().startsWith(TaxonomyEnum.FurnitureOntology.getNamespace())) {
             indexCategory.setLocalName(getRemainder(category.getCategoryUri(), TaxonomyEnum.FurnitureOntology.getNamespace()));
             // TODO update on switching to multilinguality
             indexCategory.addLabel("en", category.getPreferredName());
+            indexCategory.setNameSpace(TaxonomyEnum.FurnitureOntology.getNamespace());
         }
-        indexCategory.setParents(parentUris);
-        indexCategory.setChildren(childrenUris);
+        indexCategory.setParents(directParentUris);
+        indexCategory.setAllParents(allParentUris);
+        indexCategory.setChildren(directChildrenUris);
+        indexCategory.setAllChildren(allChildrenUris);
 
         // TODO update on switching to multilinguality
         indexCategory.addDescription("en", category.getDefinition());
         indexCategory.setLanguages(indexCategory.getLabel().keySet());
-        indexCategory.setProperties(new HashSet<>());
-        category.getProperties().stream().forEach(property -> indexCategory.getProperties().add(property.getUri()));
+        if(category.getProperties() != null) {
+            indexCategory.setProperties(new HashSet<>());
+            category.getProperties().stream().forEach(property -> indexCategory.getProperties().add(property.getUri()));
+        }
         return indexCategory;
     }
 
     public static PropertyType toIndexProperty(Property property, Set<String> associatedCategoryUris) {
         PropertyType indexProperty = new PropertyType();
+        indexProperty.setUri(property.getUri());
         indexProperty.addDescription("en", property.getDefinition());
-        if(property.getUri().startsWith(TaxonomyEnum.eClass.getNamespace())) {
+        if(property.getUri().contains(TaxonomyEnum.eClass.getId().toLowerCase())) {
             indexProperty.setLocalName(property.getId());
             // TODO update on switching to multilinguality
             indexProperty.addLabel("en", property.getPreferredName());
+            indexProperty.setNameSpace(TaxonomyEnum.eClass.getNamespace());
         } else if(property.getUri().startsWith(TaxonomyEnum.FurnitureOntology.getNamespace())) {
             indexProperty.setLocalName(getRemainder(indexProperty.getUri(), TaxonomyEnum.FurnitureOntology.getNamespace()));
             // TODO update on switching to multilinguality
             indexProperty.addLabel("en", property.getPreferredName());
+            indexProperty.setNameSpace(TaxonomyEnum.FurnitureOntology.getNamespace());
         }
         if(property.getUnit() != null) {
             indexProperty.setValueQualifier(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
+
         } else if(ItemPropertyValueQualifier.TEXT.getAlternatives().stream().anyMatch(property.getDataType()::equalsIgnoreCase)) {
             indexProperty.setValueQualifier(TemplateConfig.TEMPLATE_DATA_TYPE_STRING);
+            indexProperty.setRange("http://www.w3.org/2001/XMLSchema#string");
+
         } else if(ItemPropertyValueQualifier.NUMBER.getAlternatives().stream().anyMatch(property.getDataType()::equalsIgnoreCase)) {
             indexProperty.setValueQualifier(TemplateConfig.TEMPLATE_DATA_TYPE_NUMBER);
+            indexProperty.setRange("http://www.w3.org/2001/XMLSchema#float");
+
         } else if(ItemPropertyValueQualifier.BOOLEAN.getAlternatives().stream().anyMatch(property.getDataType()::equalsIgnoreCase)) {
             indexProperty.setValueQualifier(TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN);
+            indexProperty.setRange("http://www.w3.org/2001/XMLSchema#boolean");
         }
         indexProperty.setPropertyType(property.getDataType());
         indexProperty.setProduct(associatedCategoryUris);

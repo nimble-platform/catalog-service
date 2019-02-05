@@ -51,11 +51,11 @@ public class ClassIndexClient {
     @Autowired
     private PropertyIndexClient propertyIndexClient;
 
-    public void indexCategory(Category category, Set<String> parentUris, Set<String> childrenUris) {
+    public void indexCategory(Category category, Set<String> directParentUris, Set<String> allParentUris, Set<String> directChildrenUris, Set<String> allChildrenUris) {
         try {
             String categoryJson;
             try {
-                ClassType indexCategory = IndexingWrapper.toIndexCategory(category, parentUris, childrenUris);
+                ClassType indexCategory = IndexingWrapper.toIndexCategory(category, directParentUris, allParentUris, directChildrenUris, allChildrenUris);
                 categoryJson = JsonSerializationUtility.getObjectMapper().writeValueAsString(indexCategory);
 
             } catch (Exception e) {
@@ -65,7 +65,7 @@ public class ClassIndexClient {
                 return;
             }
 
-            HttpResponse<String> response = Unirest.post(indexingUrl + "/category")
+            HttpResponse<String> response = Unirest.post(indexingUrl + "/class")
                     .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken())
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .body(categoryJson)

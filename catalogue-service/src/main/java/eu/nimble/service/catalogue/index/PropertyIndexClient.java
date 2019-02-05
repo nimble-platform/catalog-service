@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 /**
  * Created by suat on 01-Feb-19.
  */
+@Component
 public class PropertyIndexClient {
     private static final Logger logger = LoggerFactory.getLogger(PropertyIndexClient.class);
 
