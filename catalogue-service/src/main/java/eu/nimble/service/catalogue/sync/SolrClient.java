@@ -1,6 +1,8 @@
 package eu.nimble.service.catalogue.sync;
 
 import eu.nimble.service.catalogue.util.SpringBridge;
+import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemPropertyType;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
@@ -26,44 +28,50 @@ public class SolrClient {
     private static final String binaryDataType = "http://www.w3.org/2001/XMLSchema#base64Binary";
     private static final String quantityDataType = "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2#QuantityType";
 
-    public static void indexProperties(List<ItemPropertyType> properties){
-        logger.info("Indexing properties...");
+    public static void indexProperties(CatalogueType catalogue){
+        logger.info("Indexing properties for catalogue: {}", catalogue.getUUID());
 
-        HttpSolrServer client = new HttpSolrServer(url);
+        HttpSolrServer client = null;
 
         try {
-            List<SolrInputDocument> docs = new ArrayList<>();
-            for (ItemPropertyType property:properties){
-                // check whether the property is indexed or not
-                SolrQuery query = new SolrQuery();
-                query.setQuery("name:"+property.getName()+" AND range:\""+getType(property.getValueQualifier())+"\"");
-                QueryResponse response = client.query(query);
+            client = new HttpSolrServer(url);
+            for (CatalogueLineType catalogueLine : catalogue.getCatalogueLine()) {
+                List<SolrInputDocument> docs = new ArrayList<>();
+                for (ItemPropertyType property : catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty()) {
+                    // check whether the property is indexed or not
+                    SolrQuery query = new SolrQuery();
+                    query.setQuery("name:" + property.getName() + " AND range:\"" + getType(property.getValueQualifier()) + "\"");
+                    QueryResponse response = client.query(query);
 
-                if(response.getResults().size() == 0){
-                    SolrInputDocument doc = new SolrInputDocument();
-                    String id = UUID.randomUUID().toString();
-                    doc.addField("id",id);
-                    doc.addField("name", property.getName());
-                    doc.addField("label", property.getName());
-                    String type = getType(property.getValueQualifier());
-                    doc.addField("range",type);
+                    if (response.getResults().size() == 0) {
+                        SolrInputDocument doc = new SolrInputDocument();
+                        String id = UUID.randomUUID().toString();
+                        doc.addField("id", id);
+                        doc.addField("name", property.getName());
+                        doc.addField("label", property.getName());
+                        String type = getType(property.getValueQualifier());
+                        doc.addField("range", type);
 
-                    docs.add(doc);
+                        docs.add(doc);
+                    }
+                }
+
+                if (docs.size() != 0) {
+                    client.add(docs);
+                    client.commit();
                 }
             }
 
-            if(docs.size() != 0){
-                client.add(docs);
-                client.commit();
-            }
+            logger.info("Indexed properties successfully for catalogue: {}", catalogue.getUUID());
         }
         catch (Exception e){
             logger.error("Failed to index properties",e);
         }
         finally {
-            client.shutdown();
+            if(client != null) {
+                client.shutdown();
+            }
         }
-        logger.info("Indexed properties successfully");
     }
 
     private static String getType(String valueQualifier){

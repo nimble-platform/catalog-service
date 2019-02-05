@@ -1,0 +1,19 @@
+{
+  "typeID": 1,
+  "itemLocationQuantity": {
+    "allowanceCharge": [
+      {
+        "amount": null,
+        "perUnitAmount": {
+          "value": 5,
+          "currencyID": "%"
+        }
+      }
+    ],
+    "minimumQuantity": {
+      "value": 1,
+      "unitCode": "item(s)",
+      "hjid": null
+    }
+  }
+}

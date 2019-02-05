@@ -25,12 +25,13 @@ public class SwaggerConfig {
     private ApiInfo metaData(){
         return new ApiInfo(
                 "NIMBLE Catalogue REST API",
-                "REST API handling catalogues on the NIMBLE platform",
+                "Catalogue service lets users to manage catalogue, catalogue lines, price options, binary content and units on NIMBLE." +
+                        " Detailed documentation about concepts and data models are provided at https://www.nimble-project.org/wp-content/uploads/2018/12/Catalogue-Service-REST-API.docx.",
                 "1.0",
                 "",
                 "",
-                "Additional documentation related to Catalogue Service REST API",
-                "https://secure.salzburgresearch.at/wiki/display/NIMBLE/Task+2.3+Design+of+an+Open+API+for+the+NIMBLE+Platform"
+                "",
+                ""
         );
     }
 }

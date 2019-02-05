@@ -43,15 +43,31 @@ public class CategoryServiceManager {
         return pcs.getCategory(categoryId);
     }
 
-    public List<Category> getProductCategories(String categoryName, Boolean forLogistics) {
+    public List<Category> getProductCategories(String categoryName,String taxonomyId ,Boolean forLogistics) {
         List<Category> categories = new ArrayList<>();
-        for(ProductCategoryService pcs : services.values()) {
-            if(forLogistics == null) {
-                categories.addAll(pcs.getProductCategories(categoryName));
-            } else {
-                categories.addAll(pcs.getProductCategories(categoryName, forLogistics));
+        // if taxonomy id is null, then get categories for all available taxonomies
+        if(taxonomyId == null){
+            for(ProductCategoryService pcs : services.values()) {
+                if(forLogistics == null) {
+                    categories.addAll(pcs.getProductCategories(categoryName));
+                } else {
+                    categories.addAll(pcs.getProductCategories(categoryName, forLogistics));
+                }
             }
         }
+        // otherwise, get categories only for the given taxonomy id
+        else {
+            for(ProductCategoryService pcs : services.values()) {
+                if(pcs.getTaxonomyId().equals(taxonomyId)){
+                    if(forLogistics == null) {
+                        categories.addAll(pcs.getProductCategories(categoryName));
+                    } else {
+                        categories.addAll(pcs.getProductCategories(categoryName, forLogistics));
+                    }
+                }
+            }
+        }
+
         return categories;
     }
 

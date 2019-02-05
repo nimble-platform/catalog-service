@@ -1,9 +1,16 @@
 package eu.nimble.service.catalogue.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.nimble.service.catalogue.util.HttpResponseUtil;
+import eu.nimble.service.catalogue.util.SpringBridge;
+import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
+import eu.nimble.utility.HttpResponseUtil;
+import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.persistence.binary.BinaryContentService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,16 +34,36 @@ public class BinaryContentController {
     private BinaryContentService binaryContentService;
 
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieves a specified binary content wrapped inside a BinaryCbjectType instance.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved the binary content successfully", response = CatalogueType.class),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 404, message = "No binary content exists for the specified uri"),
+            @ApiResponse(code = 500, message = "Unexpected error while getting binary content"),
+    })
     @RequestMapping(value = "/binary-content",
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getContent(@RequestParam(value = "uri") String uri,
-                                     @RequestHeader(value = "Authorization") String bearerToken) {
+    public ResponseEntity getBinaryContent(@ApiParam(value = "Uri of the binary content to be retrieved", required = true) @RequestParam(value = "uri") String uri,
+                                           @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         try {
             logger.info("Request to retrieve binary content for uri: {}", uri);
+            // check token
+            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
+            if(!isValid){
+                String msg = String.format("No user exists for the given token : %s",bearerToken);
+                logger.error(msg);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(msg);
+            }
             BinaryObjectType result = binaryContentService.retrieveContent(uri);
+            // check whether the binary content exists or not
+            if(result == null){
+                String msg = String.format("There does not exist a binary content for uri: %s", uri);
+                logger.error(msg);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+            }
 
-            ObjectMapper objectMapper = new ObjectMapper();
+            ObjectMapper objectMapper = JsonSerializationUtility.getObjectMapper();
             String response = objectMapper.writeValueAsString(result);
 
             logger.info("Completed request to retrieve binary content for uri: {}", uri);
@@ -48,16 +75,45 @@ public class BinaryContentController {
     }
 
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieves a specified binary content in raw Base64 encoded format.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved the binary content successfully", response = CatalogueType.class),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 404, message = "No binary content exists for the specified uri"),
+            @ApiResponse(code = 500, message = "Unexpected error while getting binary content"),
+    })
     @RequestMapping(value = "/binary-content/raw",
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public void getContent(@RequestParam(value = "uri") String uri,
-                           @RequestHeader(value = "Authorization") String bearerToken,
-                           HttpServletResponse response) {
+    public void getBase64BinaryContent(@ApiParam(value = "Uri of the binary content to be retrieved", required = true) @RequestParam(value = "uri") String uri,
+                                       @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken,
+                                       HttpServletResponse response) {
         try {
             logger.info("Request to retrieve raw binary content for uri: {}", uri);
+            // check token
+            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
+            if(!isValid){
+                String msg = String.format("No user exists for the given token : %s",bearerToken);
+                logger.error(msg);
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                try {
+                    response.getOutputStream().write(msg.getBytes());
+                } catch (IOException e1) {
+                    logger.error("Failed to write the error message to the output stream", e1);
+                }
+            }
             BinaryObjectType result = binaryContentService.retrieveContent(uri);
-
+            // check whether the binary content exists or not
+            if(result == null){
+                String msg = String.format("There does not exist a binary content for uri: %s", uri);
+                logger.error(msg);
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                try {
+                    response.getOutputStream().write(msg.getBytes());
+                } catch (IOException e1) {
+                    logger.error("Failed to write the error message to the output stream", e1);
+                }
+            }
             try {
                 response.setHeader("Content-disposition", "attachment; filename=" + result.getFileName());
                 response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
@@ -88,37 +144,4 @@ public class BinaryContentController {
             }
         }
     }
-//
-//    @CrossOrigin(origins = {"*"})
-//    @RequestMapping(value = "/binary-content",
-//            method = RequestMethod.GET)
-//    public void createContent() {
-//        try {
-//            BinaryObjectType bi = new BinaryObjectType();
-//            File f = new File("C:\\Users\\suat\\Desktop\\08.docx");
-//            Path path = f.toPath();
-//            bi.setValue(FileUtils.readFileToByteArray(f));
-//            bi.setFileName(f.getName());
-//            bi.setMimeCode(Files.probeContentType(path));
-//            bi.setUri("uri");
-//
-//            binaryContentService.createContent(bi);
-//
-//        } catch (Exception e) {
-//
-//        }
-//    }
-//
-//    @CrossOrigin(origins = {"*"})
-//    @RequestMapping(value = "/binary-content",
-//            method = RequestMethod.DELETE)
-//    public void delete() {
-//        try {
-//
-//            binaryContentService.deleteContent("uri");
-//
-//        } catch (Exception e) {
-//
-//        }
-//    }
 }
