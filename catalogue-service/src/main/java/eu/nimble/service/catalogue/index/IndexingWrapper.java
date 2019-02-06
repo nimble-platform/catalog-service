@@ -261,7 +261,7 @@ public class IndexingWrapper {
         indexProperty.setUri(property.getUri());
         indexProperty.addDescription("en", property.getDefinition());
         if(property.getUri().contains(TaxonomyEnum.eClass.getId().toLowerCase())) {
-            indexProperty.setLocalName(property.getId());
+            indexProperty.setLocalName(getRemainder(indexProperty.getUri(), TaxonomyEnum.eClass.getNamespace()));
             // TODO update on switching to multilinguality
             indexProperty.addLabel("en", property.getPreferredName());
             indexProperty.setNameSpace(TaxonomyEnum.eClass.getNamespace());

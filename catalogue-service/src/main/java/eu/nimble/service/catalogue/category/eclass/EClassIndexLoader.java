@@ -62,7 +62,7 @@ public class EClassIndexLoader {
         // property -> category list
         Map<String, Set<String>> propertyCategoryMap = new HashMap<>();
         for(Map.Entry<String, List<Property>> entry : allProperties.entrySet()) {
-            String categoryUri = entry.getKey();
+            String categoryId = entry.getKey();
             List<Property> propertyList = entry.getValue();
             for(Property property : propertyList) {
                 //
@@ -71,7 +71,7 @@ public class EClassIndexLoader {
                     categoryUris = new HashSet<>();
                     propertyCategoryMap.put(property.getUri(), categoryUris);
                 }
-                categoryUris.add(categoryUri);
+                categoryUris.add(TaxonomyEnum.eClass.getNamespace() + categoryId);
 
                 // set unit
                 if(proertiesWithUnits.contains(property.getId().substring(TaxonomyEnum.eClass.getNamespace().length()))) {
