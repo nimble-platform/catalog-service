@@ -133,6 +133,7 @@ public class ClassIndexClient {
         //populate properties
         if(CollectionUtils.isNotEmpty(indexCategory.getProperties())) {
             List<PropertyType> indexProperties = propertyIndexClient.getIndexPropertiesForCategory(uri);
+//            List<PropertyType> indexProperties = propertyIndexClient.getProperties(new HashSet<>(indexCategory.getProperties()));
             List<Property> properties = IndexingWrapper.toProperties(indexProperties);
             category.setProperties(properties);
         }
@@ -154,6 +155,9 @@ public class ClassIndexClient {
             HttpRequest request = Unirest.get(indexingUrl + "/class/select")
                     .queryString("rows", Integer.MAX_VALUE)
                     .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken());
+            if(query != null) {
+                request = request.queryString("q", query);
+            }
 
             if(MapUtils.isNotEmpty(facetCriteria)) {
                 for(Map.Entry e : facetCriteria.entrySet()) {

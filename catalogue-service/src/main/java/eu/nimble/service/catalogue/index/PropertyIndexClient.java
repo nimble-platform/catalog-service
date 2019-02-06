@@ -85,7 +85,7 @@ public class PropertyIndexClient {
 
         try {
             HttpRequest request = Unirest.get(indexingUrl + "/properties")
-                    .queryString("class", categoryUri)
+                    .queryString("class", "\"" + categoryUri + "\"")
                     .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken());
             HttpResponse<String> response = request.asString();
 
