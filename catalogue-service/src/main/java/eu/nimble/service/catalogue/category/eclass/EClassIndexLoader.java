@@ -92,24 +92,32 @@ public class EClassIndexLoader {
         logger.info("Constructed children category maps");
 
         // index categories
-        for(Category category : allCategories) {
-            classIndexClient.indexCategory(category,
-                    categoryParentMapping.direct.get(category.getCategoryUri()),
-                    categoryParentMapping.all.get(category.getCategoryUri()),
-                    categoryChildrenMapping.direct.get(category.getCategoryUri()),
-                    categoryChildrenMapping.all.get(category.getCategoryUri()));
-            logger.info("{} category indexed", category.getCategoryUri());
-        }
+        int logIndex = 0;
+//        for(Category category : allCategories) {
+//            classIndexClient.indexCategory(category,
+//                    categoryParentMapping.direct.get(category.getCategoryUri()),
+//                    categoryParentMapping.all.get(category.getCategoryUri()),
+//                    categoryChildrenMapping.direct.get(category.getCategoryUri()),
+//                    categoryChildrenMapping.all.get(category.getCategoryUri()));
+//            logIndex++;
+//            if(logIndex % 1000 == 0) {
+//                logger.info("{} category indexed", logIndex);
+//            }
+//        }
         logger.info("Completed category indexing");
 
         // index properties
+        logIndex = 0;
         List<String> indexedProperties = new ArrayList<>();
         for(List<Property> properties : allProperties.values()) {
             for(Property property : properties) {
                 if(!indexedProperties.contains(property.getUri())) {
                     propertyIndexClient.indexProperty(property, propertyCategoryMap.get(property.getUri()));
                     indexedProperties.add(property.getUri());
-                    logger.info("{} property indexed", property.getUri());
+                    logIndex++;
+                    if(logIndex % 1000 == 0) {
+                        logger.info("{} property indexed", logIndex);
+                    }
                 }
             }
         }
