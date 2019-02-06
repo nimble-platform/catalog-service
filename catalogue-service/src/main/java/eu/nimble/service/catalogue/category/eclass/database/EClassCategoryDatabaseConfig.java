@@ -261,7 +261,7 @@ public class EClassCategoryDatabaseConfig {
 
     public static String eClassQueryGetAllPropertyUnitMappings() {
         StringBuilder sb = new StringBuilder();
-        sb.append("SELECT ").append(COLUMN_PROPERTY_IRDI_UN).append(" FROM ").append(TABLE_NAME_PROPERTY)
+        sb.append("SELECT ").append(COLUMN_PROPERTY_IRDI_PR).append(" FROM ").append(TABLE_NAME_PROPERTY)
                 .append(" WHERE ")
                 .append(COLUMN_PROPERTY_IRDI_UN).append(" IS NOT NULL");
         return sb.toString();

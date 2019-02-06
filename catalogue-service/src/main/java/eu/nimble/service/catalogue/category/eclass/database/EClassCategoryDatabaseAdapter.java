@@ -1,5 +1,6 @@
 package eu.nimble.service.catalogue.category.eclass.database;
 
+import eu.nimble.service.catalogue.category.TaxonomyEnum;
 import eu.nimble.service.catalogue.model.category.*;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
@@ -20,8 +21,6 @@ import static eu.nimble.service.catalogue.category.eclass.database.EClassCategor
  */
 public class EClassCategoryDatabaseAdapter {
     private static final Logger logger = LoggerFactory.getLogger(EClassCategoryDatabaseAdapter.class);
-    private static final String CATEGORY_BASE_URI = "http://www.nimble-project.org/resource/eclass#";
-    private static final String PROPERTY_BASE_URI = "http://www.nimble-project.org/resource/eclass/property/";
 
     /**
      * The record counts below are specified based on the eClass Basic 10.0 version. In case of any eclass taxonomy update,
@@ -506,7 +505,7 @@ public class EClassCategoryDatabaseAdapter {
             cc.setNote(rs.getString(COLUMN_CLASSIFICATION_CLASS_NOTE));
             cc.setRemark(rs.getString(COLUMN_CLASSIFICATION_CLASS_REMARK));
             cc.setTaxonomyId("eClass");
-            cc.setCategoryUri(CATEGORY_BASE_URI + cc.getId());
+            cc.setCategoryUri(TaxonomyEnum.eClass.getNamespace() + cc.getId());
             results.add(cc);
         }
         return results;
@@ -524,7 +523,7 @@ public class EClassCategoryDatabaseAdapter {
             }
 
             Property prop = new Property();
-            prop.setId(CATEGORY_BASE_URI + rs.getString(COLUMN_PROPERTY_IRDI_PR));
+            prop.setId(TaxonomyEnum.eClass.getNamespace() + rs.getString(COLUMN_PROPERTY_IRDI_PR));
             prop.setPreferredName(rs.getString(COLUMN_PROPERTY_PREFERRED_NAME));
             prop.setShortName(rs.getString(COLUMN_PROPERTY_SHORT_NAME));
             prop.setDefinition(rs.getString(COLUMN_PROPERTY_DEFINITION));
@@ -534,7 +533,7 @@ public class EClassCategoryDatabaseAdapter {
             prop.setIecCategory(rs.getString(COLUMN_PROPERTY_CATEGORY));
             prop.setAttributeType(rs.getString(COLUMN_PROPERTY_ATTRIBUTE_TYPE));
             prop.setDataType(getNormalizedDatatype(rs.getString(COLUMN_PROPERTY_DATA_TYPE)));
-            prop.setUri(CATEGORY_BASE_URI + rs.getString(COLUMN_PROPERTY_IRDI_PR));
+            prop.setUri(TaxonomyEnum.eClass.getNamespace() + rs.getString(COLUMN_PROPERTY_IRDI_PR));
 
             categoryProperties.add(prop);
         }
@@ -556,7 +555,7 @@ public class EClassCategoryDatabaseAdapter {
             prop.setIecCategory(rs.getString(COLUMN_PROPERTY_CATEGORY));
             prop.setAttributeType(rs.getString(COLUMN_PROPERTY_ATTRIBUTE_TYPE));
             prop.setDataType(getNormalizedDatatype(rs.getString(COLUMN_PROPERTY_DATA_TYPE)));
-            prop.setUri(PROPERTY_BASE_URI + rs.getString(COLUMN_PROPERTY_IDPR));
+            prop.setUri(TaxonomyEnum.eClass.getNamespace() + rs.getString(COLUMN_PROPERTY_IDPR));
             results.put(prop.getId(), prop);
         }
         return results;

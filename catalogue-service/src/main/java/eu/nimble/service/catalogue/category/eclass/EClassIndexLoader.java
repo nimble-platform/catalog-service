@@ -1,5 +1,6 @@
 package eu.nimble.service.catalogue.category.eclass;
 
+import eu.nimble.service.catalogue.category.TaxonomyEnum;
 import eu.nimble.service.catalogue.category.eclass.database.EClassCategoryDatabaseAdapter;
 import eu.nimble.service.catalogue.index.ClassIndexClient;
 import eu.nimble.service.catalogue.index.IndexingWrapper;
@@ -73,7 +74,7 @@ public class EClassIndexLoader {
                 categoryUris.add(categoryUri);
 
                 // set unit
-                if(proertiesWithUnits.contains(property.getUri())) {
+                if(proertiesWithUnits.contains(property.getId().substring(TaxonomyEnum.eClass.getNamespace().length()))) {
                     // an empty unit object is pushed since we do not index the unit details
                     // it is just deduce that this property is a "quantity" property
                     property.setUnit(new Unit());
