@@ -11,6 +11,7 @@ import eu.nimble.service.catalogue.persistence.util.PartyTypePersistenceUtil;
 import eu.nimble.service.catalogue.sync.MarmottaClient;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizationException;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
+import eu.nimble.service.catalogue.validation.ValidationException;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
@@ -230,13 +231,10 @@ public class CatalogueController {
 
                 // validate the content of the catalogue
                 CatalogueValidator catalogueValidator = new CatalogueValidator(ublCatalogue);
-                List<String> errors = catalogueValidator.validate();
-                if (errors.size() > 0) {
-                    StringBuilder sb = new StringBuilder("");
-                    for (String error : errors) {
-                        sb.append(error).append(System.lineSeparator());
-                    }
-                    return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
+                try {
+                    catalogueValidator.validate();
+                } catch (ValidationException e) {
+                    return HttpResponseUtil.createResponseEntityAndLog(e.getMessage(), e, HttpStatus.BAD_REQUEST, LogLevel.INFO);
                 }
 
                 // check catalogue with the same id exists
@@ -311,13 +309,10 @@ public class CatalogueController {
 
             // validate the catalogue content
             CatalogueValidator catalogueValidator = new CatalogueValidator(catalogue);
-            List<String> errors = catalogueValidator.validate();
-            if (errors.size() > 0) {
-                StringBuilder sb = new StringBuilder("");
-                for (String error : errors) {
-                    sb.append(error).append(System.lineSeparator());
-                }
-                return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
+            try {
+                catalogueValidator.validate();
+            } catch (ValidationException e) {
+                return HttpResponseUtil.createResponseEntityAndLog(e.getMessage(), e, HttpStatus.BAD_REQUEST, LogLevel.INFO);
             }
 
             // validate the entity ids
@@ -560,20 +555,11 @@ public class CatalogueController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", uuid));
             }
 
+            CatalogueType catalogue;
             ZipInputStream zis = null;
             try {
                 zis = new ZipInputStream(pack.getInputStream());
-                CatalogueType catalogue = service.addImagesToProducts(zis, uuid);
-                CatalogueValidator catalogueValidator = new CatalogueValidator(catalogue);
-                List<String> errors = catalogueValidator.validate();
-                if (errors.size() > 0) {
-                    StringBuilder sb = new StringBuilder("");
-                    for (String error : errors) {
-                        sb.append(error).append(System.lineSeparator());
-                    }
-                    return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
-                }
-                service.updateCatalogue(catalogue);
+                catalogue = service.addImagesToProducts(zis, uuid);
 
             } catch (IOException e) {
                 return createErrorResponseEntity("Failed obtain a Zip package from the provided data", HttpStatus.BAD_REQUEST, e);
@@ -588,6 +574,42 @@ public class CatalogueController {
             }
 
             log.info("Completed the request to upload images for catalogue: {}", uuid);
+            return ResponseEntity.ok().body(serializationUtility.serializeUBLObject(catalogue));
+
+        } catch (Exception e) {
+            return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while uploading images. uuid: %s", uuid), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+        }
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Deletes all the images of CatalogueLines of the specified catalogue")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Deleted the images successfully"),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 404, message = "No catalogue for the given uuid"),
+            @ApiResponse(code = 500, message = "Unexpected error while getting catalogue")
+    })
+    @RequestMapping(value = "/catalogue/{uuid}/delete-images",
+            method = RequestMethod.GET)
+    public ResponseEntity deleteImagesInsideCatalogue(@ApiParam(value = "uuid of the catalogue to be retrieved.", required = true) @PathVariable String uuid,
+                                                      @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        try {
+            log.info("Incoming request to delete images for catalogue: {}", uuid);
+            // token check
+            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+            if (tokenCheck != null) {
+                return tokenCheck;
+            }
+
+            // catalogue check
+            if (service.getCatalogue(uuid) == null) {
+                log.error("Catalogue with uuid : {} does not exist", uuid);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", uuid));
+            }
+
+            // remove the images
+
+
             return ResponseEntity.ok().build();
 
         } catch (Exception e) {

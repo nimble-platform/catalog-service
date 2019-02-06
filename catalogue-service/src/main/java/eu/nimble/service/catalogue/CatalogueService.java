@@ -1,16 +1,12 @@
 package eu.nimble.service.catalogue;
 
-import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.GoodsItemType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.Configuration;
-import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.List;
 import java.util.zip.ZipInputStream;
 
@@ -64,13 +60,14 @@ public interface CatalogueService {
 
     /**
      * Adds the provided images to the relevant products in the catalogue.
-     * !!! This method does not update the database
      *
      * @param imagePackage
      * @param catalogueUuid
      * @return
      */
-    public CatalogueType addImagesToProducts(ZipInputStream imagePackage, String catalogueUuid);
+    CatalogueType addImagesToProducts(ZipInputStream imagePackage, String catalogueUuid);
+
+    CatalogueType removeAllImagesFromCatalogue(CatalogueType catalogueType);
 
     /*
      * Catalogue-line level endpoints
