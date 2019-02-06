@@ -100,6 +100,7 @@ public class EClassIndexLoader {
                     categoryChildrenMapping.all.get(category.getCategoryUri()));
             logger.info("{} category indexed", category.getCategoryUri());
         }
+        logger.info("Completed category indexing");
 
         // index properties
         List<String> indexedProperties = new ArrayList<>();
@@ -112,6 +113,7 @@ public class EClassIndexLoader {
                 }
             }
         }
+        logger.info("Completed property indexing");
     }
 
     private static ChildrenParentMaps createCategoryParentMap(List<Category> allCategories, Map<String, Category> allCategoriesMap) {

@@ -265,12 +265,17 @@ public class IndexingWrapper {
             // TODO update on switching to multilinguality
             indexProperty.addLabel("en", property.getPreferredName());
             indexProperty.setNameSpace(TaxonomyEnum.eClass.getNamespace());
+            indexProperty.setItemFieldNames(Arrays.asList(ItemType.dynamicFieldPart(property.getUri())));
+
         } else if(property.getUri().startsWith(TaxonomyEnum.FurnitureOntology.getNamespace())) {
             indexProperty.setLocalName(getRemainder(indexProperty.getUri(), TaxonomyEnum.FurnitureOntology.getNamespace()));
             // TODO update on switching to multilinguality
             indexProperty.addLabel("en", property.getPreferredName());
             indexProperty.setNameSpace(TaxonomyEnum.FurnitureOntology.getNamespace());
+            indexProperty.setItemFieldNames(Arrays.asList(ItemType.dynamicFieldPart(property.getUri())));
+
         }
+
         if(property.getUnit() != null) {
             indexProperty.setValueQualifier(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
 
@@ -288,7 +293,6 @@ public class IndexingWrapper {
         }
         indexProperty.setPropertyType(property.getDataType());
         indexProperty.setProduct(associatedCategoryUris);
-        indexProperty.setItemFieldNames(Arrays.asList(ItemType.dynamicFieldPart(property.getPreferredName())));
         indexProperty.setLanguages(indexProperty.getLabel().keySet());
         return indexProperty;
     }
