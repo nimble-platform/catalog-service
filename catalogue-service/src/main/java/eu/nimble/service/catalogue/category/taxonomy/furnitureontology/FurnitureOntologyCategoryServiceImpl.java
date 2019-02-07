@@ -27,6 +27,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -73,24 +74,40 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
     public Category getCategory(String categoryId) {
         // create category from the uri
         Category category = createCategory(categoryId);
-        List<Property> properties = new ArrayList<>();
-        category.setProperties(properties);
-
         String datatypeSparql = getDatatypePropertySparql(categoryId);
         SPARQLClient sparqlClient = client.getSPARQLClient();
         try {
+            Map<String,Property> propertyMap = new HashMap<>();
+
             SPARQLResult dataTypes = sparqlClient.select(datatypeSparql);
             if (dataTypes != null) {
-                String translation = null;
                 for (Map<String, RDFNode> dataType : dataTypes) {
-                    translation = dataType.get("translation") != null ? dataType.get("translation").toString() : null;
+                    String prop = dataType.get("prop").toString();
+                    String range = dataType.get("range").toString();
+                    String label = dataType.get("label").toString();
+                    String languageId = dataType.get("languageId").toString();
 
-                    String propertyTranslation = dataType.get("proptranslation") != null ? dataType.get("proptranslation").toString() : null;
-                    Property property = createProperty(dataType.get("prop").toString(), dataType.get("range").toString(), propertyTranslation);
-                    properties.add(property);
+                    // If we have the property in the map, then create a TextType for the label
+                    // and add it to the preferred names of the property
+                    if(propertyMap.containsKey(prop)){
+                        TextType textType = new TextType();
+                        textType.setLanguageID(languageId);
+                        textType.setValue(label);
+                        propertyMap.get(prop).getPreferredName().add(textType);
+                    }
+                    // Create the property and add the label to its preferred names
+                    else {
+                        Property property = createProperty(prop,range);
+                        TextType textType = new TextType();
+                        textType.setValue(label);
+                        textType.setLanguageID(languageId);
+                        property.getPreferredName().add(textType);
+
+                        propertyMap.put(prop,property);
+                    }
                 }
                 category = createCategory(categoryId);
-                category.setProperties(properties);
+                category.setProperties(new ArrayList<>(propertyMap.values()));
             }
         } catch (IOException | MarmottaClientException e) {
             log.warn("Failed to get datatype properties for category: " + categoryId, e);
@@ -135,13 +152,9 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
         }
     }
 
-    private Property createProperty(String uri, String range, String translation) {
+    private Property createProperty(String uri, String range) {
         Property property = new Property();
         property.setId(uri);
-        property.addPreferredName(getRemainder(uri, FURNITURE_NS,FURNITURE_NS2), defaultLanguage);
-        if(translation != null) {
-            property.addPreferredName(translation, "es");
-        }
         property.setDataType(getNormalizedDatatype(getRemainder(range, XSD_NS,null).toUpperCase()));
         property.setUri(uri);
         return property;
@@ -420,15 +433,15 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
                 append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n").
                 append("PREFIX mic:<").append(FURNITURE_NS).append(">\n").
                 append("\n").
-                append("SELECT DISTINCT ?prop ?range ?translation ?proptranslation WHERE { \n").
+                append("SELECT DISTINCT ?prop ?range ?label ?languageId WHERE { \n").
                 append("  {\n").
                 append("    GRAPH <").append(GRAPH_URI).append("> {\n").
                 append("      ?cl rdf:type owl:Class .\n").
-                append("      ?cl FurnitureSectorOntology1:translation ?translation.").append(System.lineSeparator()).
                 append("      FILTER (?cl IN (<").append(uri).append(">)).\n").
                 append("      ?cl rdfs:subClassOf*/rdfs:subClassOf ?parents .\n").
                 append("      ?prop rdf:type owl:DatatypeProperty . \n").
-                append("      ?prop FurnitureSectorOntology1:translation ?proptranslation.").append(System.lineSeparator()).
+                append("      ?prop rdfs:label ?label.").append(System.lineSeparator()).
+                append("      BIND(lang(?label) AS ?languageId)").
                 append("      ?prop rdfs:domain ?domain .\n").
                 append("      ?prop rdfs:range ?range .\n").
                 append("      ?domain owl:unionOf ?list .\n").
@@ -440,11 +453,11 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
                 append("  UNION {\n").
                 append("    GRAPH <").append(GRAPH_URI).append("> {\n").
                 append("      ?cl rdf:type owl:Class .\n").
-                append("      ?cl FurnitureSectorOntology1:translation ?translation.").append(System.lineSeparator()).
                 append("      ?cl rdfs:subClassOf*/rdfs:subClassOf ?parents .\n").
                 append("      FILTER (?cl IN (<").append(uri).append(">)).\n").
                 append("      ?prop rdf:type owl:DatatypeProperty . \n").
-                append("      ?prop FurnitureSectorOntology1:translation ?proptranslation.").append(System.lineSeparator()).
+                append("      ?prop rdfs:label ?label.").append(System.lineSeparator()).
+                append("      BIND(lang(?label) AS ?languageId)").
                 append("      ?prop rdfs:domain ?definedIn .\n").
                 append("      ?prop rdfs:range ?range .\n").
                 append("      FILTER ( isIRI(?definedIn)) .\n").
@@ -454,17 +467,17 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
                 append("  UNION {\n").
                 append("    GRAPH <").append(GRAPH_URI).append("> {\n").
                 append("      ?prop rdfs:domain <").append(uri).append("> .\n").
-                append("      <").append(uri).append("> FurnitureSectorOntology1:translation ?translation.").append(System.lineSeparator()).
-                append("      ?prop FurnitureSectorOntology1:translation ?proptranslation.").append(System.lineSeparator()).
+                append("      ?prop rdfs:label ?label.").append(System.lineSeparator()).
+                append("      BIND(lang(?label) AS ?languageId)").
                 append("      ?prop rdfs:range ?range .\n").
                 append("    }\n").
                 append("  }\n").
                 append("  UNION {\n").
                 append("    GRAPH <").append(GRAPH_URI).append("> {\n").
                 append("      ?prop rdf:type owl:DatatypeProperty . \n").
-                append("      ?prop FurnitureSectorOntology1:translation ?proptranslation.").append(System.lineSeparator()).
+                append("      ?prop rdfs:label ?label.").append(System.lineSeparator()).
+                append("      BIND(lang(?label) AS ?languageId)").
                 append("      ?prop rdfs:domain ?domain .\n").
-                append("      ?domain FurnitureSectorOntology1:translation ?translation.").append(System.lineSeparator()).
                 append("      ?prop rdfs:range ?range .\n").
                 append("      ?domain owl:unionOf ?list .\n").
                 append("      ?list rdf:rest*/rdf:first ?member .\n").
