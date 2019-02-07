@@ -5,6 +5,7 @@ import eu.nimble.service.catalogue.exception.CategoryDatabaseException;
 import eu.nimble.service.catalogue.model.category.*;
 import eu.nimble.service.catalogue.template.TemplateConfig;
 import eu.nimble.service.catalogue.util.SpringBridge;
+import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -438,7 +439,11 @@ public class EClassCategoryDatabaseAdapter {
         while (rs.next()) {
             Category cc = new Category();
             cc.setCode(rs.getString(COLUMN_CLASSIFICATION_CLASS_CODED_NAME));
-            cc.setDefinition(rs.getString(COLUMN_CLASSIFICATION_CLASS_DEFINITION));
+            // create a TextType for category definition
+            TextType textType = new TextType();
+            textType.setLanguageID(defaultLanguage);
+            textType.setValue(rs.getString(COLUMN_CLASSIFICATION_CLASS_DEFINITION));
+            cc.setDefinition(Arrays.asList(textType));
             cc.setId(rs.getString(COLUMN_CLASSIFICATION_CLASS_IRDICC));
             cc.setLevel(Integer.valueOf(rs.getString(COLUMN_CLASSIFICATION_CLASS_LEVEL)));
 

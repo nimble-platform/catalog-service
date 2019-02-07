@@ -13,7 +13,7 @@ public class Category {
     private List<TextType> preferredName = new ArrayList<>();
     private String code;
     private int level;
-    private String definition;
+    private List<TextType> definition;
     private String note;
     private String remark;
     private List<KeywordSynonym> keywords;
@@ -72,11 +72,11 @@ public class Category {
         this.level = level;
     }
 
-    public String getDefinition() {
+    public List<TextType> getDefinition() {
         return definition;
     }
 
-    public void setDefinition(String definition) {
+    public void setDefinition(List<TextType> definition) {
         this.definition = definition;
     }
 
