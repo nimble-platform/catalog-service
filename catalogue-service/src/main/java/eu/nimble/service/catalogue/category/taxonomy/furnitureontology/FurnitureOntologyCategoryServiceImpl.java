@@ -152,7 +152,8 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
         cat.setId(uri);
         cat.setCategoryUri(uri);
         cat.setTaxonomyId(getTaxonomyId());
-        cat.getPreferredName().addAll(getPreferredNames(uri));
+        // set preferred names and definitions of the category
+        setMultilingualFieldsOfCategory(cat.getPreferredName(),cat.getDefinition(),uri);
         cat.setCode(getRemainder(uri, FURNITURE_NS,FURNITURE_NS2));
         return cat;
     }
@@ -175,32 +176,39 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
         return value;
     }
 
-    // This function is used to get preferred names of category with the given id
-    // It simply creates TextTypes using the value of the label and languageId
-    private List<TextType> getPreferredNames(String categoryId){
-        List<TextType> preferredNames = new ArrayList<>();
-        String preferredNamesSparql = getPreferredNamesSparql(categoryId);
+    // This function is used to set multilingual fields of the category
+    // There are two multilingual fields in a category: Label and Comments
+    // Label corresponds to PreferredName and Comment corresponds to Definition in our Category model
+    private void setMultilingualFieldsOfCategory(List<TextType> preferredNames, List<TextType> definitions, String categoryId){
+        String preferredNamesSparql = getMultilingualFields(categoryId);
         SPARQLClient sparqlClient = client.getSPARQLClient();
         try {
             SPARQLResult dataTypes = sparqlClient.select(preferredNamesSparql);
             if (dataTypes != null) {
                 for (Map<String, RDFNode> dataType : dataTypes) {
                     String label = dataType.get("label") != null ? dataType.get("label").toString() : null;
-                    String languageId = dataType.get("languageId") != null ? dataType.get("languageId").toString() : null;
+                    String labelLanguageId = dataType.get("label_languageId") != null ? dataType.get("label_languageId").toString() : null;
+                    String definition = dataType.get("definition") != null ? dataType.get("definition").toString() : null;
+                    String definitionLanguageId = dataType.get("definition_languageId") != null ? dataType.get("definition_languageId").toString() : null;
 
                     if(label != null){
                         TextType textType = new TextType();
-                        textType.setLanguageID(languageId);
+                        textType.setLanguageID(labelLanguageId);
                         textType.setValue(label);
                         preferredNames.add(textType);
+                    }
+                    if(definition != null){
+                        TextType textType = new TextType();
+                        textType.setLanguageID(definitionLanguageId);
+                        textType.setValue(definition);
+                        definitions.add(textType);
                     }
                 }
             }
         }
         catch (IOException | MarmottaClientException e){
-            log.warn("Failed to get preferred names for category: " + categoryId, e);
+            log.warn("Failed to get multilingual fields for category: " + categoryId, e);
         }
-        return preferredNames;
     }
 
     @Override
@@ -378,7 +386,9 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
         return normalizedType;
     }
 
-    private String getPreferredNamesSparql(String uri){
+    // We use this Sparql query to get multilingual fields of the category with the given id
+    // There are two multilingual fields in a category: Labels and Comments
+    private String getMultilingualFields(String uri){
         StringBuilder sb = new StringBuilder("");
         sb.append("PREFIX owl: <http://www.w3.org/2002/07/owl#>").append(System.lineSeparator())
                 .append("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>").append(System.lineSeparator())
@@ -386,13 +396,19 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
                 .append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ").append(System.lineSeparator())
                 .append("PREFIX mic: <").append(FURNITURE_NS).append(">").append(System.lineSeparator())
                 .append(System.lineSeparator())
-                .append("SELECT ?label ?languageId WHERE {").append(System.lineSeparator())
-                .append("  GRAPH <").append(GRAPH_URI).append("> {").append(System.lineSeparator())
-                .append("    <").append(uri).append("> rdf:type owl:Class .").append(System.lineSeparator())
-                .append("    <").append(uri).append("> rdfs:label ?label").append(System.lineSeparator())
-                .append("    BIND(lang(?label) AS ?languageId)").append(System.lineSeparator())
-                .append("	}").append(System.lineSeparator())
-                .append("}");
+                .append("SELECT ?label ?label_languageId ?definition ?definition_languageId WHERE {").append(System.lineSeparator())
+                .append("   {GRAPH <").append(GRAPH_URI).append("> {").append(System.lineSeparator())
+                .append("       <").append(uri).append("> rdf:type owl:Class .").append(System.lineSeparator())
+                .append("       <").append(uri).append("> rdfs:label ?label").append(System.lineSeparator())
+                .append("       BIND(lang(?label) AS ?label_languageId)").append(System.lineSeparator())
+                .append("       }}").append(System.lineSeparator())
+                .append("  UNION").append(System.lineSeparator())
+                .append("   {GRAPH <").append(GRAPH_URI).append("> {").append(System.lineSeparator())
+                .append("       <").append(uri).append("> rdf:type owl:Class .").append(System.lineSeparator())
+                .append("       <").append(uri).append("> rdfs:comment ?definition").append(System.lineSeparator())
+                .append("       BIND(lang(?definition) AS ?definition_languageId)").append(System.lineSeparator())
+                .append("       }}").append(System.lineSeparator())
+                .append("}").append(System.lineSeparator());
         return sb.toString();
     }
 

@@ -13,7 +13,7 @@ public class Category {
     private List<TextType> preferredName = new ArrayList<>();
     private String code;
     private int level;
-    private List<TextType> definition;
+    private List<TextType> definition = new ArrayList<>();
     private String note;
     private String remark;
     private List<KeywordSynonym> keywords;
