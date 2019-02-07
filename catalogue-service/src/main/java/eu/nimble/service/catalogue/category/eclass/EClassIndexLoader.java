@@ -56,7 +56,6 @@ public class EClassIndexLoader {
 
         // get unit property mappings
         // in the meantime, contruct also the property->categories associations
-        List<String> proertiesWithUnits = dbAdapter.getPropertiesWithUnits();
         logger.info("Get properties with units");
 
         // property -> category list
@@ -72,13 +71,6 @@ public class EClassIndexLoader {
                     propertyCategoryMap.put(property.getUri(), categoryUris);
                 }
                 categoryUris.add(TaxonomyEnum.eClass.getNamespace() + categoryId);
-
-                // set unit
-                if(proertiesWithUnits.contains(property.getId().substring(TaxonomyEnum.eClass.getNamespace().length()))) {
-                    // an empty unit object is pushed since we do not index the unit details
-                    // it is just deduce that this property is a "quantity" property
-                    property.setUnit(new Unit());
-                }
             }
         }
         logger.info("Constructed property category map");
@@ -92,32 +84,22 @@ public class EClassIndexLoader {
         logger.info("Constructed children category maps");
 
         // index categories
-        int logIndex = 0;
-//        for(Category category : allCategories) {
-//            classIndexClient.indexCategory(category,
-//                    categoryParentMapping.direct.get(category.getCategoryUri()),
-//                    categoryParentMapping.all.get(category.getCategoryUri()),
-//                    categoryChildrenMapping.direct.get(category.getCategoryUri()),
-//                    categoryChildrenMapping.all.get(category.getCategoryUri()));
-//            logIndex++;
-//            if(logIndex % 1000 == 0) {
-//                logger.info("{} category indexed", logIndex);
-//            }
-//        }
+        for(Category category : allCategories) {
+            classIndexClient.indexCategory(category,
+                    categoryParentMapping.direct.get(category.getCategoryUri()),
+                    categoryParentMapping.all.get(category.getCategoryUri()),
+                    categoryChildrenMapping.direct.get(category.getCategoryUri()),
+                    categoryChildrenMapping.all.get(category.getCategoryUri()));
+        }
         logger.info("Completed category indexing");
 
         // index properties
-        logIndex = 0;
         List<String> indexedProperties = new ArrayList<>();
         for(List<Property> properties : allProperties.values()) {
             for(Property property : properties) {
                 if(!indexedProperties.contains(property.getUri())) {
                     propertyIndexClient.indexProperty(property, propertyCategoryMap.get(property.getUri()));
                     indexedProperties.add(property.getUri());
-                    logIndex++;
-                    if(logIndex % 1000 == 0) {
-                        logger.info("{} property indexed", logIndex);
-                    }
                 }
             }
         }

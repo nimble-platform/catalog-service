@@ -6,6 +6,7 @@ import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.exception.CategoryDatabaseException;
 import eu.nimble.service.catalogue.template.TemplateConfig;
+import eu.nimble.service.model.ubl.extension.ItemPropertyValueQualifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -532,7 +533,7 @@ public class EClassCategoryDatabaseAdapter {
             prop.setPreferredSymbol(rs.getString(COLUMN_PROPERTY_PREFERRED_SYMBOL));
             prop.setIecCategory(rs.getString(COLUMN_PROPERTY_CATEGORY));
             prop.setAttributeType(rs.getString(COLUMN_PROPERTY_ATTRIBUTE_TYPE));
-            prop.setDataType(getNormalizedDatatype(rs.getString(COLUMN_PROPERTY_DATA_TYPE)));
+            prop.setValueQualifier(rs.getString(COLUMN_PROPERTY_DATA_TYPE));
             prop.setUri(TaxonomyEnum.eClass.getNamespace() + rs.getString(COLUMN_PROPERTY_IRDI_PR));
 
             categoryProperties.add(prop);
@@ -603,6 +604,8 @@ public class EClassCategoryDatabaseAdapter {
         }
     }
 
+    // TODO the method below is flawed. The qualifiers ending with "measure" should be quantity
+    // template parsing stuff and existing data should be post-process accordingly
     private String getNormalizedDatatype(String dataType) {
 
             String normalizedType;
@@ -628,6 +631,18 @@ public class EClassCategoryDatabaseAdapter {
                 normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_STRING;
             }
             return normalizedType;
+    }
+
+    private String getProperNormalizedDatatype(String dataType) {
+        ItemPropertyValueQualifier valueQualifier;
+        try {
+           valueQualifier = ItemPropertyValueQualifier.valueOfAlternative(dataType);
+           return valueQualifier.toString();
+
+        } catch (RuntimeException e) {
+            logger.warn("Unsupported data type: {}, returning: {}", dataType, ItemPropertyValueQualifier.TEXT.toString());
+            return ItemPropertyValueQualifier.TEXT.toString();
+        }
     }
 
     public void checkTableCounts() {

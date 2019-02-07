@@ -6,6 +6,7 @@ import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.template.TemplateConfig;
 import eu.nimble.service.model.solr.item.ItemType;
 import eu.nimble.service.model.solr.owl.ClassType;
+import eu.nimble.service.model.solr.owl.Concept;
 import eu.nimble.service.model.solr.owl.PropertyType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
@@ -63,27 +64,81 @@ public class IndexingWrapper {
 
     private static void transformAdditionalItemProperties(ItemType indexItem, CatalogueLineType catalogueLine) {
         for(ItemPropertyType itemProperty : catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty()) {
-            if(ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.TEXT)) {
-                for(String value : itemProperty.getValue()) {
-                    indexItem.addProperty(itemProperty.getName(), value);
-                }
-            } else if(ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.NUMBER)) {
-                for(BigDecimal value : itemProperty.getValueDecimal()) {
-                    indexItem.addProperty(itemProperty.getName(), value.doubleValue());
+            String propertyQualifier = getIndexPropertyQualifier(itemProperty);
+            boolean isStandardProperty = isStandardProperty(itemProperty);
+
+            if(isStandardProperty) {
+                if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.TEXT)) {
+                    for (String value : itemProperty.getValue()) {
+                        indexItem.addProperty(propertyQualifier, value);
+                    }
+                } else if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.NUMBER)) {
+                    for (BigDecimal value : itemProperty.getValueDecimal()) {
+                        indexItem.addProperty(propertyQualifier, value.doubleValue());
+                    }
+
+                } else if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.QUANTITY)) {
+                    for (QuantityType value : itemProperty.getValueQuantity()) {
+                        indexItem.addProperty(propertyQualifier, value.getUnitCode(), value.getValue().doubleValue());
+                    }
+
+                } else if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.BOOLEAN)) {
+                    indexItem.setProperty(propertyQualifier, Boolean.valueOf(itemProperty.getValue().get(0)));
+
+                } else if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.FILE)) {
+                    // binary properties are not indexed
                 }
 
-            } else if(ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.QUANTITY)) {
-                for(QuantityType value : itemProperty.getValueQuantity()) {
-                    indexItem.addProperty(itemProperty.getName(), value.getUnitCode(), value.getValue().doubleValue());
+            } else {
+                Concept customPropertyData = createPropertyMetadata(itemProperty);
+
+                if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.TEXT)) {
+                    for (String value : itemProperty.getValue()) {
+                        indexItem.addProperty(itemProperty.getName(), value, customPropertyData);
+                    }
+                } else if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.NUMBER)) {
+                    for (BigDecimal value : itemProperty.getValueDecimal()) {
+                        indexItem.addProperty(itemProperty.getName(), value.doubleValue(), customPropertyData);
+                    }
+
+                } else if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.QUANTITY)) {
+                    for (QuantityType value : itemProperty.getValueQuantity()) {
+                        indexItem.addProperty(itemProperty.getName(), value.getUnitCode(), value.getValue().doubleValue(), customPropertyData);
+                    }
+
+                } else if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.BOOLEAN)) {
+                    indexItem.setProperty(itemProperty.getName(), Boolean.valueOf(itemProperty.getValue().get(0)), customPropertyData);
+
+                } else if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.FILE)) {
+                    // binary properties are not indexed
                 }
-
-            } else if(ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.BOOLEAN)) {
-                indexItem.setProperty(itemProperty.getName(), Boolean.valueOf(itemProperty.getValue().get(0)));
-
-            } else if(ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.FILE)) {
-                // binary properties are not indexed
             }
         }
+    }
+
+    private static String getIndexPropertyQualifier(ItemPropertyType itemProperty) {
+        boolean isCustomProperty = isStandardProperty(itemProperty);
+        if (!isCustomProperty) {
+            return itemProperty.getURI();
+        } else {
+            // TODO update this when the multilinguality is in place
+            return itemProperty.getName();
+        }
+    }
+
+    private static boolean isStandardProperty(ItemPropertyType itemProperty) {
+        boolean isCustomProperty = !Arrays.asList(TaxonomyEnum.values()).stream()
+                .filter(taxonomy -> taxonomy.getId().contentEquals(itemProperty.getItemClassificationCode().getListID()))
+                .findFirst()
+                .isPresent();
+        return isCustomProperty;
+    }
+
+    private static Concept createPropertyMetadata(ItemPropertyType itemProperty) {
+        Concept concept = new Concept();
+        // TODO update this when the multilinguality is in place
+        concept.addLabel("en", itemProperty.getName());
+        return concept;
     }
 
     private static void transformCommodityClassifications(ItemType indexItem, CatalogueLineType catalogueLine) {
@@ -137,12 +192,11 @@ public class IndexingWrapper {
     public static Category toCategory(ClassType indexCategory) {
         Category category = new Category();
         if(indexCategory.getUri().startsWith(TaxonomyEnum.eClass.getNamespace())) {
-            category.setId(indexCategory.getLocalName());
             category.setCode(indexCategory.getCode());
         } else {
-            category.setId(indexCategory.getUri());
             category.setCode(indexCategory.getLocalName());
         }
+        category.setId(indexCategory.getUri());
         category.setDefinition(getFirstLabel(indexCategory.getDescription()));
         category.setPreferredName(getFirstLabel(indexCategory.getLabel()));
         if(indexCategory.getLevel() != null) {
@@ -171,6 +225,7 @@ public class IndexingWrapper {
             property.setDataType(getNormalizedDatatype(getRemainder(indexProperty.getRange(), XSD_NS)).toUpperCase());
         }
         property.setUri(indexProperty.getUri());
+        property.setId(indexProperty.getUri());
         // units are not supported by the new indexing mechanism
         return property;
     }
@@ -276,22 +331,23 @@ public class IndexingWrapper {
 
         }
 
-        if(property.getUnit() != null) {
-            indexProperty.setValueQualifier(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
-
-        } else if(ItemPropertyValueQualifier.TEXT.getAlternatives().stream().anyMatch(property.getDataType()::equalsIgnoreCase)) {
-            indexProperty.setValueQualifier(TemplateConfig.TEMPLATE_DATA_TYPE_STRING);
-            indexProperty.setRange("http://www.w3.org/2001/XMLSchema#string");
-
-        } else if(ItemPropertyValueQualifier.NUMBER.getAlternatives().stream().anyMatch(property.getDataType()::equalsIgnoreCase)) {
-            indexProperty.setValueQualifier(TemplateConfig.TEMPLATE_DATA_TYPE_NUMBER);
-            indexProperty.setRange("http://www.w3.org/2001/XMLSchema#float");
-
-        } else if(ItemPropertyValueQualifier.BOOLEAN.getAlternatives().stream().anyMatch(property.getDataType()::equalsIgnoreCase)) {
-            indexProperty.setValueQualifier(TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN);
-            indexProperty.setRange("http://www.w3.org/2001/XMLSchema#boolean");
+        try {
+            indexProperty.setValueQualifier(ItemPropertyValueQualifier.valueOfAlternative(property.getValueQualifier()).toString());
+        } catch (RuntimeException e) {
+            logger.warn("Unsupported value qualifier: {}, reverting to {}", property.getValueQualifier(), ItemPropertyValueQualifier.TEXT.toString());
+            indexProperty.setValueQualifier(ItemPropertyValueQualifier.TEXT.toString());
         }
-        indexProperty.setPropertyType(property.getDataType());
+
+        try {
+            indexProperty.setRange(ItemPropertyValueQualifier.getRange(property.getValueQualifier()));
+        } catch (RuntimeException e) {
+            logger.warn("Unsupported value qualifier: {}, reverting to {}", property.getValueQualifier(), XSD_NS + "string");
+            indexProperty.setValueQualifier(XSD_NS + "string");
+        }
+
+
+        // all properties are assumed to be a datatype property (including the quantity properties)
+        indexProperty.setPropertyType("DatatypeProperty");
         indexProperty.setProduct(associatedCategoryUris);
         indexProperty.setLanguages(indexProperty.getLabel().keySet());
         return indexProperty;
