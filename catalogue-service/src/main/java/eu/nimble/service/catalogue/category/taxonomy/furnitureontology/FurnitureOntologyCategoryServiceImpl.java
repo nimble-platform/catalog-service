@@ -6,6 +6,7 @@ import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.template.TemplateConfig;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
+import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
@@ -71,7 +72,7 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
     @Override
     public Category getCategory(String categoryId) {
         // create category from the uri
-        Category category = createCategory(categoryId, null);
+        Category category = createCategory(categoryId);
         List<Property> properties = new ArrayList<>();
         category.setProperties(properties);
 
@@ -88,7 +89,7 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
                     Property property = createProperty(dataType.get("prop").toString(), dataType.get("range").toString(), propertyTranslation);
                     properties.add(property);
                 }
-                category = createCategory(categoryId, translation);
+                category = createCategory(categoryId);
                 category.setProperties(properties);
             }
         } catch (IOException | MarmottaClientException e) {
@@ -117,7 +118,7 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
                 if (remainder.toLowerCase().contains(categoryName.toLowerCase())) {
                     String uri = record.get("uri").toString();
                     String translation = record.get("translation") != null ? record.get("translation").toString() : null;
-                    Category cat = createCategory(uri, translation);
+                    Category cat = createCategory(uri);
                     result.add(cat);
                 }
             }
@@ -146,16 +147,12 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
         return property;
     }
 
-    private Category createCategory(String uri, String translation) {
+    private Category createCategory(String uri) {
         Category cat = new Category();
         cat.setId(uri);
         cat.setCategoryUri(uri);
         cat.setTaxonomyId(getTaxonomyId());
-
-        cat.addPreferredName(getRemainder(uri, FURNITURE_NS,FURNITURE_NS2), defaultLanguage);
-        if(translation != null) {
-            cat.addPreferredName(translation, "es");
-        }
+        cat.getPreferredName().addAll(getPreferredNames(uri));
         cat.setCode(getRemainder(uri, FURNITURE_NS,FURNITURE_NS2));
         return cat;
     }
@@ -178,6 +175,34 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
         return value;
     }
 
+    // This function is used to get preferred names of category with the given id
+    // It simply creates TextTypes using the value of the label and languageId
+    private List<TextType> getPreferredNames(String categoryId){
+        List<TextType> preferredNames = new ArrayList<>();
+        String preferredNamesSparql = getPreferredNamesSparql(categoryId);
+        SPARQLClient sparqlClient = client.getSPARQLClient();
+        try {
+            SPARQLResult dataTypes = sparqlClient.select(preferredNamesSparql);
+            if (dataTypes != null) {
+                for (Map<String, RDFNode> dataType : dataTypes) {
+                    String label = dataType.get("label") != null ? dataType.get("label").toString() : null;
+                    String languageId = dataType.get("languageId") != null ? dataType.get("languageId").toString() : null;
+
+                    if(label != null){
+                        TextType textType = new TextType();
+                        textType.setLanguageID(languageId);
+                        textType.setValue(label);
+                        preferredNames.add(textType);
+                    }
+                }
+            }
+        }
+        catch (IOException | MarmottaClientException e){
+            log.warn("Failed to get preferred names for category: " + categoryId, e);
+        }
+        return preferredNames;
+    }
+
     @Override
     public CategoryTreeResponse getCategoryTree(String categoryURI) {
         CategoryTreeResponse categoryTreeResponse = new CategoryTreeResponse();
@@ -197,12 +222,12 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
                 Map<String, RDFNode> record = sparqlResult.get(i);
                 String uri = record.get("parent").toString();
                 String translation = record.get("translation") != null ? record.get("translation").toString() : null;
-                Category cat = createCategory(uri, translation);
+                Category cat = createCategory(uri);
                 parents.add(cat);
             }
         }
         // add categoryURI to parent list
-        parents.add(createCategory(categoryURI, null));
+        parents.add(createCategory(categoryURI));
         int parentSize = parents.size();
         // set parents
         categoryTreeResponse.setParents(parents);
@@ -225,7 +250,7 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
                 Map<String, RDFNode> record = sparqlResult.get(i);
                 String uri = record.get("uri").toString();
                 String translation = record.get("translation") != null ? record.get("translation").toString() : null;
-                Category cat = createCategory(uri, translation);
+                Category cat = createCategory(uri);
                 siblings.get(0).add(cat);
             }
         }
@@ -245,7 +270,7 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
                     Map<String, RDFNode> record = sparqlResult.get(i);
                     String uri = record.get("children").toString();
                     String translation = record.get("translation") != null ? record.get("translation").toString() : null;
-                    Category cat = createCategory(uri, translation);
+                    Category cat = createCategory(uri);
                     siblings.get(j).add(cat);
                 }
             }
@@ -273,7 +298,7 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
                 Map<String, RDFNode> record = sparqlResult.get(i);
                 String uri = record.get("parent").toString();
                 String translation = record.get("translation") != null ? record.get("translation").toString() : null;
-                Category cat = createCategory(uri, translation);
+                Category cat = createCategory(uri);
                 result.add(cat);
             }
         }
@@ -297,7 +322,7 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
                 Map<String, RDFNode> record = sparqlResult.get(i);
                 String uri = record.get("children").toString();
                 String translation = record.get("translation") != null ? record.get("translation").toString() : null;
-                Category cat = createCategory(uri, translation);
+                Category cat = createCategory(uri);
                 result.add(cat);
             }
         }
@@ -321,7 +346,7 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
                 Map<String, RDFNode> record = sparqlResult.get(i);
                 String uri = record.get("uri").toString();
                 String translation = record.get("translation") != null ? record.get("translation").toString() : null;
-                Category cat = createCategory(uri, translation);
+                Category cat = createCategory(uri);
                 result.add(cat);
             }
         }
@@ -351,6 +376,24 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
             normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_STRING;
         }
         return normalizedType;
+    }
+
+    private String getPreferredNamesSparql(String uri){
+        StringBuilder sb = new StringBuilder("");
+        sb.append("PREFIX owl: <http://www.w3.org/2002/07/owl#>").append(System.lineSeparator())
+                .append("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>").append(System.lineSeparator())
+                .append("PREFIX FurnitureSectorOntology1: <http://www.aidimme.es/FurnitureSectorOntology.owl#>").append(System.lineSeparator())
+                .append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ").append(System.lineSeparator())
+                .append("PREFIX mic: <").append(FURNITURE_NS).append(">").append(System.lineSeparator())
+                .append(System.lineSeparator())
+                .append("SELECT ?label ?languageId WHERE {").append(System.lineSeparator())
+                .append("  GRAPH <").append(GRAPH_URI).append("> {").append(System.lineSeparator())
+                .append("    <").append(uri).append("> rdf:type owl:Class .").append(System.lineSeparator())
+                .append("    <").append(uri).append("> rdfs:label ?label").append(System.lineSeparator())
+                .append("    BIND(lang(?label) AS ?languageId)").append(System.lineSeparator())
+                .append("	}").append(System.lineSeparator())
+                .append("}");
+        return sb.toString();
     }
 
     private String getDatatypePropertySparql(String uri) {
