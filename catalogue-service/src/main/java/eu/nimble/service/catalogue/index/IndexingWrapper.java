@@ -6,7 +6,6 @@ import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.template.TemplateConfig;
 import eu.nimble.service.model.solr.item.ItemType;
 import eu.nimble.service.model.solr.owl.ClassType;
-import eu.nimble.service.model.solr.owl.Concept;
 import eu.nimble.service.model.solr.owl.PropertyType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
@@ -89,8 +88,9 @@ public class IndexingWrapper {
                     // binary properties are not indexed
                 }
 
+                // add custom properties to the item
             } else {
-                Concept customPropertyData = createPropertyMetadata(itemProperty);
+                PropertyType customPropertyData = createPropertyMetadataForCustomProperty(itemProperty);
 
                 if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.TEXT)) {
                     for (String value : itemProperty.getValue()) {
@@ -134,11 +134,11 @@ public class IndexingWrapper {
         return isCustomProperty;
     }
 
-    private static Concept createPropertyMetadata(ItemPropertyType itemProperty) {
-        Concept concept = new Concept();
+    private static PropertyType createPropertyMetadataForCustomProperty(ItemPropertyType itemProperty) {
+        PropertyType property = new PropertyType();
         // TODO update this when the multilinguality is in place
-        concept.addLabel("en", itemProperty.getName());
-        return concept;
+        property.addLabel("en", itemProperty.getName());
+        return property;
     }
 
     private static void transformCommodityClassifications(ItemType indexItem, CatalogueLineType catalogueLine) {
@@ -191,6 +191,8 @@ public class IndexingWrapper {
 
     public static Category toCategory(ClassType indexCategory) {
         Category category = new Category();
+        // this distinction is made in order not to break the functionality in the UI. Codes of eClass concetps are
+        // being used in the UI
         if(indexCategory.getUri().startsWith(TaxonomyEnum.eClass.getNamespace())) {
             category.setCode(indexCategory.getCode());
         } else {
@@ -199,6 +201,7 @@ public class IndexingWrapper {
         category.setId(indexCategory.getUri());
         category.setDefinition(getFirstLabel(indexCategory.getDescription()));
         category.setPreferredName(getFirstLabel(indexCategory.getLabel()));
+        category.setRemark(getFirstLabel(indexCategory.getComment()));
         if(indexCategory.getLevel() != null) {
             category.setLevel(indexCategory.getLevel());
         }
@@ -219,10 +222,19 @@ public class IndexingWrapper {
         Property property = new Property();
         property.setPreferredName(getFirstLabel(indexProperty.getLabel()));
         property.setDefinition(getFirstLabel(indexProperty.getDescription()));
+        property.setRemark(getFirstLabel(indexProperty.getComment()));
+
+        // TODO the data type is currently keeping the value qualifier. However, it should be stored in the value qualifier field.
         if(indexProperty.getUri().startsWith(TaxonomyEnum.eClass.getNamespace())) {
+            // This is so in order not to break the functionality on the front-end
             property.setDataType(indexProperty.getValueQualifier());
         } else {
-            property.setDataType(getNormalizedDatatype(getRemainder(indexProperty.getRange(), XSD_NS)).toUpperCase());
+            property.setDataType(getValueQualifierForRange(indexProperty.getRange()));
+        }
+
+        // TODO text qualifier is converted to string in order not to break the UI functionality
+        if(property.getDataType().contentEquals(ItemPropertyValueQualifier.TEXT.toString())) {
+            property.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_STRING);
         }
         property.setUri(indexProperty.getUri());
         property.setId(indexProperty.getUri());
@@ -239,33 +251,22 @@ public class IndexingWrapper {
     }
 
     public static TaxonomyEnum extractTaxonomyFromUri(String uri) {
-        if(uri.startsWith(TaxonomyEnum.eClass.getNamespace())) {
-            return TaxonomyEnum.eClass;
-
-        } else if (uri.startsWith(TaxonomyEnum.FurnitureOntology.getNamespace())) {
-            return TaxonomyEnum.FurnitureOntology;
+        for(TaxonomyEnum taxonomy : TaxonomyEnum.values()) {
+            if(uri.startsWith(taxonomy.getNamespace())) {
+                return taxonomy;
+            }
         }
         return null;
     }
 
-    public static String getNormalizedDatatype(String dataType) {
-        String normalizedType;
-        if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_INT) == 0 ||
-                dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_FLOAT) == 0 ||
-                dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_DOUBLE) == 0) {
-            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_REAL_MEASURE;
-
-        } else if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_STRING) == 0) {
-            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_STRING;
-
-        } else if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN) == 0) {
-            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN;
-
-        } else {
-            logger.warn("Unknown data type encountered: {}", dataType);
-            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_STRING;
+    public static String getValueQualifierForRange(String range) {
+        String normalizedType ;
+        try {
+            return ItemPropertyValueQualifier.getQualifier(range).toString();
+        } catch (RuntimeException e) {
+            logger.warn("No qualifier for range: {}", range);
+            return ItemPropertyValueQualifier.TEXT.toString();
         }
-        return normalizedType;
     }
 
     private static String getRemainder(String value, String prefix) {
@@ -282,19 +283,24 @@ public class IndexingWrapper {
 
     public static ClassType toIndexCategory(Category category, Set<String> directParentUris, Set<String> allParentUris, Set<String> directChildrenUris, Set<String> allChildrenUris) {
         ClassType indexCategory = new ClassType();
+        TaxonomyEnum taxonomy = extractTaxonomyFromUri(category.getCategoryUri());
         indexCategory.setUri(category.getCategoryUri());
         indexCategory.setCode(category.getCode());
-        if(category.getCategoryUri().contains(TaxonomyEnum.eClass.getId().toLowerCase())) {
+
+
+        if(taxonomy.equals(TaxonomyEnum.eClass)) {
             indexCategory.setLocalName(category.getId());
             // TODO update on switching to multilinguality
             indexCategory.addLabel("en", category.getPreferredName());
             indexCategory.setLevel(category.getLevel());
             indexCategory.setNameSpace(TaxonomyEnum.eClass.getNamespace());
-        } else if(category.getCategoryUri().startsWith(TaxonomyEnum.FurnitureOntology.getNamespace())) {
-            indexCategory.setLocalName(getRemainder(category.getCategoryUri(), TaxonomyEnum.FurnitureOntology.getNamespace()));
+            indexCategory.addComment("en", category.getRemark());
+
+        } else {
+            indexCategory.setLocalName(getRemainder(category.getCategoryUri(), taxonomy.getNamespace()));
             // TODO update on switching to multilinguality
             indexCategory.addLabel("en", category.getPreferredName());
-            indexCategory.setNameSpace(TaxonomyEnum.FurnitureOntology.getNamespace());
+            indexCategory.setNameSpace(taxonomy.getNamespace());
         }
         indexCategory.setParents(directParentUris);
         indexCategory.setAllParents(allParentUris);
@@ -313,22 +319,23 @@ public class IndexingWrapper {
 
     public static PropertyType toIndexProperty(Property property, Set<String> associatedCategoryUris) {
         PropertyType indexProperty = new PropertyType();
+        TaxonomyEnum taxonomy = extractTaxonomyFromUri(property.getUri());
         indexProperty.setUri(property.getUri());
         indexProperty.addDescription("en", property.getDefinition());
-        if(property.getUri().contains(TaxonomyEnum.eClass.getId().toLowerCase())) {
+        if(taxonomy.equals(TaxonomyEnum.eClass)) {
             indexProperty.setLocalName(getRemainder(indexProperty.getUri(), TaxonomyEnum.eClass.getNamespace()));
             // TODO update on switching to multilinguality
             indexProperty.addLabel("en", property.getPreferredName());
             indexProperty.setNameSpace(TaxonomyEnum.eClass.getNamespace());
             indexProperty.setItemFieldNames(Arrays.asList(ItemType.dynamicFieldPart(property.getUri())));
+            indexProperty.addComment("en", property.getRemark());
 
-        } else if(property.getUri().startsWith(TaxonomyEnum.FurnitureOntology.getNamespace())) {
-            indexProperty.setLocalName(getRemainder(indexProperty.getUri(), TaxonomyEnum.FurnitureOntology.getNamespace()));
+        } else {
+            indexProperty.setLocalName(getRemainder(indexProperty.getUri(), taxonomy.getNamespace()));
             // TODO update on switching to multilinguality
             indexProperty.addLabel("en", property.getPreferredName());
-            indexProperty.setNameSpace(TaxonomyEnum.FurnitureOntology.getNamespace());
+            indexProperty.setNameSpace(taxonomy.getNamespace());
             indexProperty.setItemFieldNames(Arrays.asList(ItemType.dynamicFieldPart(property.getUri())));
-
         }
 
         try {
@@ -342,9 +349,8 @@ public class IndexingWrapper {
             indexProperty.setRange(ItemPropertyValueQualifier.getRange(property.getValueQualifier()));
         } catch (RuntimeException e) {
             logger.warn("Unsupported value qualifier: {}, reverting to {}", property.getValueQualifier(), XSD_NS + "string");
-            indexProperty.setValueQualifier(XSD_NS + "string");
+            indexProperty.setRange(XSD_NS + "string");
         }
-
 
         // all properties are assumed to be a datatype property (including the quantity properties)
         indexProperty.setPropertyType("DatatypeProperty");

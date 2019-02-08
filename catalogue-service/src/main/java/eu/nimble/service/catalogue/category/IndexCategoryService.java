@@ -5,10 +5,10 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.HttpRequest;
-import eu.nimble.service.catalogue.model.category.Category;
-import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
 import eu.nimble.service.catalogue.index.ClassIndexClient;
 import eu.nimble.service.catalogue.index.IndexingWrapper;
+import eu.nimble.service.catalogue.model.category.Category;
+import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
 import eu.nimble.service.catalogue.util.ExecutionContext;
 import eu.nimble.service.model.solr.SearchResult;
 import eu.nimble.service.model.solr.owl.ClassType;
@@ -17,7 +17,6 @@ import eu.nimble.service.model.solr.owl.IConcept;
 import eu.nimble.utility.JsonSerializationUtility;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.solr.client.solrj.SolrQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +25,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.*;
 
@@ -34,8 +34,6 @@ import java.util.*;
  */
 @Component
 public class IndexCategoryService {
-    private static final String FURNITURE_ONTOLOGY_LOGISTICS_SERVICE = "http://www.aidimme.es/FurnitureSectorOntology.owl#LogisticsService";
-
     private static final Logger logger = LoggerFactory.getLogger(IndexCategoryService.class);
 
     @Value("${nimble.indexing.url}")
@@ -51,20 +49,34 @@ public class IndexCategoryService {
     private ExecutionContext executionContext;
     @Autowired
     private ClassIndexClient classIndexClient;
+    @Autowired
+    private List<TaxonomyQueryInterface> taxonomyQueries;
+    private Map<String, TaxonomyQueryInterface> taxonomyQueryMap;
+
+    @PostConstruct
+    private void initialize() {
+        taxonomyQueryMap = new HashMap<>();
+        taxonomyQueries.stream()
+                .forEach(taxonomyQueryInterface -> taxonomyQueryMap.put(taxonomyQueryInterface.getTaxonomy().getId(), taxonomyQueryInterface));
+    }
 
     public Category getCategory(String taxonomyId, String categoryId) {
         String categoryUri = constructUri(taxonomyId, categoryId);
         return getCategory(categoryUri);
     }
 
+    public List<Category> getCategories(List<String> taxonomyIds, List<String> categoryIds) {
+        Set<String> categoryUris = new HashSet<>();
+        for(int i = 0; i<taxonomyIds.size(); i++) {
+            categoryUris.add(constructUri(taxonomyIds.get(i), categoryIds.get(i)));
+        }
+        List<Category> categories = classIndexClient.getCategories(categoryUris, true);
+        return categories;
+    }
+
     public Category getCategory(String categoryUri) {
         Category category = classIndexClient.getCategory(categoryUri);
         return category;
-    }
-
-    public List<Category> getProductCategories(String categoryName) {
-        List<Category> categories = classIndexClient.getCategories(categoryName);
-        return categories;
     }
 
     public CategoryTreeResponse getCategoryTree(String taxonomyId, String categoryId) {
@@ -75,7 +87,6 @@ public class IndexCategoryService {
     public CategoryTreeResponse getCategoryTree(String categoryUri) {
         // get parent categories including the category specifried by the identifier
         List<ClassType> parentIndexCategories = getParentIndexCategories(categoryUri);
-
         // get children of parents categories
         List<List<Category>> childenListsList = new ArrayList<>();
         // first the root categories
@@ -83,20 +94,42 @@ public class IndexCategoryService {
         childenListsList.add(rootCategories);
 
         // get all children of each parent
+        // category uri -> children category list map
+        Map<String, List<String>> childrenMap = new HashMap<>();
+        Set<String> categorysToFetch = new HashSet<>();
         for(int i = 0; i<parentIndexCategories.size(); i++) {
-            Collection<String> childrenUris = parentIndexCategories.get(i).getChildren();
-            // parent has children
-            if(childrenUris != null) {
-                List<ClassType> children = classIndexClient.getIndexCategories(new HashSet<>(parentIndexCategories.get(i).getChildren()));
-                if (!CollectionUtils.isEmpty(children)) {
-                    List<Category> childrenCategories = IndexingWrapper.toCategories(children);
+            ClassType parentCategory = parentIndexCategories.get(i);
+            Collection<String> childrenUris = parentCategory.getChildren();
 
-                    // populate the response
+            // parent has children
+            if(!CollectionUtils.isEmpty(childrenUris)) {
+                childrenMap.put(parentCategory.getUri(), new ArrayList<>(childrenUris));
+                categorysToFetch.addAll(childrenUris);
+            }
+        }
+
+        if(!CollectionUtils.isEmpty(categorysToFetch)) {
+            List<ClassType> children = classIndexClient.getIndexCategories(categorysToFetch);
+            List<Category> childrenCategoryList = IndexingWrapper.toCategories(children);
+            // collect the categories in a map for easy access
+            Map<String, Category> childrenCategoryMap = new HashMap<>();
+            for(Category cat : childrenCategoryList) {
+                childrenCategoryMap.put(cat.getCategoryUri(), cat);
+            }
+
+            // populate the children lists for each parent category
+            for(ClassType parentCategory : parentIndexCategories) {
+                List<Category> childrenCategories = new ArrayList<>();
+                if(childrenMap.get(parentCategory.getUri()) != null) {
+                    for (String childrenCategoryUri : childrenMap.get(parentCategory.getUri())) {
+                        childrenCategories.add(childrenCategoryMap.get(childrenCategoryUri));
+                    }
                     childenListsList.add(childrenCategories);
                 }
             }
         }
 
+        // populate the response
         CategoryTreeResponse categoryTreeResponse = new CategoryTreeResponse();
         List<Category> parentCategories = IndexingWrapper.toCategories(parentIndexCategories);
         categoryTreeResponse.setParents(parentCategories);
@@ -205,46 +238,55 @@ public class IndexCategoryService {
 //        return new ArrayList<>();
     }
 
+    public List<Category> getProductCategories(String categoryName) {
+        List<Category> categories = classIndexClient.getCategories(categoryName);
+        getProductCategories(categoryName, null, false);
+        return categories;
+    }
 
     public List<Category> getProductCategories(String categoryName, String taxonomyId, boolean forLogistics) {
-        List<Category> results = new ArrayList<>();
+        List<Category> results;
+        String query = constructQuery(categoryName, taxonomyId, forLogistics);
+        results = getProductCategoriesWithConstructedQuery(query);
 
-        if(taxonomyId != null) {
-            if(forLogistics ) {
-                if (taxonomyId.contentEquals(TaxonomyEnum.eClass.getId())) {
-                    results = getLogisticsCategoriesForEClass(categoryName);
-                } else if (taxonomyId.contentEquals(TaxonomyEnum.FurnitureOntology.getId())) {
-                    results = getLogisticsCategoriesForFurnitureOntology(categoryName);
-                }
-
-            } else {
-                if (taxonomyId.contentEquals(TaxonomyEnum.eClass.getId())) {
-                    results = getProductCategories(TaxonomyEnum.eClass.getNamespace(), categoryName);
-                } else if (taxonomyId.contentEquals(TaxonomyEnum.FurnitureOntology.getId())) {
-                    results = getProductCategories(TaxonomyEnum.FurnitureOntology.getNamespace(), categoryName);
-                }
-            }
-
-        } else {
-            if(forLogistics ) {
-                results = getLogisticsCategoriesForEClass(categoryName);
-                results.addAll(getLogisticsCategoriesForFurnitureOntology(categoryName));
-            } else {
-                results = getProductCategories(categoryName);
-            }
-        }
         return results;
     }
 
-    public List<Category> getProductCategories(String namespace, String name) {
+    private String constructQuery(String categoryName, String taxonomyId, boolean forLogistics) {
+        String query;
+        if(StringUtils.isNotEmpty(categoryName)) {
+            query = IConcept.TEXT_FIELD + ":" + categoryName;
+        } else {
+            query = IConcept.TEXT_FIELD + ":*";
+        }
+
+        if(query != null) {
+            query += " AND";
+        }
+        query += "(";
+        // get criteria for a specific taxonomy
+        if(taxonomyId != null) {
+            query += taxonomyQueryMap.get(taxonomyId).getQuery(forLogistics);
+
+            // get criteria for all taxonomies
+        } else {
+            for (TaxonomyQueryInterface taxonomyQuery : taxonomyQueryMap.values()) {
+                query += " " + taxonomyQuery.getQuery(forLogistics) + " OR";
+            }
+
+            query = query.substring(0, query.length() - 2);
+        }
+        query += ")";
+        return query;
+    }
+
+    private List<Category> getProductCategoriesWithConstructedQuery(String query) {
         try {
             HttpRequest request = Unirest.get(indexingUrl + "/class/select");
-            if (StringUtils.isNotEmpty(namespace)) {
-                request = request.queryString("nameSpace", namespace);
-            }
             request = request
-                    .queryString("q", name)
+                    .queryString("q", query)
                     .queryString("rows", Integer.MAX_VALUE)
+
                     .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken());
 
             HttpResponse<String> response = request.asString();
@@ -257,92 +299,68 @@ public class IndexCategoryService {
                         results.add(IndexingWrapper.toCategory(indexCategory));
                     }
 
-                    logger.info("Retrieved {} categories successfully. namespace: {}, name: {}", results.size(), namespace, name);
+                    logger.info("Retrieved {} categories successfully. query: {}", results.size(), query);
                     return results;
 
                 } catch (IOException e) {
-                    logger.error("Failed to parse SearchResults with namespace: {}, name: {}, serialized result: {}", namespace, name, response.getBody(), e);
+                    logger.error("Failed to parse SearchResults with query: {}, serialized result: {}", query, response.getBody(), e);
                 }
 
             } else {
-                logger.error("Failed to retrieve categories. namespace: {}, name: {}, indexing call status: {}, message: {}",
-                        namespace, name, response.getStatus(), response.getBody());
+                logger.error("Failed to retrieve categories. query: {}, indexing call status: {}, message: {}",
+                        query, response.getStatus(), response.getBody());
             }
 
         } catch (UnirestException e) {
-            logger.error("Failed to retrieve categories. namespace: {}, name: {}", namespace, name, e);
+            logger.error("Failed to retrieve categories. query: {}", query, e);
         }
 
         return new ArrayList<>();
     }
 
-    public List<Category> getLogisticsCategoriesForEClass(String name) {
-        String labelField = null;
-        if (StringUtils.isNotEmpty(name)) {
-            labelField = IConcept.TEXT_FIELD + ":" + name;
-        }
-
-        String namespaceField = IConcept.NAME_SPACE_FIELD + ":" + TaxonomyEnum.eClass.getNamespace();
-        String localNameField = IConcept.LOCAL_NAME_FIELD + ":14*";
-        String queryField = namespaceField + " AND " + localNameField;
-        if(labelField != null) {
-            queryField += " AND " + labelField;
-        }
-
-        List<Category> categories = classIndexClient.getCategories(queryField);
-        return categories;
-
-//        SolrQuery query = new SolrQuery();
-//        query.set("q", queryField);
-//
-//        List<Category> categories = new ArrayList<>();
-//        try {
-//            QueryResponse response = solrClient.query(query);
-//            List<ClassType> indexCategories = response.getBeans(ClassType.class);
-//            for (ClassType indexCategory : indexCategories) {
-//                categories.add(IndexingWrapper.toCategory(indexCategory));
-//            }
-//
-//            // populate properties
-//            populateCategoryProperties(indexCategories, categories);
-//
-//            logger.info("Retrieved {} eClass logistics categories. name: {}, lang: {}", categories.size(), name, lang);
-//            return categories;
-//
-//        } catch (SolrServerException | IOException e) {
-//            logger.error("Failed to retrieve eClass logistics categories for query: {}", query, e);
-//        }
-//
-//        return new ArrayList<>();
-    }
-
-    public List<Category> getLogisticsCategoriesForFurnitureOntology(String name) {
-        String labelField = null;
-        if (StringUtils.isNotEmpty(name)) {
-            labelField = IConcept.TEXT_FIELD + ":" + name;
-        }
-
-        String namespaceField = IConcept.NAME_SPACE_FIELD + ":" + TaxonomyEnum.FurnitureOntology.getNamespace();
-        String parentsField = IClassType.ALL_PARENTS_FIELD + ":" + FURNITURE_ONTOLOGY_LOGISTICS_SERVICE;
-        String queryField = namespaceField + " AND " + parentsField;
-        if(labelField != null) {
-            queryField += " AND " + labelField;
-        }
-
-        SolrQuery query = new SolrQuery();
-        query.set("q", queryField);
-
-        List<Category> categories = classIndexClient.getCategories(queryField);
-        return categories;
-    }
-
     public static String constructUri(String taxonomyId, String id) {
+        for(TaxonomyEnum taxonomyEnum : TaxonomyEnum.values()) {
+            if(id.startsWith(taxonomyEnum.getNamespace())) {
+                return id;
+            }
+        }
         if (taxonomyId.contentEquals(TaxonomyEnum.eClass.getId())) {
             return TaxonomyEnum.eClass.getNamespace() + id;
-
-        } else if (taxonomyId.contentEquals(TaxonomyEnum.FurnitureOntology.getId())) {
-            return id;
         }
         return null;
     }
+
+    //    public List<Category> getLogisticsCategoriesForEClass(String name) {
+//        Map<String, String> facetCriteria = new HashMap<>();
+//        facetCriteria.put(IConcept.NAME_SPACE_FIELD, TaxonomyEnum.eClass.getNamespace());
+//        facetCriteria.put(IConcept.CODE_FIELD, "14*");
+//        facetCriteria.put(IClassType.LEVEL_FIELD, "4");
+//        String query = StringUtils.isNotEmpty(name) ? name : "*" ;
+//
+//        List<Category> categories = classIndexClient.getCategories(query, facetCriteria);
+//        return categories;
+//
+////        SolrQuery query = new SolrQuery();
+////        query.set("q", queryField);
+////
+////        List<Category> categories = new ArrayList<>();
+////        try {
+////            QueryResponse response = solrClient.query(query);
+////            List<ClassType> indexCategories = response.getBeans(ClassType.class);
+////            for (ClassType indexCategory : indexCategories) {
+////                categories.add(IndexingWrapper.toCategory(indexCategory));
+////            }
+////
+////            // populate properties
+////            populateCategoryProperties(indexCategories, categories);
+////
+////            logger.info("Retrieved {} eClass logistics categories. name: {}, lang: {}", categories.size(), name, lang);
+////            return categories;
+////
+////        } catch (SolrServerException | IOException e) {
+////            logger.error("Failed to retrieve eClass logistics categories for query: {}", query, e);
+////        }
+////
+////        return new ArrayList<>();
+//    }
 }

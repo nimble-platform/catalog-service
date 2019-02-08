@@ -51,21 +51,22 @@ public class ProductCategoryController {
         log.info("Incoming request to get categories");
         List<Category> categories = new ArrayList<>();
         if (taxonomyIds != null && taxonomyIds.size() > 0 && categoryIds != null && categoryIds.size() > 0) {
+            // ensure that taxonomy id and category id lists have the same size
             if (taxonomyIds.size() != categoryIds.size()) {
                 String msg = "Number of elements in taxonomy ids list and  category ids list does not match";
                 log.info(msg);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(msg);
             }
 
-            log.info("Getting categories for taxonomyIds: {}, categoryIds: {}", taxonomyIds, categoryIds);
+            // validate taxonomy ids
             for (int i = 0; i < taxonomyIds.size(); i++) {
                 if(!taxonomyIdExists(taxonomyIds.get(i))){
                     log.error("The given taxonomy id : {} is not valid", taxonomyIds.get(i));
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("The given taxonomy id %s is not valid", taxonomyIds.get(i)));
                 }
-
-                categories.add(categoryService.getCategory(taxonomyIds.get(i), categoryIds.get(i)));
             }
+
+            categories = categoryService.getCategories(taxonomyIds, categoryIds);
 
         } else {
             String msg = "(taxonomy id / category id) pairs should be provided";

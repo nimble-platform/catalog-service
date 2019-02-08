@@ -15,6 +15,7 @@ import eu.nimble.service.model.solr.SearchResult;
 import eu.nimble.service.model.solr.owl.ClassType;
 import eu.nimble.service.model.solr.owl.PropertyType;
 import eu.nimble.utility.JsonSerializationUtility;
+import jena.query;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.slf4j.Logger;
@@ -103,11 +104,10 @@ public class ClassIndexClient {
 
     public List<ClassType> getIndexCategories(Set<String> uris) {
         try {
-            HttpResponse<String> response;
-            response = Unirest.get(indexingUrl + "/classes")
+            HttpRequest request = Unirest.get(indexingUrl + "/classes")
                     .queryString("uri", uris)
-                    .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken())
-                    .asString();
+                    .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken());
+            HttpResponse<String> response = request.asString();
 
             if (response.getStatus() == HttpStatus.OK.value()) {
                 List<ClassType> indexCategories = extractIndexCategoriesFromSearchResults(response, uris.toString());
@@ -141,8 +141,20 @@ public class ClassIndexClient {
     }
 
     public List<Category> getCategories(Set<String> uris) {
+        List<Category> categories = getCategories(uris, false);
+        return categories;
+    }
+
+    public List<Category> getCategories(Set<String> uris, boolean populateProperties) {
         List<ClassType> indexCategories = getIndexCategories(uris);
         List<Category> categories = IndexingWrapper.toCategories(indexCategories);
+
+        if(populateProperties) {
+            Map<String, List<Property>> categoryProperties = propertyIndexClient.getIndexPropertiesForIndexCategories(indexCategories);
+            for(Category category : categories) {
+                category.setProperties(categoryProperties.get(category.getCategoryUri()));
+            }
+        }
         return categories;
     }
 
@@ -179,7 +191,7 @@ public class ClassIndexClient {
             }
 
         } catch (UnirestException e) {
-            String msg = String.format("Failed to retrieve categories. taxonomy: %s");
+            String msg = String.format("Failed to retrieve categories. query: %s", query);
             logger.error(msg, e);
             throw new RuntimeException(msg, e);
         }
@@ -200,38 +212,4 @@ public class ClassIndexClient {
             throw new RuntimeException(msg, e);
         }
     }
-
-    //    public Map<String, List<PropertyType>> getIndexPropertiesForCategories(List<ClassType> indexCategories) {
-//        Map<String, Collection<String>> categoryPropertyMap = new HashMap<>();
-//        Set<String> propertyUris = new HashSet<>();
-//        // aggregate the properties to be fetched and keep the mapping between categories and properties
-//        for(ClassType indexCategory : indexCategories) {
-//            Collection<String> categoryProperties = indexCategory.getProperties();
-//            if(categoryProperties != null) {
-//                categoryPropertyMap.put(indexCategory.getUri(), categoryProperties);
-//                propertyUris.addAll(categoryProperties);
-//            }
-//        }
-//
-//        // fetch properties at once
-//        List<PropertyType> properties = getProperties(propertyUris);
-//        // put properties into a map for easy access
-//        Map<String, PropertyType> fetchedPrpoerties = new HashMap<>();
-//        for(PropertyType property : properties) {
-//            fetchedPrpoerties.put(property.getUri(), property);
-//        }
-//
-//        // populate the category-property map
-//        Map<String, List<PropertyType>> categoryProperties = new HashMap<>();
-//        for(Map.Entry<String, Collection<String>> mapEntry : categoryPropertyMap.entrySet()) {
-//            String categoryUri = mapEntry.getKey();
-//            Collection<String> catPropCol = mapEntry.getValue();
-//            List<PropertyType> catPropList = new ArrayList<>();
-//            for(String propUri : catPropCol) {
-//                catPropList.add(fetchedPrpoerties.get(propUri));
-//            }
-//            categoryProperties.put(categoryUri, catPropList);
-//        }
-//        return categoryProperties;
-//    }
 }
