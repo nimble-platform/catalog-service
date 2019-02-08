@@ -75,23 +75,23 @@ public class EClassIndexLoader {
         }
         logger.info("Constructed property category map");
 
-//        // construct category parent mapping
-//        ChildrenParentMaps categoryParentMapping = createCategoryParentMap(allCategories, allCategoriesMapWithCode);
-//        logger.info("Constructed parent category maps");
-//
-//        // construct category children mapping
-//        ChildrenParentMaps categoryChildrenMapping = createCategoryChildrenMap(allCategories, categoryParentMapping.direct, categoryParentMapping.all);
-//        logger.info("Constructed children category maps");
-//
-//        // index categories
-//        for(Category category : allCategories) {
-//            classIndexClient.indexCategory(category,
-//                    categoryParentMapping.direct.get(category.getCategoryUri()),
-//                    categoryParentMapping.all.get(category.getCategoryUri()),
-//                    categoryChildrenMapping.direct.get(category.getCategoryUri()),
-//                    categoryChildrenMapping.all.get(category.getCategoryUri()));
-//        }
-//        logger.info("Completed category indexing");
+        // construct category parent mapping
+        ChildrenParentMaps categoryParentMapping = createCategoryParentMap(allCategories, allCategoriesMapWithCode);
+        logger.info("Constructed parent category maps");
+
+        // construct category children mapping
+        ChildrenParentMaps categoryChildrenMapping = createCategoryChildrenMap(allCategories, categoryParentMapping.direct, categoryParentMapping.all);
+        logger.info("Constructed children category maps");
+
+        // index categories
+        for(Category category : allCategories) {
+            classIndexClient.indexCategory(category,
+                    categoryParentMapping.direct.get(category.getCategoryUri()),
+                    categoryParentMapping.all.get(category.getCategoryUri()),
+                    categoryChildrenMapping.direct.get(category.getCategoryUri()),
+                    categoryChildrenMapping.all.get(category.getCategoryUri()));
+        }
+        logger.info("Completed category indexing");
 
         // index properties
         List<String> indexedProperties = new ArrayList<>();
