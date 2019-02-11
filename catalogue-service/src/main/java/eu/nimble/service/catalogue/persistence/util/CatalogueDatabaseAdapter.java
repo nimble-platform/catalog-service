@@ -67,7 +67,7 @@ public class CatalogueDatabaseAdapter {
             return;
         }
 
-        PartyType catalogueParty = PartyTypePersistenceUtil.getPartyById(trustParty.getID());
+        PartyType catalogueParty = PartyTypePersistenceUtil.getPartyById(trustParty.getPartyIdentification().get(0).getID());
         if(catalogueParty == null) {
             logger.warn("No party available in UBLDB with id: {}", partyId);
             return;
@@ -113,7 +113,7 @@ public class CatalogueDatabaseAdapter {
         if (party == null) {
             return null;
         }
-        PartyType catalogueParty = PartyTypePersistenceUtil.getPartyById(party.getID());
+        PartyType catalogueParty = PartyTypePersistenceUtil.getPartyById(party.getPartyIdentification().get(0).getID());
         if(catalogueParty != null) {
             return catalogueParty;
         } else {
@@ -138,7 +138,7 @@ public class CatalogueDatabaseAdapter {
         party = objectMapper.readValue(object.toString(), PartyType.class);
         return party;
         } catch (IOException e) {
-            String msg = String.format("Failed to remove hjid fields from the party with id: %s", party.getID());
+            String msg = String.format("Failed to remove hjid fields from the party with id: %s", party.getPartyIdentification().get(0).getID());
             logger.error(msg, e);
             throw new RuntimeException(msg, e);
         }

@@ -1,5 +1,7 @@
 package eu.nimble.service.catalogue.model.category;
 
+import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,7 +10,7 @@ import java.util.List;
  */
 public class Property {
     private String id;
-    private String preferredName;
+    private List<TextType> preferredName = new ArrayList<>();
     private String shortName;
     private String definition;
     private String note;
@@ -30,11 +32,35 @@ public class Property {
         this.id = id;
     }
 
-    public String getPreferredName() {
+    public void addPreferredName(String name, String language) {
+        TextType prefName = new TextType();
+        prefName.setLanguageID(language);
+        prefName.setValue(name);
+        preferredName.add(prefName);
+    }
+
+    public String getPreferredName(String language) {
+        if(language == null) {
+            language = "en";
+        }
+        String nameInEnglish = null;
+
+        for(TextType pNames: preferredName) {
+            String id = pNames.getLanguageID();
+            if(id.equals("en")){
+                nameInEnglish = pNames.getValue();
+            }
+            if(id.equals(language))
+                return pNames.getValue();
+        }
+        return nameInEnglish;
+    }
+
+    public List<TextType> getPreferredName() {
         return preferredName;
     }
 
-    public void setPreferredName(String preferredName) {
+    public void setPreferredName(List<TextType> preferredName) {
         this.preferredName = preferredName;
     }
 
