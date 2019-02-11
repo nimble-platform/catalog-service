@@ -9,6 +9,7 @@ public class CataloguePaginationResponse {
     private String catalogueUuid;
     private long size;
     private List<CatalogueLineType> catalogueLines;
+    private List<String> categoryNames;
 
     public CataloguePaginationResponse() {
     }
@@ -35,5 +36,13 @@ public class CataloguePaginationResponse {
 
     public void setCatalogueUuid(String catalogueUuid) {
         this.catalogueUuid = catalogueUuid;
+    }
+
+    public List<String> getCategoryNames() {
+        return categoryNames;
+    }
+
+    public void setCategoryNames(List<String> categoryNames) {
+        this.categoryNames = categoryNames;
     }
 }
