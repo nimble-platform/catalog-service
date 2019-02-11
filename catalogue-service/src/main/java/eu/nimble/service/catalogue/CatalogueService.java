@@ -1,16 +1,13 @@
 package eu.nimble.service.catalogue;
 
-import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
+import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.GoodsItemType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.Configuration;
-import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.List;
 import java.util.zip.ZipInputStream;
 
@@ -23,6 +20,8 @@ public interface CatalogueService {
     public CatalogueType getCatalogue(String uuid);
 
     public CatalogueType getCatalogue(String id, String partyId);
+
+    public CataloguePaginationResponse getCataloguePaginationResponse(String id, String partyId, int limit, int offset);
 
     public CatalogueType updateCatalogue(CatalogueType catalogue);
 
@@ -39,6 +38,8 @@ public interface CatalogueService {
     public <T> T getCatalogue(String uuid, Configuration.Standard standard);
 
     public <T> T getCatalogue(String id, String partyId, Configuration.Standard standard);
+
+    public <T> T getCataloguePaginationResponse(String id, String partyId, Configuration.Standard standard, int limit, int offset);
 
     public void deleteCatalogue(String uuid, Configuration.Standard standard);
 

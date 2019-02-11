@@ -5,6 +5,7 @@ import eu.nimble.data.transformer.ontmalizer.XML2OWLMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
+import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.PartyTypePersistenceUtil;
@@ -98,6 +99,43 @@ public class CatalogueController {
         log.info("Completed request to get default catalogue for party: {}", partyId);
         return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogue));
     }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieves the default CataloguePaginationResponse for the specified party.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved CataloguePaginationResponse for the specified party successfully", response = CataloguePaginationResponse.class),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 404, message = "No default catalogue for the party"),
+            @ApiResponse(code = 500, message = "Failed to get CataloguePaginationResponse for the party")
+    })
+    @RequestMapping(value = "/catalogue/{partyId}/pagination/default",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity getDefaultCataloguePagination(@ApiParam(value = "Identifier of the party for which the catalogue to be retrieved", required = true) @PathVariable String partyId,
+                                                        @ApiParam(value = "Number of catalogue lines to be included in CataloguePaginationResponse ") @RequestParam(value = "limit",required = true) Integer limit,
+                                                        @ApiParam(value = "Offset of the first catalogue line among all catalogue lines of the default catalogue for the party") @RequestParam(value = "offset",required = true) Integer offset,
+                                                        @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        log.info("Incoming request to get CataloguePaginationResponse for party: {} with limit: {}, offset: {}", partyId,limit,offset);
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return tokenCheck;
+        }
+
+        CataloguePaginationResponse cataloguePaginationResponse;
+        try {
+            cataloguePaginationResponse = service.getCataloguePaginationResponse("default", partyId,limit,offset);
+        } catch (Exception e) {
+            return createErrorResponseEntity("Failed to get CataloguePaginationResponse for party id: " + partyId, HttpStatus.INTERNAL_SERVER_ERROR, e);
+        }
+        if (cataloguePaginationResponse.getCatalogueUuid() == null) {
+            log.info("No default catalogue for party: {}", partyId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("No default catalogue for party: %s", partyId));
+        }
+
+        log.info("Completed request to get CataloguePaginationResponse for party: {} with limit: {}, offset: {}", partyId,limit,offset);
+        return ResponseEntity.ok(serializationUtility.serializeUBLObject(cataloguePaginationResponse));
+    }
+
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves the catalogue for the given standard and uuid.")

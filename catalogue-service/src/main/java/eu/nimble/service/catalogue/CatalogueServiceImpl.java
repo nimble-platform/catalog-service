@@ -3,15 +3,14 @@ package eu.nimble.service.catalogue;
 import eu.nimble.service.catalogue.category.CategoryServiceManager;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
+import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
-import eu.nimble.service.catalogue.persistence.util.UnitPersistenceUtil;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
 import eu.nimble.service.catalogue.template.TemplateGenerator;
 import eu.nimble.service.catalogue.template.TemplateParser;
 import eu.nimble.service.catalogue.util.DataIntegratorUtil;
-import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
@@ -21,7 +20,6 @@ import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
-import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -199,6 +197,26 @@ public class CatalogueServiceImpl implements CatalogueService {
         }
 
         return catalogue;
+    }
+
+    @Override
+    public CataloguePaginationResponse getCataloguePaginationResponse(String id, String partyId, int limit, int offset) {
+        return getCataloguePaginationResponse(id,partyId,Configuration.Standard.UBL,limit,offset);
+    }
+
+    @Override
+    public <T> T getCataloguePaginationResponse(String id, String partyId, Configuration.Standard standard, int limit, int offset) {
+        T catalogueResponse = null;
+
+        if (standard == Configuration.Standard.UBL) {
+            catalogueResponse = (T) CataloguePersistenceUtil.getCatalogueLinesForParty(id, partyId,limit,offset);
+
+        } else if (standard == Configuration.Standard.MODAML) {
+            logger.warn("Getting CataloguePaginationResponse with catalogue id and party id from MODAML repository is not implemented yet");
+            throw new NotImplementedException();
+        }
+
+        return catalogueResponse;
     }
 
     @Override
