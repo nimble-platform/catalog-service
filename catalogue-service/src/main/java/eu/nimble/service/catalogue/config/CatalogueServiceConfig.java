@@ -53,6 +53,7 @@ public class CatalogueServiceConfig {
     private String marmottaUrl;
     @Value("${nimble.identity.url}")
     private String identityUrl;
+
     @Value("${persistence.solr.url}")
     private String solrURL;
     @Value("${persistence.solr.properties-index}")

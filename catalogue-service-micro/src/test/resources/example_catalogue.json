@@ -1,1 +1,316 @@
-{"id":"default","uuid":null,"providerParty":{"id":"381","name":"SRDC","websiteURI":"","preferredItemClassificationCode":[],"postalAddress":{"streetName":"ODTU","buildingNumber":"","cityName":"Ankara","postalZone":"06800","country":{"name":"Turkey"}},"partyTaxScheme":[{"taxScheme":{"taxTypeCode":{"value":"1234","name":"VAT"}}}],"person":[{"id":"379","firstName":"Suat","familyName":"Gonul","role":[],"contact":{"telephone":"","electronicMail":"suat@srdc.com.tr"},"roleItems":[]}],"certificate":[],"qualityIndicator":[{"qualityParameter":""}],"paymentMeans":[{"id":"389","paymentMeansCode":{}}],"deliveryTerms":[{"id":"388"}],"tradingTerms":[],"ppapDocumentReference":[],"cnae":[],"industrySector":[]},"issueDate":"","issueTime":"","catalogueLine":[{"id":"a117c352-88f4-41a4-a616-1f402d9d02e0","hjid":null,"orderableUnit":null,"freeOfChargeIndicator":false,"warrantyValidityPeriod":{"startDate":null,"startTime":null,"endDate":null,"endTime":null,"durationMeasure":{"value":null,"unitCode":null,"hjid":null},"hjid":null},"warrantyInformation":[],"requiredItemLocationQuantity":{"price":{"priceAmount":{"value":1,"currencyID":"EUR"},"baseQuantity":{"value":1,"unitCode":"m2","hjid":null}},"applicableTerritoryAddress":[{"cityName":"","postalZone":"","buildingNumber":"","streetName":"","country":{"name":"Turkey"}}]},"goodsItem":{"id":"a117c352-88f4-41a4-a616-1f402d9d02e0","item":{"name":"deneme urun","description":"deneme urun tanim","itemSpecificationDocumentReference":[],"productImage":[],"additionalItemProperty":[{"id":"401f912c-6a71-4f1c-9432-50dbbbad3565","name":"test prop","value":["prop val"],"valueDecimal":[],"valueQuantity":[],"valueBinary":[],"valueQualifier":"STRING","itemClassificationCode":{"value":null,"name":null,"uri":null,"listID":"Custom","listURI":null},"uri":null},{"id":"0173-1#02-AAD931#005","name":"customs tariff number (TARIC)","value":[""],"valueDecimal":["1234"],"valueQuantity":[{"value":null,"unitCode":null,"hjid":null}],"valueBinary":[],"valueQualifier":"REAL_MEASURE","itemClassificationCode":{"value":"0173-1#01-AKJ051#013","name":"MDF, melamine-resin faced","uri":"http://www.nimble-project.org/resource/eclass/22292802","listID":"eClass","listURI":null},"uri":"http://www.nimble-project.org/resource/eclass/property/AAD931005"}],"manufacturerParty":{"id":"381","name":"SRDC","websiteURI":"","preferredItemClassificationCode":[],"postalAddress":{"streetName":"ODTU","buildingNumber":"","cityName":"Ankara","postalZone":"06800","country":{"name":"Turkey"}},"partyTaxScheme":[{"taxScheme":{"taxTypeCode":{"value":"1234","name":"VAT"}}}],"person":[{"id":"379","firstName":"Suat","familyName":"Gonul","role":[],"contact":{"telephone":"","electronicMail":"suat@srdc.com.tr"},"roleItems":[]}],"certificate":[],"qualityIndicator":[{"qualityParameter":""}],"paymentMeans":[{"id":"389","paymentMeansCode":{}}],"deliveryTerms":[{"id":"388"}],"tradingTerms":[],"ppapDocumentReference":[],"cnae":[],"industrySector":[]},"manufacturersItemIdentification":{"id":"a117c352-88f4-41a4-a616-1f402d9d02e0"},"catalogueDocumentReference":{"id":null,"documentType":null,"attachment":null},"commodityClassification":[{"itemClassificationCode":{"value":"0173-1#01-AKJ051#013","name":"MDF, melamine-resin faced","uri":"http://www.nimble-project.org/resource/eclass/22292802","listID":"eClass","listURI":null},"natureCode":null,"cargoTypeCode":null,"hjid":""}],"certificate":[],"dimension":[{"attributeID":"length","measure":{"value":10,"unitCode":"cm","hjid":null}}],"transportationServiceDetails":null,"trackAndTraceDetails":{"eventURL":"event url","masterURL":"master url","productionProcessTemplate":"production template url"}},"containingPackage":{"quantity":{"value":10,"unitCode":"unit","hjid":null},"packagingTypeCode":{"value":"Box","name":"","uri":"","listID":"","listURI":""},"hjid":null},"deliveryTerms":{"id":null,"estimatedDeliveryPeriod":{"startDate":null,"startTime":null,"endDate":null,"endTime":null,"durationMeasure":{"value":2,"unitCode":"working days","hjid":null},"hjid":null},"specialTerms":"special terms","incoterms":"CIF (Cost, Insurance and Freight)","amount":{"value":null,"currencyID":null},"deliveryLocation":{"address":{"cityName":"","postalZone":"","buildingNumber":"","streetName":"","country":{"name":null}}},"hjid":null}}}]}
+{
+  "id": "default",
+  "uuid": null,
+  "providerParty": {
+    "nace": [],
+    "description": [],
+    "brandName": [],
+    "partyName": [
+      {
+        "name": {
+          "value": "canCompany",
+          "languageID": "en"
+        }
+      }
+    ],
+    "partyIdentification": [
+      {
+        "id": "706"
+      }
+    ],
+    "websiteURI": "",
+    "industryClassificationCode": {
+      "name": "IndustryClassificationCode"
+    },
+    "ppapCompatibilityLevel": 1,
+    "preferredItemClassificationCode": [
+      {
+        "value": "0173-1#01-AEI956#006::eClass::Notebook::product"
+      }
+    ],
+    "mostRecentItemsClassificationCode": [
+      {
+        "value": "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard::FurnitureOntology::MDFBoard::product::1547034223954"
+      }
+    ],
+    "postalAddress": {
+      "streetName": "ODTU",
+      "buildingNumber": "",
+      "cityName": "Ankara",
+      "postalZone": "06800",
+      "country": {
+        "name": {
+          "value": "Turkey"
+        }
+      }
+    },
+    "partyTaxScheme": [
+      {
+        "taxScheme": {
+          "taxTypeCode": {
+            "value": "1234",
+            "name": "VAT"
+          }
+        }
+      }
+    ],
+    "contact": {
+      "otherCommunication": []
+    },
+    "person": [
+      {
+        "id": "379",
+        "firstName": "Suat",
+        "familyName": "Gonul",
+        "role": [],
+        "contact": {
+          "name": {
+            "languageID": "en"
+          },
+          "telephone": "",
+          "electronicMail": "suat@srdc.com.tr",
+          "otherCommunication": []
+        },
+        "roleItems": []
+      }
+    ],
+    "certificate": [],
+    "qualityIndicator": [
+      {
+        "qualityParameter": ""
+      }
+    ],
+    "ppapDocumentReference": [],
+    "documentReference": [],
+    "industrySector": [],
+    "purchaseTerms": {
+      "tradingTerms": [],
+      "deliveryTerms": [],
+      "paymentMeans": []
+    }
+  },
+  "issueDate": "",
+  "issueTime": "",
+  "catalogueLine": [
+    {
+      "id": "a117c352-88f4-41a4-a616-1f402d9d02e0",
+      "hjid": null,
+      "orderableUnit": null,
+      "freeOfChargeIndicator": false,
+      "warrantyValidityPeriod": {
+        "startDate": null,
+        "startTime": null,
+        "endDate": null,
+        "endTime": null,
+        "durationMeasure": {
+          "value": 0,
+          "unitCode": "month(s)",
+          "hjid": null
+        },
+        "hjid": null
+      },
+      "warrantyInformation": [],
+      "requiredItemLocationQuantity": {
+        "price": {
+          "priceAmount": {
+            "value": null,
+            "currencyID": "EUR"
+          },
+          "baseQuantity": {
+            "value": 1,
+            "unitCode": "item(s)",
+            "hjid": null
+          }
+        },
+        "applicableTerritoryAddress": [],
+        "allowanceCharge": [],
+        "minimumQuantity": null
+      },
+      "priceOption": [],
+      "goodsItem": {
+        "id": "a117c352-88f4-41a4-a616-1f402d9d02e0",
+        "item": {
+          "name": [
+            {
+              "value": "QExample local",
+              "languageID": "en"
+            }
+          ],
+          "description": [],
+          "itemSpecificationDocumentReference": [],
+          "productImage": [],
+          "additionalItemProperty": [],
+          "manufacturerParty": {
+            "nace": [],
+            "description": [],
+            "brandName": [],
+            "partyName": [
+              {
+                "name": {
+                  "value": "canCompany",
+                  "languageID": "en"
+                }
+              }
+            ],
+            "partyIdentification": [
+              {
+                "id": "706"
+              }
+            ],
+            "websiteURI": "",
+            "industryClassificationCode": {
+              "name": "IndustryClassificationCode"
+            },
+            "ppapCompatibilityLevel": 1,
+            "preferredItemClassificationCode": [
+              {
+                "value": "0173-1#01-AEI956#006::eClass::Notebook::product"
+              }
+            ],
+            "mostRecentItemsClassificationCode": [
+              {
+                "value": "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard::FurnitureOntology::MDFBoard::product::1547034223954"
+              }
+            ],
+            "postalAddress": {
+              "streetName": "ODTU",
+              "buildingNumber": "",
+              "cityName": "Ankara",
+              "postalZone": "1234",
+              "country": {
+                "name": {
+                  "value": "Turkey"
+                }
+              }
+            },
+            "partyTaxScheme": [
+              {
+                "taxScheme": {
+                  "taxTypeCode": {
+                    "value": "12",
+                    "name": "VAT"
+                  }
+                }
+              }
+            ],
+            "contact": {
+              "otherCommunication": []
+            },
+            "person": [
+              {
+                "id": "379",
+                "firstName": "suat",
+                "familyName": "gonul",
+                "role": [],
+                "contact": {
+                  "name": {
+                    "languageID": "en"
+                  },
+                  "telephone": "",
+                  "electronicMail": "suat@srdc.com.tr",
+                  "otherCommunication": []
+                },
+                "roleItems": []
+              }
+            ],
+            "certificate": [],
+            "qualityIndicator": [
+              {
+                "qualityParameter": ""
+              }
+            ],
+            "ppapDocumentReference": [],
+            "documentReference": [],
+            "industrySector": [],
+            "purchaseTerms": {
+              "tradingTerms": [],
+              "deliveryTerms": [],
+              "paymentMeans": []
+            }
+          },
+          "manufacturersItemIdentification": {
+            "id": "a117c352-88f4-41a4-a616-1f402d9d02e0"
+          },
+          "catalogueDocumentReference": {
+            "id": null,
+            "documentType": null,
+            "attachment": null
+          },
+          "commodityClassification": [
+            {
+              "itemClassificationCode": {
+                "value": "0173-1#01-AAC168#005",
+                "name": "Automotive technology",
+                "uri": "http://www.nimble-project.org/resource/eclass/28000000",
+                "listID": "eClass",
+                "listURI": null
+              },
+              "natureCode": null,
+              "cargoTypeCode": null,
+              "hjid": ""
+            }
+          ],
+          "certificate": [],
+          "dimension": [],
+          "transportationServiceDetails": null,
+          "trackAndTraceDetails": {
+            "eventURL": null,
+            "masterURL": null,
+            "productionProcessTemplate": null
+          }
+        },
+        "containingPackage": {
+          "quantity": {
+            "value": 1,
+            "unitCode": "item(s)",
+            "hjid": null
+          },
+          "packagingTypeCode": {
+            "value": "",
+            "name": "",
+            "uri": "",
+            "listID": "",
+            "listURI": ""
+          },
+          "hjid": null
+        },
+        "deliveryTerms": {
+          "id": null,
+          "estimatedDeliveryPeriod": {
+            "startDate": null,
+            "startTime": null,
+            "endDate": null,
+            "endTime": null,
+            "durationMeasure": {
+              "value": null,
+              "unitCode": "day(s)",
+              "hjid": null
+            },
+            "hjid": null
+          },
+          "specialTerms": null,
+          "incoterms": null,
+          "amount": {
+            "value": null,
+            "currencyID": null
+          },
+          "deliveryLocation": {
+            "address": {
+              "cityName": "",
+              "postalZone": "",
+              "buildingNumber": "",
+              "streetName": "",
+              "country": {
+                "name": {
+                  "value": null,
+                  "languageID": "en"
+                }
+              }
+            }
+          },
+          "hjid": null
+        }
+      }
+    }
+  ]
+}

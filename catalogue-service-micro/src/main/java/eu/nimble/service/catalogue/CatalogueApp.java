@@ -1,5 +1,10 @@
 package eu.nimble.service.catalogue;
 
+<<<<<<< HEAD
+=======
+import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
+import eu.nimble.service.catalogue.sync.UBLPropertyIndexing;
+>>>>>>> staging
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
@@ -42,4 +47,20 @@ public class CatalogueApp implements CommandLineRunner {
         }
 
     }
+<<<<<<< HEAD
+=======
+
+    @EventListener({ContextRefreshedEvent.class})
+    void contextRefreshedEvent() {
+//        HibernateUtility.getInstance(eu.nimble.utility.Configuration.UBL_PERSISTENCE_UNIT_NAME);
+        MarmottaSynchronizer.getInstance().startSynchronization();
+        // index catalogue properties
+        UBLPropertyIndexing.indexCatalogueProperties();
+    }
+
+    @EventListener({ContextClosedEvent.class})
+    void contextClosedEvent() {
+        MarmottaSynchronizer.getInstance().stopSynchronization();
+    }
+>>>>>>> staging
 }

@@ -2,9 +2,22 @@
   "id": "default",
   "uuid": null,
   "providerParty": {
-    "id": "706",
     "nace": [],
-    "name": "canCompany",
+    "description": [],
+    "brandName": [],
+    "partyName": [
+      {
+        "name": {
+          "value": "canCompany",
+          "languageID": "en"
+        }
+      }
+    ],
+    "partyIdentification": [
+      {
+        "id": "704"
+      }
+    ],
     "websiteURI": "",
     "industryClassificationCode": {
       "name": "IndustryClassificationCode"
@@ -13,47 +26,11 @@
     "preferredItemClassificationCode": [
       {
         "value": "0173-1#01-AEI956#006::eClass::Notebook::product"
-      },
-      {
-        "value": "0173-1#01-ADU394#007::eClass::Transport (other, unspecified)::transportation"
-      },
-      {
-        "value": "0173-1#01-AAC286#007::eClass::Home economics, Home technology::product"
-      },
-      {
-        "value": "0173-1#01-BAC323#011::eClass::Farming vehicle (other, unspecified)::product"
       }
     ],
     "mostRecentItemsClassificationCode": [
       {
-        "value": "0173-1#01-AGE763#001::eClass::Clothing and textile::product::1543581462872"
-      },
-      {
-        "value": "http://www.aidimme.es/FurnitureSectorOntology.owl#Screw::FurnitureOntology::Screw::product::1542973086716"
-      },
-      {
-        "value": "0173-1#01-AAC350#007::eClass::Auxiliary supply, additive, cleaning agent::product::1545049501721"
-      },
-      {
-        "value": "0173-1#01-BAC323#011::eClass::Farming vehicle (other, unspecified)::product::1539583763755"
-      },
-      {
-        "value": "0173-1#01-AGF725#001::eClass::Component bathroom (unspecified)::product::1544789945992"
-      },
-      {
-        "value": "0173-1#01-AKJ050#013::eClass::MDF raw::product::1544623803585"
-      },
-      {
-        "value": "0173-1#01-AAC168#005::eClass::Automotive technology::product::1545049566393"
-      },
-      {
-        "value": "0173-1#01-AEI956#006::eClass::Notebook::product::1545390262142"
-      },
-      {
-        "value": "0173-1#01-AAB572#005::eClass::Electric engineering, automation, process control engineering::product::1543407961166"
-      },
-      {
-        "value": "0173-1#01-ADU394#007::eClass::Transport (other, unspecified)::transportation::1545042918468"
+        "value": "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard::FurnitureOntology::MDFBoard::product::1547034223954"
       }
     ],
     "postalAddress": {
@@ -62,14 +39,16 @@
       "cityName": "ankara",
       "postalZone": "234",
       "country": {
-        "name": "turkey"
+        "name": {
+          "value": "Turkey"
+        }
       }
     },
     "partyTaxScheme": [
       {
         "taxScheme": {
           "taxTypeCode": {
-            "value": "12",
+            "value": "1234",
             "name": "VAT"
           }
         }
@@ -80,13 +59,16 @@
     },
     "person": [
       {
-        "id": "704",
-        "firstName": "ali",
-        "familyName": "can",
+        "id": "379",
+        "firstName": "Suat",
+        "familyName": "Gonul",
         "role": [],
         "contact": {
+          "name": {
+            "languageID": "en"
+          },
           "telephone": "",
-          "electronicMail": "can@gmail.com",
+          "electronicMail": "suat@srdc.com.tr",
           "otherCommunication": []
         },
         "roleItems": []
@@ -111,7 +93,7 @@
   "issueTime": "",
   "catalogueLine": [
     {
-      "id": "228b289a-a2f3-4699-b7b4-9da6f95d7b6a",
+      "id": "a117c352-88f4-41a4-a616-1f402d9d02e0",
       "hjid": null,
       "orderableUnit": null,
       "freeOfChargeIndicator": false,
@@ -131,7 +113,7 @@
       "requiredItemLocationQuantity": {
         "price": {
           "priceAmount": {
-            "value": 1000,
+            "value": null,
             "currencyID": "EUR"
           },
           "baseQuantity": {
@@ -146,10 +128,15 @@
       },
       "priceOption": [],
       "goodsItem": {
-        "id": "228b289a-a2f3-4699-b7b4-9da6f95d7b6a",
+        "id": "a117c352-88f4-41a4-a616-1f402d9d02e0",
         "item": {
-          "name": "QExample",
-          "description": "",
+          "name": [
+            {
+              "value": "QExample local",
+              "languageID": "en"
+            }
+          ],
+          "description": [],
           "itemSpecificationDocumentReference": [],
           "productImage": [
             {
@@ -160,40 +147,24 @@
               "objectMetadata": ""
             }
           ],
-          "additionalItemProperty": [
-            {
-              "id": "f42e59e7-7734-40f8-adf6-bc0b9b208d13",
-              "name": "Color",
-              "value": [
-                "red",
-                "blue"
-              ],
-              "valueDecimal": [
-                0
-              ],
-              "valueQuantity": [
-                {
-                  "value": null,
-                  "unitCode": null,
-                  "hjid": null
-                }
-              ],
-              "valueBinary": [],
-              "valueQualifier": "STRING",
-              "itemClassificationCode": {
-                "value": null,
-                "name": null,
-                "uri": null,
-                "listID": "Custom",
-                "listURI": null
-              },
-              "uri": null
-            }
-          ],
+          "additionalItemProperty": [],
           "manufacturerParty": {
-            "id": "706",
             "nace": [],
-            "name": "canCompany",
+            "description": [],
+            "brandName": [],
+            "partyName": [
+              {
+                "name": {
+                  "value": "canCompany",
+                  "languageID": "en"
+                }
+              }
+            ],
+            "partyIdentification": [
+              {
+                "id": "704"
+              }
+            ],
             "websiteURI": "",
             "industryClassificationCode": {
               "name": "IndustryClassificationCode"
@@ -202,56 +173,22 @@
             "preferredItemClassificationCode": [
               {
                 "value": "0173-1#01-AEI956#006::eClass::Notebook::product"
-              },
-              {
-                "value": "0173-1#01-ADU394#007::eClass::Transport (other, unspecified)::transportation"
-              },
-              {
-                "value": "0173-1#01-AAC286#007::eClass::Home economics, Home technology::product"
-              },
-              {
-                "value": "0173-1#01-BAC323#011::eClass::Farming vehicle (other, unspecified)::product"
               }
             ],
             "mostRecentItemsClassificationCode": [
               {
-                "value": "0173-1#01-AGE763#001::eClass::Clothing and textile::product::1543581462872"
-              },
-              {
-                "value": "http://www.aidimme.es/FurnitureSectorOntology.owl#Screw::FurnitureOntology::Screw::product::1542973086716"
-              },
-              {
-                "value": "0173-1#01-AAC350#007::eClass::Auxiliary supply, additive, cleaning agent::product::1545049501721"
-              },
-              {
-                "value": "0173-1#01-BAC323#011::eClass::Farming vehicle (other, unspecified)::product::1539583763755"
-              },
-              {
-                "value": "0173-1#01-AGF725#001::eClass::Component bathroom (unspecified)::product::1544789945992"
-              },
-              {
-                "value": "0173-1#01-AKJ050#013::eClass::MDF raw::product::1544623803585"
-              },
-              {
-                "value": "0173-1#01-AAC168#005::eClass::Automotive technology::product::1545049566393"
-              },
-              {
-                "value": "0173-1#01-AEI956#006::eClass::Notebook::product::1545390262142"
-              },
-              {
-                "value": "0173-1#01-AAB572#005::eClass::Electric engineering, automation, process control engineering::product::1543407961166"
-              },
-              {
-                "value": "0173-1#01-ADU394#007::eClass::Transport (other, unspecified)::transportation::1545042918468"
+                "value": "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard::FurnitureOntology::MDFBoard::product::1547034223954"
               }
             ],
             "postalAddress": {
-              "streetName": "abcx",
+              "streetName": "ODTU",
               "buildingNumber": "",
-              "cityName": "ankara",
-              "postalZone": "234",
+              "cityName": "Ankara",
+              "postalZone": "1234",
               "country": {
-                "name": "turkey"
+                "name": {
+                  "value": "Turkey"
+                }
               }
             },
             "partyTaxScheme": [
@@ -269,13 +206,16 @@
             },
             "person": [
               {
-                "id": "704",
-                "firstName": "ali",
-                "familyName": "can",
+                "id": "379",
+                "firstName": "suat",
+                "familyName": "gonul",
                 "role": [],
                 "contact": {
+                  "name": {
+                    "languageID": "en"
+                  },
                   "telephone": "",
-                  "electronicMail": "can@gmail.com",
+                  "electronicMail": "suat@srdc.com.tr",
                   "otherCommunication": []
                 },
                 "roleItems": []
@@ -297,7 +237,7 @@
             }
           },
           "manufacturersItemIdentification": {
-            "id": "228b289a-a2f3-4699-b7b4-9da6f95d7b6a"
+            "id": "a117c352-88f4-41a4-a616-1f402d9d02e0"
           },
           "catalogueDocumentReference": {
             "id": null,
@@ -369,7 +309,10 @@
               "buildingNumber": "",
               "streetName": "",
               "country": {
-                "name": null
+                "name": {
+                  "value": null,
+                  "languageID": "en"
+                }
               }
             }
           },

@@ -7,6 +7,7 @@ import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.exception.CategoryDatabaseException;
 import eu.nimble.service.catalogue.template.TemplateConfig;
 import eu.nimble.service.model.ubl.extension.ItemPropertyValueQualifier;
+import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +24,7 @@ import static eu.nimble.service.catalogue.category.eclass.database.EClassCategor
 public class EClassCategoryDatabaseAdapter {
     private static final Logger logger = LoggerFactory.getLogger(EClassCategoryDatabaseAdapter.class);
 
+    private String defaultLanguage = "en";
     /**
      * The record counts below are specified based on the eClass Basic 10.0 version. In case of any eclass taxonomy update,
      * the numbers should also be updated.
@@ -499,10 +501,15 @@ public class EClassCategoryDatabaseAdapter {
         while (rs.next()) {
             Category cc = new Category();
             cc.setCode(rs.getString(COLUMN_CLASSIFICATION_CLASS_CODED_NAME));
-            cc.setDefinition(rs.getString(COLUMN_CLASSIFICATION_CLASS_DEFINITION));
+            // create a TextType for category definition
+            TextType textType = new TextType();
+            textType.setLanguageID(defaultLanguage);
+            textType.setValue(rs.getString(COLUMN_CLASSIFICATION_CLASS_DEFINITION));
+            cc.setDefinition(Arrays.asList(textType));
             cc.setId(rs.getString(COLUMN_CLASSIFICATION_CLASS_IRDICC));
             cc.setLevel(Integer.valueOf(rs.getString(COLUMN_CLASSIFICATION_CLASS_LEVEL)));
-            cc.setPreferredName(rs.getString(COLUMN_CLASSIFICATION_CLASS_PREFERRED_NAME));
+
+            cc.addPreferredName(rs.getString(COLUMN_CLASSIFICATION_CLASS_PREFERRED_NAME), defaultLanguage);
             cc.setNote(rs.getString(COLUMN_CLASSIFICATION_CLASS_NOTE));
             cc.setRemark(rs.getString(COLUMN_CLASSIFICATION_CLASS_REMARK));
             cc.setTaxonomyId("eClass");
@@ -525,7 +532,11 @@ public class EClassCategoryDatabaseAdapter {
 
             Property prop = new Property();
             prop.setId(TaxonomyEnum.eClass.getNamespace() + rs.getString(COLUMN_PROPERTY_IRDI_PR));
-            prop.setPreferredName(rs.getString(COLUMN_PROPERTY_PREFERRED_NAME));
+            // create a TextType for property definition
+            TextType textType = new TextType();
+            textType.setLanguageID(defaultLanguage);
+            textType.setValue(rs.getString(COLUMN_PROPERTY_PREFERRED_NAME));
+            prop.setPreferredName(Arrays.asList(textType));
             prop.setShortName(rs.getString(COLUMN_PROPERTY_SHORT_NAME));
             prop.setDefinition(rs.getString(COLUMN_PROPERTY_DEFINITION));
             prop.setNote(rs.getString(COLUMN_PROPERTY_NOTE));
@@ -547,7 +558,7 @@ public class EClassCategoryDatabaseAdapter {
         while (rs.next()) {
             Property prop = new Property();
             prop.setId(rs.getString(COLUMN_PROPERTY_IRDI_PR));
-            prop.setPreferredName(rs.getString(COLUMN_PROPERTY_PREFERRED_NAME));
+            prop.addPreferredName(rs.getString(COLUMN_PROPERTY_PREFERRED_NAME), defaultLanguage);
             prop.setShortName(rs.getString(COLUMN_PROPERTY_SHORT_NAME));
             prop.setDefinition(rs.getString(COLUMN_PROPERTY_DEFINITION));
             prop.setNote(rs.getString(COLUMN_PROPERTY_NOTE));

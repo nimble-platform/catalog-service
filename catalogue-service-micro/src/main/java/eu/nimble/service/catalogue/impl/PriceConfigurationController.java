@@ -92,12 +92,12 @@ public class PriceConfigurationController {
             }
 
             // first persist the price options
-            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
+            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID());
             repositoryWrapper.persistEntity(priceOption);
 
             // update the catalogue line
             catalogueLine.getPriceOption().add(priceOption);
-            repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
+            repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID());
             repositoryWrapper.updateEntity(catalogueLine);
 
             ObjectMapper objectMapper = JsonSerializationUtility.getObjectMapper();
@@ -172,7 +172,7 @@ public class PriceConfigurationController {
             }
 
             // remove the option and update the line
-            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
+            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID());
             repositoryWrapper.deleteEntityByHjid(PriceOptionType.class, optionId);
 //            catalogueLine.getPriceOption().remove(optionIndex.intValue());
 //            repositoryWrapper.updateEntity(catalogueLine);
@@ -226,7 +226,7 @@ public class PriceConfigurationController {
             }
 
             // validate the entity ids
-            boolean hjidsBelongToCompany = resourceValidationUtil.hjidsBelongsToParty(priceOption, catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID(), Configuration.Standard.UBL.toString());
+            boolean hjidsBelongToCompany = resourceValidationUtil.hjidsBelongsToParty(priceOption, catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID(), Configuration.Standard.UBL.toString());
             if(!hjidsBelongToCompany) {
                 return HttpResponseUtil.createResponseEntityAndLog(String.format("Some of the identifiers (hjid fields) do not belong to the party in the passed catalogue: %s", JsonSerializationUtility.serializeEntitySilently(priceOption)), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
             }
@@ -247,7 +247,7 @@ public class PriceConfigurationController {
             }
 
             // remove the option and update the line
-            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
+            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID());
             priceOption = repositoryWrapper.updateEntity(priceOption);
 
             log.info("Completed request to update price option. catalogueId: {}, lineId: {}, optionId: {}", catalogueUuid, lineId, priceOption.getHjid());
