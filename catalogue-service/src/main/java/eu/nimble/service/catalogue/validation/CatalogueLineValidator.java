@@ -6,6 +6,7 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemPropertyType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
+import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +66,7 @@ public class CatalogueLineValidator {
 
     private void manufacturerIdExists() {
         ItemType item = catalogueLine.getGoodsItem().getItem();
-        if (Strings.isNullOrEmpty(item.getManufacturerParty().getID())) {
+        if (Strings.isNullOrEmpty(item.getManufacturerParty().getPartyIdentification().get(0).getID())) {
             errorMessages.add(String.format("No manufacturer party id set for catalogue line: %s", extractedLineId));
         }
     }
@@ -81,7 +82,15 @@ public class CatalogueLineValidator {
 
     private void nameExists() {
         ItemType item = catalogueLine.getGoodsItem().getItem();
-        if (Strings.isNullOrEmpty(item.getName())) {
+
+        boolean nameExists = false;
+        for (TextType textType:item.getName()){
+            if(!Strings.isNullOrEmpty(textType.getValue())){
+                nameExists = true;
+            }
+        }
+
+        if (!nameExists) {
             errorMessages.add(String.format("No name set for catalogue line. id: %s", extractedLineId));
         }
     }
@@ -95,8 +104,8 @@ public class CatalogueLineValidator {
 
     private void partyIdsMatch() {
         ItemType item = catalogueLine.getGoodsItem().getItem();
-        String catalogueProviderPartyId = owningCatalogue.getProviderParty().getID();
-        String itemManufacturerPartyId = item.getManufacturerParty().getID();
+        String catalogueProviderPartyId = owningCatalogue.getProviderParty().getPartyIdentification().get(0).getID();
+        String itemManufacturerPartyId = item.getManufacturerParty().getPartyIdentification().get(0).getID();
         if (!catalogueProviderPartyId.contentEquals(itemManufacturerPartyId)) {
             errorMessages.add(String.format("Catalogue provider party and manufacturer party ids do no match for catalogue line. id: %s, catalogue provider party id: %s, line manufacturer party id: %s", extractedLineId, catalogueProviderPartyId, itemManufacturerPartyId));
         }

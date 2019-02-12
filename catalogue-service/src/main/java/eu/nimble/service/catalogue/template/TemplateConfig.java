@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue.template;
 
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.model.category.Unit;
+import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -114,6 +115,9 @@ public class TemplateConfig {
     public static String TEMPLATE_DATA_TYPE_STRING_TRANSLATABLE = "STRING_TRANSLATABLE";
     public static String TEMPLATE_DATA_TYPE_BOOLEAN = "BOOLEAN";
 
+
+    private static String defaultLanguage = "en";
+
     public static String TEMPLATE_BOOLEAN_REFERENCE = "SourceList!$A$2:$A$3";
     public static String TEMPLATE_INCOTERMS_REFERENCE = "SourceList!$B$2:$B$12";
     public static String TEMPLATE_CURRENCY_REFERENCE = "SourceList!$C$2:$C$4";
@@ -128,30 +132,31 @@ public class TemplateConfig {
     public static String TEMPLATE_WARRANTY_VALIDITY_LIST = "WarrantyValidity";
     public static String TEMPLATE_DELIVERY_PERIOD_LIST = "DeliveryPeriod";
 
+
     public static List<Property> getFixedPropertiesForProductPropertyTab() {
         List<Property> properties = new ArrayList<>();
 
         // item manufacturer id
         Property prop = new Property();
-        prop.setPreferredName(TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION);
+        prop.addPreferredName(TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION, defaultLanguage);
         prop.setDataType("STRING");
         properties.add(prop);
 
         // name
         prop = new Property();
-        prop.setPreferredName(TEMPLATE_PRODUCT_PROPERTIES_NAME);
+        prop.addPreferredName(TEMPLATE_PRODUCT_PROPERTIES_NAME, defaultLanguage);
         prop.setDataType("STRING");
         properties.add(prop);
 
         // description
         prop = new Property();
-        prop.setPreferredName(TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION);
+        prop.addPreferredName(TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION, defaultLanguage);
         prop.setDataType("STRING");
         properties.add(prop);
 
         // certifications
         prop = new Property();
-        prop.setPreferredName(TEMPLATE_PRODUCT_PROPERTIES_CERTIFICATIONS);
+        prop.addPreferredName(TEMPLATE_PRODUCT_PROPERTIES_CERTIFICATIONS, defaultLanguage);
         prop.setDataType("STRING");
         properties.add(prop);
 
@@ -169,19 +174,19 @@ public class TemplateConfig {
 
         // width
         prop = new Property();
-        prop.setPreferredName(TEMPLATE_PRODUCT_PROPERTIES_WIDTH);
+        prop.addPreferredName(TEMPLATE_PRODUCT_PROPERTIES_WIDTH, defaultLanguage);
         prop.setDataType("QUANTITY");
         properties.add(prop);
 
         // length
         prop = new Property();
-        prop.setPreferredName(TEMPLATE_PRODUCT_PROPERTIES_LENGTH);
+        prop.addPreferredName(TEMPLATE_PRODUCT_PROPERTIES_LENGTH, defaultLanguage);
         prop.setDataType("QUANTITY");
         properties.add(prop);
 
         // height
         prop = new Property();
-        prop.setPreferredName(TEMPLATE_PRODUCT_PROPERTIES_HEIGHT);
+        prop.addPreferredName(TEMPLATE_PRODUCT_PROPERTIES_HEIGHT, defaultLanguage);
         prop.setDataType("QUANTITY");
         properties.add(prop);
         return properties;
@@ -192,13 +197,13 @@ public class TemplateConfig {
 
         // item manufacturer id
         Property prop = new Property();
-        prop.setPreferredName(TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION);
+        prop.addPreferredName(TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION, defaultLanguage);
         prop.setDataType("STRING");
         properties.add(prop);
 
         // price amount
         prop = new Property();
-        prop.setPreferredName(TEMPLATE_TRADING_DELIVERY_PRICE_AMOUNT);
+        prop.addPreferredName(TEMPLATE_TRADING_DELIVERY_PRICE_AMOUNT, defaultLanguage);
         prop.setDataType("AMOUNT");
         properties.add(prop);
         Unit unit = new Unit();
@@ -207,55 +212,55 @@ public class TemplateConfig {
 
         // price base quantity
         prop = new Property();
-        prop.setPreferredName(TEMPLATE_TRADING_DELIVERY_PRICE_BASE_QUANTITY);
+        prop.addPreferredName(TEMPLATE_TRADING_DELIVERY_PRICE_BASE_QUANTITY, defaultLanguage);
         prop.setDataType("QUANTITY");
         properties.add(prop);
 
         // minimum order quantity
         prop = new Property();
-        prop.setPreferredName(TEMPLATE_TRADING_DELIVERY_MINIMUM_ORDER_QUANTITY);
+        prop.addPreferredName(TEMPLATE_TRADING_DELIVERY_MINIMUM_ORDER_QUANTITY, defaultLanguage);
         prop.setDataType("QUANTITY");
         properties.add(prop);
 
         // free sample
         prop = new Property();
-        prop.setPreferredName(TEMPLATE_TRADING_DELIVERY_FREE_SAMPLE);
+        prop.addPreferredName(TEMPLATE_TRADING_DELIVERY_FREE_SAMPLE, defaultLanguage);
         prop.setDataType("BOOLEAN");
         properties.add(prop);
 
         // validity period
         prop = new Property();
-        prop.setPreferredName(TEMPLATE_TRADING_DELIVERY_WARRANTY_VALIDITY_PERIOD);
+        prop.addPreferredName(TEMPLATE_TRADING_DELIVERY_WARRANTY_VALIDITY_PERIOD, defaultLanguage);
         prop.setDataType("QUANTITY");
         properties.add(prop);
 
         // warranty information
         prop = new Property();
-        prop.setPreferredName(TEMPLATE_TRADING_DELIVERY_WARRANTY_INFORMATION);
+        prop.addPreferredName(TEMPLATE_TRADING_DELIVERY_WARRANTY_INFORMATION, defaultLanguage);
         prop.setDataType("TEXT");
         properties.add(prop);
 
         // incoterms
         prop = new Property();
-        prop.setPreferredName(TEMPLATE_TRADING_DELIVERY_INCOTERMS);
+        prop.addPreferredName(TEMPLATE_TRADING_DELIVERY_INCOTERMS, defaultLanguage);
         prop.setDataType("TEXT");
         properties.add(prop);
 
         // special terms
         prop = new Property();
-        prop.setPreferredName(TEMPLATE_TRADING_DELIVERY_SPECIAL_TERMS);
+        prop.addPreferredName(TEMPLATE_TRADING_DELIVERY_SPECIAL_TERMS, defaultLanguage);
         prop.setDataType("TEXT");
         properties.add(prop);
 
         // estimated delivery period
         prop = new Property();
-        prop.setPreferredName(TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD);
+        prop.addPreferredName(TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD, defaultLanguage);
         prop.setDataType("QUANTITY");
         properties.add(prop);
 
         // applicable address territory country
         prop = new Property();
-        prop.setPreferredName(TEMPLATE_TRADING_DELIVERY_APPLICABLE_ADDRESS_COUNTRY);
+        prop.addPreferredName(TEMPLATE_TRADING_DELIVERY_APPLICABLE_ADDRESS_COUNTRY, defaultLanguage);
         prop.setDataType("TEXT");
         properties.add(prop);
 
@@ -267,19 +272,19 @@ public class TemplateConfig {
 
         // transport mode
         prop = new Property();
-        prop.setPreferredName(TEMPLATE_TRADING_DELIVERY_TRANSPORT_MODE);
+        prop.addPreferredName(TEMPLATE_TRADING_DELIVERY_TRANSPORT_MODE, defaultLanguage);
         prop.setDataType("TEXT");
         properties.add(prop);
 
         // packaging type
         prop = new Property();
-        prop.setPreferredName(TEMPLATE_TRADING_DELIVERY_PACKAGING_TYPE);
+        prop.addPreferredName(TEMPLATE_TRADING_DELIVERY_PACKAGING_TYPE, defaultLanguage);
         prop.setDataType("TEXT");
         properties.add(prop);
 
         // packaging quantity
         prop = new Property();
-        prop.setPreferredName(TEMPLATE_TRADING_DELIVERY_PACKAGE_QUANTITY);
+        prop.addPreferredName(TEMPLATE_TRADING_DELIVERY_PACKAGE_QUANTITY, defaultLanguage);
         prop.setDataType("QUANTITY");
         properties.add(prop);
 

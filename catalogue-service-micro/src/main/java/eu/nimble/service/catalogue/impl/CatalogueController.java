@@ -54,7 +54,10 @@ import java.util.zip.ZipInputStream;
 //@Transactional(transactionManager = "ubldbTransactionManager")
 public class CatalogueController {
 
-    private static Logger log = LoggerFactory.getLogger(CatalogueController.class);
+    private String defaultLanguage = "en";
+
+    private static Logger log = LoggerFactory
+            .getLogger(CatalogueController.class);
 
     private CatalogueService service = CatalogueServiceImpl.getInstance();
 
@@ -238,7 +241,7 @@ public class CatalogueController {
                 }
 
                 // check catalogue with the same id exists
-                boolean catalogueExists = CataloguePersistenceUtil.checkCatalogueExistenceById(ublCatalogue.getID(), ublCatalogue.getProviderParty().getID());
+                boolean catalogueExists = CataloguePersistenceUtil.checkCatalogueExistenceById(ublCatalogue.getID(), ublCatalogue.getProviderParty().getPartyIdentification().get(0).getID());
                 if (catalogueExists) {
                     return HttpResponseUtil.createResponseEntityAndLog(String.format("Catalogue with ID: '%s' already exists for the publishing party", ublCatalogue.getID()), null, HttpStatus.CONFLICT, LogLevel.INFO);
                 }
@@ -316,7 +319,7 @@ public class CatalogueController {
             }
 
             // validate the entity ids
-            boolean hjidsBelongToCompany = resourceValidationUtil.hjidsBelongsToParty(catalogue, catalogue.getProviderParty().getID(), Configuration.Standard.UBL.toString());
+            boolean hjidsBelongToCompany = resourceValidationUtil.hjidsBelongsToParty(catalogue, catalogue.getProviderParty().getPartyIdentification().get(0).getID(), Configuration.Standard.UBL.toString());
             if (!hjidsBelongToCompany) {
                 return HttpResponseUtil.createResponseEntityAndLog(String.format("Some of the identifiers (hjid fields) do not belong to the party in the passed catalogue: %s", catalogueJson), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
             }
@@ -388,6 +391,7 @@ public class CatalogueController {
             @ApiParam(value = "Category ids for which the properties to be generated in the template. Examples: http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard,0173-1#01-ACH237#011", required = true) @RequestParam("categoryIds") List<String> categoryIds,
             @ApiParam(value = "Taxonomy ids corresponding to the categories specified in the categoryIds parameter", required = true) @RequestParam("taxonomyIds") List<String> taxonomyIds,
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
+            @RequestParam("templateLanguage") String templateLanguage,
             HttpServletResponse response) {
         log.info("Incoming request to generate a template. Category ids: {}, taxonomy ids: {}", categoryIds, taxonomyIds);
         ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
@@ -397,7 +401,7 @@ public class CatalogueController {
 
         Workbook template;
         try {
-            template = service.generateTemplateForCategory(categoryIds, taxonomyIds);
+            template = service.generateTemplateForCategory(categoryIds, taxonomyIds,templateLanguage);
         } catch (Exception e) {
             String msg = "Failed to generate template\n" + e.getMessage();
             log.error(msg, e);

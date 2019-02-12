@@ -13,6 +13,8 @@ import java.util.UUID;
 
 public class DataIntegratorUtil {
 
+    private static String defaultLanguage = "en";
+
     public static void ensureCatalogueDataIntegrityAndEnhancement(CatalogueType catalogue){
         PartyType partyType = CatalogueDatabaseAdapter.syncPartyInUBLDB(catalogue.getProviderParty());
         catalogue.setProviderParty(partyType);
@@ -106,7 +108,7 @@ public class DataIntegratorUtil {
                 CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
                 CodeType codeType = new CodeType();
                 codeType.setValue(category.getId());
-                codeType.setName(category.getPreferredName());
+                codeType.setName(category.getPreferredName(defaultLanguage));
                 codeType.setListID(category.getTaxonomyId());
                 codeType.setURI(category.getCategoryUri());
                 commodityClassificationType.setItemClassificationCode(codeType);

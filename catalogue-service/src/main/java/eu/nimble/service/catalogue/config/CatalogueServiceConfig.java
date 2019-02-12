@@ -55,6 +55,7 @@ public class CatalogueServiceConfig {
     private boolean marmottaSync;
     @Value("${nimble.identity.url}")
     private String identityUrl;
+
     @Value("${persistence.solr.url}")
     private String solrURL;
     @Value("${persistence.solr.properties-index}")
@@ -192,6 +193,7 @@ public class CatalogueServiceConfig {
         this.marmottaSync = marmottaSync;
     }
 
+
     public String getSolrURL() {
         return solrURL;
     }
@@ -199,6 +201,7 @@ public class CatalogueServiceConfig {
     public void setSolrURL(String solrURL) {
         this.solrURL = solrURL;
     }
+
 
     public String getSolrPropertyIndex() {
         return solrPropertyIndex;

@@ -48,7 +48,7 @@ public interface CatalogueService {
     /**
      * @return
      */
-    public Workbook generateTemplateForCategory(List<String> categoryId, List<String> taxonomyIds);
+    public Workbook generateTemplateForCategory(List<String> categoryId, List<String> taxonomyIds,String templateLanguage);
 
     /**
      * Adds the catalogue given through the NIMBLE-specific, Excel-based template.

@@ -113,6 +113,6 @@ public class Test02_CatalogueLineControllerTest {
     public void test5_getJsonNonExistingCatalogueLine() throws Exception {
         MockHttpServletRequestBuilder request = get("/catalogue/" + catalogueId + "/catalogueline/" + catalogueLineId)
                 .header("Authorization", environment.getProperty("nimble.test-token"));
-        this.mockMvc.perform(request).andDo(print()).andExpect(status().isNoContent()).andReturn();
+        this.mockMvc.perform(request).andDo(print()).andExpect(status().isNotFound()).andReturn();
     }
 }

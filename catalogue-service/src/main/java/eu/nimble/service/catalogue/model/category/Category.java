@@ -1,5 +1,8 @@
 package eu.nimble.service.catalogue.model.category;
 
+import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -7,16 +10,35 @@ import java.util.List;
  */
 public class Category {
     private String id;
-    private String preferredName;
+    private List<TextType> preferredName = new ArrayList<>();
     private String code;
     private int level;
-    private String definition;
+    private List<TextType> definition = new ArrayList<>();
     private String note;
     private String remark;
     private List<KeywordSynonym> keywords;
     private List<Property> properties;
     private String taxonomyId;
     private String categoryUri;
+
+    public void addPreferredName(String name, String language) {
+        TextType prefName = new TextType();
+        prefName.setLanguageID(language);
+        prefName.setValue(name);
+        preferredName.add(prefName);
+    }
+
+    public String getPreferredName(String language) {
+        if(language == null) {
+            language = "en";
+        }
+
+        for(TextType pNames: preferredName) {
+            if(pNames.getLanguageID().equals(language))
+                return pNames.getValue();
+        }
+        return null;
+    }
 
     public String getId() {
         return id;
@@ -26,11 +48,11 @@ public class Category {
         this.id = id;
     }
 
-    public String getPreferredName() {
+    public List<TextType> getPreferredName() {
         return preferredName;
     }
 
-    public void setPreferredName(String preferredName) {
+    public void setPreferredName(List<TextType> preferredName) {
         this.preferredName = preferredName;
     }
 
@@ -50,11 +72,11 @@ public class Category {
         this.level = level;
     }
 
-    public String getDefinition() {
+    public List<TextType> getDefinition() {
         return definition;
     }
 
-    public void setDefinition(String definition) {
+    public void setDefinition(List<TextType> definition) {
         this.definition = definition;
     }
 
