@@ -14,13 +14,15 @@ import java.util.List;
 public class CataloguePersistenceUtil {
     private static final String QUERY_GET_BY_UUID = "SELECT catalogue FROM CatalogueType catalogue WHERE catalogue.UUID = :uuid";
     private static final String QUERY_GET_FOR_PARTY = "SELECT catalogue FROM CatalogueType as catalogue "
-            + " JOIN catalogue.providerParty as catalogue_provider_party"
+            + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification"
             + " WHERE catalogue.ID = :catalogueId"
-            + " AND catalogue_provider_party.ID = :partyId";
-    private static final String QUERY_CHECK_EXISTENCE_BY_ID = "SELECT COUNT(c) FROM CatalogueType c WHERE c.ID = :catalogueId and c.providerParty.ID = :partyId";
+            + " AND partyIdentification.ID = :partyId";
+    private static final String QUERY_CHECK_EXISTENCE_BY_ID = "SELECT COUNT(catalogue) FROM CatalogueType catalogue"
+            + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification"
+            + " WHERE catalogue.ID = :catalogueId and partyIdentification.ID = :partyId";
     private static final String QUERY_GET_CATALOGUE_IDS_FOR_PARTY = "SELECT catalogue.UUID FROM CatalogueType as catalogue" +
-            " JOIN catalogue.providerParty as catalogue_provider_party " +
-            " WHERE catalogue_provider_party.ID = :partyId";
+            " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification" +
+            " WHERE partyIdentification.ID = :partyId";
 
     private static final String QUERY_GET_CATALOGUE_LINES_BY_IDS = "SELECT catalogueLine FROM CatalogueLineType catalogueLine " +
             " WHERE catalogueLine.ID in :catalogueLineIds";
@@ -28,17 +30,17 @@ public class CataloguePersistenceUtil {
             " JOIN catalogue.catalogueLine catalogueLine JOIN catalogueLine.goodsItem.item.commodityClassification commodityClassification JOIN commodityClassification.itemClassificationCode itemClassificationCode " +
             " WHERE catalogue.UUID = :catalogueUuid";
     private static final String QUERY_GET_CATALOGUE_LINE_IDS_FOR_PARTY = "SELECT catalogueLine.ID FROM CatalogueType as catalogue "
-            + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue.catalogueLine catalogueLine"
+            + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification JOIN catalogue.catalogueLine catalogueLine"
             + " WHERE catalogue.ID = :catalogueId"
-            + " AND catalogue_provider_party.ID = :partyId";
+            + " AND partyIdentification.ID = :partyId";
     private static final String QUERY_GET_CATALOGUE_LINE_COUNT_FOR_PARTY = "SELECT COUNT(catalogueLine) FROM CatalogueType as catalogue "
-            + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue.catalogueLine catalogueLine"
+            + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification JOIN catalogue.catalogueLine catalogueLine"
             + " WHERE catalogue.ID = :catalogueId"
-            + " AND catalogue_provider_party.ID = :partyId";
+            + " AND partyIdentification.ID = :partyId";
     private static final String QUERY_GET_CATALOGUE_UUID_FOR_PARTY = "SELECT catalogue.UUID FROM CatalogueType as catalogue "
-            + " JOIN catalogue.providerParty as catalogue_provider_party"
+            + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification"
             + " WHERE catalogue.ID = :catalogueId"
-            + " AND catalogue_provider_party.ID = :partyId";
+            + " AND partyIdentification.ID = :partyId";
 
 
     public static CataloguePaginationResponse getCatalogueLinesForParty(String catalogueId, String partyId, int limit, int offset) {

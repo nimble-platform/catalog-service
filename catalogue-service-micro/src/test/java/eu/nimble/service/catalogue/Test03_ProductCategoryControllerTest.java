@@ -100,6 +100,6 @@ public class Test03_ProductCategoryControllerTest {
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
         List<Category> categories = mapper.readValue(result.getResponse().getContentAsString(), new TypeReference<List<Category>>() {});
-        Assert.assertEquals("Die-cutter and stamping machines (post press)", categories.get(0).getPreferredName());
+        Assert.assertEquals("Die-cutter and stamping machines (post press)", categories.get(0).getPreferredName().get(0).getValue());
     }
 }

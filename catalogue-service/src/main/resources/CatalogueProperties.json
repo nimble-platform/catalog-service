@@ -1,0 +1,454 @@
+[
+  {
+  "id": "ubl_item_id",
+  "preferredName": [
+    {
+      "value": "Item ID",
+      "languageID": "en"
+    }
+  ],
+  "shortName": "item_id",
+  "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+  "id": "ubl_item_catalogue_id",
+  "preferredName": [
+    {
+      "value": "Catalogue ID",
+      "languageID": "en"
+    }
+  ],
+  "shortName": "item_catalogue_id",
+  "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "ubl_item_name",
+    "preferredName": [
+      {
+        "value": "Item name",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "item_name",
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "ubl_item_description",
+    "preferredName": [
+      {
+        "value": "Item description",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "item_description",
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "ubl_item_image",
+    "preferredName": [
+      {
+        "value": "Item image",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "item_image",
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "ubl_item_price",
+    "preferredName": [
+      {
+        "value": "Price",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "item_price",
+    "dataType": "http://www.w3.org/2001/XMLSchema#double"
+  },
+  {
+    "id": "ubl_item_price_currency",
+    "preferredName": [
+      {
+        "value": "Currency",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "item_price_currency",
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "ubl_item_free_of_charge_indicator",
+    "preferredName": [
+      {
+        "value": "Free Sample",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "item_free_of_charge_indicator",
+    "dataType": "http://www.w3.org/2001/XMLSchema#boolean"
+  },
+  {
+    "id": "ubl_item_certificate",
+    "preferredName": [
+      {
+        "value": "Product / Service Certificate",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "item_certificate",
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "ubl_item_applicable_countries",
+    "preferredName": [
+      {
+        "value": "Destination Country",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "item_applicable_countries",
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "ubl_item_manufacturer_name",
+    "preferredName": [
+      {
+        "value": "Vendor Name",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "item_manufacturer_name",
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "ubl_item_manufacturer_id",
+    "preferredName": [
+      {
+        "value": "Item manufacturer ID",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "item_manufacturer_id",
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "ubl_item_manufacturer_origin",
+    "preferredName": [
+      {
+        "value": "Vendor Origin",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "item_manufacturer_origin",
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "ubl_manufacturer_certificate",
+    "preferredName": [
+      {
+        "value": "Vendor Certificate",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "manufacturer_certificate",
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "ubl_manufacturer_ppap_compliance_level",
+    "preferredName": [
+      {
+        "value": "PPAP Compliance Level",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "manufacturer_ppap_compliance_level",
+    "dataType": "http://www.w3.org/2001/XMLSchema#double"
+  },
+  {
+    "id": "ubl_manufacturer_ppap_document",
+    "preferredName": [
+      {
+        "value": "PPAP Document",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "manufacturer_ppap_document",
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "ubl_item_start_date",
+    "preferredName": [
+      {
+        "value": "Start date",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "item_start_date",
+    "dataType": "http://www.w3.org/2001/XMLSchema#date"
+  },
+  {
+    "id": "ubl_item_start_time",
+    "preferredName": [
+      {
+        "value": "Start time",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "item_start_time",
+    "dataType": "http://www.w3.org/2001/XMLSchema#time"
+  },
+  {
+    "id": "ubl_item_estimated_delivery_time",
+    "preferredName": [
+      {
+        "value": "Estimated delivery time",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "item_estimated_delivery_time",
+    "dataType": "http://www.w3.org/2001/XMLSchema#double"
+  },
+  {
+    "id": "ubl_item_package_amount",
+    "preferredName": [
+      {
+        "value": "Package amount",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "item_package_amount",
+    "dataType": "http://www.w3.org/2001/XMLSchema#double"
+  },
+  {
+    "id": "ubl_item_package_type",
+    "preferredName": [
+      {
+        "value": "Package type",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "item_package_type",
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "ubl_item_commodity_classification_code",
+    "preferredName": [
+      {
+        "value": "Commodity classification code",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "item_commodity_classification_code",
+    "dataType": "http://www.w3.org/2001/XMLSchema#anyURI"
+  },
+  {
+    "id": "ubl_item_commodity_classification",
+    "preferredName": [
+      {
+        "value": "Commodity classification",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "item_commodity_classification",
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "ubl_item_commodity_classification_uri",
+    "preferredName": [
+      {
+        "value": "Commodity classification uri",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "item_commodity_classification_uri",
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "ubl_item_commodity_classification_mix",
+    "preferredName": [
+      {
+        "value": "Commodity classification mix",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "item_commodity_classification_mix",
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "ubl_item_properties",
+    "preferredName": [
+      {
+        "value": "Item properties",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "item_properties",
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "ubl_service_type",
+    "preferredName": [
+      {
+        "value": "Service type",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "service_type",
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "ubl_supported_product_nature",
+    "preferredName": [
+      {
+        "value": "Supported product nature",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "supported_product_nature",
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "ubl_supported_cargo_type",
+    "preferredName": [
+      {
+        "value": "Supported cargo type",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "supported_cargo_type",
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "ubl_total_capacity",
+    "preferredName": [
+      {
+        "value": "Total capacity",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "total_capacity",
+    "dataType": "http://www.w3.org/2001/XMLSchema#double"
+  },
+  {
+    "id": "ubl_total_capacity_unit",
+    "preferredName": [
+      {
+        "value": "Total capacity unit",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "total_capacity_unit",
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "ubl_mode",
+    "preferredName": [
+      {
+        "value": "Mode",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "mode",
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "ubl_emission_standard",
+    "preferredName": [
+      {
+        "value": "Emission standard",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "emission_standard",
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "ubl_estimated_duration",
+    "preferredName": [
+      {
+        "value": "Estimated duration",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "estimated_duration",
+    "dataType": "http://www.w3.org/2001/XMLSchema#double"
+  },
+  {
+    "id": "ubl_trust_company_trust_score",
+    "preferredName": [
+      {
+        "value": "Trust Score",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "trust_company_trust_score",
+    "dataType": "http://www.w3.org/2001/XMLSchema#double"
+  },
+  {
+    "id": "ubl_trust_company_rating",
+    "preferredName": [
+      {
+        "value": "Overall Rating",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "trust_company_rating",
+    "dataType": "http://www.w3.org/2001/XMLSchema#double"
+  },
+  {
+    "id": "ubl_trust_company_trading_volume",
+    "preferredName": [
+      {
+        "value": "Trading Volume",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "trust_company_trading_volume",
+    "dataType": "http://www.w3.org/2001/XMLSchema#double"
+  },
+  {
+    "id": "ubl_trust_company_seller_communication",
+    "preferredName": [
+      {
+        "value": "Seller Communication",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "trust_company_seller_communication",
+    "dataType": "http://www.w3.org/2001/XMLSchema#double"
+  },
+  {
+    "id": "ubl_trust_company_fulfillment_of_terms",
+    "preferredName": [
+      {
+        "value": "Fulfillment of terms",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "trust_company_fulfillment_of_terms",
+    "dataType": "http://www.w3.org/2001/XMLSchema#double"
+  },
+  {
+    "id": "ubl_trust_company_delivery_packaging",
+    "preferredName": [
+      {
+        "value": "Delivery & Packaging",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "trust_company_delivery_packaging",
+    "dataType": "http://www.w3.org/2001/XMLSchema#double"
+  },
+  {
+    "id": "ubl_trust_company_number_of_transactions",
+    "preferredName": [
+      {
+        "value": "Company number of transactions",
+        "languageID": "en"
+      }
+    ],
+    "shortName": "trust_company_number_of_transactions",
+    "dataType": "http://www.w3.org/2001/XMLSchema#double"
+  }
+]
+
