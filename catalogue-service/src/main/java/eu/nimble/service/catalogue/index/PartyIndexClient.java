@@ -1,0 +1,83 @@
+package eu.nimble.service.catalogue.index;
+
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import eu.nimble.service.catalogue.util.ExecutionContext;
+import eu.nimble.service.model.solr.party.PartyType;
+import eu.nimble.utility.JsonSerializationUtility;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
+
+/**
+ * Created by suat on 11-Feb-19.
+ */
+@Component
+public class PartyIndexClient {
+    private static final Logger logger = LoggerFactory.getLogger(PartyIndexClient.class);
+
+    @Value("${nimble.indexing.url}")
+    private String indexingUrl;
+    @Value("${nimble.indexing.solr.url}")
+    private String solrUrl;
+    @Value("${nimble.indexing.solr.username}")
+    private String solrUsername;
+    @Value("${nimble.indexing.solr.password}")
+    private String solrPassword;
+
+    @Autowired
+    private ExecutionContext executionContext;
+
+    public void indexParty() {
+        PartyType indexParty = null;
+        try {
+            String partyJson;
+            try {
+                indexParty = new PartyType();
+                indexParty.setName("SRDC");
+                indexParty.setId("381");
+                indexParty.setOrigin("Turkey");
+                indexParty.setTrustDeliveryPackaging(3.0);
+                indexParty.setTrustFullfillmentOfTerms(3.0);
+                indexParty.setTrustNumberOfTransactions(10.0);
+                indexParty.setTrustRating(2.0);
+                indexParty.setTrustSellerCommunication(4.0);
+                indexParty.setUri(indexParty.getId());
+                partyJson = JsonSerializationUtility.getObjectMapper().writeValueAsString(indexParty);
+
+            } catch (Exception e) {
+//                String serializedCategory = JsonSerializationUtility.serializeEntitySilently(p);
+                String msg = String.format("Failed to serialize Party.");
+                logger.error(msg, e);
+                return;
+            }
+
+            HttpResponse<String> response = Unirest.post(indexingUrl + "/party")
+                    .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken())
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .body(partyJson)
+                    .asString();
+
+            if (response.getStatus() == HttpStatus.OK.value()) {
+                logger.info("Indexed party successfully. party name: {}, id: {}", indexParty.getName(), indexParty.getId());
+                return;
+
+            } else {
+                String msg = String.format("Failed to index party. id: %s, indexing call status: %d, message: %s", indexParty.getId(), response.getStatus(), response.getBody());
+                logger.error(msg);
+                return;
+            }
+
+        } catch (UnirestException e) {
+            String msg = String.format("Failed to index party. uri: %s", indexParty.getId());
+            logger.error(msg, e);
+            return;
+        }
+    }
+}
