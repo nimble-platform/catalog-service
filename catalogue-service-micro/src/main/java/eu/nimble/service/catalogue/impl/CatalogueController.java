@@ -117,6 +117,7 @@ public class CatalogueController {
     public ResponseEntity getDefaultCataloguePagination(@ApiParam(value = "Identifier of the party for which the catalogue to be retrieved", required = true) @PathVariable String partyId,
                                                         @ApiParam(value = "Number of catalogue lines to be included in CataloguePaginationResponse ") @RequestParam(value = "limit",required = true) Integer limit,
                                                         @ApiParam(value = "Offset of the first catalogue line among all catalogue lines of the default catalogue for the party") @RequestParam(value = "offset",required = true) Integer offset,
+                                                        @ApiParam(value = "Names of the categories which are used to filter catalogue lines.Catalogue lines are added to the response if and only if they contain the given categories.") @RequestParam(value = "categoryNames",required = false) List<String> categoryNames,
                                                         @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         log.info("Incoming request to get CataloguePaginationResponse for party: {} with limit: {}, offset: {}", partyId,limit,offset);
         ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
@@ -126,7 +127,7 @@ public class CatalogueController {
 
         CataloguePaginationResponse cataloguePaginationResponse;
         try {
-            cataloguePaginationResponse = service.getCataloguePaginationResponse("default", partyId,limit,offset);
+            cataloguePaginationResponse = service.getCataloguePaginationResponse("default", partyId,categoryNames,limit,offset);
         } catch (Exception e) {
             return createErrorResponseEntity("Failed to get CataloguePaginationResponse for party id: " + partyId, HttpStatus.INTERNAL_SERVER_ERROR, e);
         }

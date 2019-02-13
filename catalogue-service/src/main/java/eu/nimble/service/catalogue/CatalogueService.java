@@ -21,7 +21,7 @@ public interface CatalogueService {
 
     public CatalogueType getCatalogue(String id, String partyId);
 
-    public CataloguePaginationResponse getCataloguePaginationResponse(String id, String partyId, int limit, int offset);
+    public CataloguePaginationResponse getCataloguePaginationResponse(String id, String partyId,List<String> categoryNames, int limit, int offset);
 
     public CatalogueType updateCatalogue(CatalogueType catalogue);
 
@@ -39,7 +39,7 @@ public interface CatalogueService {
 
     public <T> T getCatalogue(String id, String partyId, Configuration.Standard standard);
 
-    public <T> T getCataloguePaginationResponse(String id, String partyId, Configuration.Standard standard, int limit, int offset);
+    public <T> T getCataloguePaginationResponse(String id, String partyId,List<String> categoryNames, Configuration.Standard standard, int limit, int offset);
 
     public void deleteCatalogue(String uuid, Configuration.Standard standard);
 
