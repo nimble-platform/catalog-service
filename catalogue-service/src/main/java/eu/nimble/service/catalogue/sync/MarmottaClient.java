@@ -52,8 +52,8 @@ public class MarmottaClient {
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "text/n3");
             conn.setDoOutput(true);
-            conn.setConnectTimeout(599999);
-            conn.setReadTimeout(600000);
+            conn.setConnectTimeout(3600000);
+            conn.setReadTimeout(3600000);
             conn.setChunkedStreamingMode(0);
 
             OutputStream os = conn.getOutputStream();
