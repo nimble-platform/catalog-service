@@ -35,7 +35,8 @@ public class IndexingWrapper {
         indexItem.setCatalogueId(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID());
         indexItem.setUri(catalogueLine.getHjid().toString());
         indexItem.setLocalName(catalogueLine.getHjid().toString());
-        indexItem.setLabel(getLabelMapFromMultilingualLabels(catalogueLine.getGoodsItem().getItem().getName()));
+        catalogueLine.getGoodsItem().getItem().getName().forEach(name -> indexItem.addLabel(name.getLanguageID(), name.getValue()));
+//        indexItem.setLabel(getLabelMapFromMultilingualLabels(catalogueLine.getGoodsItem().getItem().getName()));
         indexItem.setApplicableCountries(getCountries(catalogueLine));
         indexItem.setCertificateType(getCertificates(catalogueLine));
         if(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue() != null) {
@@ -121,8 +122,8 @@ public class IndexingWrapper {
     }
 
     private static String getIndexPropertyQualifier(ItemPropertyType itemProperty) {
-        boolean isCustomProperty = isStandardProperty(itemProperty);
-        if (!isCustomProperty) {
+        boolean isStandardProperty = isStandardProperty(itemProperty);
+        if (isStandardProperty) {
             return itemProperty.getURI();
         } else {
             for(String langId : languagePriorityForCustomProperties) {
@@ -140,11 +141,11 @@ public class IndexingWrapper {
     }
 
     private static boolean isStandardProperty(ItemPropertyType itemProperty) {
-        boolean isCustomProperty = !Arrays.asList(TaxonomyEnum.values()).stream()
+        boolean isStandardProperty = Arrays.asList(TaxonomyEnum.values()).stream()
                 .filter(taxonomy -> taxonomy.getId().contentEquals(itemProperty.getItemClassificationCode().getListID()))
                 .findFirst()
                 .isPresent();
-        return isCustomProperty;
+        return isStandardProperty;
     }
 
     private static PropertyType createPropertyMetadataForCustomProperty(ItemPropertyType itemProperty) {
@@ -262,13 +263,15 @@ public class IndexingWrapper {
 
     private static List<TextType> getLabelListFromMap(Map<String, String> multilingualLabels) {
         List<TextType> labelList = new ArrayList<>();
-        multilingualLabels.keySet().forEach(language -> {
-            TextType label = new TextType();
-            label.setLanguageID(language);
-            label.setValue(multilingualLabels.get(language));
-            labelList.add(label);
+        if(multilingualLabels != null) {
+            multilingualLabels.keySet().forEach(language -> {
+                TextType label = new TextType();
+                label.setLanguageID(language);
+                label.setValue(multilingualLabels.get(language));
+                labelList.add(label);
 
-        });
+            });
+        }
         return labelList;
     }
 

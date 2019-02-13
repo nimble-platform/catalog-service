@@ -110,12 +110,12 @@ public class ItemIndexClient {
             } else {
                 String serializedCatalogueLine = JsonSerializationUtility.serializeEntitySilently(catalogueLine);
                 logger.error("Failed to index CatalogueLine. id: {}, name: {}, party id: {}, indexing call status: {}, message: {}\nLine:{}",
-                        catalogueLine.getID(), catalogueLine.getGoodsItem().getItem().getName(), response.getStatus(), response.getBody(), serializedCatalogueLine);
+                        catalogueLine.getID(), catalogueLine.getGoodsItem().getItem().getName(), catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID(), response.getStatus(), response.getBody(), serializedCatalogueLine);
             }
 
         } catch (UnirestException e) {
             String serializedCatalogueLine = JsonSerializationUtility.serializeEntitySilently(catalogueLine);
-            logger.error("Failed to index CatalogueLine. id: {}, name: {}, party: {}\nLine: {}", catalogueLine.getID(), catalogueLine.getGoodsItem().getItem().getName(), catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID(), serializedCatalogueLine, e);
+            logger.error("Failed to index CatalogueLine. id: {}, name: {}, party id: {}\nLine: {}", catalogueLine.getID(), catalogueLine.getGoodsItem().getItem().getName(), catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID(), serializedCatalogueLine, e);
         }
     }
 
