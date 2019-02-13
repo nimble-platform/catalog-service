@@ -53,7 +53,7 @@ public class ItemIndexClient {
         } catch (Exception e) {
             String serializedCatalogue = JsonSerializationUtility.serializeEntitySilently(catalogue);
             logger.error("Failed to transform Catalogue to index ItemType list. uuid: {}, party id: {}\n catalogue: {}",
-                    catalogue.getUUID(), catalogue.getProviderParty().getID(), serializedCatalogue, e);
+                    catalogue.getUUID(), catalogue.getProviderParty().getPartyIdentification().get(0).getID(), serializedCatalogue, e);
             return;
         }
 
@@ -66,19 +66,19 @@ public class ItemIndexClient {
                     .asString();
 
             if (response.getStatus() == HttpStatus.OK.value()) {
-                logger.info("Indexed Catalogue successfully. uuid: {}, party id: {}", catalogue.getUUID(), catalogue.getProviderParty().getID());
+                logger.info("Indexed Catalogue successfully. uuid: {}, party id: {}", catalogue.getUUID(), catalogue.getProviderParty().getPartyIdentification().get(0).getID());
 
             } else {
                 String serializedCatalogue = JsonSerializationUtility.serializeEntitySilently(catalogue);
                 logger.error("Failed to index Catalogue. uuid: {}, party id: {}, indexing call status: {}, message: {}\nCatalogue: {}",
-                        catalogue.getUUID(), catalogue.getProviderParty().getID(), response.getStatus(), response.getBody(), serializedCatalogue);
+                        catalogue.getUUID(), catalogue.getProviderParty().getPartyIdentification().get(0).getID(), response.getStatus(), response.getBody(), serializedCatalogue);
                 return;
             }
 
         } catch (UnirestException e) {
             String serializedCatalogue = JsonSerializationUtility.serializeEntitySilently(catalogue);
             logger.error("Failed to index Catalogue to index ItemType list. uuid: {}, party id: {}\nCatalogue: {}",
-                    catalogue.getUUID(), catalogue.getProviderParty().getID(), serializedCatalogue, e);
+                    catalogue.getUUID(), catalogue.getProviderParty().getPartyIdentification().get(0).getID(), serializedCatalogue, e);
             return;
         }
     }
@@ -105,7 +105,7 @@ public class ItemIndexClient {
                     .asString();
 
             if (response.getStatus() == HttpStatus.OK.value()) {
-                logger.info("Indexed CatalogueLine successfully. hjid: {}, name: {}, party id: {}", catalogueLine.getHjid(), catalogueLine.getGoodsItem().getItem().getName(), catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
+                logger.info("Indexed CatalogueLine successfully. hjid: {}, name: {}, party id: {}", catalogueLine.getHjid(), catalogueLine.getGoodsItem().getItem().getName(), catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID());
 
             } else {
                 String serializedCatalogueLine = JsonSerializationUtility.serializeEntitySilently(catalogueLine);
@@ -115,7 +115,7 @@ public class ItemIndexClient {
 
         } catch (UnirestException e) {
             String serializedCatalogueLine = JsonSerializationUtility.serializeEntitySilently(catalogueLine);
-            logger.error("Failed to index CatalogueLine. id: {}, name: {}, party: {}\nLine: {}", catalogueLine.getID(), catalogueLine.getGoodsItem().getItem().getName(), catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID(), serializedCatalogueLine, e);
+            logger.error("Failed to index CatalogueLine. id: {}, name: {}, party: {}\nLine: {}", catalogueLine.getID(), catalogueLine.getGoodsItem().getItem().getName(), catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID(), serializedCatalogueLine, e);
         }
     }
 

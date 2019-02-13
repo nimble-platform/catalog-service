@@ -10,7 +10,9 @@ import eu.nimble.service.model.solr.owl.PropertyType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
+import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 import eu.nimble.service.model.ubl.extension.ItemPropertyValueQualifier;
+import eu.nimble.utility.JsonSerializationUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,13 +27,15 @@ public class IndexingWrapper {
 
     private static final String XSD_NS = "http://www.w3.org/2001/XMLSchema#";
 
+    private static final List<String> languagePriorityForCustomProperties = Arrays.asList("en", "es", "de", "tr", "it");
+
     public static ItemType toIndexItem(CatalogueLineType catalogueLine) {
         ItemType indexItem = new ItemType();
 
         indexItem.setCatalogueId(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID());
         indexItem.setUri(catalogueLine.getHjid().toString());
         indexItem.setLocalName(catalogueLine.getHjid().toString());
-        indexItem.setLabel(getMultilingualLabels(catalogueLine.getGoodsItem().getItem().getName()));
+        indexItem.setLabel(getLabelMapFromMultilingualLabels(catalogueLine.getGoodsItem().getItem().getName()));
         indexItem.setApplicableCountries(getCountries(catalogueLine));
         indexItem.setCertificateType(getCertificates(catalogueLine));
         if(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue() != null) {
@@ -40,10 +44,10 @@ public class IndexingWrapper {
         if(catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure().getValue() != null) {
             indexItem.addDeliveryTime(catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure().getUnitCode(), catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure().getValue().doubleValue());
         }
-        indexItem.setDescription(getMultilingualLabels(catalogueLine.getGoodsItem().getItem().getDescription()));
+        indexItem.setDescription(getLabelMapFromMultilingualLabels(catalogueLine.getGoodsItem().getItem().getDescription()));
         indexItem.setFreeOfCharge(catalogueLine.isFreeOfChargeIndicator());
         indexItem.setImgageUri(getImageUris(catalogueLine));
-        indexItem.setManufacturerId(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
+        indexItem.setManufacturerId(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID());
         if(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getValue() != null) {
             indexItem.addPackageAmounts(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getUnitCode(), Arrays.asList(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getValue().doubleValue()));
         }
@@ -68,8 +72,8 @@ public class IndexingWrapper {
 
             if(isStandardProperty) {
                 if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.TEXT)) {
-                    for (String value : itemProperty.getValue()) {
-                        indexItem.addProperty(propertyQualifier, value);
+                    for (TextType value : itemProperty.getValue()) {
+                        indexItem.addProperty(propertyQualifier, value.getValue() + "@" + value.getLanguageID());
                     }
                 } else if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.NUMBER)) {
                     for (BigDecimal value : itemProperty.getValueDecimal()) {
@@ -82,7 +86,7 @@ public class IndexingWrapper {
                     }
 
                 } else if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.BOOLEAN)) {
-                    indexItem.setProperty(propertyQualifier, Boolean.valueOf(itemProperty.getValue().get(0)));
+                    indexItem.setProperty(propertyQualifier, Boolean.valueOf(itemProperty.getValue().get(0).getValue()));
 
                 } else if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.FILE)) {
                     // binary properties are not indexed
@@ -93,21 +97,21 @@ public class IndexingWrapper {
                 PropertyType customPropertyData = createPropertyMetadataForCustomProperty(itemProperty);
 
                 if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.TEXT)) {
-                    for (String value : itemProperty.getValue()) {
-                        indexItem.addProperty(itemProperty.getName(), value, customPropertyData);
+                    for (TextType value : itemProperty.getValue()) {
+                        indexItem.addProperty(propertyQualifier, value.getValue() + "@" + value.getLanguageID(), customPropertyData);
                     }
                 } else if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.NUMBER)) {
                     for (BigDecimal value : itemProperty.getValueDecimal()) {
-                        indexItem.addProperty(itemProperty.getName(), value.doubleValue(), customPropertyData);
+                        indexItem.addProperty(propertyQualifier, value.doubleValue(), customPropertyData);
                     }
 
                 } else if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.QUANTITY)) {
                     for (QuantityType value : itemProperty.getValueQuantity()) {
-                        indexItem.addProperty(itemProperty.getName(), value.getUnitCode(), value.getValue().doubleValue(), customPropertyData);
+                        indexItem.addProperty(propertyQualifier, value.getUnitCode(), value.getValue().doubleValue(), customPropertyData);
                     }
 
                 } else if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.BOOLEAN)) {
-                    indexItem.setProperty(itemProperty.getName(), Boolean.valueOf(itemProperty.getValue().get(0)), customPropertyData);
+                    indexItem.setProperty(propertyQualifier, Boolean.valueOf(itemProperty.getValue().get(0).getValue()), customPropertyData);
 
                 } else if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.FILE)) {
                     // binary properties are not indexed
@@ -121,8 +125,17 @@ public class IndexingWrapper {
         if (!isCustomProperty) {
             return itemProperty.getURI();
         } else {
-            // TODO update this when the multilinguality is in place
-            return itemProperty.getName();
+            for(String langId : languagePriorityForCustomProperties) {
+                for(TextType name : itemProperty.getName()) {
+                    if(name.getLanguageID().contentEquals(langId)) {
+                        return name.getValue();
+                    }
+                }
+            }
+            String itemPropertySerialization = JsonSerializationUtility.serializeEntitySilently(itemProperty);
+            String msg = String.format("No valid name in the ItemProperty: %s", itemPropertySerialization);
+            logger.warn(msg);
+            throw new RuntimeException(msg);
         }
     }
 
@@ -136,8 +149,7 @@ public class IndexingWrapper {
 
     private static PropertyType createPropertyMetadataForCustomProperty(ItemPropertyType itemProperty) {
         PropertyType property = new PropertyType();
-        // TODO update this when the multilinguality is in place
-        property.addLabel("en", itemProperty.getName());
+        itemProperty.getName().stream().forEach(label -> property.addLabel(label.getLanguageID(), label.getValue()));
         return property;
     }
 
@@ -148,13 +160,6 @@ public class IndexingWrapper {
             // no need to fill the classifications list
         }
         indexItem.setClassificationUri(classificationUris);
-    }
-
-    // TODO update while switching to multilinguality branch
-    private static Map<String, String> getMultilingualLabels(String name) {
-        Map<String, String> labels = new HashMap<>();
-        labels.put("en", name);
-        return labels;
     }
 
     private static Set<String> getCountries(CatalogueLineType catalogueLine) {
@@ -199,9 +204,9 @@ public class IndexingWrapper {
             category.setCode(indexCategory.getLocalName());
         }
         category.setId(indexCategory.getUri());
-        category.setDefinition(getFirstLabel(indexCategory.getDescription()));
-        category.setPreferredName(getFirstLabel(indexCategory.getLabel()));
-        category.setRemark(getFirstLabel(indexCategory.getComment()));
+        category.setDefinition(getLabelListFromMap(indexCategory.getDescription()));
+        category.setPreferredName(getLabelListFromMap(indexCategory.getLabel()));
+        category.setRemark(getSingleLabel(indexCategory.getComment()));
         if(indexCategory.getLevel() != null) {
             category.setLevel(indexCategory.getLevel());
         }
@@ -220,9 +225,9 @@ public class IndexingWrapper {
 
     public static Property toProperty(PropertyType indexProperty) {
         Property property = new Property();
-        property.setPreferredName(getFirstLabel(indexProperty.getLabel()));
-        property.setDefinition(getFirstLabel(indexProperty.getDescription()));
-        property.setRemark(getFirstLabel(indexProperty.getComment()));
+        property.setPreferredName(getLabelListFromMap(indexProperty.getLabel()));
+        property.setDefinition(getSingleLabel(indexProperty.getDescription()));
+        property.setRemark(getSingleLabel(indexProperty.getComment()));
 
         // TODO the data type is currently keeping the value qualifier. However, it should be stored in the value qualifier field.
         if(indexProperty.getUri().startsWith(TaxonomyEnum.eClass.getNamespace())) {
@@ -242,12 +247,29 @@ public class IndexingWrapper {
         return property;
     }
 
-    // TODO update when multilinguality branch is merged
-    private static String getFirstLabel(Map<String, String> multilingualLabels) {
+    private static String getSingleLabel(Map<String, String> multilingualLabels) {
         if(multilingualLabels != null && multilingualLabels.size() > 0) {
             return multilingualLabels.values().iterator().next();
         }
         return null;
+    }
+
+    private static Map<String, String> getLabelMapFromMultilingualLabels(List<TextType> labelList) {
+        Map<String, String> labels = new HashMap<>();
+        labelList.stream().forEach(label -> labels.put(label.getLanguageID(), label.getValue()));
+        return labels;
+    }
+
+    private static List<TextType> getLabelListFromMap(Map<String, String> multilingualLabels) {
+        List<TextType> labelList = new ArrayList<>();
+        multilingualLabels.keySet().forEach(language -> {
+            TextType label = new TextType();
+            label.setLanguageID(language);
+            label.setValue(multilingualLabels.get(language));
+            labelList.add(label);
+
+        });
+        return labelList;
     }
 
     public static TaxonomyEnum extractTaxonomyFromUri(String uri) {
@@ -260,7 +282,6 @@ public class IndexingWrapper {
     }
 
     public static String getValueQualifierForRange(String range) {
-        String normalizedType ;
         try {
             return ItemPropertyValueQualifier.getQualifier(range).toString();
         } catch (RuntimeException e) {
@@ -290,16 +311,15 @@ public class IndexingWrapper {
 
         if(taxonomy.equals(TaxonomyEnum.eClass)) {
             indexCategory.setLocalName(category.getId());
-            // TODO update on switching to multilinguality
-            indexCategory.addLabel("en", category.getPreferredName());
+            category.getPreferredName().stream().forEach(label -> indexCategory.addLabel(label.getLanguageID(), label.getValue()));
             indexCategory.setLevel(category.getLevel());
             indexCategory.setNameSpace(TaxonomyEnum.eClass.getNamespace());
+            // TODO below by default the english language is assumed
             indexCategory.addComment("en", category.getRemark());
 
         } else {
             indexCategory.setLocalName(getRemainder(category.getCategoryUri(), taxonomy.getNamespace()));
-            // TODO update on switching to multilinguality
-            indexCategory.addLabel("en", category.getPreferredName());
+            category.getPreferredName().forEach(label -> indexCategory.addLabel(label.getLanguageID(), label.getValue()));
             indexCategory.setNameSpace(taxonomy.getNamespace());
         }
         indexCategory.setParents(directParentUris);
@@ -307,8 +327,7 @@ public class IndexingWrapper {
         indexCategory.setChildren(directChildrenUris);
         indexCategory.setAllChildren(allChildrenUris);
 
-        // TODO update on switching to multilinguality
-        indexCategory.addDescription("en", category.getDefinition());
+        category.getDefinition().forEach(definition -> indexCategory.addDescription(definition.getLanguageID(), definition.getValue()));
         indexCategory.setLanguages(indexCategory.getLabel().keySet());
         if(category.getProperties() != null) {
             indexCategory.setProperties(new HashSet<>());
@@ -321,19 +340,18 @@ public class IndexingWrapper {
         PropertyType indexProperty = new PropertyType();
         TaxonomyEnum taxonomy = extractTaxonomyFromUri(property.getUri());
         indexProperty.setUri(property.getUri());
+        // TODO below by default the english language is assumed
         indexProperty.addDescription("en", property.getDefinition());
+        property.getPreferredName().forEach(label -> indexProperty.addLabel(label.getLanguageID(), label.getValue()));
         if(taxonomy.equals(TaxonomyEnum.eClass)) {
             indexProperty.setLocalName(getRemainder(indexProperty.getUri(), TaxonomyEnum.eClass.getNamespace()));
-            // TODO update on switching to multilinguality
-            indexProperty.addLabel("en", property.getPreferredName());
             indexProperty.setNameSpace(TaxonomyEnum.eClass.getNamespace());
             indexProperty.setItemFieldNames(Arrays.asList(ItemType.dynamicFieldPart(property.getUri())));
+            // TODO below by default the english language is assumed
             indexProperty.addComment("en", property.getRemark());
 
         } else {
             indexProperty.setLocalName(getRemainder(indexProperty.getUri(), taxonomy.getNamespace()));
-            // TODO update on switching to multilinguality
-            indexProperty.addLabel("en", property.getPreferredName());
             indexProperty.setNameSpace(taxonomy.getNamespace());
             indexProperty.setItemFieldNames(Arrays.asList(ItemType.dynamicFieldPart(property.getUri())));
         }
