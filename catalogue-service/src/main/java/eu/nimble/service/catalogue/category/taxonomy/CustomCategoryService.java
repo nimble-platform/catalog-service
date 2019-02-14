@@ -60,6 +60,11 @@ public class CustomCategoryService implements ProductCategoryService {
     }
 
     @Override
+    public List<Category> getAllCategories(){
+        return new ArrayList<>();
+    }
+
+    @Override
     public List<Category> getChildrenCategories(String categoryId) {
         return new ArrayList<>();
     }

@@ -26,4 +26,6 @@ public interface ProductCategoryService {
     public List<Category> getChildrenCategories(String categoryId);
 
     public List<Category> getRootCategories();
+
+    public List<Category> getAllCategories();
 }
