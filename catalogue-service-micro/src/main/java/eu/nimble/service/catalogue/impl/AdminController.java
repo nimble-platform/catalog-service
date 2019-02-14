@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.impl;
 
 import eu.nimble.service.catalogue.index.ClassIndexClient;
+import eu.nimble.service.catalogue.index.PartyIndexClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -15,13 +16,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 public class AdminController {
 
     @Autowired
-    private ClassIndexClient classIndexClient;
+    private PartyIndexClient partyIndexClient;
 
     @CrossOrigin(origins = {"*"})
     @RequestMapping(value = "/admin/add-class",
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity getDefaultCatalogue() {
+        partyIndexClient.indexParty();
         return null;
     }
 }

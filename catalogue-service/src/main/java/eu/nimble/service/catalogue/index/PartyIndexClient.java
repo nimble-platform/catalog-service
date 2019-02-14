@@ -46,8 +46,9 @@ public class PartyIndexClient {
                 indexParty.setTrustDeliveryPackaging(3.0);
                 indexParty.setTrustFullfillmentOfTerms(3.0);
                 indexParty.setTrustNumberOfTransactions(10.0);
-                indexParty.setTrustRating(2.0);
-                indexParty.setTrustSellerCommunication(4.0);
+                indexParty.setTrustRating(3.7);
+                indexParty.setTrustSellerCommunication(4.2);
+                indexParty.setTrustScore(0.77);
                 indexParty.setUri(indexParty.getId());
                 partyJson = JsonSerializationUtility.getObjectMapper().writeValueAsString(indexParty);
 
