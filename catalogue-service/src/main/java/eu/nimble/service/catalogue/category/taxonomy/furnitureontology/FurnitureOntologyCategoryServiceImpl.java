@@ -133,7 +133,6 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
                 String remainder = getRemainder(record.get("uri").toString(), FURNITURE_NS,FURNITURE_NS2);
                 if (remainder.toLowerCase().contains(categoryName.toLowerCase())) {
                     String uri = record.get("uri").toString();
-                    String translation = record.get("translation") != null ? record.get("translation").toString() : null;
                     Category cat = createCategory(uri);
                     result.add(cat);
                 }
@@ -241,7 +240,6 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
             for (int i = sparqlResult.size()-1; i > -1; i--) {
                 Map<String, RDFNode> record = sparqlResult.get(i);
                 String uri = record.get("parent").toString();
-                String translation = record.get("translation") != null ? record.get("translation").toString() : null;
                 Category cat = createCategory(uri);
                 parents.add(cat);
             }
@@ -288,7 +286,6 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
                 for (int i = 0; i < sparqlResult.size(); i++) {
                     Map<String, RDFNode> record = sparqlResult.get(i);
                     String uri = record.get("children").toString();
-                    String translation = record.get("translation") != null ? record.get("translation").toString() : null;
                     Category cat = createCategory(uri);
                     siblings.get(j).add(cat);
                 }
@@ -316,7 +313,6 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
             for (int i = 0; i < sparqlResult.size(); i++) {
                 Map<String, RDFNode> record = sparqlResult.get(i);
                 String uri = record.get("parent").toString();
-                String translation = record.get("translation") != null ? record.get("translation").toString() : null;
                 Category cat = createCategory(uri);
                 result.add(cat);
             }
@@ -340,7 +336,6 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
             for (int i = 0; i < sparqlResult.size(); i++) {
                 Map<String, RDFNode> record = sparqlResult.get(i);
                 String uri = record.get("children").toString();
-                String translation = record.get("translation") != null ? record.get("translation").toString() : null;
                 Category cat = createCategory(uri);
                 result.add(cat);
             }
