@@ -107,6 +107,7 @@ public class CatalogueController {
     @ApiOperation(value = "", notes = "Retrieves the default CataloguePaginationResponse for the specified party.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieved CataloguePaginationResponse for the specified party successfully", response = CataloguePaginationResponse.class),
+            @ApiResponse(code = 400, message = "Both language id and search text should be provided"),
             @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
             @ApiResponse(code = 404, message = "No default catalogue for the party"),
             @ApiResponse(code = 500, message = "Failed to get CataloguePaginationResponse for the party")
@@ -117,6 +118,9 @@ public class CatalogueController {
     public ResponseEntity getDefaultCataloguePagination(@ApiParam(value = "Identifier of the party for which the catalogue to be retrieved", required = true) @PathVariable String partyId,
                                                         @ApiParam(value = "Number of catalogue lines to be included in CataloguePaginationResponse ") @RequestParam(value = "limit",required = true) Integer limit,
                                                         @ApiParam(value = "Offset of the first catalogue line among all catalogue lines of the default catalogue for the party") @RequestParam(value = "offset",required = true) Integer offset,
+                                                        @ApiParam(value = "Text to be used to filter the catalogue lines.Item name and description will be searched for the given text.") @RequestParam(value = "searchText",required = false) String searchText,
+                                                        @ApiParam(value = "Identifier for the language of search text such as en and tr") @RequestParam(value = "languageId",required = false) String languageId,
+                                                        @ApiParam(value = "Name of the category which is used to filter catalogue lines.Catalogue lines are added to the response if and only if they contain the given category.") @RequestParam(value = "categoryName",required = false) String categoryName,
                                                         @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         log.info("Incoming request to get CataloguePaginationResponse for party: {} with limit: {}, offset: {}", partyId,limit,offset);
         ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
@@ -124,9 +128,14 @@ public class CatalogueController {
             return tokenCheck;
         }
 
+        // check the validity of the request params
+        if(searchText != null && languageId == null){
+            return createErrorResponseEntity("Both language id and search text should be provided", HttpStatus.BAD_REQUEST, null);
+        }
+
         CataloguePaginationResponse cataloguePaginationResponse;
         try {
-            cataloguePaginationResponse = service.getCataloguePaginationResponse("default", partyId,limit,offset);
+            cataloguePaginationResponse = service.getCataloguePaginationResponse("default", partyId,categoryName,searchText,languageId,limit,offset);
         } catch (Exception e) {
             return createErrorResponseEntity("Failed to get CataloguePaginationResponse for party id: " + partyId, HttpStatus.INTERNAL_SERVER_ERROR, e);
         }

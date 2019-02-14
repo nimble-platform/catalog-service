@@ -201,16 +201,16 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public CataloguePaginationResponse getCataloguePaginationResponse(String id, String partyId, int limit, int offset) {
-        return getCataloguePaginationResponse(id,partyId,Configuration.Standard.UBL,limit,offset);
+    public CataloguePaginationResponse getCataloguePaginationResponse(String id, String partyId,String categoryName,String searchText,String languageId, int limit, int offset) {
+        return getCataloguePaginationResponse(id,partyId,categoryName,Configuration.Standard.UBL,searchText,languageId,limit,offset);
     }
 
     @Override
-    public <T> T getCataloguePaginationResponse(String id, String partyId, Configuration.Standard standard, int limit, int offset) {
+    public <T> T getCataloguePaginationResponse(String id, String partyId,String categoryName, Configuration.Standard standard,String searchText,String languageId, int limit, int offset) {
         T catalogueResponse = null;
 
         if (standard == Configuration.Standard.UBL) {
-            catalogueResponse = (T) CataloguePersistenceUtil.getCatalogueLinesForParty(id, partyId,limit,offset);
+            catalogueResponse = (T) CataloguePersistenceUtil.getCatalogueLinesForParty(id, partyId,categoryName,searchText,languageId,limit,offset);
 
         } else if (standard == Configuration.Standard.MODAML) {
             logger.warn("Getting CataloguePaginationResponse with catalogue id and party id from MODAML repository is not implemented yet");
