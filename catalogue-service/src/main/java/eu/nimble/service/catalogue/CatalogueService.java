@@ -66,13 +66,14 @@ public interface CatalogueService {
 
     /**
      * Adds the provided images to the relevant products in the catalogue.
-     * !!! This method does not update the database
      *
      * @param imagePackage
      * @param catalogueUuid
      * @return
      */
-    public CatalogueType addImagesToProducts(ZipInputStream imagePackage, String catalogueUuid);
+    CatalogueType addImagesToProducts(ZipInputStream imagePackage, String catalogueUuid);
+
+    CatalogueType removeAllImagesFromCatalogue(CatalogueType catalogueType);
 
     /*
      * Catalogue-line level endpoints

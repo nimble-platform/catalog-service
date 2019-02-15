@@ -12,6 +12,9 @@ import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
 import eu.nimble.service.catalogue.template.TemplateGenerator;
 import eu.nimble.service.catalogue.template.TemplateParser;
 import eu.nimble.service.catalogue.util.DataIntegratorUtil;
+import eu.nimble.service.catalogue.util.SpringBridge;
+import eu.nimble.service.catalogue.validation.CatalogueValidator;
+import eu.nimble.service.catalogue.validation.ValidationException;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
@@ -20,12 +23,15 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
+import eu.nimble.utility.HttpResponseUtil;
 import eu.nimble.utility.JAXBUtility;
 import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.logging.LogLevel;
+import org.springframework.http.HttpStatus;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.activation.MimetypesFileTypeMap;
@@ -37,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -372,13 +379,30 @@ public class CatalogueServiceImpl implements CatalogueService {
                     if (item == null) {
                         logger.warn("No product to assign image with prefix: {}", prefix);
 
+                        // item is available
                     } else {
+                        // prepare the new binary content
                         IOUtils.copy(imagePackage, baos);
                         BinaryObjectType binaryObject = new BinaryObjectType();
                         binaryObject.setMimeCode(mimeType);
                         binaryObject.setFileName(ze.getName());
                         binaryObject.setValue(baos.toByteArray());
-                        item.getProductImage().add(binaryObject);
+
+                        // check whether the image is already attached to the item
+                        ItemType finalItem = item;
+                        ZipEntry finalZe = ze;
+                        int itemIndex = IntStream.range(0, item.getProductImage().size())
+                                .filter(i -> finalItem.getProductImage().get(i).getFileName().contentEquals(finalZe.getName()))
+                                .findFirst()
+                                .orElse(-1);
+                        // if an image exists with the same name put it to the previous index
+                        if(itemIndex != -1) {
+                            item.getProductImage().remove(itemIndex);
+                            item.getProductImage().add(itemIndex, binaryObject);
+                        } else {
+                            item.getProductImage().add(binaryObject);
+                        }
+
                         logger.info("Image {} added to item {}", fileName, item.getManufacturersItemIdentification().getID());
                     }
 
@@ -395,6 +419,17 @@ public class CatalogueServiceImpl implements CatalogueService {
                 ze = imagePackage.getNextEntry();
             }
 
+            CatalogueValidator catalogueValidator = new CatalogueValidator(catalogue);
+            try {
+                catalogueValidator.validate();
+            } catch (ValidationException e) {
+                String msg = e.getMessage();
+                logger.error(msg, e);
+                throw new CatalogueServiceException(msg, e);
+            }
+
+            updateCatalogue(catalogue);
+
             return catalogue;
 
         } catch (IOException e) {
@@ -402,6 +437,12 @@ public class CatalogueServiceImpl implements CatalogueService {
             logger.error(msg, e);
             throw new CatalogueServiceException(msg, e);
         }
+    }
+
+    @Override
+    public CatalogueType removeAllImagesFromCatalogue(CatalogueType catalogueType) {
+
+        return null;
     }
 
     @Override

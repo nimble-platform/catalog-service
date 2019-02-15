@@ -292,7 +292,36 @@ public class MigrationUtil {
                 logger.info("Handled party with id: {}",id);
             }
 
-            // TODO: Later, we can delete columns manually
+            stmt.executeUpdate("ALTER TABLE catalogue_type DROP COLUMN IF EXISTS name_");
+            stmt.executeUpdate("ALTER TABLE communication_type DROP COLUMN IF EXISTS value_");
+            stmt.executeUpdate("ALTER TABLE contact_type DROP COLUMN IF EXISTS name_");
+            stmt.executeUpdate("ALTER TABLE country_type DROP COLUMN IF EXISTS name_");
+            stmt.executeUpdate("ALTER TABLE event_type DROP COLUMN IF EXISTS description");
+            stmt.executeUpdate("ALTER TABLE transportation_service_type DROP COLUMN IF EXISTS name_");
+            stmt.executeUpdate("ALTER TABLE classification_category_type DROP COLUMN IF EXISTS name_");
+            stmt.executeUpdate("ALTER TABLE classification_scheme_type DROP COLUMN IF EXISTS name_");
+            stmt.executeUpdate("ALTER TABLE price_option_type DROP COLUMN IF EXISTS name_");
+            stmt.executeUpdate("ALTER TABLE price_option_type DROP COLUMN IF EXISTS special_terms");
+
+            stmt.executeUpdate("ALTER TABLE capability_type_description__0 DROP COLUMN IF EXISTS description_items_capability_0");
+            stmt.executeUpdate("ALTER TABLE completed_task_type_descript_0 DROP COLUMN IF EXISTS description_items_completed__0");
+            stmt.executeUpdate("ALTER TABLE declaration_type_description_0 DROP COLUMN IF EXISTS description_items_declaratio_0");
+            stmt.executeUpdate("ALTER TABLE classification_category_type_0 DROP COLUMN IF EXISTS description_items_classifica_1");
+            stmt.executeUpdate("ALTER TABLE classification_scheme_type_d_0 DROP COLUMN IF EXISTS description_items_classifica_0");
+            stmt.executeUpdate("ALTER TABLE item_property_type_value_item DROP COLUMN IF EXISTS value_items_item_property_ty_0");
+            stmt.executeUpdate("ALTER TABLE trading_term_type_value_item DROP COLUMN IF EXISTS value_items_trading_term_typ_0");
+
+            stmt.executeUpdate("ALTER TABLE trading_term_type  DROP COLUMN IF EXISTS description");
+            stmt.executeUpdate("ALTER TABLE delivery_terms_type  DROP COLUMN IF EXISTS special_terms");
+            stmt.executeUpdate("ALTER TABLE item_property_type  DROP COLUMN IF EXISTS name_");
+            stmt.executeUpdate("ALTER TABLE payment_means_type  DROP COLUMN IF EXISTS instruction_note");
+            stmt.executeUpdate("ALTER TABLE shipment_type  DROP COLUMN IF EXISTS handling_instructions");
+            stmt.executeUpdate("ALTER TABLE item_type  DROP COLUMN IF EXISTS description");
+            stmt.executeUpdate("ALTER TABLE item_type  DROP COLUMN IF EXISTS name_");
+
+            stmt.executeUpdate("ALTER TABLE declaration_type  DROP COLUMN IF EXISTS name_");
+            stmt.executeUpdate("ALTER TABLE party_type DROP COLUMN IF EXISTS name_");
+            stmt.executeUpdate("ALTER TABLE party_type DROP COLUMN IF EXISTS id");
         }
         catch (Exception e){
             logger.error("",e);
@@ -2210,7 +2239,8 @@ public class MigrationUtil {
             Map map = ((MapPropertySource) applicationYamlPropertySource).getSource();
 
             String url = (String) map.get("hibernate.connection.url");
-            url = url.replace("${DB_HOST}",System.getenv("DB_HOST")).replace("${DB_PORT}",System.getenv("DB_PORT"));
+            url = url.replace("${DB_HOST}",System.getenv("DB_HOST")).replace("${DB_PORT}",System.getenv("DB_PORT"))
+                .replace("${DB_DATABASE}",System.getenv("DB_DATABASE"));
 
             // set staging parameters
             MigrationUtil.url = url;

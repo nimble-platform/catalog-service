@@ -314,32 +314,18 @@ public class TemplateParser {
                 List<String> productNames = (List<String>) parseCell(cell, TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_NAME, TEMPLATE_DATA_TYPE_TEXT, true);
 
                 for(String productNameValue: productNames) {
-                    String language = defaultLanguage, productName = "";
-                    if(productNameValue.indexOf(":") > 0) {
-                        language = productNameValue.split(":")[0].toLowerCase().trim();
-                        productName = productNameValue.split(":")[1];
-                    } else {
-                        productName = productNameValue;
-                    }
                     TextType textType = new TextType();
-                    textType.setLanguageID(language);
-                    textType.setValue(productName);
+                    textType.setLanguageID(defaultLanguage);
+                    textType.setValue(productNameValue);
                     item.getName().add(textType);
                 }
 
             } else if (property.getPreferredName(defaultLanguage).equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION)) {
                 List<String> productDescriptions = (List<String>) parseCell(cell,TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION, TEMPLATE_DATA_TYPE_TEXT, true);
                 for(String productDescriptionValue: productDescriptions) {
-                    String language = defaultLanguage, productDescription = "";
-                    if(productDescriptionValue.indexOf(":") > 0) {
-                        language = productDescriptionValue.split(":")[0].toLowerCase().trim();
-                        productDescription = productDescriptionValue.split(":")[1];
-                    } else {
-                        productDescription = productDescriptionValue;
-                    }
                     TextType textType = new TextType();
-                    textType.setLanguageID(language);
-                    textType.setValue(productDescription);
+                    textType.setLanguageID(defaultLanguage);
+                    textType.setValue(productDescriptionValue);
                     item.getDescription().add(textType);
                 }
 
@@ -532,16 +518,9 @@ public class TemplateParser {
                     List<String> values = (List<String>) parseCell(cell,TEMPLATE_TRADING_DELIVERY_SPECIAL_TERMS, TEMPLATE_DATA_TYPE_TEXT, true);
 
                     for(String stvalue: values) {
-                        String language = defaultLanguage, specialTerm = "";
-                        if(stvalue.indexOf(":") > 0) {
-                            language = stvalue.split(":")[0].toLowerCase().trim();
-                            specialTerm = stvalue.split(":")[1];
-                        } else {
-                            specialTerm = stvalue;
-                        }
                         TextType textType = new TextType();
-                        textType.setLanguageID(language);
-                        textType.setValue(specialTerm);
+                        textType.setLanguageID(defaultLanguage);
+                        textType.setValue(stvalue);
                         item.getName().add(textType);
 
                         catalogueLine.getGoodsItem().getDeliveryTerms().getSpecialTerms().add(textType);
@@ -768,8 +747,14 @@ public class TemplateParser {
 
         String categoryIdsStr = getCellStringValue(metadataTab.getRow(0).getCell(0));
         String taxonomyIdsStr = getCellStringValue(metadataTab.getRow(1).getCell(0));
-        defaultLanguage = getCellStringValue(metadataTab.getRow(2).getCell(0));
-        if(defaultLanguage.trim().equals("")) {
+        Row metadataRow = metadataTab.getRow(2);
+        if(metadataRow != null) {
+            Cell cell = getCellWithMissingCellPolicy(metadataRow, 0);
+            if(cell != null) {
+                defaultLanguage = getCellStringValue(metadataTab.getRow(2).getCell(0));
+            }
+        }
+        if (defaultLanguage.trim().equals("")) {
             defaultLanguage = "en";
         }
 
