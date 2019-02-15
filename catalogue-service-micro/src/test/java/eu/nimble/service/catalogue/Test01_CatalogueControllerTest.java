@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
@@ -52,6 +53,7 @@ public class Test01_CatalogueControllerTest {
     private Environment environment;
 
     private ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
+    private final String partyId = "706";
     private static String createdCatalogueId;
 
     @Test
@@ -276,4 +278,37 @@ public class Test01_CatalogueControllerTest {
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
     }
 
+    // Tests for getDefaultCataloguePagination service
+    @Test
+    public void test60_getDefaultCataloguePagination() throws Exception {
+        // Add a catalogue which contains many catalogue lines
+        String catalogueJson = IOUtils.toString(Test01_CatalogueControllerTest.class.getResourceAsStream("/example_catalogue_with_multiple_lines.json"));
+
+        MockHttpServletRequestBuilder request = post("/catalogue/ubl")
+                .header("Authorization", environment.getProperty("nimble.test-token"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(catalogueJson);
+        MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isCreated()).andReturn();
+
+        CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
+        createdCatalogueId = catalogue.getUUID();
+
+        // get default catalogue pagination response
+        request = get("/catalogue/"+partyId+"/pagination/default")
+                .header("Authorization", environment.getProperty("nimble.test-token"))
+                .param("limit","10")
+                .param("offset","0");
+        result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+        CataloguePaginationResponse cataloguePaginationResponse = mapper.readValue(result.getResponse().getContentAsString(), CataloguePaginationResponse.class);
+
+        Assert.assertEquals(createdCatalogueId,cataloguePaginationResponse.getCatalogueUuid());
+        Assert.assertEquals(5,cataloguePaginationResponse.getSize());
+        Assert.assertEquals(5,cataloguePaginationResponse.getCatalogueLines().size());
+        Assert.assertEquals(8,cataloguePaginationResponse.getCategoryNames().size());
+
+        // delete the catalogue
+        request = delete("/catalogue/ubl/" + createdCatalogueId)
+                .header("Authorization", environment.getProperty("nimble.test-token"));
+        this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+    }
 }
