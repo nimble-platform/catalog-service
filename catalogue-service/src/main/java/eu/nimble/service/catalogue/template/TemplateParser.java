@@ -768,8 +768,14 @@ public class TemplateParser {
 
         String categoryIdsStr = getCellStringValue(metadataTab.getRow(0).getCell(0));
         String taxonomyIdsStr = getCellStringValue(metadataTab.getRow(1).getCell(0));
-        defaultLanguage = getCellStringValue(metadataTab.getRow(2).getCell(0));
-        if(defaultLanguage.trim().equals("")) {
+        Row metadataRow = metadataTab.getRow(2);
+        if(metadataRow != null) {
+            Cell cell = getCellWithMissingCellPolicy(metadataRow, 0);
+            if(cell != null) {
+                defaultLanguage = getCellStringValue(metadataTab.getRow(2).getCell(0));
+            }
+        }
+        if (defaultLanguage.trim().equals("")) {
             defaultLanguage = "en";
         }
 
