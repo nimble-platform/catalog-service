@@ -80,7 +80,7 @@ public class CataloguePersistenceUtil {
                 // search text filtering
                 else{
                     QueryData queryData = getQuery(catalogueId,partyId,searchText,languageId);
-                    catalogueLineIds = new JPARepositoryFactory().forCatalogueRepository(false).getEntities(queryData.query,queryData.parameterNames.toArray(new String[0]), queryData.parameterValues.toArray(),limit,offset);
+                    catalogueLineIds = new JPARepositoryFactory().forCatalogueRepository(false).getEntities(queryData.query,queryData.parameterNames.toArray(new String[0]), queryData.parameterValues.toArray(),limit,offset,true);
                 }
 
                 if(catalogueLineIds.size() != 0)
@@ -118,12 +118,15 @@ public class CataloguePersistenceUtil {
         if(searchText != null){
             QueryData queryData = new QueryData();
 
-            String query = "SELECT catalogueLine.ID FROM CatalogueType as catalogue "
-                    + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification JOIN catalogue.catalogueLine catalogueLine "
-                    + " JOIN catalogueLine.goodsItem.item item JOIN item.name name "
-                    + " JOIN item.description description"
-                    + " WHERE catalogue.ID = :catalogueId"
-                    + " AND partyIdentification.ID = :partyId";
+            String query = "select catalogue_line.id from catalogue_type catalogue join party_type party on (catalogue.provider_party_catalogue_typ_0 = party.hjid)" +
+                    "join party_identification_type party_identification on (party_identification.party_identification_party_t_0 = party.hjid)" +
+                    "join catalogue_line_type catalogue_line on (catalogue_line.catalogue_line_catalogue_typ_0 = catalogue.hjid)" +
+                    "join goods_item_type goods_item on (catalogue_line.goods_item_catalogue_line_ty_0 = goods_item.hjid)" +
+                    "join item_type item_type on (goods_item.item_goods_item_type_hjid = item_type.hjid)" +
+                    "join text_type text_type on (text_type.name__item_type_hjid = item_type.hjid or text_type.description_item_type_hjid = item_type.hjid)" +
+                    "where catalogue.id = :catalogueId and party_identification.id = :partyId and text_type.language_id = :languageId and text_type.value_ in (" +
+                    "SELECT text_type.value_ FROM text_type, plainto_tsquery(:searchText) AS q WHERE (value_ @@ q)" +
+                    ")";
 
             List<String> parameterNames = queryData.parameterNames;
             List<Object> parameterValues = queryData.parameterValues;
@@ -134,32 +137,12 @@ public class CataloguePersistenceUtil {
             parameterNames.add("partyId");
             parameterValues.add(partyId);
 
-            String nameQuery = "(name.languageID = :nameLanguageId AND ";
-            parameterNames.add("nameLanguageId");
+            parameterNames.add("languageId");
             parameterValues.add(languageId);
 
-            String descriptionQuery = "(description.languageID = :descriptionLanguageId AND ";
-            parameterNames.add("descriptionLanguageId");
-            parameterValues.add(languageId);
+            parameterNames.add("searchText");
+            parameterValues.add(searchText);
 
-            String[] keywords = searchText.split(" ");
-            for(int i = 0; i < keywords.length; i++){
-                if(i == keywords.length - 1){
-                    nameQuery += "lower(name.value) LIKE " + ":nameParams" + i + ")";
-                    descriptionQuery += "lower(description.value) LIKE " + ":descriptionParams" + i + ")";
-                }
-                else {
-                    nameQuery += "lower(name.value) LIKE " + ":nameParams" + i + " OR ";
-                    descriptionQuery += "lower(description.value) LIKE " + ":descriptionParams" + i + " OR ";
-                }
-                parameterNames.add("nameParams"+i);
-                parameterValues.add("%" + keywords[i].toLowerCase() + "%");
-
-                parameterNames.add("descriptionParams"+i);
-                parameterValues.add("%" + keywords[i].toLowerCase() + "%");
-            }
-
-            query += " AND (" + nameQuery + " OR " + descriptionQuery + ")";
             queryData.query = query;
             return queryData;
         }
