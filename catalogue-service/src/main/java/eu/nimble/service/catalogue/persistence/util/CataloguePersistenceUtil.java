@@ -85,19 +85,27 @@ public class CataloguePersistenceUtil {
         List<String> categoryNames = new ArrayList<>();
         List<CatalogueLineType> catalogueLines = new ArrayList<>();
         if(catalogueUuid != null){
-            // get number of catalogue lines which the catalogue contains
-            size = new JPARepositoryFactory().forCatalogueRepository(false).getSingleEntity(QUERY_GET_CATALOGUE_LINE_COUNT_FOR_PARTY,new String[]{"catalogueId","partyId"}, new Object[]{catalogueId,partyId});
             // get names of the categories for all catalogue lines which the catalogue contains
             categoryNames = new JPARepositoryFactory().forCatalogueRepository(false).getEntities(QUERY_GET_COMMODITY_CLASSIFICATION_NAMES_OF_CATALOGUE_LINES,new String[]{"catalogueUuid"}, new Object[]{catalogueUuid});
             // if limit is equal to 0,then no catalogue lines are returned
             if(limit != 0){
                 // get the query
-                QueryData queryData = getQuery(catalogueId,partyId,searchText,languageId,selectedCategoryName);
-                // get catalogue line ids according to the given limit and offset
-                List<String> catalogueLineIds = new JPARepositoryFactory().forCatalogueRepository(false).getEntities(queryData.query,queryData.parameterNames.toArray(new String[0]), queryData.parameterValues.toArray(),limit,offset,queryData.isNativeQuery);
+                QueryData queryData = getQuery(catalogueId,partyId,searchText,languageId,selectedCategoryName,sortOption);
+                // get all catalogue line ids
+                List<String> catalogueLineIds = new JPARepositoryFactory().forCatalogueRepository(false).getEntities(queryData.query,queryData.parameterNames.toArray(new String[0]), queryData.parameterValues.toArray(),null,null,queryData.isNativeQuery);
+                // set the size of catalogue lines
+                size = catalogueLineIds.size();
+                // update catalogue line ids according to the offset
+                if(offset < catalogueLineIds.size()){
+                    catalogueLineIds = catalogueLineIds.subList(offset,catalogueLineIds.size());
+                }
+                // update catalogue line ids according to the limit
+                if(catalogueLineIds.size() > limit){
+                    catalogueLineIds = catalogueLineIds.subList(0,limit);
+                }
 
-                // check whether we need to consider any sort options
-                // if we do, then update the query
+                // although we use the sort option to create the query in getQuery function
+                // we also have to use this option to sort catalogue lines while getting them since the result can be something arbitrary without this option
                 String getCatalogueLinesQuery = QUERY_GET_CATALOGUE_LINES_BY_IDS;
                 if(sortOption != null){
                     switch (sortOption){
@@ -105,7 +113,7 @@ public class CataloguePersistenceUtil {
                             getCatalogueLinesQuery += " ORDER BY catalogueLine.requiredItemLocationQuantity.price.priceAmount.value DESC NULLS LAST";
                             break;
                         case PRICE_LOW_TO_HIGH:
-                            getCatalogueLinesQuery += " ORDER BY catalogueLine.requiredItemLocationQuantity.price.priceAmount.value ASC";
+                            getCatalogueLinesQuery += " ORDER BY catalogueLine.requiredItemLocationQuantity.price.priceAmount.value ASC NULLS LAST";
                             break;
                     }
                 }
@@ -140,7 +148,7 @@ public class CataloguePersistenceUtil {
         return new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_CATALOGUE_IDS_FOR_PARTY, new String[]{"partyId"}, new Object[]{partyId});
     }
 
-    private static QueryData getQuery(String catalogueId,String partyId,String searchText,String languageId,String selectedCategoryName){
+    private static QueryData getQuery(String catalogueId,String partyId,String searchText,String languageId,String selectedCategoryName,CatalogueLineSortOptions sortOption){
         QueryData queryData = new QueryData();
 
         // catalogue id and party id are the common parameters for all queries
@@ -188,6 +196,30 @@ public class CataloguePersistenceUtil {
             queryData.query = QUERY_GET_CATALOGUE_LINE_IDS_WITH_SEARCH_TEXT_FOR_PARTY;
             queryData.isNativeQuery = true;
         }
+
+        if(sortOption != null){
+            if(queryData.isNativeQuery){
+                switch (sortOption){
+                    case PRICE_HIGH_TO_LOW:
+                        queryData.query += " ORDER BY amount_type.value_ DESC NULLS LAST";
+                        break;
+                    case PRICE_LOW_TO_HIGH:
+                        queryData.query += " ORDER BY amount_type.value_ ASC NULLS LAST";
+                        break;
+                }
+            }
+            else {
+                switch (sortOption){
+                    case PRICE_HIGH_TO_LOW:
+                        queryData.query += " ORDER BY catalogueLine.requiredItemLocationQuantity.price.priceAmount.value DESC NULLS LAST";
+                        break;
+                    case PRICE_LOW_TO_HIGH:
+                        queryData.query += " ORDER BY catalogueLine.requiredItemLocationQuantity.price.priceAmount.value ASC NULLS LAST";
+                        break;
+                }
+            }
+        }
+
         return queryData;
     }
 
