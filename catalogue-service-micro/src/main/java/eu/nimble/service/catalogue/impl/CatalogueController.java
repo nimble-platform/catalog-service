@@ -5,6 +5,7 @@ import eu.nimble.data.transformer.ontmalizer.XML2OWLMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
+import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
@@ -121,6 +122,7 @@ public class CatalogueController {
                                                         @ApiParam(value = "Text to be used to filter the catalogue lines.Item name and description will be searched for the given text.") @RequestParam(value = "searchText",required = false) String searchText,
                                                         @ApiParam(value = "Identifier for the language of search text such as en and tr") @RequestParam(value = "languageId",required = false) String languageId,
                                                         @ApiParam(value = "Name of the category which is used to filter catalogue lines.Catalogue lines are added to the response if and only if they contain the given category.") @RequestParam(value = "categoryName",required = false) String categoryName,
+                                                        @ApiParam(value = "Option used to sort catalogue lines") @RequestParam(value = "sortOption",required = false) CatalogueLineSortOptions sortOption,
                                                         @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         log.info("Incoming request to get CataloguePaginationResponse for party: {} with limit: {}, offset: {}", partyId,limit,offset);
         ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
@@ -135,7 +137,7 @@ public class CatalogueController {
 
         CataloguePaginationResponse cataloguePaginationResponse;
         try {
-            cataloguePaginationResponse = service.getCataloguePaginationResponse("default", partyId,categoryName,searchText,languageId,limit,offset);
+            cataloguePaginationResponse = service.getCataloguePaginationResponse("default", partyId,categoryName,searchText,languageId,sortOption,limit,offset);
         } catch (Exception e) {
             return createErrorResponseEntity("Failed to get CataloguePaginationResponse for party id: " + partyId, HttpStatus.INTERNAL_SERVER_ERROR, e);
         }

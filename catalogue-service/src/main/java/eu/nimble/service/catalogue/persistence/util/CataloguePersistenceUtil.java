@@ -1,5 +1,6 @@
 package eu.nimble.service.catalogue.persistence.util;
 
+import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
@@ -57,6 +58,9 @@ public class CataloguePersistenceUtil {
             " join text_type text_type on (text_type.name__item_type_hjid = item_type.hjid or text_type.description_item_type_hjid = item_type.hjid)" +
             " join commodity_classification_type commodity_classification on (commodity_classification.commodity_classification_ite_0 = item_type.hjid)" +
             " join code_type code_type on (code_type.hjid = commodity_classification.item_classification_code_com_0)" +
+            " join item_location_quantity_type item_location on (catalogue_line.required_item_location_quant_1 = item_location.hjid)" +
+            " join price_type price_type on (item_location.price_item_location_quantity_0 = price_type.hjid)" +
+            " join amount_type amount_type on (price_type.price_amount_price_type_hjid = amount_type.hjid)" +
             " where catalogue.id = :catalogueId and party_identification.id = :partyId and code_type.name_ = :categoryName and text_type.language_id = :languageId and text_type.value_ in (" +
             " SELECT text_type.value_ FROM text_type, plainto_tsquery(:searchText) AS q WHERE (value_ @@ q)" +
             ")";
@@ -67,11 +71,14 @@ public class CataloguePersistenceUtil {
             " join goods_item_type goods_item on (catalogue_line.goods_item_catalogue_line_ty_0 = goods_item.hjid)" +
             " join item_type item_type on (goods_item.item_goods_item_type_hjid = item_type.hjid)" +
             " join text_type text_type on (text_type.name__item_type_hjid = item_type.hjid or text_type.description_item_type_hjid = item_type.hjid)" +
+            " join item_location_quantity_type item_location on (catalogue_line.required_item_location_quant_1 = item_location.hjid)" +
+            " join price_type price_type on (item_location.price_item_location_quantity_0 = price_type.hjid)" +
+            " join amount_type amount_type on (price_type.price_amount_price_type_hjid = amount_type.hjid) " +
             " where catalogue.id = :catalogueId and party_identification.id = :partyId and text_type.language_id = :languageId and text_type.value_ in (" +
             " SELECT text_type.value_ FROM text_type, plainto_tsquery(:searchText) AS q WHERE (value_ @@ q)" +
             ")";
 
-    public static CataloguePaginationResponse getCatalogueLinesForParty(String catalogueId, String partyId,String selectedCategoryName,String searchText,String languageId, int limit, int offset) {
+    public static CataloguePaginationResponse getCatalogueLinesForParty(String catalogueId, String partyId, String selectedCategoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset) {
         // get catalogue uuid
         String catalogueUuid = new JPARepositoryFactory().forCatalogueRepository(false).getSingleEntity(QUERY_GET_CATALOGUE_UUID_FOR_PARTY,new String[]{"catalogueId","partyId"}, new Object[]{catalogueId,partyId});
         long size = 0;
@@ -84,12 +91,27 @@ public class CataloguePersistenceUtil {
             categoryNames = new JPARepositoryFactory().forCatalogueRepository(false).getEntities(QUERY_GET_COMMODITY_CLASSIFICATION_NAMES_OF_CATALOGUE_LINES,new String[]{"catalogueUuid"}, new Object[]{catalogueUuid});
             // if limit is equal to 0,then no catalogue lines are returned
             if(limit != 0){
+                // get the query
                 QueryData queryData = getQuery(catalogueId,partyId,searchText,languageId,selectedCategoryName);
                 // get catalogue line ids according to the given limit and offset
                 List<String> catalogueLineIds = new JPARepositoryFactory().forCatalogueRepository(false).getEntities(queryData.query,queryData.parameterNames.toArray(new String[0]), queryData.parameterValues.toArray(),limit,offset,queryData.isNativeQuery);
 
+                // check whether we need to consider any sort options
+                // if we do, then update the query
+                String getCatalogueLinesQuery = QUERY_GET_CATALOGUE_LINES_BY_IDS;
+                if(sortOption != null){
+                    switch (sortOption){
+                        case PRICE_HIGH_TO_LOW:
+                            getCatalogueLinesQuery += " ORDER BY catalogueLine.requiredItemLocationQuantity.price.priceAmount.value DESC NULLS LAST";
+                            break;
+                        case PRICE_LOW_TO_HIGH:
+                            getCatalogueLinesQuery += " ORDER BY catalogueLine.requiredItemLocationQuantity.price.priceAmount.value ASC";
+                            break;
+                    }
+                }
+
                 if(catalogueLineIds.size() != 0)
-                    catalogueLines = new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_CATALOGUE_LINES_BY_IDS,new String[]{"catalogueLineIds"}, new Object[]{catalogueLineIds});
+                    catalogueLines = new JPARepositoryFactory().forCatalogueRepository().getEntities(getCatalogueLinesQuery,new String[]{"catalogueLineIds"}, new Object[]{catalogueLineIds});
             }
         }
         // created CataloguePaginationResponse
