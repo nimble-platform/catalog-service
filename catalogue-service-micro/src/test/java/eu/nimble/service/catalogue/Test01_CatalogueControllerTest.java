@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
@@ -305,6 +306,40 @@ public class Test01_CatalogueControllerTest {
         Assert.assertEquals(5,cataloguePaginationResponse.getSize());
         Assert.assertEquals(5,cataloguePaginationResponse.getCatalogueLines().size());
         Assert.assertEquals(8,cataloguePaginationResponse.getCategoryNames().size());
+
+    }
+
+    @Test
+    public void test61_getDefaultCataloguePagination() throws Exception {
+        MockHttpServletRequestBuilder request = get("/catalogue/"+partyId+"/pagination/default")
+                .header("Authorization", environment.getProperty("nimble.test-token"))
+                .param("limit","2")
+                .param("offset","1")
+                .param("sortOption", CatalogueLineSortOptions.PRICE_HIGH_TO_LOW.toString());
+        MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+        CataloguePaginationResponse cataloguePaginationResponse = mapper.readValue(result.getResponse().getContentAsString(), CataloguePaginationResponse.class);
+
+        Assert.assertEquals(5,cataloguePaginationResponse.getSize());
+        Assert.assertEquals(2,cataloguePaginationResponse.getCatalogueLines().size());
+        Assert.assertEquals(8,cataloguePaginationResponse.getCategoryNames().size());
+        Assert.assertEquals(1200,cataloguePaginationResponse.getCatalogueLines().get(0).getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue().intValue());
+    }
+
+    @Test
+    public void test62_getDefaultCataloguePagination() throws Exception {
+        MockHttpServletRequestBuilder request = get("/catalogue/"+partyId+"/pagination/default")
+                .header("Authorization", environment.getProperty("nimble.test-token"))
+                .param("limit","2")
+                .param("offset","0")
+                .param("categoryName","Notebook")
+                .param("sortOption", CatalogueLineSortOptions.PRICE_LOW_TO_HIGH.toString());
+        MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+        CataloguePaginationResponse cataloguePaginationResponse = mapper.readValue(result.getResponse().getContentAsString(), CataloguePaginationResponse.class);
+
+        Assert.assertEquals(2,cataloguePaginationResponse.getSize());
+        Assert.assertEquals(2,cataloguePaginationResponse.getCatalogueLines().size());
+        Assert.assertEquals(8,cataloguePaginationResponse.getCategoryNames().size());
+        Assert.assertEquals(90,cataloguePaginationResponse.getCatalogueLines().get(0).getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue().intValue());
 
         // delete the catalogue
         request = delete("/catalogue/ubl/" + createdCatalogueId)

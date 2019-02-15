@@ -2075,7 +2075,7 @@
         "applicableTerritoryAddress": [],
         "price": {
           "priceAmount": {
-            "value": null,
+            "value": 90,
             "currencyID": "EUR",
             "hjid": null
           },
