@@ -33,6 +33,7 @@ public class CataloguePersistenceUtil {
             + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification JOIN catalogue.catalogueLine catalogueLine"
             + " WHERE catalogue.ID = :catalogueId"
             + " AND partyIdentification.ID = :partyId";
+
     private static final String QUERY_GET_CATALOGUE_LINE_IDS_WITH_CATEGORY_NAMES_FOR_PARTY = "SELECT catalogueLine.ID FROM CatalogueType as catalogue "
             + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification JOIN catalogue.catalogueLine catalogueLine "
             + " JOIN catalogueLine.goodsItem.item.commodityClassification commodityClassification JOIN commodityClassification.itemClassificationCode itemClassificationCode "
@@ -49,7 +50,7 @@ public class CataloguePersistenceUtil {
             + " AND partyIdentification.ID = :partyId";
 
 
-    public static CataloguePaginationResponse getCatalogueLinesForParty(String catalogueId, String partyId,List<String> selectedCategoryNames, int limit, int offset) {
+    public static CataloguePaginationResponse getCatalogueLinesForParty(String catalogueId, String partyId,String selectedCategoryName,String searchText,String languageId, int limit, int offset) {
         // get catalogue uuid
         String catalogueUuid = new JPARepositoryFactory().forCatalogueRepository(false).getSingleEntity(QUERY_GET_CATALOGUE_UUID_FOR_PARTY,new String[]{"catalogueId","partyId"}, new Object[]{catalogueId,partyId});
         long size = 0;
@@ -64,13 +65,22 @@ public class CataloguePersistenceUtil {
             if(limit != 0){
                 // get catalogue line ids according to the given limit and offset
                 List<String> catalogueLineIds = new ArrayList<>();
-                // no category name filtering
-                if(selectedCategoryNames == null){
+                // no category name filtering and search text filtering
+                if(selectedCategoryName == null && searchText == null){
                     catalogueLineIds = new JPARepositoryFactory().forCatalogueRepository(false).getEntities(QUERY_GET_CATALOGUE_LINE_IDS_FOR_PARTY,new String[]{"catalogueId","partyId"}, new Object[]{catalogueId,partyId},limit,offset);
                 }
+                // category name filtering and search text filtering
+                else if(selectedCategoryName != null && searchText != null){
+                    // TODO: implement it
+                }
                 // category name filtering
+                else if(selectedCategoryName != null){
+                    catalogueLineIds = new JPARepositoryFactory().forCatalogueRepository(false).getEntities(QUERY_GET_CATALOGUE_LINE_IDS_WITH_CATEGORY_NAMES_FOR_PARTY,new String[]{"catalogueId","partyId","categoryNames"}, new Object[]{catalogueId,partyId,selectedCategoryName},limit,offset);
+                }
+                // search text filtering
                 else{
-                    catalogueLineIds = new JPARepositoryFactory().forCatalogueRepository(false).getEntities(QUERY_GET_CATALOGUE_LINE_IDS_WITH_CATEGORY_NAMES_FOR_PARTY,new String[]{"catalogueId","partyId","categoryNames"}, new Object[]{catalogueId,partyId,selectedCategoryNames},limit,offset);
+                    QueryData queryData = getQuery(catalogueId,partyId,searchText,languageId);
+                    catalogueLineIds = new JPARepositoryFactory().forCatalogueRepository(false).getEntities(queryData.query,queryData.parameterNames.toArray(new String[0]), queryData.parameterValues.toArray(),limit,offset);
                 }
 
                 if(catalogueLineIds.size() != 0)
@@ -101,5 +111,64 @@ public class CataloguePersistenceUtil {
 
     public static List<String> getCatalogueIdsForParty(String partyId) {
         return new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_CATALOGUE_IDS_FOR_PARTY, new String[]{"partyId"}, new Object[]{partyId});
+    }
+
+    // TODO: update this function to get other queries as well
+    private static QueryData getQuery(String catalogueId,String partyId,String searchText,String languageId){
+        if(searchText != null){
+            QueryData queryData = new QueryData();
+
+            String query = "SELECT catalogueLine.ID FROM CatalogueType as catalogue "
+                    + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification JOIN catalogue.catalogueLine catalogueLine "
+                    + " JOIN catalogueLine.goodsItem.item item JOIN item.name name "
+                    + " JOIN item.description description"
+                    + " WHERE catalogue.ID = :catalogueId"
+                    + " AND partyIdentification.ID = :partyId";
+
+            List<String> parameterNames = queryData.parameterNames;
+            List<Object> parameterValues = queryData.parameterValues;
+
+            parameterNames.add("catalogueId");
+            parameterValues.add(catalogueId);
+
+            parameterNames.add("partyId");
+            parameterValues.add(partyId);
+
+            String nameQuery = "(name.languageID = :nameLanguageId AND ";
+            parameterNames.add("nameLanguageId");
+            parameterValues.add(languageId);
+
+            String descriptionQuery = "(description.languageID = :descriptionLanguageId AND ";
+            parameterNames.add("descriptionLanguageId");
+            parameterValues.add(languageId);
+
+            String[] keywords = searchText.split(" ");
+            for(int i = 0; i < keywords.length; i++){
+                if(i == keywords.length - 1){
+                    nameQuery += "lower(name.value) LIKE " + ":nameParams" + i + ")";
+                    descriptionQuery += "lower(description.value) LIKE " + ":descriptionParams" + i + ")";
+                }
+                else {
+                    nameQuery += "lower(name.value) LIKE " + ":nameParams" + i + " OR ";
+                    descriptionQuery += "lower(description.value) LIKE " + ":descriptionParams" + i + " OR ";
+                }
+                parameterNames.add("nameParams"+i);
+                parameterValues.add("%" + keywords[i].toLowerCase() + "%");
+
+                parameterNames.add("descriptionParams"+i);
+                parameterValues.add("%" + keywords[i].toLowerCase() + "%");
+            }
+
+            query += " AND (" + nameQuery + " OR " + descriptionQuery + ")";
+            queryData.query = query;
+            return queryData;
+        }
+        return null;
+    }
+
+    private static class QueryData {
+        private String query;
+        private List<String> parameterNames = new ArrayList<>();
+        private List<Object> parameterValues = new ArrayList<>();
     }
 }
