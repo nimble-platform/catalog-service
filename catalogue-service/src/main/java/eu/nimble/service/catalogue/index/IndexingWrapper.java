@@ -363,7 +363,7 @@ public class IndexingWrapper {
         try {
             indexProperty.setValueQualifier(ValueQualifier.valueOf(ItemPropertyValueQualifier.valueOfAlternative(property.getValueQualifier()).toString()));
         } catch (RuntimeException e) {
-            logger.warn("Unsupported value qualifier: {}, reverting to {}", property.getValueQualifier(), ItemPropertyValueQualifier.TEXT.toString());
+            logger.warn("Unsupported value qualifier: {}, reverting to {}", property.getValueQualifier(), ValueQualifier.TEXT.toString());
             indexProperty.setValueQualifier(ValueQualifier.TEXT);
         }
 
