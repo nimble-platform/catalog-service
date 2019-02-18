@@ -175,6 +175,14 @@ nimble:
       trustScoreUpdates: ${KAFKA_TOPIC_TRUST_SCORE_UPDATES:trust-score-updates}
   check-entity-ids: ${CHECK_ENTITY_IDS:false}
 
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 5000
+
 ################################################################################################
 ################################## KUBERNETES CONFIG ###########################################
 ################################################################################################
