@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -124,7 +125,25 @@ public class Test06_BinaryContentTest {
     }
 
     @Test
-    public void test15_deleteCatalogue() throws Exception {
+    public void test15_deleteImagesInsideCatalogue() throws Exception {
+        MockHttpServletRequestBuilder request = get("/catalogue/"+catalogueUuid+"/delete-images")
+                .header("Authorization", environment.getProperty("nimble.test-token"));
+        MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+
+        // check the number of product images
+        CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
+        for(CatalogueLineType catalogueLineType: catalogue.getCatalogueLine()){
+            Assert.assertEquals(0,catalogueLineType.getGoodsItem().getItem().getProductImage().size());
+        }
+        // try to get product image
+        request = get("/binary-content")
+                .header("Authorization", environment.getProperty("nimble.test-token"))
+                .param("uri", secondProductImageUri);
+        this.mockMvc.perform(request).andDo(print()).andExpect(status().isNotFound()).andReturn();
+    }
+
+    @Test
+    public void test16_deleteCatalogue() throws Exception {
         MockHttpServletRequestBuilder request = delete("/catalogue/ubl/" + catalogueUuid)
                 .header("Authorization", environment.getProperty("nimble.test-token"));
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
