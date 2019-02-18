@@ -7,6 +7,7 @@ import eu.nimble.service.catalogue.template.TemplateConfig;
 import eu.nimble.service.model.solr.item.ItemType;
 import eu.nimble.service.model.solr.owl.ClassType;
 import eu.nimble.service.model.solr.owl.PropertyType;
+import eu.nimble.service.model.solr.owl.ValueQualifier;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
@@ -233,7 +234,7 @@ public class IndexingWrapper {
         // TODO the data type is currently keeping the value qualifier. However, it should be stored in the value qualifier field.
         if(indexProperty.getUri().startsWith(TaxonomyEnum.eClass.getNamespace())) {
             // This is so in order not to break the functionality on the front-end
-            property.setDataType(indexProperty.getValueQualifier());
+            property.setDataType(indexProperty.getValueQualifier().toString());
         } else {
             property.setDataType(getValueQualifierForRange(indexProperty.getRange()));
         }
@@ -360,10 +361,10 @@ public class IndexingWrapper {
         }
 
         try {
-            indexProperty.setValueQualifier(ItemPropertyValueQualifier.valueOfAlternative(property.getValueQualifier()).toString());
+            indexProperty.setValueQualifier(ValueQualifier.valueOf(ItemPropertyValueQualifier.valueOfAlternative(property.getValueQualifier()).toString()));
         } catch (RuntimeException e) {
             logger.warn("Unsupported value qualifier: {}, reverting to {}", property.getValueQualifier(), ItemPropertyValueQualifier.TEXT.toString());
-            indexProperty.setValueQualifier(ItemPropertyValueQualifier.TEXT.toString());
+            indexProperty.setValueQualifier(ValueQualifier.TEXT);
         }
 
         try {

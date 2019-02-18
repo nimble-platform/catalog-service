@@ -223,7 +223,7 @@ public class CatalogueLineController {
                 return HttpResponseUtil.createResponseEntityAndLog(String.format("Failed to deserialize catalogue line from json string: %s", catalogueLineJson), e, HttpStatus.BAD_REQUEST, LogLevel.ERROR);
             }
 
-            log.info("Incoming request to update catalogue line. Catalogue uuid: {}", catalogueUuid);
+            log.info("Incoming request to update catalogue line. Catalogue uuid: {}, line hjid: {}", catalogueUuid, catalogueLine.getHjid());
             CatalogueType catalogue = service.getCatalogue(catalogueUuid);
             if (catalogue == null) {
                 log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
