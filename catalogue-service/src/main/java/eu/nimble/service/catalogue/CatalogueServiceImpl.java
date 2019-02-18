@@ -12,7 +12,6 @@ import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
 import eu.nimble.service.catalogue.template.TemplateGenerator;
 import eu.nimble.service.catalogue.template.TemplateParser;
 import eu.nimble.service.catalogue.util.DataIntegratorUtil;
-import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
 import eu.nimble.service.catalogue.validation.ValidationException;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
@@ -23,15 +22,12 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
-import eu.nimble.utility.HttpResponseUtil;
 import eu.nimble.utility.JAXBUtility;
 import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.logging.LogLevel;
-import org.springframework.http.HttpStatus;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.activation.MimetypesFileTypeMap;
@@ -428,7 +424,7 @@ public class CatalogueServiceImpl implements CatalogueService {
                 throw new CatalogueServiceException(msg, e);
             }
 
-            updateCatalogue(catalogue);
+            catalogue = updateCatalogue(catalogue);
 
             return catalogue;
 
@@ -441,8 +437,13 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     @Override
     public CatalogueType removeAllImagesFromCatalogue(CatalogueType catalogueType) {
-
-        return null;
+        for(CatalogueLineType catalogueLine:catalogueType.getCatalogueLine()){
+            // remove product images from the item
+            catalogueLine.getGoodsItem().getItem().getProductImage().clear();
+        }
+        // update the catalogue
+        catalogueType = updateCatalogue(catalogueType);
+        return catalogueType;
     }
 
     @Override

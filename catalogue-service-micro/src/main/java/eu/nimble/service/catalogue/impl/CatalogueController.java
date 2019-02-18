@@ -637,7 +637,7 @@ public class CatalogueController {
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Deletes all the images of CatalogueLines of the specified catalogue")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Deleted the images successfully"),
+            @ApiResponse(code = 200, message = "Deleted the images successfully",response = CatalogueType.class),
             @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
             @ApiResponse(code = 404, message = "No catalogue for the given uuid"),
             @ApiResponse(code = 500, message = "Unexpected error while getting catalogue")
@@ -655,15 +655,17 @@ public class CatalogueController {
             }
 
             // catalogue check
-            if (service.getCatalogue(uuid) == null) {
+            CatalogueType catalogue = service.getCatalogue(uuid);
+            if (catalogue == null) {
                 log.error("Catalogue with uuid : {} does not exist", uuid);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", uuid));
             }
 
             // remove the images
+            catalogue = service.removeAllImagesFromCatalogue(catalogue);
 
-
-            return ResponseEntity.ok().build();
+            log.info("Deleted images for catalogue: {}",uuid);
+            return ResponseEntity.ok().body(serializationUtility.serializeUBLObject(catalogue));
 
         } catch (Exception e) {
             return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while uploading images. uuid: %s", uuid), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
