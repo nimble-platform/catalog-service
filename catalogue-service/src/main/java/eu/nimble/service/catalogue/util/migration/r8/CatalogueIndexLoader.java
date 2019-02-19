@@ -26,7 +26,13 @@ public class CatalogueIndexLoader {
         // get all catalogues
         List<CatalogueType> catalogues = CataloguePersistenceUtil.getAllCatalogues();
         for(CatalogueType catalogue : catalogues) {
-            itemIndexClient.indexCatalogue(catalogue);
+            try {
+                if(catalogue.getUUID().contentEquals("3edd54c0-8f88-4f6c-a19a-707764b9cc7c")) {
+                    itemIndexClient.indexCatalogue(catalogue);
+                }
+            } catch (Exception e) {
+                // do nothing
+            }
         }
         logger.info("Indexing catalogues completed");
     }

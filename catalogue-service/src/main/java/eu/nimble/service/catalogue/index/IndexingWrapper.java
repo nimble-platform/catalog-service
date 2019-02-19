@@ -73,6 +73,11 @@ public class IndexingWrapper {
     private static void transformAdditionalItemProperties(ItemType indexItem, CatalogueLineType catalogueLine) {
         for(ItemPropertyType itemProperty : catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty()) {
             String propertyQualifier = getIndexPropertyQualifier(itemProperty);
+            if(propertyQualifier == null) {
+                String serializedItemProperty = JsonSerializationUtility.serializeEntitySilently(itemProperty);
+                logger.warn("Null qualifier for property: {}. This property won't be indexed", serializedItemProperty);
+                continue;
+            }
             boolean isStandardProperty = isStandardProperty(itemProperty);
 
             if(isStandardProperty) {
@@ -87,11 +92,15 @@ public class IndexingWrapper {
 
                 } else if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.QUANTITY)) {
                     for (QuantityType value : itemProperty.getValueQuantity()) {
-                        indexItem.addProperty(propertyQualifier, value.getUnitCode(), value.getValue().doubleValue());
+                        if(value.getUnitCode() != null && value.getValue() != null) {
+                            indexItem.addProperty(propertyQualifier, value.getUnitCode(), value.getValue().doubleValue());
+                        }
                     }
 
                 } else if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.BOOLEAN)) {
-                    indexItem.setProperty(propertyQualifier, Boolean.valueOf(itemProperty.getValue().get(0).getValue()));
+                    if(itemProperty.getValue().size() > 0) {
+                        indexItem.setProperty(propertyQualifier, Boolean.valueOf(itemProperty.getValue().get(0).getValue()));
+                    }
 
                 } else if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.FILE)) {
                     // binary properties are not indexed
@@ -112,11 +121,15 @@ public class IndexingWrapper {
 
                 } else if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.QUANTITY)) {
                     for (QuantityType value : itemProperty.getValueQuantity()) {
-                        indexItem.addProperty(propertyQualifier, value.getUnitCode(), value.getValue().doubleValue(), customPropertyData);
+                        if(value.getUnitCode() != null && value.getValue() != null) {
+                            indexItem.addProperty(propertyQualifier, value.getUnitCode(), value.getValue().doubleValue(), customPropertyData);
+                        }
                     }
 
                 } else if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.BOOLEAN)) {
-                    indexItem.setProperty(propertyQualifier, Boolean.valueOf(itemProperty.getValue().get(0).getValue()), customPropertyData);
+                    if(itemProperty.getValue().size() > 0) {
+                        indexItem.setProperty(propertyQualifier, Boolean.valueOf(itemProperty.getValue().get(0).getValue()), customPropertyData);
+                    }
 
                 } else if (ItemPropertyValueQualifier.valueOfAlternative(itemProperty.getValueQualifier()).equals(ItemPropertyValueQualifier.FILE)) {
                     // binary properties are not indexed
@@ -146,7 +159,7 @@ public class IndexingWrapper {
 
     private static boolean isStandardProperty(ItemPropertyType itemProperty) {
         boolean isStandardProperty = Arrays.asList(TaxonomyEnum.values()).stream()
-                .filter(taxonomy -> taxonomy.getId().contentEquals(itemProperty.getItemClassificationCode().getListID()))
+                .filter(taxonomy -> itemProperty.getItemClassificationCode().getListID() != null && taxonomy.getId().contentEquals(itemProperty.getItemClassificationCode().getListID()))
                 .findFirst()
                 .isPresent();
         return isStandardProperty;

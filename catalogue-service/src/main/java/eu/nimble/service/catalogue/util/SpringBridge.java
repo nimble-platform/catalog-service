@@ -4,6 +4,7 @@ import eu.nimble.common.rest.identity.IdentityClientTyped;
 import eu.nimble.common.rest.trust.TrustClient;
 import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
+import eu.nimble.service.catalogue.index.PartyIndexClient;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -30,6 +31,8 @@ public class SpringBridge implements ApplicationContextAware {
     private TrustClient trustClient;
     @Autowired
     private IndexCategoryService indexCategoryService;
+    @Autowired
+    private PartyIndexClient partyIndexClient;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext)
@@ -51,5 +54,9 @@ public class SpringBridge implements ApplicationContextAware {
 
     public IndexCategoryService getIndexCategoryService() {
         return indexCategoryService;
+    }
+
+    public PartyIndexClient getPartyIndexClient() {
+        return partyIndexClient;
     }
 }
