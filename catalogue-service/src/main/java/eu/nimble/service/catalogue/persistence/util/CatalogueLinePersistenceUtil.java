@@ -29,6 +29,7 @@ public class CatalogueLinePersistenceUtil {
             + " WHERE c.UUID = :catalogueUuid "
             + " AND cl.ID = :lineId "
             + " AND clj.ID = cl.ID ";
+    private static final String QUERY_GET_BY_HJID = "SELECT cl FROM CatalogueLineType as cl WHERE cl.hjid = :hjid";
 
     public static Boolean checkCatalogueLineExistence(String catalogueUuid, String lineId) {
         long lineExistence = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_CHECK_EXISTENCE_BY_ID, new String[]{"catalogueUuid", "lineId"}, new Object[]{catalogueUuid, lineId});
@@ -38,6 +39,10 @@ public class CatalogueLinePersistenceUtil {
     public static Boolean checkCatalogueLineExistence(String catalogueUuid, String lineId, Long hjid) {
         long lineExistence = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_CHECK_EXISTENCE_BY_HJID_AND_ID, new String[]{"catalogueUuid", "lineId", "hjid"}, new Object[]{catalogueUuid, lineId, hjid});
         return lineExistence == 1 ? true : false;
+    }
+
+    public static CatalogueLineType getCatalogueLine(Long hjid) {
+        return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_BY_HJID, new String[]{"hjid"}, new Object[]{hjid});
     }
 
     public static CatalogueLineType getCatalogueLine(String catalogueUuid, String lineId) {

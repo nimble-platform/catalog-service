@@ -73,11 +73,13 @@ public interface CatalogueService {
      * Catalogue-line level endpoints
      */
 
-    public <T> T getCatalogueLine(String catalogueId, String catalogueLineId);
+    CatalogueLineType getCatalogueLine(long hjid);
 
-    public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine);
+    <T> T getCatalogueLine(String catalogueId, String catalogueLineId);
 
-    public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine);
+    CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine);
 
-    public void deleteCatalogueLineById(String catalogueId, String lineId);
+    CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine);
+
+    void deleteCatalogueLineById(String catalogueId, String lineId);
 }
