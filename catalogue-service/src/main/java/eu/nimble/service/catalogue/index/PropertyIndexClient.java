@@ -169,7 +169,10 @@ public class PropertyIndexClient {
             List<Property> catPropList = new ArrayList<>();
             if(CollectionUtils.isNotEmpty(catPropCol)) {
                 for (String propUri : catPropCol) {
-                    catPropList.add(propertyMap.get(propUri));
+                    // skip the object properties that are not retrieved from the index
+                    if(propertyMap.get(propUri) != null) {
+                        catPropList.add(propertyMap.get(propUri));
+                    }
                 }
             }
             categoryProperties.put(categoryUri, catPropList);
