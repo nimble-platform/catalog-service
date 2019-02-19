@@ -9,6 +9,7 @@ import java.util.List;
  * Created by suat on 31-Dec-18.
  */
 public class CataloguePersistenceUtil {
+    private static final String QUERY_GET_ALL_CATALOGUES = "SELECT catalogue FROM CatalogueType catalogue";
     private static final String QUERY_GET_BY_UUID = "SELECT catalogue FROM CatalogueType catalogue WHERE catalogue.UUID = :uuid";
     private static final String QUERY_GET_FOR_PARTY = "SELECT catalogue FROM CatalogueType as catalogue "
             + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification"
@@ -21,6 +22,9 @@ public class CataloguePersistenceUtil {
             " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification" +
             " WHERE partyIdentification.ID = :partyId";
 
+    public static List<CatalogueType> getAllCatalogues() {
+        return new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_ALL_CATALOGUES);
+    }
 
     public static CatalogueType getCatalogueByUuid(String catalogueUuid) {
         return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_BY_UUID, new String[]{"uuid"}, new Object[]{catalogueUuid});

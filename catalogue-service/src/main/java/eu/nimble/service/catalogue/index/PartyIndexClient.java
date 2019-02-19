@@ -34,27 +34,28 @@ public class PartyIndexClient {
     @Autowired
     private ExecutionContext executionContext;
 
-    public void indexParty() {
-        PartyType indexParty = null;
+    public void indexParty(eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType party) {
+//        PartyType indexParty = null;
         try {
             String partyJson;
             try {
-                indexParty = new PartyType();
-                indexParty.setName("SRDC");
-                indexParty.setId("381");
-                indexParty.setOrigin("Turkey");
-                indexParty.setTrustDeliveryPackaging(3.0);
-                indexParty.setTrustFullfillmentOfTerms(3.0);
-                indexParty.setTrustNumberOfTransactions(10.0);
-                indexParty.setTrustRating(3.7);
-                indexParty.setTrustSellerCommunication(4.2);
-                indexParty.setTrustScore(0.77);
-                indexParty.setUri(indexParty.getId());
+//                indexParty = new PartyType();
+//                indexParty.setName("SRDC");
+//                indexParty.setId("381");
+//                indexParty.setOrigin("Turkey");
+//                indexParty.setTrustDeliveryPackaging(3.0);
+//                indexParty.setTrustFullfillmentOfTerms(3.0);
+//                indexParty.setTrustNumberOfTransactions(10.0);
+//                indexParty.setTrustRating(3.7);
+//                indexParty.setTrustSellerCommunication(4.2);
+//                indexParty.setTrustScore(0.77);
+//                indexParty.setUri(indexParty.getId());
+                PartyType indexParty = IndexingWrapper.toIndexParty(party);
                 partyJson = JsonSerializationUtility.getObjectMapper().writeValueAsString(indexParty);
 
             } catch (Exception e) {
-//                String serializedCategory = JsonSerializationUtility.serializeEntitySilently(p);
-                String msg = String.format("Failed to serialize Party.");
+                String serializedParty = JsonSerializationUtility.serializeEntitySilently(party);
+                String msg = String.format("Failed to transporm party to index party.\nparty: %s", serializedParty);
                 logger.error(msg, e);
                 return;
             }
@@ -66,17 +67,17 @@ public class PartyIndexClient {
                     .asString();
 
             if (response.getStatus() == HttpStatus.OK.value()) {
-                logger.info("Indexed party successfully. party name: {}, id: {}", indexParty.getName(), indexParty.getId());
+                logger.info("Indexed party successfully. party name: {}, id: {}", party.getPartyName().get(0).getName().getValue(), party.getPartyIdentification().get(0).getID());
                 return;
 
             } else {
-                String msg = String.format("Failed to index party. id: %s, indexing call status: %d, message: %s", indexParty.getId(), response.getStatus(), response.getBody());
+                String msg = String.format("Failed to index party. id: %s, indexing call status: %d, message: %s", party.getPartyIdentification().get(0).getID(), response.getStatus(), response.getBody());
                 logger.error(msg);
                 return;
             }
 
         } catch (UnirestException e) {
-            String msg = String.format("Failed to index party. uri: %s", indexParty.getId());
+            String msg = String.format("Failed to index party. uri: %s", party.getPartyIdentification().get(0).getID());
             logger.error(msg, e);
             return;
         }
