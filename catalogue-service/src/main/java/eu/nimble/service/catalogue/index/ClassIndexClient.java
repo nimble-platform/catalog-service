@@ -185,13 +185,13 @@ public class ClassIndexClient {
                 return categories;
 
             } else {
-                String msg = String.format("Failed to retrieve categories. query: %s, call status: %d, message: %s", query, response.getStatus(), response.getBody());
+                String msg = String.format("Failed to retrieve categories. query: %s, fq: %s, call status: %d, message: %s", query, (MapUtils.isNotEmpty(facetCriteria) ? facetCriteria.toString() : ""), response.getStatus(), response.getBody());
                 logger.error(msg);
                 throw new RuntimeException(msg);
             }
 
         } catch (UnirestException e) {
-            String msg = String.format("Failed to retrieve categories. query: %s", query);
+            String msg = String.format("Failed to retrieve categories. query: %s, fq: %s", query, (MapUtils.isNotEmpty(facetCriteria) ? facetCriteria.toString() : ""));
             logger.error(msg, e);
             throw new RuntimeException(msg, e);
         }
