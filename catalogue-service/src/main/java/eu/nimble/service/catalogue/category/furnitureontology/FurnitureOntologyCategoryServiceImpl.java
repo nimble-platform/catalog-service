@@ -381,7 +381,7 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
         if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_INT) == 0 ||
                 dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_FLOAT) == 0 ||
                 dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_DOUBLE) == 0) {
-            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_REAL_MEASURE;
+            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_NUMBER;
 
         } else if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_STRING) == 0) {
             normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_STRING;

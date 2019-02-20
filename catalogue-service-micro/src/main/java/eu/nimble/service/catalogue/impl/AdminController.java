@@ -23,7 +23,7 @@ public class AdminController {
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity getDefaultCatalogue() {
-        partyIndexClient.indexParty();
+//        partyIndexClient.indexParty();
         return null;
     }
 }

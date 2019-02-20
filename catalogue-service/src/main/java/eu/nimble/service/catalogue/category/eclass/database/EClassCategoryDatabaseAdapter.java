@@ -615,20 +615,21 @@ public class EClassCategoryDatabaseAdapter {
         }
     }
 
-    // TODO the method below is flawed. The qualifiers ending with "measure" should be quantity
     // template parsing stuff and existing data should be post-process accordingly
     private String getNormalizedDatatype(String dataType) {
 
             String normalizedType;
-            if (dataType.compareToIgnoreCase("INTEGER_COUNT") == 0 ||
-                    dataType.compareToIgnoreCase("INTEGER_MEASURE") == 0 ||
+            if (dataType.compareToIgnoreCase("INTEGER_MEASURE") == 0 ||
                     dataType.compareToIgnoreCase("INTEGER_CURRENCY") == 0 ||
-                    dataType.compareToIgnoreCase("REAL_COUNT") == 0 ||
                     dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_REAL_MEASURE) == 0 ||
                     dataType.compareToIgnoreCase("REAL_CURRENCY") == 0 ||
-                    dataType.compareToIgnoreCase("RATIONAL") == 0 ||
                     dataType.compareToIgnoreCase("RATIONAL_MEASURE") == 0) {
-                normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_REAL_MEASURE;
+                normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY;
+
+            } else if (dataType.compareToIgnoreCase("INTEGER_COUNT") == 0 ||
+                    dataType.compareToIgnoreCase("REAL_COUNT") == 0 ||
+                    dataType.compareToIgnoreCase("RATIONAL") == 0) {
+                normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_NUMBER;
 
             } else if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_STRING) == 0 ||
                     dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_STRING_TRANSLATABLE) == 0) {
@@ -642,18 +643,6 @@ public class EClassCategoryDatabaseAdapter {
                 normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_STRING;
             }
             return normalizedType;
-    }
-
-    private String getProperNormalizedDatatype(String dataType) {
-        ItemPropertyValueQualifier valueQualifier;
-        try {
-           valueQualifier = ItemPropertyValueQualifier.valueOfAlternative(dataType);
-           return valueQualifier.toString();
-
-        } catch (RuntimeException e) {
-            logger.warn("Unsupported data type: {}, returning: {}", dataType, ItemPropertyValueQualifier.TEXT.toString());
-            return ItemPropertyValueQualifier.TEXT.toString();
-        }
     }
 
     public void checkTableCounts() {
