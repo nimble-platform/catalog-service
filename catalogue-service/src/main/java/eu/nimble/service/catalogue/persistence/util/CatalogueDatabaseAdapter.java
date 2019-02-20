@@ -38,11 +38,13 @@ public class CatalogueDatabaseAdapter {
 
         if(catalogueParty == null) {
             new JPARepositoryFactory().forCatalogueRepository().persistEntity(identityParty);
+            indexParty(identityParty);
 
         } else {
             DataModelUtility.nullifyPartyFieldsExceptHjid(catalogueParty);
             DataModelUtility.copyPartyExceptHjid(catalogueParty, identityParty);
             new JPARepositoryFactory().forCatalogueRepository().updateEntity(catalogueParty);
+            indexParty(catalogueParty);
         }
     }
 
@@ -107,6 +109,7 @@ public class CatalogueDatabaseAdapter {
         }
 
         new JPARepositoryFactory().forCatalogueRepository().updateEntity(catalogueParty);
+        indexParty(catalogueParty);
     }
 
     public static PartyType syncPartyInUBLDB(PartyType party) {
@@ -142,5 +145,9 @@ public class CatalogueDatabaseAdapter {
             logger.error(msg, e);
             throw new RuntimeException(msg, e);
         }
+    }
+
+    private static void indexParty(PartyType party) {
+        SpringBridge.getInstance().getPartyIndexClient().indexParty(party);
     }
 }
