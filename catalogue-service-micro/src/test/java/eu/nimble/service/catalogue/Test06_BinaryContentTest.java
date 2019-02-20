@@ -15,11 +15,16 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.io.InputStream;
+import java.util.Arrays;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -41,10 +46,15 @@ public class Test06_BinaryContentTest {
 
     private final String fileName = "product_image.jpeg";
     private final String secondFileName = "second_image.jpeg";
+    private final String productImageName = "a117c352-88f4-41a4-a616-1f402d9d02e0.product_image.jpg";
+
+    final private String contentType = "application/octet-stream";
+    final private String imagesZipName = "ProductImages.zip";
 
     private static String firstProductImageUri;
     private static String secondProductImageUri;
     private static String catalogueUuid;
+    private static byte[] contentOfProductImage;
 
     @Test
     public void test10_postJsonCatalogue() throws Exception {
@@ -142,8 +152,83 @@ public class Test06_BinaryContentTest {
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isNotFound()).andReturn();
     }
 
+    /*
+        Upload a zip package consisting of two images.
+     */
     @Test
-    public void test16_deleteCatalogue() throws Exception {
+    public void test16_uploadImages() throws Exception {
+        InputStream is = Test06_BinaryContentTest.class.getResourceAsStream("/images/ProductImages.zip");
+        MockMultipartFile mutipartFile = new MockMultipartFile("package", imagesZipName, contentType, is);
+        // upload images
+        MvcResult result = this.mockMvc.perform(MockMvcRequestBuilders
+                .fileUpload("/catalogue/"+catalogueUuid+"/image/upload")
+                .file(mutipartFile)
+                .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                .header("Authorization", environment.getProperty("nimble.test-token"))).andExpect(status().isOk()).andReturn();
+
+        // check the number of product images
+        CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
+        Assert.assertEquals(1,catalogue.getCatalogueLine().size());
+        Assert.assertEquals(2,catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().size());
+        // try to get product images
+        for(BinaryObjectType binaryObjectType:catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage()){
+            MockHttpServletRequestBuilder request = get("/binary-content")
+                    .header("Authorization", environment.getProperty("nimble.test-token"))
+                    .param("uri", binaryObjectType.getUri());
+            this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+            // save the uri and the content of the first product image
+            if(binaryObjectType.getFileName().contentEquals(productImageName)){
+                firstProductImageUri = binaryObjectType.getUri();
+                contentOfProductImage = binaryObjectType.getValue();
+            }
+        }
+
+    }
+
+    /*
+        Upload a zip package consisting of one image whose name is the same with the one of the existing product images.
+        Therefore,the service should replace the old image with the new one.
+     */
+    @Test
+    public void test17_uploadImages() throws Exception {
+        InputStream is = Test06_BinaryContentTest.class.getResourceAsStream("/images/ProductImagesNew.zip");
+        MockMultipartFile mutipartFile = new MockMultipartFile("package", imagesZipName, contentType, is);
+        // upload images
+        MvcResult result = this.mockMvc.perform(MockMvcRequestBuilders
+                .fileUpload("/catalogue/"+catalogueUuid+"/image/upload")
+                .file(mutipartFile)
+                .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                .header("Authorization", environment.getProperty("nimble.test-token"))).andExpect(status().isOk()).andReturn();
+
+        // check the number of product images
+        CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
+        Assert.assertEquals(1,catalogue.getCatalogueLine().size());
+        Assert.assertEquals(2,catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().size());
+        // try to get original image
+        MockHttpServletRequestBuilder request = get("/binary-content")
+                .header("Authorization", environment.getProperty("nimble.test-token"))
+                .param("uri", firstProductImageUri);
+        this.mockMvc.perform(request).andDo(print()).andExpect(status().isNotFound()).andReturn();
+
+        boolean isImageReplaced = false;
+        // retrieve the new image
+        for(BinaryObjectType binaryObjectType:catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage()){
+            if(binaryObjectType.getFileName().contentEquals(productImageName)){
+                request = get("/binary-content")
+                        .header("Authorization", environment.getProperty("nimble.test-token"))
+                        .param("uri", binaryObjectType.getUri());
+                this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+                // check whether the content is updated or not
+                Assert.assertNotEquals(Arrays.toString(contentOfProductImage),Arrays.toString(binaryObjectType.getValue()));
+                isImageReplaced = true;
+                break;
+            }
+        }
+        Assert.assertEquals(true,isImageReplaced);
+    }
+
+    @Test
+    public void test18_deleteCatalogue() throws Exception {
         MockHttpServletRequestBuilder request = delete("/catalogue/ubl/" + catalogueUuid)
                 .header("Authorization", environment.getProperty("nimble.test-token"));
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
