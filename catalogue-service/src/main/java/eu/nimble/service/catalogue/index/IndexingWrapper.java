@@ -38,9 +38,9 @@ public class IndexingWrapper {
 
         indexItem.setCatalogueId(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID());
         indexItem.setUri(catalogueLine.getHjid().toString());
+        indexItem.setManufactuerItemId(catalogueLine.getID());
         indexItem.setLocalName(catalogueLine.getHjid().toString());
         catalogueLine.getGoodsItem().getItem().getName().forEach(name -> indexItem.addLabel(name.getLanguageID(), name.getValue()));
-//        indexItem.setLabel(getLabelMapFromMultilingualLabels(catalogueLine.getGoodsItem().getItem().getName()));
         indexItem.setApplicableCountries(getCountries(catalogueLine));
         indexItem.setCertificateType(getCertificates(catalogueLine));
         if(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue() != null) {
