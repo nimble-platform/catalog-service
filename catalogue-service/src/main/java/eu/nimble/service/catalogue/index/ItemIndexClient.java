@@ -8,6 +8,9 @@ import eu.nimble.service.model.solr.item.ItemType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.utility.JsonSerializationUtility;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,6 +43,8 @@ public class ItemIndexClient {
 
     @Autowired
     private ExecutionContext executionContext;
+    @Autowired
+    private HttpSolrClient httpSolrClient;
 
     public void indexCatalogue(CatalogueType catalogue) {
         HttpResponse<String> response;
@@ -158,6 +164,19 @@ public class ItemIndexClient {
 
         } catch (UnirestException e) {
             logger.error("Failed to delete indexed CatalogueLine. hjid: {}", catalogueLineHjid, e);
+        }
+    }
+
+    public void deleteAllContent() {
+        try {
+            logger.info("Clearing the item index content");
+            UpdateResponse response = httpSolrClient.deleteByQuery("*:*");
+            logger.info("Delete query response: {}", response.getStatus());
+            response = httpSolrClient.commit();
+            logger.info("Cleared the item index content. Commit response: {}", response.getStatus());
+
+        } catch (SolrServerException | IOException e) {
+            logger.error("Failed to clear the index content", e);
         }
     }
 }

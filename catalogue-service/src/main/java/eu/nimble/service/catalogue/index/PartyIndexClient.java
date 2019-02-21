@@ -35,21 +35,9 @@ public class PartyIndexClient {
     private ExecutionContext executionContext;
 
     public void indexParty(eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType party) {
-//        PartyType indexParty = null;
         try {
             String partyJson;
             try {
-//                indexParty = new PartyType();
-//                indexParty.setName("SRDC");
-//                indexParty.setId("381");
-//                indexParty.setOrigin("Turkey");
-//                indexParty.setTrustDeliveryPackaging(3.0);
-//                indexParty.setTrustFullfillmentOfTerms(3.0);
-//                indexParty.setTrustNumberOfTransactions(10.0);
-//                indexParty.setTrustRating(3.7);
-//                indexParty.setTrustSellerCommunication(4.2);
-//                indexParty.setTrustScore(0.77);
-//                indexParty.setUri(indexParty.getId());
                 PartyType indexParty = IndexingWrapper.toIndexParty(party);
                 partyJson = JsonSerializationUtility.getObjectMapper().writeValueAsString(indexParty);
 
