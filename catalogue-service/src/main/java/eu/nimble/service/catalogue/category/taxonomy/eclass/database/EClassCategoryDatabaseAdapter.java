@@ -519,18 +519,21 @@ public class EClassCategoryDatabaseAdapter {
         }
     }
 
+    // template parsing stuff and existing data should be post-process accordingly
     private String getNormalizedDatatype(String dataType) {
 
             String normalizedType;
-            if (dataType.compareToIgnoreCase("INTEGER_COUNT") == 0 ||
-                    dataType.compareToIgnoreCase("INTEGER_MEASURE") == 0 ||
+            if (dataType.compareToIgnoreCase("INTEGER_MEASURE") == 0 ||
                     dataType.compareToIgnoreCase("INTEGER_CURRENCY") == 0 ||
-                    dataType.compareToIgnoreCase("REAL_COUNT") == 0 ||
                     dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_REAL_MEASURE) == 0 ||
                     dataType.compareToIgnoreCase("REAL_CURRENCY") == 0 ||
-                    dataType.compareToIgnoreCase("RATIONAL") == 0 ||
                     dataType.compareToIgnoreCase("RATIONAL_MEASURE") == 0) {
-                normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_REAL_MEASURE;
+                normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY;
+
+            } else if (dataType.compareToIgnoreCase("INTEGER_COUNT") == 0 ||
+                    dataType.compareToIgnoreCase("REAL_COUNT") == 0 ||
+                    dataType.compareToIgnoreCase("RATIONAL") == 0) {
+                normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_NUMBER;
 
             } else if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_STRING) == 0 ||
                     dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_STRING_TRANSLATABLE) == 0) {
