@@ -193,6 +193,7 @@ public class TemplateParser {
 
         if (category != null) {
             itemProp.setID(property.getId());
+            itemProp.setURI(property.getUri());
             associatedClassificationCode.setValue(category.getId());
             associatedClassificationCode.setName(category.getPreferredName(defaultLanguage));
             associatedClassificationCode.setListID(category.getTaxonomyId());
