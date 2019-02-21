@@ -213,25 +213,6 @@ public class ProductCategoryController {
         return ResponseEntity.ok(categories);
     }
 
-    @CrossOrigin(origins = {"*"})
-    @ApiOperation(value = "", notes = "Retrieves the all categories of the specified taxonomy")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Retrieved the all categories successfully", response = Category.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Invalid taxonomy id")
-    })
-    @RequestMapping(value = "/taxonomies/{taxonomyId}/all-categories",
-            produces = {"application/json"},
-            method = RequestMethod.GET)
-    public ResponseEntity getAllCategories(@ApiParam(value = "Taxonomy id from which categories would be retrieved.", required = true) @PathVariable String taxonomyId,
-                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
-        if (!taxonomyIdExists(taxonomyId)) {
-            log.error("The given taxonomy id : {} is not valid", taxonomyId);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("The given taxonomy id %s is not valid", taxonomyId));
-        }
-        List<Category> categories = csm.getAllCategories(taxonomyId);
-        return ResponseEntity.ok(categories);
-    }
-
     private boolean taxonomyIdExists(String taxonomyId) {
         for(TaxonomyEnum taxonomyEnum : TaxonomyEnum.values()) {
             if(taxonomyEnum.getId().compareToIgnoreCase(taxonomyId) == 0) {
