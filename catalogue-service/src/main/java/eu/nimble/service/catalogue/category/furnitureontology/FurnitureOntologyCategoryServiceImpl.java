@@ -133,7 +133,6 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
                 String remainder = getRemainder(record.get("uri").toString(), FURNITURE_NS,FURNITURE_NS2);
                 if (remainder.toLowerCase().contains(categoryName.toLowerCase())) {
                     String uri = record.get("uri").toString();
-                    String translation = record.get("translation") != null ? record.get("translation").toString() : null;
                     Category cat = createCategory(uri);
                     result.add(cat);
                 }
@@ -241,7 +240,6 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
             for (int i = sparqlResult.size()-1; i > -1; i--) {
                 Map<String, RDFNode> record = sparqlResult.get(i);
                 String uri = record.get("parent").toString();
-                String translation = record.get("translation") != null ? record.get("translation").toString() : null;
                 Category cat = createCategory(uri);
                 parents.add(cat);
             }
@@ -288,7 +286,6 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
                 for (int i = 0; i < sparqlResult.size(); i++) {
                     Map<String, RDFNode> record = sparqlResult.get(i);
                     String uri = record.get("children").toString();
-                    String translation = record.get("translation") != null ? record.get("translation").toString() : null;
                     Category cat = createCategory(uri);
                     siblings.get(j).add(cat);
                 }
@@ -316,7 +313,6 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
             for (int i = 0; i < sparqlResult.size(); i++) {
                 Map<String, RDFNode> record = sparqlResult.get(i);
                 String uri = record.get("parent").toString();
-                String translation = record.get("translation") != null ? record.get("translation").toString() : null;
                 Category cat = createCategory(uri);
                 result.add(cat);
             }
@@ -340,7 +336,6 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
             for (int i = 0; i < sparqlResult.size(); i++) {
                 Map<String, RDFNode> record = sparqlResult.get(i);
                 String uri = record.get("children").toString();
-                String translation = record.get("translation") != null ? record.get("translation").toString() : null;
                 Category cat = createCategory(uri);
                 result.add(cat);
             }
@@ -367,6 +362,52 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
                 Category cat = createCategory(uri);
                 result.add(cat);
             }
+        }
+        return result;
+    }
+
+    @Override
+    public List<Category> getAllCategories(){
+        List<Category> result = new ArrayList<>();
+        SPARQLResult sparqlResult;
+        try {
+            String categoriesSparql = getAllCategoriesSparql();
+            sparqlResult = client.getSPARQLClient().select(categoriesSparql);
+        } catch (IOException | MarmottaClientException e) {
+            log.error("Failed to get all FurnitureOntology categories", e);
+            return new ArrayList<>();
+        }
+
+        if (sparqlResult != null) {
+            Map<String,Category> categoryMap = new HashMap<>();
+
+            for (Map<String, RDFNode> res : sparqlResult) {
+                String uri = res.get("uri").toString();
+                String label = res.get("label") != null ? res.get("label").toString() : null;
+                String labelLanguageId = res.get("label_languageId") != null ? res.get("label_languageId").toString() : null;
+                String definition = res.get("definition") != null ? res.get("definition").toString() : null;
+                String definitionLanguageId = res.get("definition_languageId") != null ? res.get("definition_languageId").toString() : null;
+
+                if(!categoryMap.containsKey(uri)){
+                    Category category = new Category();
+                    category.setCategoryUri(uri);
+                    categoryMap.put(uri,category);
+                }
+
+                if(label != null){
+                    TextType textType = new TextType();
+                    textType.setLanguageID(labelLanguageId);
+                    textType.setValue(label);
+                    categoryMap.get(uri).getPreferredName().add(textType);
+                }
+                if(definition != null){
+                    TextType textType = new TextType();
+                    textType.setLanguageID(definitionLanguageId);
+                    textType.setValue(definition);
+                    categoryMap.get(uri).getDefinition().add(textType);
+                }
+            }
+            result = new ArrayList<>(categoryMap.values());
         }
         return result;
     }
@@ -418,6 +459,31 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
                 .append("       BIND(lang(?definition) AS ?definition_languageId)").append(System.lineSeparator())
                 .append("       }}").append(System.lineSeparator())
                 .append("}").append(System.lineSeparator());
+        return sb.toString();
+    }
+
+    private String getAllCategoriesSparql(){
+        StringBuilder sb = new StringBuilder("");
+        sb.append("PREFIX owl: <http://www.w3.org/2002/07/owl#>").append(System.lineSeparator())
+                .append("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>").append(System.lineSeparator())
+                .append("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ").append(System.lineSeparator())
+                .append("PREFIX mic: <").append(FURNITURE_NS).append(">").append(System.lineSeparator())
+                .append(System.lineSeparator())
+                .append("SELECT ?uri ?label ?label_languageId ?definition ?definition_languageId WHERE {").append(System.lineSeparator())
+                .append("  {GRAPH <").append(GRAPH_URI).append("> {").append(System.lineSeparator())
+                .append("    ?uri rdf:type owl:Class.").append(System.lineSeparator())
+                .append("    ?uri rdfs:label ?label").append(System.lineSeparator())
+                .append("    BIND(lang(?label) AS ?label_languageId)").append(System.lineSeparator())
+                .append("    FILTER (!isBlank(?uri)).").append(System.lineSeparator())
+                .append("	}}").append(System.lineSeparator())
+                .append("  UNION").append(System.lineSeparator())
+                .append("   {GRAPH <").append(GRAPH_URI).append("> {").append(System.lineSeparator())
+                .append("    ?uri rdf:type owl:Class.").append(System.lineSeparator())
+                .append("    ?uri rdfs:comment ?definition").append(System.lineSeparator())
+                .append("    BIND(lang(?definition) AS ?definition_languageId)").append(System.lineSeparator())
+                .append("    FILTER (!isBlank(?uri)).").append(System.lineSeparator())
+                .append("   }}").append(System.lineSeparator())
+                .append("}");
         return sb.toString();
     }
 

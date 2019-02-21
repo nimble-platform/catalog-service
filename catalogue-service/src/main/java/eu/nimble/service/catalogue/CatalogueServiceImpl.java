@@ -3,6 +3,8 @@ package eu.nimble.service.catalogue;
 import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
+import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
+import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
@@ -194,6 +196,26 @@ public class CatalogueServiceImpl implements CatalogueService {
         }
 
         return catalogue;
+    }
+
+    @Override
+    public CataloguePaginationResponse getCataloguePaginationResponse(String id, String partyId, String categoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset) {
+        return getCataloguePaginationResponse(id,partyId,categoryName,Configuration.Standard.UBL,searchText,languageId,sortOption,limit,offset);
+    }
+
+    @Override
+    public <T> T getCataloguePaginationResponse(String id, String partyId,String categoryName, Configuration.Standard standard,String searchText,String languageId,CatalogueLineSortOptions sortOption, int limit, int offset) {
+        T catalogueResponse = null;
+
+        if (standard == Configuration.Standard.UBL) {
+            catalogueResponse = (T) CataloguePersistenceUtil.getCatalogueLinesForParty(id, partyId,categoryName,searchText,languageId,sortOption,limit,offset);
+
+        } else if (standard == Configuration.Standard.MODAML) {
+            logger.warn("Getting CataloguePaginationResponse with catalogue id and party id from MODAML repository is not implemented yet");
+            throw new NotImplementedException();
+        }
+
+        return catalogueResponse;
     }
 
     @Override
@@ -397,7 +419,7 @@ public class CatalogueServiceImpl implements CatalogueService {
                 throw new CatalogueServiceException(msg, e);
             }
 
-            updateCatalogue(catalogue);
+            catalogue = updateCatalogue(catalogue);
 
             return catalogue;
 
@@ -410,8 +432,13 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     @Override
     public CatalogueType removeAllImagesFromCatalogue(CatalogueType catalogueType) {
-
-        return null;
+        for(CatalogueLineType catalogueLine:catalogueType.getCatalogueLine()){
+            // remove product images from the item
+            catalogueLine.getGoodsItem().getItem().getProductImage().clear();
+        }
+        // update the catalogue
+        catalogueType = updateCatalogue(catalogueType);
+        return catalogueType;
     }
 
     @Override
