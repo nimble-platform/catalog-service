@@ -17,8 +17,9 @@ import java.util.Set;
  * Created by suat on 19-Feb-19.
  */
 public class EClassNamespaceUpdater {
-    private static final String QUERY_GET_ECLASS_ITEM_PROPERTIES = "select id from item_property_type where uri like '%eclass%'";
-    private static final String QUERY_UPDATE_ECLASS_ITEM_PROPERTIES = "update item_property_type set id = ?, uri = ? where id = ?";
+    private static final String QUERY_GET_ECLASS_ITEM_PROPERTIES = "select id from item_property_type where id like '0173-1%' or id like '%eclass%' or uri like '%eclass%'";
+    private static final String QUERY_UPDATE_ITEM_PROPERTIES = "update item_property_type set id = ?, uri = ? where id = ?";
+    private static final String QUERY_GET_FURNITURE_ONTOLOGY_ITEM_PROPERTIES = "select id from item_property_type where id like '%FurnitureSector%'";
     private static final String QUERY_GET_ECLASS_CODES = "select uri, value_ from code_type where uri like '%eclass%'";
     private static final String QUERY_UPDATE_ECLASS_CODES = "update code_type set uri = ?, value_ = ? where value_ = ?";
     private static final String QUERY_UPDATE_REAL_MEASURES = "update item_property_type set value_qualifier = 'NUMBER' where value_qualifier = 'REAL_MEASURE'";
@@ -75,9 +76,9 @@ public class EClassNamespaceUpdater {
                 ids.add(rs.getString(1));
             }
             rs.close();
-            logger.info("Ids obtained. size: {}", ids.size());
+            logger.info("Eclass ids obtained. size: {}", ids.size());
 
-            pstmt = c.prepareStatement(QUERY_UPDATE_ECLASS_ITEM_PROPERTIES);
+            pstmt = c.prepareStatement(QUERY_UPDATE_ITEM_PROPERTIES);
             for (String id : ids) {
                 String uri = TaxonomyEnum.eClass.getNamespace() + id;
                 pstmt.setString(1, uri);
@@ -86,7 +87,26 @@ public class EClassNamespaceUpdater {
                 pstmt.execute();
                 pstmt.clearParameters();
             }
-            logger.info("properties uris are updated");
+            logger.info("Eclass property uris are updated");
+
+            rs = stmt.executeQuery(QUERY_GET_FURNITURE_ONTOLOGY_ITEM_PROPERTIES);
+            ids = new HashSet<>();
+            while (rs.next()) {
+                ids.add(rs.getString(1));
+            }
+            rs.close();
+            logger.info("Furniture ontology ids obtained. size: {}", ids.size());
+
+            pstmt = c.prepareStatement(QUERY_UPDATE_ITEM_PROPERTIES);
+            for (String id : ids) {
+                pstmt.setString(1, id);
+                pstmt.setString(2, id);
+                pstmt.setString(3, id);
+                pstmt.execute();
+                pstmt.clearParameters();
+            }
+            logger.info("Furniture ontology property uris are updated");
+
 
         } catch (Exception e) {
             logger.error("", e);
@@ -185,7 +205,9 @@ public class EClassNamespaceUpdater {
             Map map = ((MapPropertySource) applicationYamlPropertySource).getSource();
 
             String url = (String) map.get("hibernate.connection.url");
-            url = url.replace("${DB_HOST}", System.getenv("DB_HOST")).replace("${DB_PORT}", System.getenv("DB_PORT"));
+            url = url.replace("${DB_HOST}", System.getenv("DB_HOST")).
+                    replace("${DB_PORT}", System.getenv("DB_PORT")).
+                    replace("${DB_DATABASE}", System.getenv("DB_DATABASE"));
 
             // set staging parameters
             EClassNamespaceUpdater.url = url;
