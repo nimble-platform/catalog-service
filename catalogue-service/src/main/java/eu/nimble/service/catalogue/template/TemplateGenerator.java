@@ -1239,10 +1239,7 @@ public class TemplateGenerator {
 
     public static String normalizeDataTypeForTemplate(String dataType) {
         String normalizedType;
-        if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_REAL_MEASURE) == 0) {
-            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_NUMBER;
-
-        } else if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_STRING) == 0) {
+        if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_STRING) == 0) {
             normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_TEXT;
 
         } else {
@@ -1255,7 +1252,7 @@ public class TemplateGenerator {
     public static String denormalizeDataTypeFromTemplate(String datatypeStr) throws TemplateParseException{
         String denormalizedDatatype;
         if (datatypeStr.compareToIgnoreCase(TEMPLATE_DATA_TYPE_NUMBER) == 0) {
-            denormalizedDatatype = TEMPLATE_DATA_TYPE_REAL_MEASURE;
+            denormalizedDatatype = TEMPLATE_DATA_TYPE_NUMBER;
 
         } else if (datatypeStr.compareToIgnoreCase(TEMPLATE_DATA_TYPE_FILE) == 0) {
             denormalizedDatatype = TEMPLATE_DATA_TYPE_BINARY;
