@@ -185,8 +185,12 @@ public class MigrationUtil {
             stmt = c.createStatement();
 
             // Handle CatalogueType name
-            handleSingleTextType(hibernateUtility,stmt,"name_","name__catalogue_type_hjid","catalogue_type");
-            logger.info("Handled CatalogueType name");
+            try {
+                handleSingleTextType(hibernateUtility, stmt, "name_", "name__catalogue_type_hjid", "catalogue_type");
+                logger.info("Handled CatalogueType name");
+            } catch (Exception e) {
+                logger.info("Failed to update catalogue_type table", e);
+            }
             // Handle CommunicationType value
             handleSingleTextType(hibernateUtility,stmt,"value_","value__communication_type_hj_0","communication_type");
             logger.info("Handled CommunicationType value");
@@ -292,7 +296,11 @@ public class MigrationUtil {
                 logger.info("Handled party with id: {}",id);
             }
 
-            stmt.executeUpdate("ALTER TABLE catalogue_type DROP COLUMN IF EXISTS name_");
+            try {
+                stmt.executeUpdate("ALTER TABLE catalogue_type DROP COLUMN IF EXISTS name_");
+            } catch (Exception e) {
+                logger.info("Failed to alter catalogue type", e);
+            }
             stmt.executeUpdate("ALTER TABLE communication_type DROP COLUMN IF EXISTS value_");
             stmt.executeUpdate("ALTER TABLE contact_type DROP COLUMN IF EXISTS name_");
             stmt.executeUpdate("ALTER TABLE country_type DROP COLUMN IF EXISTS name_");
