@@ -56,5 +56,6 @@ public class CertificateNormalizer extends DBConnector {
             }
             hu.update(certificate);
         }
+        logger.info("Certificates normalized");
     }
 }
