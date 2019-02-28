@@ -13,11 +13,10 @@ import java.util.List;
 /**
  * Created by suat on 26-Feb-19.
  */
-@Component
 public class CertificateNormalizer extends DBConnector {
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(CertificateNormalizer.class);
 
-    List<String> certificateTypes = Arrays.asList("Appearance Approval Report",
+    List<String> defaultCertificateTypes = Arrays.asList("Appearance Approval Report",
             "Checking Aids",
             "Control Plan",
             "Customer Engineering Approval",
@@ -36,12 +35,29 @@ public class CertificateNormalizer extends DBConnector {
             "Records of Material / Performance Tests",
             "Sample Production Parts");
 
+    List<String> fmpCertificates = Arrays.asList(
+            "Health and Safety",
+            "Innovation",
+            "Management",
+            "Quality",
+            "Sustainability and Environment");
+
+    public static void main(String[] args) {
+        new CertificateNormalizer().normalizeCertificates();
+    }
+
     public void normalizeCertificates() {
+        String instance = System.getenv("ENV");
         HibernateUtility hu = getHibernateUtility();
         List<CertificateType> certificates = (List<CertificateType>) hu.loadAll(CertificateType.class);
 
         for(CertificateType certificate : certificates) {
             String certificateType = certificate.getCertificateType();
+            List<String> certificateTypes = defaultCertificateTypes;
+            if(instance.contentEquals("fmp")) {
+                certificateTypes = fmpCertificates;
+            }
+
             if(!certificateTypes.contains(certificateType)) {
                 CodeType certificateTypeCode = certificate.getCertificateTypeCode();
                 if(certificateTypeCode == null) {
