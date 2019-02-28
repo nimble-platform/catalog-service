@@ -98,7 +98,7 @@ public class Test05_TemplatePublishingTest {
         // check extra properties
         boolean colorPropertyExists = false;
         for (ItemPropertyType itemPropertyType :catalogueLineType1.getGoodsItem().getItem().getAdditionalItemProperty()){
-            if(itemPropertyType.getName().equals(colorProperty)){
+            if(itemPropertyType.getName().get(0).getValue().equals(colorProperty)){
                 Assert.assertSame(2,itemPropertyType.getValue().size());
                 colorPropertyExists = true;
                 break;
@@ -108,7 +108,7 @@ public class Test05_TemplatePublishingTest {
 
         boolean usagePropertyExists = false;
         for (ItemPropertyType itemPropertyType :catalogueLineType2.getGoodsItem().getItem().getAdditionalItemProperty()){
-            if(itemPropertyType.getName().equals(usageProperty)){
+            if(itemPropertyType.getName().get(0).getValue().equals(usageProperty)){
                 Assert.assertSame(1,itemPropertyType.getValue().size());
                 usagePropertyExists = true;
                 break;

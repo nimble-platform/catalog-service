@@ -91,6 +91,11 @@ public class CategoryServiceManager {
         return pcs.getRootCategories();
     }
 
+    public List<Category> getAllCategories(String taxonomyId){
+        ProductCategoryService pcs = services.get(taxonomyId);
+        return pcs.getAllCategories();
+    }
+
     public List<String> getAvailableTaxonomies() {
         return new ArrayList<>(services.keySet());
     }

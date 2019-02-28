@@ -12,6 +12,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.marmotta.client.exception.MarmottaClientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -51,8 +52,8 @@ public class MarmottaClient {
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "text/n3");
             conn.setDoOutput(true);
-            conn.setConnectTimeout(599999);
-            conn.setReadTimeout(600000);
+            conn.setConnectTimeout(3600000);
+            conn.setReadTimeout(3600000);
             conn.setChunkedStreamingMode(0);
 
             OutputStream os = conn.getOutputStream();
@@ -61,6 +62,11 @@ public class MarmottaClient {
 
             logger.info("Catalogue with uuid: {} submitted to Marmotta. Received HTTP response: {}", catalogue.getUUID(), conn.getResponseCode());
             if (conn.getResponseCode() != 200) {
+                // the assumption is that although a timeout is received, Marmotta is still working properly
+                if(conn.getResponseCode() == HttpStatus.GATEWAY_TIMEOUT.value()) {
+                    logger.warn("Gateway timeout for Marmotta while submitting the catalogue with uuid: {}", catalogue.getUUID());
+                    return;
+                }
                 InputStream error = conn.getErrorStream();
                 String msg = IOUtils.toString(error);
                 logger.error("Error from Marmotta upon submitting the catalogue: {}, error: {}", catalogue.getUUID(), msg);
@@ -69,7 +75,7 @@ public class MarmottaClient {
 
             conn.disconnect();
         } catch (IOException | MarmottaClientException e) {
-            // TODO now the assumption is that although a timeout is received, Marmotta is still working properly
+            // the assumption is that although a timeout is received, Marmotta is still working properly
             if (!(e instanceof SocketTimeoutException)) {
                 throw new MarmottaSynchronizationException("Failed to submit catalogue to Marmotta", e);
             } else {
@@ -77,7 +83,9 @@ public class MarmottaClient {
             }
         }
 
-        SolrClient.indexProperties(catalogue);
+        for (CatalogueLineType catalogueLine:catalogue.getCatalogueLine()){
+            UBLPropertyIndexing.indexProperties(catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty());
+        }
     }
 
     public void deleteCatalogueFromMarmotta(String uuid) throws MarmottaSynchronizationException {

@@ -3,27 +3,29 @@ package eu.nimble.service.catalogue.validation;
 import com.google.common.base.Strings;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by suat on 07-Aug-18.
  */
-public class CatalogueValidator {
+public class CatalogueValidator extends Validator {
+
+    private static Logger logger = LoggerFactory.getLogger(CatalogueValidator.class);
 
     private CatalogueType catalogueType;
-    private List<String> errorMessages;
 
     public CatalogueValidator(CatalogueType catalogueType) {
         this.catalogueType = catalogueType;
-        this.errorMessages = new ArrayList<>();
     }
 
-    public List<String> validate() {
+    public void validate() throws ValidationException {
         idExists();
         validateLines();
-        return errorMessages;
+        throwExceptionIfError();
+        logger.info("Catalogue: {} validated", catalogueType.getUUID());
     }
 
     private void idExists() {

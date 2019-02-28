@@ -3,15 +3,17 @@ package eu.nimble.service.catalogue;
 import eu.nimble.service.catalogue.category.CategoryServiceManager;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
+import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
+import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
-import eu.nimble.service.catalogue.persistence.util.UnitPersistenceUtil;
 import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
 import eu.nimble.service.catalogue.template.TemplateGenerator;
 import eu.nimble.service.catalogue.template.TemplateParser;
 import eu.nimble.service.catalogue.util.DataIntegratorUtil;
-import eu.nimble.service.catalogue.util.SpringBridge;
+import eu.nimble.service.catalogue.validation.CatalogueValidator;
+import eu.nimble.service.catalogue.validation.ValidationException;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
@@ -21,7 +23,6 @@ import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
-import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -38,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -49,6 +51,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     private static final Logger logger = LoggerFactory.getLogger(CatalogueServiceImpl.class);
     private static CatalogueService instance = null;
     private static CategoryServiceManager csmInstance = CategoryServiceManager.getInstance();
+    private String defaultLanguage = "en";
 
     private CatalogueServiceImpl() {
     }
@@ -74,7 +77,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         taxonomyIds.add("eClass");
         taxonomyIds.add("FurnitureOntology");
         //taxonomyIds.add("eClass");
-        Workbook wb = csi.generateTemplateForCategory(categoryIds, taxonomyIds);
+        Workbook wb = csi.generateTemplateForCategory(categoryIds, taxonomyIds,"en");
         wb.write(new FileOutputStream(filePath));
         wb.close();
 
@@ -109,7 +112,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     public CatalogueType updateCatalogue(CatalogueType catalogue) {
         logger.info("Catalogue with uuid: {} will be updated", catalogue.getUUID());
         DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(catalogue);
-        EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogue.getProviderParty().getID());
+        EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogue.getProviderParty().getPartyIdentification().get(0).getID());
         catalogue = repositoryWrapper.updateEntity(catalogue);
 
         // add synchronization record
@@ -164,7 +167,7 @@ public class CatalogueServiceImpl implements CatalogueService {
             DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(ublCatalogue);
 
             // persist the catalogue in relational DB
-            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(ublCatalogue.getProviderParty().getID());
+            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(ublCatalogue.getProviderParty().getPartyIdentification().get(0).getID());
             catalogue = repositoryWrapper.updateEntityForPersistCases((T) ublCatalogue);
             logger.info("Catalogue with uuid: {} persisted in DB", uuid.toString());
 
@@ -202,6 +205,26 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
+    public CataloguePaginationResponse getCataloguePaginationResponse(String id, String partyId, String categoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset) {
+        return getCataloguePaginationResponse(id,partyId,categoryName,Configuration.Standard.UBL,searchText,languageId,sortOption,limit,offset);
+    }
+
+    @Override
+    public <T> T getCataloguePaginationResponse(String id, String partyId,String categoryName, Configuration.Standard standard,String searchText,String languageId,CatalogueLineSortOptions sortOption, int limit, int offset) {
+        T catalogueResponse = null;
+
+        if (standard == Configuration.Standard.UBL) {
+            catalogueResponse = (T) CataloguePersistenceUtil.getCatalogueLinesForParty(id, partyId,categoryName,searchText,languageId,sortOption,limit,offset);
+
+        } else if (standard == Configuration.Standard.MODAML) {
+            logger.warn("Getting CataloguePaginationResponse with catalogue id and party id from MODAML repository is not implemented yet");
+            throw new NotImplementedException();
+        }
+
+        return catalogueResponse;
+    }
+
+    @Override
     public <T> T getCatalogue(String id, String partyId, Configuration.Standard standard) {
         T catalogue = null;
 
@@ -224,7 +247,7 @@ public class CatalogueServiceImpl implements CatalogueService {
             CatalogueType catalogue = getCatalogue(uuid);
 
             if (catalogue != null) {
-                EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogue.getProviderParty().getID());
+                EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogue.getProviderParty().getPartyIdentification().get(0).getID());
                 repositoryWrapper.deleteEntity(catalogue);
 
                 // add synchronization record
@@ -242,7 +265,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public Workbook generateTemplateForCategory(List<String> categoryIds, List<String> taxonomyIds) {
+    public Workbook generateTemplateForCategory(List<String> categoryIds, List<String> taxonomyIds,String templateLanguage) {
         List<Category> categories = new ArrayList<>();
         for (int i = 0; i < categoryIds.size(); i++) {
             Category category = csmInstance.getCategory(taxonomyIds.get(i), categoryIds.get(i));
@@ -250,13 +273,13 @@ public class CatalogueServiceImpl implements CatalogueService {
         }
 
         TemplateGenerator templateGenerator = new TemplateGenerator();
-        Workbook template = templateGenerator.generateTemplateForCategory(categories);
+        Workbook template = templateGenerator.generateTemplateForCategory(categories,templateLanguage);
         return template;
     }
 
     @Override
     public CatalogueType parseCatalogue(InputStream catalogueTemplate, String uploadMode, PartyType party) {
-        CatalogueType catalogue = getCatalogue("default", party.getID());
+        CatalogueType catalogue = getCatalogue("default", party.getPartyIdentification().get(0).getID());
         boolean newCatalogue = false;
         if (catalogue == null) {
             newCatalogue = true;
@@ -352,13 +375,30 @@ public class CatalogueServiceImpl implements CatalogueService {
                     if (item == null) {
                         logger.warn("No product to assign image with prefix: {}", prefix);
 
+                        // item is available
                     } else {
+                        // prepare the new binary content
                         IOUtils.copy(imagePackage, baos);
                         BinaryObjectType binaryObject = new BinaryObjectType();
                         binaryObject.setMimeCode(mimeType);
                         binaryObject.setFileName(ze.getName());
                         binaryObject.setValue(baos.toByteArray());
-                        item.getProductImage().add(binaryObject);
+
+                        // check whether the image is already attached to the item
+                        ItemType finalItem = item;
+                        ZipEntry finalZe = ze;
+                        int itemIndex = IntStream.range(0, item.getProductImage().size())
+                                .filter(i -> finalItem.getProductImage().get(i).getFileName().contentEquals(finalZe.getName()))
+                                .findFirst()
+                                .orElse(-1);
+                        // if an image exists with the same name put it to the previous index
+                        if(itemIndex != -1) {
+                            item.getProductImage().remove(itemIndex);
+                            item.getProductImage().add(itemIndex, binaryObject);
+                        } else {
+                            item.getProductImage().add(binaryObject);
+                        }
+
                         logger.info("Image {} added to item {}", fileName, item.getManufacturersItemIdentification().getID());
                     }
 
@@ -375,6 +415,17 @@ public class CatalogueServiceImpl implements CatalogueService {
                 ze = imagePackage.getNextEntry();
             }
 
+            CatalogueValidator catalogueValidator = new CatalogueValidator(catalogue);
+            try {
+                catalogueValidator.validate();
+            } catch (ValidationException e) {
+                String msg = e.getMessage();
+                logger.error(msg, e);
+                throw new CatalogueServiceException(msg, e);
+            }
+
+            catalogue = updateCatalogue(catalogue);
+
             return catalogue;
 
         } catch (IOException e) {
@@ -382,6 +433,17 @@ public class CatalogueServiceImpl implements CatalogueService {
             logger.error(msg, e);
             throw new CatalogueServiceException(msg, e);
         }
+    }
+
+    @Override
+    public CatalogueType removeAllImagesFromCatalogue(CatalogueType catalogueType) {
+        for(CatalogueLineType catalogueLine:catalogueType.getCatalogueLine()){
+            // remove product images from the item
+            catalogueLine.getGoodsItem().getItem().getProductImage().clear();
+        }
+        // update the catalogue
+        catalogueType = updateCatalogue(catalogueType);
+        return catalogueType;
     }
 
     @Override
@@ -403,7 +465,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine) {
         catalogue.getCatalogueLine().add(catalogueLine);
         DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(catalogue);
-        EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogue.getProviderParty().getID());
+        EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogue.getProviderParty().getPartyIdentification().get(0).getID());
         catalogue = repositoryWrapper.updateEntity(catalogue);
         catalogueLine = catalogue.getCatalogueLine().get(catalogue.getCatalogueLine().size() - 1);
 
@@ -417,7 +479,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine) {
         CatalogueType catalogue = getCatalogue(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID());
         DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(catalogueLine, catalogue);
-        EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
+        EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID());
         catalogueLine = repositoryWrapper.updateEntity(catalogueLine);
 
         // add synchronization record
@@ -435,7 +497,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
         if (catalogueLine != null) {
             Long hjid = catalogueLine.getHjid();
-            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getID());
+            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID());
             repositoryWrapper.deleteEntityByHjid(CatalogueLineType.class, hjid);
 
             // add synchronization record

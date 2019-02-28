@@ -58,8 +58,34 @@ class UBLDBConfig {
         return emfBean;
     }
 
+    @Bean(name = "ubldbLazyDisabledEmfBean")
+    public LocalContainerEntityManagerFactoryBean ubldbLazyDisabledEntityManagerFactoryBean(
+            EntityManagerFactoryBuilder builder,
+            @Qualifier("ubldbHibernateConfigs") Map hibernateConfigs,
+            @Qualifier("ubldbDataSource") DataSource dataSource) {
+        LocalContainerEntityManagerFactoryBean emfBean = builder
+                .dataSource(dataSource)
+                .persistenceUnit(eu.nimble.utility.Configuration.UBL_PERSISTENCE_UNIT_NAME)
+                .packages("eu.nimble.service.model.ubl")
+                .build();
+
+        Properties hibernateProperties = new Properties();
+        hibernateProperties.putAll(hibernateConfigs);
+        // disable hibernate.enable_lazy_load_no_trans property by removing it
+        hibernateProperties.remove("hibernate.enable_lazy_load_no_trans");
+        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        emfBean.setJpaVendorAdapter(vendorAdapter);
+        emfBean.setJpaProperties(hibernateProperties);
+        return emfBean;
+    }
+
     @Bean(name = "ubldbEntityManagerFactory")
     public EntityManagerFactory ubldbEntityManagerFactory(@Qualifier("ubldbEmfBean") LocalContainerEntityManagerFactoryBean emfBean) {
+        return emfBean.getObject();
+    }
+
+    @Bean(name = "ubldbLazyDisabledEntityManagerFactory")
+    public EntityManagerFactory ubldbLazyDisabledEntityManagerFactory(@Qualifier("ubldbLazyDisabledEmfBean") LocalContainerEntityManagerFactoryBean emfBean) {
         return emfBean.getObject();
     }
 //
