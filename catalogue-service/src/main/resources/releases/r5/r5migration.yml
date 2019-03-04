@@ -1,7 +1,7 @@
 hibernate:
   connection:
     #### Postgres Configs
-    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/ubldb?currentSchema=public
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_DATABASE}?currentSchema=public
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver_class: org.postgresql.Driver

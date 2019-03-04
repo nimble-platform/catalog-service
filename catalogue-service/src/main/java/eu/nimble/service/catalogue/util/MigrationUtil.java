@@ -5,7 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
+import com.mchange.v1.util.SimpleMapEntry;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyIdentificationType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyNameType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
+import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JsonSerializationUtility;
@@ -18,10 +22,8 @@ import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.logging.Handler;
 
 /**
  * Created by suat on 04-Jun-18.
@@ -38,17 +40,6 @@ public class MigrationUtil {
     private static String password;
 
     public static void main(String[] args) throws SQLException, InterruptedException, ClassNotFoundException {
-        MigrationUtil script = new MigrationUtil();
-        try{
-            HibernateUtility hu = HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME, script.getConfigs());
-
-            handleParties(hu);
-
-            System.exit(0);
-        }
-        catch (Exception e){
-            logger.error("Failure", e);
-        }
         //MarmottaSynchronizer sync = new MarmottaSynchronizer();
         /*sync.createStatusTable();
         String uuid = "catUuid";
@@ -121,8 +112,8 @@ public class MigrationUtil {
                 JsonSerializationUtility.removeHjidFields(object);
                 partyType = objectMapper.readValue(object.toString(), PartyType.class);
                 HibernateUtility.getInstance(Configuration.UBL_PERSISTENCE_UNIT_NAME).persist(partyType);
-                map.put(partyType.getID(),partyType.getHjid().toString());
-                logger.info("Persisted party with id: "+ partyType.getID() + " with hjid: "+partyType.getHjid());
+                map.put(partyType.getPartyIdentification().get(0).getID(),partyType.getHjid().toString());
+                logger.info("Persisted party with id: "+ partyType.getPartyIdentification().get(0).getID() + " with hjid: "+partyType.getHjid());
             }
             // traverse the map
             for (Map.Entry<String, String> entry : map.entrySet())
@@ -1997,7 +1988,8 @@ public class MigrationUtil {
             Map map = ((MapPropertySource) applicationYamlPropertySource).getSource();
 
             String url = (String) map.get("hibernate.connection.url");
-            url = url.replace("${DB_HOST}",System.getenv("DB_HOST")).replace("${DB_PORT}",System.getenv("DB_PORT"));
+            url = url.replace("${DB_HOST}",System.getenv("DB_HOST")).replace("${DB_PORT}",System.getenv("DB_PORT"))
+                .replace("${DB_DATABASE}",System.getenv("DB_DATABASE"));
 
             // set staging parameters
             MigrationUtil.url = url;

@@ -86,6 +86,11 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
     }
 
     @Override
+    public List<Category> getAllCategories(){
+        throw new IllegalStateException("Not implemented yet");
+    }
+
+    @Override
     public List<Category> getChildrenCategories(String categoryId) {
         EClassCategoryDatabaseAdapter eClassCategoryDatabaseAdapter = new EClassCategoryDatabaseAdapter();
         List<Category> categories;

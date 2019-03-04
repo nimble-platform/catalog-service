@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PriceOptionType;
+import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 import eu.nimble.utility.JsonSerializationUtility;
 import org.apache.commons.io.IOUtils;
 import org.junit.*;
@@ -74,9 +75,11 @@ public class Test04_PriceOptionTest {
     @Test
     public void test2_updatePriceOption() throws Exception {
         String updatedIncoterm = "DDP";
-        String updatedItemPropertyValue = "p1v1";
+        TextType textType = new TextType();
+        textType.setValue("p1v1");
+        textType.setLanguageID("en");
         priceOption.getIncoterms().set(1, updatedIncoterm);
-        priceOption.getAdditionalItemProperty().get(0).getValue().set(1, updatedItemPropertyValue);
+        priceOption.getAdditionalItemProperty().get(0).getValue().set(1, textType);
 
         MockHttpServletRequestBuilder request = put("/catalogue/" + Test02_CatalogueLineControllerTest.catalogueId + "/catalogueline/" + catalogueLine.getID() + "/price-options")
                 .header("Authorization", environment.getProperty("nimble.test-token"))
@@ -87,7 +90,7 @@ public class Test04_PriceOptionTest {
 
         Assert.assertEquals(updatedIncoterm, updatedOption.getIncoterms().get(1));
         Assert.assertEquals(2, updatedOption.getIncoterms().size());
-        Assert.assertEquals(updatedItemPropertyValue, updatedOption.getAdditionalItemProperty().get(0).getValue().get(1));
+        Assert.assertEquals(textType.getValue(), updatedOption.getAdditionalItemProperty().get(0).getValue().get(1).getValue());
         Assert.assertEquals(2, updatedOption.getAdditionalItemProperty().get(0).getValue().size());
     }
 
