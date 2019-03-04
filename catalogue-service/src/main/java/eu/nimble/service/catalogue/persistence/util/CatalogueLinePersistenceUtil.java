@@ -22,11 +22,10 @@ public class CatalogueLinePersistenceUtil {
             + " WHERE c.UUID = :catalogueUuid"
             + " AND clj.hjid <> :hjid "
             + " AND clj.ID = :lineId ";
-    private static final String QUERY_GET_BY_CAT_UUID_AND_ID = "SELECT cl FROM CatalogueLineType as cl, CatalogueType as c "
+    private static final String QUERY_GET_BY_CAT_UUID_AND_ID = "SELECT clj FROM CatalogueType as c "
             + " JOIN c.catalogueLine as clj"
             + " WHERE c.UUID = :catalogueUuid "
-            + " AND cl.ID = :lineId "
-            + " AND clj.ID = cl.ID ";
+            + " AND clj.ID = :lineId";
 
     public static Boolean checkCatalogueLineExistence(String catalogueUuid, String lineId) {
         long lineExistence = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_CHECK_EXISTENCE_BY_ID, new String[]{"catalogueUuid", "lineId"}, new Object[]{catalogueUuid, lineId});
