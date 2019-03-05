@@ -54,19 +54,19 @@ public class FurnitureOntologyCategoryServiceImpl implements ProductCategoryServ
 
     @PostConstruct
     public void init(){
-        String marmottaURL = catalogueServiceConfig.getMarmottaUrl();
-        ClientConfiguration config = new ClientConfiguration(marmottaURL);
-        GRAPH_URI = marmottaURL+CONTEXT;
-        final Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-                .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                .register("https", SSLConnectionSocketFactory.getSocketFactory())
-                .build();
-
-        final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(registry);
-        cm.setMaxTotal(100);
-        config.setConectionManager(cm);
-        config.setConnectionTimeout(30000);
-        client = new MarmottaClient(config);
+//        String marmottaURL = catalogueServiceConfig.getMarmottaUrl();
+//        ClientConfiguration config = new ClientConfiguration(marmottaURL);
+//        GRAPH_URI = marmottaURL+CONTEXT;
+//        final Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
+//                .register("http", PlainConnectionSocketFactory.getSocketFactory())
+//                .register("https", SSLConnectionSocketFactory.getSocketFactory())
+//                .build();
+//
+//        final PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager(registry);
+//        cm.setMaxTotal(100);
+//        config.setConectionManager(cm);
+//        config.setConnectionTimeout(30000);
+//        client = new MarmottaClient(config);
     }
 
     @Override

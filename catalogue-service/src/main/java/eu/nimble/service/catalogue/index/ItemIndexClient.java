@@ -40,6 +40,8 @@ public class ItemIndexClient {
     private String solrUsername;
     @Value("${nimble.indexing.solr.password}")
     private String solrPassword;
+    @Value("${nimble.indexing.sync}")
+    private Boolean indexingSync;
 
     @Autowired
     private ExecutionContext executionContext;
@@ -47,6 +49,10 @@ public class ItemIndexClient {
     private HttpSolrClient httpSolrClient;
 
     public void indexCatalogue(CatalogueType catalogue) {
+        if(!indexingSync) {
+            logger.info("Synchronization with Solr disabled. Won't index the catalogue");
+            return;
+        }
         HttpResponse<String> response;
         String indexItemsJson;
         try {
@@ -90,6 +96,11 @@ public class ItemIndexClient {
     }
 
     public void indexCatalogueLine(CatalogueLineType catalogueLine) {
+        if(!indexingSync) {
+            logger.info("Synchronization with Solr disabled. Won't index the catalogue line");
+            return;
+        }
+
         HttpResponse<String> response;
         String indexItemJson;
         try {
@@ -126,6 +137,11 @@ public class ItemIndexClient {
     }
 
     public void deleteCatalogue(String catalogueUuid) {
+        if(!indexingSync) {
+            logger.info("Synchronization with Solr disabled. Won't delete the catalogue");
+            return;
+        }
+
         try {
             HttpResponse<String> response;
             response = Unirest.delete(indexingUrl + "/catalogue")
@@ -147,6 +163,11 @@ public class ItemIndexClient {
     }
 
     public void deleteCatalogueLine(long catalogueLineHjid) {
+        if(!indexingSync) {
+            logger.info("Synchronization with Solr disabled. Won't delete the catalogue line");
+            return;
+        }
+
         try {
             HttpResponse<String> response;
             response = Unirest.delete(indexingUrl + "/item")
@@ -168,6 +189,11 @@ public class ItemIndexClient {
     }
 
     public void deleteAllContent() {
+        if(!indexingSync) {
+            logger.info("Synchronization with Solr disabled. Won't delete the content");
+            return;
+        }
+
         try {
             logger.info("Clearing the item index content");
             UpdateResponse response = httpSolrClient.deleteByQuery("*:*");
