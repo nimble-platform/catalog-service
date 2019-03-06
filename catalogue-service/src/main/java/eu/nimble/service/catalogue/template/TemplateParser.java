@@ -120,32 +120,34 @@ public class TemplateParser {
         Sheet productPropertiesTab = wb.getSheet(TemplateConfig.TEMPLATE_TAB_PRODUCT_PROPERTIES);
         List<ItemPropertyType> additionalItemProperties = new ArrayList<>();
         for (Category category : categories) {
-            for (Property property : category.getProperties()) {
-                // check unit
-                // if the user provided unit for a number data type
-                Row row = productPropertiesTab.getRow(3);
-                Integer columnIndex = findCellIndexForProperty(property.getPreferredName(defaultLanguage));
-                if(columnIndex == null) {
-                    continue;
-                }
-
-                Cell cell = getCellWithMissingCellPolicy(row, columnIndex);
-                if (cell != null) {
-                    String unit = getCellStringValue(cell);
-                    if(!unit.isEmpty()) {
-                        property.setDataType("QUANTITY");
-                        Unit unitObj = new Unit();
-                        unitObj.setShortName(unit);
-                        property.setUnit(unitObj);
+            if(category.getProperties() != null){
+                for (Property property : category.getProperties()) {
+                    // check unit
+                    // if the user provided unit for a number data type
+                    Row row = productPropertiesTab.getRow(3);
+                    Integer columnIndex = findCellIndexForProperty(property.getPreferredName(defaultLanguage));
+                    if(columnIndex == null) {
+                        continue;
                     }
+
+                    Cell cell = getCellWithMissingCellPolicy(row, columnIndex);
+                    if (cell != null) {
+                        String unit = getCellStringValue(cell);
+                        if(!unit.isEmpty()) {
+                            property.setDataType("QUANTITY");
+                            Unit unitObj = new Unit();
+                            unitObj.setShortName(unit);
+                            property.setUnit(unitObj);
+                        }
+                    }
+                    cell = getCellWithMissingCellPolicy(productPropertiesTab.getRow(rowIndex), columnIndex);
+                    List<Object> values = (List<Object>) parseCell(cell,property.getPreferredName(defaultLanguage), property.getDataType(), true);
+                    if (values.isEmpty()) {
+                        continue;
+                    }
+                    ItemPropertyType itemProp = getItemPropertyFromCategoryProperty(category, property, values);
+                    additionalItemProperties.add(itemProp);
                 }
-                cell = getCellWithMissingCellPolicy(productPropertiesTab.getRow(rowIndex), columnIndex);
-                List<Object> values = (List<Object>) parseCell(cell,property.getPreferredName(defaultLanguage), property.getDataType(), true);
-                if (values.isEmpty()) {
-                    continue;
-                }
-                ItemPropertyType itemProp = getItemPropertyFromCategoryProperty(category, property, values);
-                additionalItemProperties.add(itemProp);
             }
         }
 
@@ -251,7 +253,9 @@ public class TemplateParser {
         // find the offset for the custom properties
         int totalCategoryPropertyNumber = 0;
         for (Category category : categories) {
-            totalCategoryPropertyNumber += category.getProperties().size();
+            if(category.getProperties() != null){
+                totalCategoryPropertyNumber += category.getProperties().size();
+            }
         }
         int fixedPropNumber = TemplateConfig.getFixedPropertiesForProductPropertyTab().size();
         int customPropertyNum = productPropertiesTab.getRow(1).getLastCellNum() - (totalCategoryPropertyNumber + fixedPropNumber + 1);
