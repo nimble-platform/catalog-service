@@ -2847,9 +2847,9 @@
           "commodityClassification": [
             {
               "itemClassificationCode": {
-                "value": "0173-1#01-AAC168#005",
+                "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-AAC168#005",
                 "name": "Automotive technology",
-                "uri": "http://www.nimble-project.org/resource/eclass/28000000",
+                "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-AAC168#005",
                 "listID": "eClass",
                 "listURI": null
               },
