@@ -1,10 +1,10 @@
-package eu.nimble.service.catalogue.category.taxonomy.eclass;
+package eu.nimble.service.catalogue.category.eclass;
 
 import eu.nimble.service.catalogue.category.ProductCategoryService;
+import eu.nimble.service.catalogue.category.eclass.database.EClassCategoryDatabaseAdapter;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
 import eu.nimble.service.catalogue.exception.CategoryDatabaseException;
-import eu.nimble.service.catalogue.category.taxonomy.eclass.database.EClassCategoryDatabaseAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

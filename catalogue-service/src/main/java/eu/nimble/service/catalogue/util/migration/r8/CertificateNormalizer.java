@@ -75,3 +75,4 @@ public class CertificateNormalizer extends DBConnector {
         logger.info("Certificates normalized");
     }
 }
+

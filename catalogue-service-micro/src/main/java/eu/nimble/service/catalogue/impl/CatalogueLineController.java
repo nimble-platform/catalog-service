@@ -39,7 +39,6 @@ import java.util.List;
  * catalogue. All services in this class work only on the UBL based catalogues.
  */
 @Controller
-@RequestMapping(value = "/catalogue/{catalogueUuid}")
 public class CatalogueLineController {
     private static Logger log = LoggerFactory.getLogger(CatalogueLineController.class);
 
@@ -49,8 +48,43 @@ public class CatalogueLineController {
     private TransactionEnabledSerializationUtility serializationUtility;
     @Autowired
     private ResourceValidationUtility resourceValidationUtil;
+    @Autowired
+    private CatalogueService service;
 
-    private CatalogueService service = CatalogueServiceImpl.getInstance();
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieves the catalogue line with the DB-scoped identifier")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved catalogue line successfully", response = CatalogueLineType.class),
+            @ApiResponse(code = 400, message = "Failed to get catalogue line"),
+            @ApiResponse(code = 404, message = "Specified catalogue or catalogue line does not exist"),
+            @ApiResponse(code = 500, message = "Unexpected error while getting catalogue line")
+    })
+    @RequestMapping(value = "/catalogueline/{hjid}",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity getCatalogueLineByHjid(@ApiParam(value = "Identifier of the catalogue line to be retrieved. (line.hjid)", required = true) @PathVariable Long hjid,
+                                           @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        log.info("Incoming request to get catalogue line with hjid: {}", hjid);
+        // check token
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return tokenCheck;
+        }
+
+        CatalogueLineType catalogueLine;
+        try {
+            catalogueLine = service.getCatalogueLine(hjid);
+        } catch (Exception e) {
+            return createErrorResponseEntity("Failed to get catalogue line", HttpStatus.INTERNAL_SERVER_ERROR, e);
+        }
+
+        if (catalogueLine == null) {
+            log.error("There does not exist a catalogue line with hjid {}", hjid);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("There does not exist a catalogue line with hjid %s", hjid));
+        }
+        log.info("Completed the request to get catalogue line with hjid: {}", hjid);
+        return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLine));
+    }
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves the catalogue line specified with the catalogueUuid and lineId parameters")
@@ -60,7 +94,7 @@ public class CatalogueLineController {
             @ApiResponse(code = 404, message = "Specified catalogue or catalogue line does not exist"),
             @ApiResponse(code = 500, message = "Unexpected error while getting catalogue line")
     })
-    @RequestMapping(value = "/catalogueline/{lineId}",
+    @RequestMapping(value = "/catalogue/{catalogueUuid}/catalogueline/{lineId}",
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity getCatalogueLine(@ApiParam(value = "uuid of the catalogue containing the line to be retrieved. (catalogue.uuid)", required = true) @PathVariable String catalogueUuid,
@@ -102,7 +136,7 @@ public class CatalogueLineController {
             @ApiResponse(code = 400, message = "Invalid catalogue line serialization"),
             @ApiResponse(code = 500, message = "Unexpected error while adding catalogue line")
     })
-    @RequestMapping( value = "/catalogueline",
+    @RequestMapping( value = "/catalogue/{catalogueUuid}/catalogueline",
             consumes = {"application/json"},
             produces = {"application/json"},
             method = RequestMethod.POST)
@@ -197,7 +231,7 @@ public class CatalogueLineController {
             @ApiResponse(code = 400, message = "Invalid catalogue line serialization"),
             @ApiResponse(code = 500, message = "Unexpected error while updating catalogue line")
     })
-    @RequestMapping( value = "/catalogueline",
+    @RequestMapping( value = "/catalogue/{catalogueUuid}/catalogueline",
             consumes = {"application/json"},
             produces = {"application/json"},
             method = RequestMethod.PUT)
@@ -223,7 +257,7 @@ public class CatalogueLineController {
                 return HttpResponseUtil.createResponseEntityAndLog(String.format("Failed to deserialize catalogue line from json string: %s", catalogueLineJson), e, HttpStatus.BAD_REQUEST, LogLevel.ERROR);
             }
 
-            log.info("Incoming request to update catalogue line. Catalogue uuid: {}", catalogueUuid);
+            log.info("Incoming request to update catalogue line. Catalogue uuid: {}, line hjid: {}", catalogueUuid, catalogueLine.getHjid());
             CatalogueType catalogue = service.getCatalogue(catalogueUuid);
             if (catalogue == null) {
                 log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
@@ -271,7 +305,7 @@ public class CatalogueLineController {
             @ApiResponse(code = 404, message = "Catalogue with the given uuid does not exist"),
             @ApiResponse(code = 500, message = "Failed to delete the catalogue line")
     })
-    @RequestMapping(value = "/catalogueline/{lineId}",
+    @RequestMapping(value = "/catalogue/{catalogueUuid}/catalogueline/{lineId}",
             produces = {"application/json"},
             method = RequestMethod.DELETE)
     public ResponseEntity deleteCatalogueLine(@ApiParam(value = "uuid of the catalogue containing the line to be retrieved. (catalogue.uuid)", required = true) @PathVariable String catalogueUuid,

@@ -1,14 +1,17 @@
 package eu.nimble.service.catalogue.impl;
 
-import eu.nimble.service.catalogue.category.CategoryServiceManager;
+import eu.nimble.service.catalogue.category.IndexCategoryService;
+import eu.nimble.service.catalogue.category.TaxonomyEnum;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
+import eu.nimble.service.catalogue.index.ClassIndexClient;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -26,7 +29,10 @@ public class ProductCategoryController {
     private static Logger log = LoggerFactory
             .getLogger(ProductCategoryController.class);
 
-    private CategoryServiceManager csm = CategoryServiceManager.getInstance();
+    @Autowired
+    private IndexCategoryService categoryService;
+    @Autowired
+    private ClassIndexClient classIndexClient;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves a list of Category instances. This operation takes a list of category ids and " +
@@ -45,20 +51,22 @@ public class ProductCategoryController {
         log.info("Incoming request to get categories");
         List<Category> categories = new ArrayList<>();
         if (taxonomyIds != null && taxonomyIds.size() > 0 && categoryIds != null && categoryIds.size() > 0) {
+            // ensure that taxonomy id and category id lists have the same size
             if (taxonomyIds.size() != categoryIds.size()) {
                 String msg = "Number of elements in taxonomy ids list and  category ids list does not match";
                 log.info(msg);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(msg);
             }
 
-            log.info("Getting categories for taxonomyIds: {}, categoryIds: {}", taxonomyIds, categoryIds);
+            // validate taxonomy ids
             for (int i = 0; i < taxonomyIds.size(); i++) {
                 if(!taxonomyIdExists(taxonomyIds.get(i))){
                     log.error("The given taxonomy id : {} is not valid", taxonomyIds.get(i));
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("The given taxonomy id %s is not valid", taxonomyIds.get(i)));
                 }
-                categories.add(csm.getCategory(taxonomyIds.get(i), categoryIds.get(i)));
             }
+
+            categories = categoryService.getCategories(taxonomyIds, categoryIds);
 
         } else {
             String msg = "(taxonomy id / category id) pairs should be provided";
@@ -83,7 +91,7 @@ public class ProductCategoryController {
             method = RequestMethod.GET)
     public ResponseEntity getCategoriesByName(@ApiParam(value = "A name describing the categories to be retrieved. This parameter does not necessarily have to be the exact name of the category.", required = true) @RequestParam String name,
                                               @ApiParam(value = "Taxonomy id from which categories would be retrieved. If no taxonomy id is specified, all available taxonomies are considered. In addition to the taxonomies ids as returned by getAvailableTaxonomyIds method, 'all' value can be specified in order to get categories from all the taxonomies", required = true) @PathVariable String taxonomyId,
-                                              @ApiParam(value = "An indicator for retrieving categories for logistics service or regular products. If not specified, no such distinction is considered.", defaultValue = "false") @RequestParam(required = false) Boolean forLogistics,
+                                              @ApiParam(value = "An indicator for retrieving categories for logistics service or regular products. If not specified, no such distinction is considered.", defaultValue = "false") @RequestParam(required = false,defaultValue = "false") Boolean forLogistics,
                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         log.info("Incoming request to get categories by name");
         // check whether the taxonomy id is valid or not
@@ -94,11 +102,11 @@ public class ProductCategoryController {
         List<Category> categories = new ArrayList<>();
         if(taxonomyId.compareToIgnoreCase("all") == 0 ){
             log.info("Getting categories for name: {}", name);
-            categories.addAll(csm.getProductCategories(name,null,forLogistics));
+            categories.addAll(categoryService.getProductCategories(name,null,forLogistics));
         }
         else {
             log.info("Getting categories for name: {}, taxonomyId: {}", name,taxonomyId);
-            categories.addAll(csm.getProductCategories(name,taxonomyId,forLogistics));
+            categories.addAll(categoryService.getProductCategories(name,taxonomyId,forLogistics));
         }
         log.info("Completed request to get categories by name. size: {}", categories.size());
         return ResponseEntity.ok(categories);
@@ -114,9 +122,12 @@ public class ProductCategoryController {
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity getAvailableTaxonomyIds(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
-        List<String> taxonomies;
+        List<String> taxonomies = new ArrayList<>();
         try {
-            taxonomies = csm.getAvailableTaxonomies();
+            for(TaxonomyEnum taxonomyEnum : TaxonomyEnum.values()) {
+                taxonomies.add(taxonomyEnum.getId());
+            }
+
         } catch (Exception e) {
             String msg = "Failed to get available taxonomies\n" + e.getMessage();
             log.error(msg, e);
@@ -140,7 +151,7 @@ public class ProductCategoryController {
             log.error("The given taxonomy id : {} is not valid", taxonomyId);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("The given taxonomy id %s is not valid", taxonomyId));
         }
-        List<Category> categories = csm.getRootCategories(taxonomyId);
+        List<Category> categories = categoryService.getRootCategories(taxonomyId);
         return ResponseEntity.ok(categories);
     }
 
@@ -167,7 +178,7 @@ public class ProductCategoryController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("There does not exist a category with the id %s", categoryId));
         }
 
-        List<Category> categories = csm.getChildrenCategories(taxonomyId, categoryId);
+        List<Category> categories = categoryService.getChildrenCategories(taxonomyId, categoryId);
         return ResponseEntity.ok(categories);
     }
 
@@ -198,44 +209,26 @@ public class ProductCategoryController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("There does not exist a category with the id %s", categoryId));
         }
 
-        CategoryTreeResponse categories = csm.getCategoryTree(taxonomyId, categoryId);
-        return ResponseEntity.ok(categories);
-    }
-
-    @CrossOrigin(origins = {"*"})
-    @ApiOperation(value = "", notes = "Retrieves the all categories of the specified taxonomy")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Retrieved the all categories successfully", response = Category.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Invalid taxonomy id")
-    })
-    @RequestMapping(value = "/taxonomies/{taxonomyId}/all-categories",
-            produces = {"application/json"},
-            method = RequestMethod.GET)
-    public ResponseEntity getAllCategories(@ApiParam(value = "Taxonomy id from which categories would be retrieved.", required = true) @PathVariable String taxonomyId,
-                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
-        if (!taxonomyIdExists(taxonomyId)) {
-            log.error("The given taxonomy id : {} is not valid", taxonomyId);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("The given taxonomy id %s is not valid", taxonomyId));
-        }
-        List<Category> categories = csm.getAllCategories(taxonomyId);
+        CategoryTreeResponse categories = categoryService.getCategoryTree(taxonomyId, categoryId);
         return ResponseEntity.ok(categories);
     }
 
     private boolean taxonomyIdExists(String taxonomyId) {
-        if (!csm.getAvailableTaxonomies().contains(taxonomyId)) {
-            return false;
+        for(TaxonomyEnum taxonomyEnum : TaxonomyEnum.values()) {
+            if(taxonomyEnum.getId().compareToIgnoreCase(taxonomyId) == 0) {
+                return true;
+            }
         }
-        return true;
+        return false;
     }
 
     private boolean categoryExists(String taxonomyId, String categoryId) {
         try {
-            csm.getCategory(taxonomyId, categoryId);
+            classIndexClient.getIndexCategory(taxonomyId, categoryId);
         } catch (IndexOutOfBoundsException e) {
             log.error("There does not exist a category with the id : {}", categoryId);
             return false;
         }
         return true;
     }
-
 }

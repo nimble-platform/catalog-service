@@ -1,10 +1,12 @@
-package eu.nimble.service.catalogue.category.taxonomy.eclass.database;
+package eu.nimble.service.catalogue.category.eclass.database;
 
+import eu.nimble.service.catalogue.category.TaxonomyEnum;
+import eu.nimble.service.catalogue.model.category.*;
+import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.exception.CategoryDatabaseException;
-import eu.nimble.service.catalogue.model.category.*;
 import eu.nimble.service.catalogue.template.TemplateConfig;
-import eu.nimble.service.catalogue.util.SpringBridge;
+import eu.nimble.service.model.ubl.extension.ItemPropertyValueQualifier;
 import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,15 +15,14 @@ import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static eu.nimble.service.catalogue.category.taxonomy.eclass.database.EClassCategoryDatabaseConfig.*;
+import static eu.nimble.service.catalogue.category.eclass.database.EClassCategoryDatabaseConfig.*;
+import static eu.nimble.service.catalogue.category.eclass.database.EClassCategoryDatabaseConfig.eClassQueryGetRootCategories;
 
 /**
  * Created by suat on 03-Mar-17.
  */
 public class EClassCategoryDatabaseAdapter {
     private static final Logger logger = LoggerFactory.getLogger(EClassCategoryDatabaseAdapter.class);
-    private static final String CATEGORY_BASE_URI = "http://www.nimble-project.org/resource/eclass/";
-    private static final String PROPERTY_BASE_URI = "http://www.nimble-project.org/resource/eclass/property/";
 
     private String defaultLanguage = "en";
     /**
@@ -328,7 +329,7 @@ public class EClassCategoryDatabaseAdapter {
         CategoryTreeResponse categoryTreeResponse = new CategoryTreeResponse();
 
         Connection connection = null;
-        List<Category> results = new ArrayList<>();
+        List<Category> results;
 
         try {
             connection = getConnection();
@@ -395,6 +396,45 @@ public class EClassCategoryDatabaseAdapter {
         }
     }
 
+    public List<Category> getAllCategories() throws Exception{
+        Connection connection = null;
+        List<Category> results;
+        try {
+            connection = getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(eClassQueryGetAllCategories());
+            ResultSet rs = preparedStatement.executeQuery();
+            results = extractClassificationClassesFromResultSet(rs);
+            rs.close();
+            preparedStatement.close();
+
+        } finally {
+            closeConnection(connection);
+        }
+        return results;
+    }
+
+    public Map<String, List<Property>> getAllProperties() throws Exception {
+        Connection connection = null;
+
+        try {
+            connection = getConnection();
+
+            // get properties without the unit and allowed values. They are queried separately.
+            Map<String, List<Property>> properties;
+            PreparedStatement preparedStatement = connection.prepareStatement(eClassQueryGetAllProperties());
+            ResultSet rs = preparedStatement.executeQuery();
+            properties = extractCategoryPropertyMapFromResultSet(rs);
+            rs.close();
+            preparedStatement.close();
+
+            return properties;
+        } catch (SQLException e) {
+            throw new CategoryDatabaseException("Failed to retrieve properties for the category", e);
+        } finally {
+            closeConnection(connection);
+        }
+    }
+
     public List<Property> getPropertiesForCategory(String categoryId) throws CategoryDatabaseException {
         Connection connection = null;
 
@@ -434,6 +474,28 @@ public class EClassCategoryDatabaseAdapter {
         }
     }
 
+    public List<String> getPropertiesWithUnits() throws CategoryDatabaseException {
+        Connection connection = null;
+        List<String> results = new ArrayList<>();
+        try {
+            connection = getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(eClassQueryGetAllPropertyUnitMappings());
+            ResultSet rs = preparedStatement.executeQuery();
+            while(rs.next()) {
+                results.add(rs.getString(1));
+            }
+            rs.close();
+            preparedStatement.close();
+
+            return results;
+
+        } catch(SQLException e) {
+            throw new CategoryDatabaseException("Failed to retrieve properties for the category", e);
+        } finally {
+            closeConnection(connection);
+        }
+    }
+
     private List<Category> extractClassificationClassesFromResultSet(ResultSet rs) throws SQLException {
         List<Category> results = new ArrayList<>();
         while (rs.next()) {
@@ -451,11 +513,45 @@ public class EClassCategoryDatabaseAdapter {
             cc.setNote(rs.getString(COLUMN_CLASSIFICATION_CLASS_NOTE));
             cc.setRemark(rs.getString(COLUMN_CLASSIFICATION_CLASS_REMARK));
             cc.setTaxonomyId("eClass");
-            cc.setCategoryUri(CATEGORY_BASE_URI + cc.getCode());
+            cc.setCategoryUri(TaxonomyEnum.eClass.getNamespace() + cc.getId());
             results.add(cc);
         }
         return results;
     }
+
+    private Map<String, List<Property>> extractCategoryPropertyMapFromResultSet(ResultSet rs) throws SQLException {
+        // category id - property map
+        Map<String, List<Property>> results = new LinkedHashMap<>();
+        while (rs.next()) {
+            String categoryId = rs.getString(COLUMN_CLASSIFICATION_CLASS_PROPERTY_IRDI_CC);
+            List<Property> categoryProperties = results.get(categoryId);
+            if(categoryProperties == null) {
+                categoryProperties = new ArrayList<>();
+                results.put(categoryId, categoryProperties);
+            }
+
+            Property prop = new Property();
+            prop.setId(TaxonomyEnum.eClass.getNamespace() + rs.getString(COLUMN_PROPERTY_IRDI_PR));
+            // create a TextType for property definition
+            TextType textType = new TextType();
+            textType.setLanguageID(defaultLanguage);
+            textType.setValue(rs.getString(COLUMN_PROPERTY_PREFERRED_NAME));
+            prop.setPreferredName(Arrays.asList(textType));
+            prop.setShortName(rs.getString(COLUMN_PROPERTY_SHORT_NAME));
+            prop.setDefinition(rs.getString(COLUMN_PROPERTY_DEFINITION));
+            prop.setNote(rs.getString(COLUMN_PROPERTY_NOTE));
+            prop.setRemark(rs.getString(COLUMN_PROPERTY_REMARK));
+            prop.setPreferredSymbol(rs.getString(COLUMN_PROPERTY_PREFERRED_SYMBOL));
+            prop.setIecCategory(rs.getString(COLUMN_PROPERTY_CATEGORY));
+            prop.setAttributeType(rs.getString(COLUMN_PROPERTY_ATTRIBUTE_TYPE));
+            prop.setValueQualifier(rs.getString(COLUMN_PROPERTY_DATA_TYPE));
+            prop.setUri(TaxonomyEnum.eClass.getNamespace() + rs.getString(COLUMN_PROPERTY_IRDI_PR));
+
+            categoryProperties.add(prop);
+        }
+        return results;
+    }
+
 
     private Map<String, Property> extractPropertiesFromResultSet(ResultSet rs) throws SQLException {
         Map<String, Property> results = new LinkedHashMap<>();
@@ -471,7 +567,7 @@ public class EClassCategoryDatabaseAdapter {
             prop.setIecCategory(rs.getString(COLUMN_PROPERTY_CATEGORY));
             prop.setAttributeType(rs.getString(COLUMN_PROPERTY_ATTRIBUTE_TYPE));
             prop.setDataType(getNormalizedDatatype(rs.getString(COLUMN_PROPERTY_DATA_TYPE)));
-            prop.setUri(PROPERTY_BASE_URI + rs.getString(COLUMN_PROPERTY_IDPR));
+            prop.setUri(TaxonomyEnum.eClass.getNamespace() + rs.getString(COLUMN_PROPERTY_IDPR));
             results.put(prop.getId(), prop);
         }
         return results;
