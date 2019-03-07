@@ -22,7 +22,6 @@ public class EClassNamespaceUpdater {
     private static final String QUERY_GET_FURNITURE_ONTOLOGY_ITEM_PROPERTIES = "select id from item_property_type where id like '%FurnitureSector%'";
     private static final String QUERY_GET_ECLASS_CODES = "select uri, value_ from code_type where uri like '%eclass%'";
     private static final String QUERY_UPDATE_ECLASS_CODES = "update code_type set uri = ?, value_ = ? where value_ = ?";
-    private static final String QUERY_UPDATE_REAL_MEASURES = "update item_property_type set value_qualifier = 'NUMBER' where value_qualifier = 'REAL_MEASURE'";
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(EClassNamespaceUpdater.class);
 
@@ -43,11 +42,9 @@ public class EClassNamespaceUpdater {
             logger.info("Connection obtained");
 
             // correct item property type uris
-            script.fixEClassPropertyUrisInItemProperties(c);
+            script.fixUrisInItemProperties(c);
             // correct commodity classification type uris
             script.fixEClassCategoryUrisInCodes(c);
-            // convert real measure properties to quantities
-            script.convertRealMeasuresToNumbers(c);
 
         } catch (Exception e) {
             logger.error("", e);
@@ -64,7 +61,7 @@ public class EClassNamespaceUpdater {
         }
     }
 
-    private void fixEClassPropertyUrisInItemProperties(Connection c) {
+    private void fixUrisInItemProperties(Connection c) {
         Statement stmt = null;
         PreparedStatement pstmt = null;
         try {
@@ -138,7 +135,7 @@ public class EClassNamespaceUpdater {
             ResultSet rs = stmt.executeQuery(QUERY_GET_ECLASS_CODES);
             Set<String> ids = new HashSet<>();
             while (rs.next()) {
-                ids.add(rs.getString(1));
+                ids.add(rs.getString("value_"));
             }
             rs.close();
             logger.info("Ids obtained. size: {}", ids.size());
@@ -173,27 +170,6 @@ public class EClassNamespaceUpdater {
                 logger.error("", e);
             }
         }
-    }
-
-    private void convertRealMeasuresToNumbers(Connection c) {
-        Statement stmt = null;
-        try {
-            stmt = c.createStatement();
-            stmt.executeUpdate(QUERY_UPDATE_REAL_MEASURES);
-
-        } catch (Exception e) {
-            logger.error("", e);
-            System.exit(0);
-        } finally {
-            try {
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (Exception e) {
-                logger.error("", e);
-            }
-        }
-        logger.info("Real measures are updated");
     }
 
     private Map getConfigs() {
