@@ -1,13 +1,7 @@
 package eu.nimble.service.catalogue.persistence.util;
 
-import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
-import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
-import org.springframework.data.repository.query.Param;
-
-import javax.swing.*;
 
 /**
  * Created by suat on 31-Dec-18.
@@ -24,11 +18,10 @@ public class CatalogueLinePersistenceUtil {
             + " WHERE c.UUID = :catalogueUuid"
             + " AND clj.hjid <> :hjid "
             + " AND clj.ID = :lineId ";
-    private static final String QUERY_GET_BY_CAT_UUID_AND_ID = "SELECT cl FROM CatalogueLineType as cl, CatalogueType as c "
+    private static final String QUERY_GET_BY_CAT_UUID_AND_ID = "SELECT clj FROM CatalogueType as c "
             + " JOIN c.catalogueLine as clj"
             + " WHERE c.UUID = :catalogueUuid "
-            + " AND cl.ID = :lineId "
-            + " AND clj.ID = cl.ID ";
+            + " AND clj.ID = :lineId";
     private static final String QUERY_GET_BY_HJID = "SELECT cl FROM CatalogueLineType as cl WHERE cl.hjid = :hjid";
 
     public static Boolean checkCatalogueLineExistence(String catalogueUuid, String lineId) {
