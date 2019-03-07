@@ -1,5 +1,6 @@
 package eu.nimble.service.catalogue.index;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;
@@ -11,10 +12,12 @@ import eu.nimble.service.catalogue.category.TaxonomyEnum;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.util.ExecutionContext;
+import eu.nimble.service.model.solr.Search;
 import eu.nimble.service.model.solr.SearchResult;
 import eu.nimble.service.model.solr.owl.ClassType;
 import eu.nimble.service.model.solr.owl.PropertyType;
 import eu.nimble.utility.JsonSerializationUtility;
+import io.swagger.models.auth.In;
 import jena.query;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -104,9 +107,30 @@ public class ClassIndexClient {
 
     public List<ClassType> getIndexCategories(Set<String> uris) {
         try {
-            HttpRequest request = Unirest.get(indexingUrl + "/classes")
-                    .queryString("uri", uris)
-                    .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken());
+//            HttpRequest request = Unirest.get(indexingUrl + "/classes")
+//                    .queryString("uri", uris)
+//                    .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken());
+            StringBuilder queryStr = new StringBuilder("");
+            for(String uri : uris) {
+                queryStr.append("id:\"").append(uri).append("\" OR ");
+            }
+            Search search = new Search();
+            search.setRows(Integer.MAX_VALUE);
+            search.setStart(0);
+            search.setQuery(queryStr.substring(0, queryStr.length()-3));
+
+            HttpRequest request;
+            try {
+                request = Unirest.post(indexingUrl + "/class/search")
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken())
+                        .body(JsonSerializationUtility.getObjectMapper().writeValueAsString(search))
+                        .getHttpRequest();
+            } catch (JsonProcessingException e) {
+                String msg = String.format("Failed to get categories for uris: %s. ", uris);
+                logger.error(msg);
+                throw new RuntimeException(msg, e);
+            }
             HttpResponse<String> response = request.asString();
 
             if (response.getStatus() == HttpStatus.OK.value()) {
