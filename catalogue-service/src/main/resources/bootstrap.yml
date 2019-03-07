@@ -273,21 +273,32 @@ spring:
       username: sa
       password:
       driver-class: org.h2.Driver
+#      url: jdbc:postgresql://localhost:5432/ubldb_test?currentSchema=public
+#      username: postgres
+#      password: nimble
+#      driver_class: org.postgresql.Driver
     binarycontentdb:
       url: jdbc:h2:mem:db2;AUTO_RECONNECT=TRUE;DB_CLOSE_DELAY=-1;INIT=create schema IF NOT EXISTS APPS
       username: sa
       password:
       driver-class: org.h2.Driver
+#      url: jdbc:postgresql://localhost:5432/binarycontentdb_test?currentSchema=public
+#      username: postgres
+#      password: nimble
+#      driver_class: org.postgresql.Driver
 persistence:
   orm:
     ubl:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
+        show_sql: true
 
 nimble:
   identity:
     url: ${IDENTITY_SERVICE_URL:localhost:9096}
   test-token: ${NIMBLE_TEST_TOKEN}
+  indexing:
+    sync: false
 
 hystrix:
   command:
