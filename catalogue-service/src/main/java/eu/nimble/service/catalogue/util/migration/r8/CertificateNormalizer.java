@@ -7,6 +7,7 @@ import eu.nimble.utility.HibernateUtility;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -16,7 +17,7 @@ import java.util.List;
 public class CertificateNormalizer extends DBConnector {
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(CertificateNormalizer.class);
 
-    List<String> defaultCertificateTypes = Arrays.asList("Appearance Approval Report",
+    List<String> defaultCertificateTypes = new ArrayList<>(Arrays.asList("Appearance Approval Report",
             "Checking Aids",
             "Control Plan",
             "Customer Engineering Approval",
@@ -33,14 +34,14 @@ public class CertificateNormalizer extends DBConnector {
             "Process Flow Diagram",
             "Qualified Laboratory Documentation",
             "Records of Material / Performance Tests",
-            "Sample Production Parts");
+            "Sample Production Parts"));
 
-    List<String> fmpCertificates = Arrays.asList(
+    List<String> fmpCertificates = new ArrayList<>(Arrays.asList(
             "Health and Safety",
             "Innovation",
             "Management",
             "Quality",
-            "Sustainability and Environment");
+            "Sustainability and Environment"));
 
     public static void main(String[] args) {
         new CertificateNormalizer().normalizeCertificates();
@@ -75,3 +76,4 @@ public class CertificateNormalizer extends DBConnector {
         logger.info("Certificates normalized");
     }
 }
+

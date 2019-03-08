@@ -19,6 +19,7 @@ public class Property {
     private Unit unit;
     private String iecCategory;
     private String attributeType;
+    private String valueQualifier;
     private String dataType;
     private List<KeywordSynonym> synonyms;
     private List<Value> values = new ArrayList<>();
@@ -126,6 +127,14 @@ public class Property {
 
     public void setAttributeType(String attributeType) {
         this.attributeType = attributeType;
+    }
+
+    public String getValueQualifier() {
+        return valueQualifier;
+    }
+
+    public void setValueQualifier(String valueQualifier) {
+        this.valueQualifier = valueQualifier;
     }
 
     public String getDataType() {

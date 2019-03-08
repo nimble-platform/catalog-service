@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 public class BinaryContentController {
@@ -71,6 +74,46 @@ public class BinaryContentController {
 
         } catch (Exception e) {
             return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while getting the binary content for uri: %s", uri), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+        }
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieves a specified binary content wrapped inside a BinaryCbjectType instance.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved the binary content successfully", response = CatalogueType.class),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 404, message = "No binary content exists for the specified uri"),
+            @ApiResponse(code = 500, message = "Unexpected error while getting binary content"),
+    })
+    @RequestMapping(value = "/binary-contents",
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getBinaryContents(@ApiParam(value = "Uri of the binary content to be retrieved", required = true) @RequestParam(value = "uris") List<String> uris,
+                                           @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        try {
+            logger.info("Request to retrieve binary contents for uris: {}", uris.toString());
+            // check token
+            boolean isValid = SpringBridge.getInstance().getIdentityClientTyped().getUserInfo(bearerToken);
+            if(!isValid){
+                String msg = String.format("No user exists for the given token : %s",bearerToken);
+                logger.error(msg);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(msg);
+            }
+
+            // eliminate empty uris
+            uris = uris.stream()
+                    .filter(uri -> StringUtils.isNotEmpty(uri))
+                    .collect(Collectors.toList());
+
+            List<BinaryObjectType> results = binaryContentService.retrieveContents(uris);
+            ObjectMapper objectMapper = JsonSerializationUtility.getObjectMapper();
+            String response = objectMapper.writeValueAsString(results);
+
+            logger.info("Completed request to retrieve binary content for uris: {}", uris.toString());
+            return ResponseEntity.ok().body(response);
+
+        } catch (Exception e) {
+            return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while getting the binary content for uris: %s", uris.toString()), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
         }
     }
 

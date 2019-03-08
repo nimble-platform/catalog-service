@@ -27,17 +27,6 @@ public class CatalogueServiceConfig {
     @Value("${spring.application.url}")
     private String springApplicationUrl;
 
-    @Value("${persistence.syncdb.driver}")
-    private String syncDbDriver;
-    @Value("${persistence.syncdb.connection.url}")
-    private String syncdbConnectionUrl;
-    @Value("${persistence.syncdb.username}")
-    private String syncDbUsername;
-    @Value("${persistence.syncdb.password}")
-    private String syncDbPassword;
-    @Value("${persistence.syncdb.update_check_interval}")
-    private Long syncDbUpdateCheckInterval;
-
     @Value("${persistence.categorydb.driver}")
     private String categoryDbDriver;
     @Value("${persistence.categorydb.connection.url}")
@@ -48,13 +37,6 @@ public class CatalogueServiceConfig {
     private String categoryDbPassword;
     @Value("${persistence.categorydb.schema}")
     private String categoryDbScheme;
-
-    @Value("${persistence.marmotta.url}")
-    private String marmottaUrl;
-    @Value("${persistence.marmotta.sync}")
-    private boolean marmottaSync;
-    @Value("${nimble.identity.url}")
-    private String identityUrl;
 
     @Value("${persistence.solr.url}")
     private String solrURL;
@@ -87,46 +69,6 @@ public class CatalogueServiceConfig {
 
     public void setSpringApplicationUrl(String springApplicationUrl) {
         this.springApplicationUrl = springApplicationUrl;
-    }
-
-    public String getSyncDbDriver() {
-        return syncDbDriver;
-    }
-
-    public void setSyncDbDriver(String syncDbDriver) {
-        this.syncDbDriver = syncDbDriver;
-    }
-
-    public String getSyncdbConnectionUrl() {
-        return syncdbConnectionUrl;
-    }
-
-    public void setSyncdbConnectionUrl(String syncdbConnectionUrl) {
-        this.syncdbConnectionUrl = syncdbConnectionUrl;
-    }
-
-    public String getSyncDbUsername() {
-        return syncDbUsername;
-    }
-
-    public void setSyncDbUsername(String syncDbUsername) {
-        this.syncDbUsername = syncDbUsername;
-    }
-
-    public String getSyncDbPassword() {
-        return syncDbPassword;
-    }
-
-    public void setSyncDbPassword(String syncDbPassword) {
-        this.syncDbPassword = syncDbPassword;
-    }
-
-    public Long getSyncDbUpdateCheckInterval() {
-        return syncDbUpdateCheckInterval;
-    }
-
-    public void setSyncDbUpdateCheckInterval(Long syncDbUpdateCheckInterval) {
-        this.syncDbUpdateCheckInterval = syncDbUpdateCheckInterval;
     }
 
     public String getCategoryDbDriver() {
@@ -169,31 +111,6 @@ public class CatalogueServiceConfig {
         this.categoryDbScheme = categoryDbScheme;
     }
 
-    public String getMarmottaUrl() {
-        return marmottaUrl;
-    }
-
-    public void setMarmottaUrl(String marmottaUrl) {
-        this.marmottaUrl = marmottaUrl;
-    }
-
-    public String getIdentityUrl() {
-        return identityUrl;
-    }
-
-    public void setIdentityUrl(String identityUrl) {
-        this.identityUrl = identityUrl;
-    }
-
-    public boolean isMarmottaSync() {
-        return marmottaSync;
-    }
-
-    public void setMarmottaSync(boolean marmottaSync) {
-        this.marmottaSync = marmottaSync;
-    }
-
-
     public String getSolrURL() {
         return solrURL;
     }
@@ -201,7 +118,6 @@ public class CatalogueServiceConfig {
     public void setSolrURL(String solrURL) {
         this.solrURL = solrURL;
     }
-
 
     public String getSolrPropertyIndex() {
         return solrPropertyIndex;

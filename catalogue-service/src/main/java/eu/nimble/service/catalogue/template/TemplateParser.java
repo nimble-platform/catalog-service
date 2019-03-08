@@ -1,10 +1,11 @@
 package eu.nimble.service.catalogue.template;
 
-import eu.nimble.service.catalogue.category.CategoryServiceManager;
+import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.model.category.Unit;
+import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.model.ubl.commonbasiccomponents.*;
 import eu.nimble.service.model.ubl.commonbasiccomponents.AmountType;
@@ -119,32 +120,34 @@ public class TemplateParser {
         Sheet productPropertiesTab = wb.getSheet(TemplateConfig.TEMPLATE_TAB_PRODUCT_PROPERTIES);
         List<ItemPropertyType> additionalItemProperties = new ArrayList<>();
         for (Category category : categories) {
-            for (Property property : category.getProperties()) {
-                // check unit
-                // if the user provided unit for a number data type
-                Row row = productPropertiesTab.getRow(3);
-                Integer columnIndex = findCellIndexForProperty(property.getPreferredName(defaultLanguage));
-                if(columnIndex == null) {
-                    continue;
-                }
-
-                Cell cell = getCellWithMissingCellPolicy(row, columnIndex);
-                if (cell != null) {
-                    String unit = getCellStringValue(cell);
-                    if(!unit.isEmpty()) {
-                        property.setDataType("QUANTITY");
-                        Unit unitObj = new Unit();
-                        unitObj.setShortName(unit);
-                        property.setUnit(unitObj);
+            if(category.getProperties() != null){
+                for (Property property : category.getProperties()) {
+                    // check unit
+                    // if the user provided unit for a number data type
+                    Row row = productPropertiesTab.getRow(3);
+                    Integer columnIndex = findCellIndexForProperty(property.getPreferredName(defaultLanguage));
+                    if(columnIndex == null) {
+                        continue;
                     }
+
+                    Cell cell = getCellWithMissingCellPolicy(row, columnIndex);
+                    if (cell != null) {
+                        String unit = getCellStringValue(cell);
+                        if(!unit.isEmpty()) {
+                            property.setDataType("QUANTITY");
+                            Unit unitObj = new Unit();
+                            unitObj.setShortName(unit);
+                            property.setUnit(unitObj);
+                        }
+                    }
+                    cell = getCellWithMissingCellPolicy(productPropertiesTab.getRow(rowIndex), columnIndex);
+                    List<Object> values = (List<Object>) parseCell(cell,property.getPreferredName(defaultLanguage), property.getDataType(), true);
+                    if (values.isEmpty()) {
+                        continue;
+                    }
+                    ItemPropertyType itemProp = getItemPropertyFromCategoryProperty(category, property, values);
+                    additionalItemProperties.add(itemProp);
                 }
-                cell = getCellWithMissingCellPolicy(productPropertiesTab.getRow(rowIndex), columnIndex);
-                List<Object> values = (List<Object>) parseCell(cell,property.getPreferredName(defaultLanguage), property.getDataType(), true);
-                if (values.isEmpty()) {
-                    continue;
-                }
-                ItemPropertyType itemProp = getItemPropertyFromCategoryProperty(category, property, values);
-                additionalItemProperties.add(itemProp);
             }
         }
 
@@ -250,7 +253,9 @@ public class TemplateParser {
         // find the offset for the custom properties
         int totalCategoryPropertyNumber = 0;
         for (Category category : categories) {
-            totalCategoryPropertyNumber += category.getProperties().size();
+            if(category.getProperties() != null){
+                totalCategoryPropertyNumber += category.getProperties().size();
+            }
         }
         int fixedPropNumber = TemplateConfig.getFixedPropertiesForProductPropertyTab().size();
         int customPropertyNum = productPropertiesTab.getRow(1).getLastCellNum() - (totalCategoryPropertyNumber + fixedPropNumber + 1);
@@ -762,9 +767,9 @@ public class TemplateParser {
         List<String> categoryIds = Arrays.asList(categoryIdsStr.split(","));
         List<String> taxonomyIds = Arrays.asList(taxonomyIdsStr.split(","));
 
-        CategoryServiceManager csm = CategoryServiceManager.getInstance();
+        IndexCategoryService categoryServicecsm = SpringBridge.getInstance().getIndexCategoryService();
         for (int i = 0; i < categoryIds.size(); i++) {
-            Category category = csm.getCategory(taxonomyIds.get(i), categoryIds.get(i));
+            Category category = categoryServicecsm.getCategory(taxonomyIds.get(i), categoryIds.get(i));
             categories.add(category);
         }
 

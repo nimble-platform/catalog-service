@@ -1,10 +1,13 @@
 package eu.nimble.service.catalogue.util;
 
-import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
-import eu.nimble.service.catalogue.category.CategoryServiceManager;
+import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.model.category.Category;
+import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CommodityClassificationType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.DocumentReferenceType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
 
 import java.util.ArrayList;
@@ -100,7 +103,7 @@ public class DataIntegratorUtil {
             if(cct.getItemClassificationCode().getListID().contentEquals("Default")){
                 continue;
             }
-            CategoryServiceManager csm = CategoryServiceManager.getInstance();
+            IndexCategoryService csm = SpringBridge.getInstance().getIndexCategoryService();
             List<Category> parentCategories = csm.getParentCategories(cct.getItemClassificationCode().getListID(),cct.getItemClassificationCode().getValue());
 
             for(int i = 0; i< parentCategories.size();i++){

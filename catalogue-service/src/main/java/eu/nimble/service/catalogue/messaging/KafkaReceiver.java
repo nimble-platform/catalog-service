@@ -1,9 +1,8 @@
 package eu.nimble.service.catalogue.messaging;
 
 import eu.nimble.common.rest.trust.TrustClient;
-import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
-import eu.nimble.service.catalogue.sync.MarmottaSynchronizer;
 import eu.nimble.service.catalogue.config.KafkaConfig;
+import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,8 +30,6 @@ public class KafkaReceiver {
             String accessToken = consumerRecord.value().getAccessToken();
 
             CatalogueDatabaseAdapter.syncPartyInUBLDB(companyID, accessToken);
-            MarmottaSynchronizer.getInstance().addRecord(companyID);
-
             logger.info("Updated party for the company with id: {} successfully", companyID);
 
         } catch (Exception e) {
@@ -50,7 +47,6 @@ public class KafkaReceiver {
             String accessToken = consumerRecord.value().getAccessToken();
 
             CatalogueDatabaseAdapter.syncTrustScores(companyID, accessToken);
-            MarmottaSynchronizer.getInstance().addRecord(companyID);
             logger.info("Processed company trust updates for company with id: {}", companyID);
 
         } catch (Exception e) {

@@ -1,4 +1,4 @@
-package eu.nimble.service.catalogue.category.taxonomy.eclass.database;
+package eu.nimble.service.catalogue.category.eclass.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -206,6 +206,22 @@ public class EClassCategoryDatabaseConfig {
         return sb.toString();
     }
 
+    public static String eClassQueryGetAllCategories(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT * FROM ").append(TABLE_NAME_CLASSIFICATION_CLASS);
+        return sb.toString();
+    }
+
+    public static String eClassQueryGetAllProperties() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT ")
+                .append("pr.*, cc_pr.").append(COLUMN_CLASSIFICATION_CLASS_PROPERTY_IRDI_CC)
+                .append(" FROM ").append(TABLE_NAME_PROPERTY).append(" pr, ").append(TABLE_NAME_CLASSIFICATION_CLASS_PROPERTY).append(" cc_pr ")
+                .append(" WHERE ")
+                .append("pr.").append(COLUMN_PROPERTY_IRDI_PR).append("=").append("cc_pr.").append(COLUMN_CLASSIFICATION_CLASS_PROPERTY_IRDI_PR);
+        return sb.toString();
+    }
+
     public static String eClassQueryGetPossiblePropertiesForCategory() {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ")
@@ -240,6 +256,14 @@ public class EClassCategoryDatabaseConfig {
                 .append("cc_pr.").append(COLUMN_CLASSIFICATION_CLASS_PROPERTY_IRDI_CC).append(" = ? AND ")
                 .append("cc_pr.").append(COLUMN_CLASSIFICATION_CLASS_PROPERTY_IRDI_PR).append(" = pr.").append(COLUMN_PROPERTY_IRDI_PR).append(" AND ")
                 .append("pr.").append(COLUMN_PROPERTY_IRDI_UN).append(" = un.").append(COLUMN_UNIT_IRDI_UN);
+        return sb.toString();
+    }
+
+    public static String eClassQueryGetAllPropertyUnitMappings() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT ").append(COLUMN_PROPERTY_IRDI_PR).append(" FROM ").append(TABLE_NAME_PROPERTY)
+                .append(" WHERE ")
+                .append(COLUMN_PROPERTY_IRDI_UN).append(" IS NOT NULL");
         return sb.toString();
     }
 }

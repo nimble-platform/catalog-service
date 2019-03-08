@@ -13,6 +13,7 @@ import java.util.List;
  * Created by suat on 31-Dec-18.
  */
 public class CataloguePersistenceUtil {
+    private static final String QUERY_GET_ALL_CATALOGUES = "SELECT catalogue FROM CatalogueType catalogue";
     private static final String QUERY_GET_BY_UUID = "SELECT catalogue FROM CatalogueType catalogue WHERE catalogue.UUID = :uuid";
     private static final String QUERY_GET_FOR_PARTY = "SELECT catalogue FROM CatalogueType as catalogue "
             + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification"
@@ -77,6 +78,10 @@ public class CataloguePersistenceUtil {
             " where catalogue.id = :catalogueId and party_identification.id = :partyId and text_type.language_id = :languageId and text_type.value_ in (" +
             " SELECT text_type.value_ FROM text_type, plainto_tsquery(:searchText) AS q WHERE (value_ @@ q)" +
             ")";
+
+    public static List<CatalogueType> getAllCatalogues() {
+        return new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_ALL_CATALOGUES);
+    }
 
     public static CataloguePaginationResponse getCatalogueLinesForParty(String catalogueId, String partyId, String selectedCategoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset) {
         // get catalogue uuid
