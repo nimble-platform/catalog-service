@@ -7,7 +7,7 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.HttpRequest;
 import eu.nimble.service.catalogue.model.category.Property;
-import eu.nimble.service.catalogue.util.ExecutionContext;
+import eu.nimble.service.catalogue.util.CredentialsUtil;
 import eu.nimble.service.model.solr.SearchResult;
 import eu.nimble.service.model.solr.owl.ClassType;
 import eu.nimble.service.model.solr.owl.PropertyType;
@@ -44,7 +44,7 @@ public class PropertyIndexClient {
     private String solrPassword;
 
     @Autowired
-    private ExecutionContext executionContext;
+    private CredentialsUtil credentialsUtil;
 
     public void indexProperty(Property property, Set<String> associatedCategoryUris) {
         try {
@@ -61,7 +61,7 @@ public class PropertyIndexClient {
             }
 
             HttpResponse<String> response = Unirest.post(indexingUrl + "/property")
-                    .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken())
+                    .header(HttpHeaders.AUTHORIZATION, credentialsUtil.getBearerToken())
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .body(propertyJson)
                     .asString();
@@ -88,7 +88,7 @@ public class PropertyIndexClient {
         try {
             response = Unirest.get(indexingUrl + "/properties")
                     .queryString("uri", uris)
-                    .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken())
+                    .header(HttpHeaders.AUTHORIZATION, credentialsUtil.getBearerToken())
                     .asString();
 
             if (response.getStatus() == HttpStatus.OK.value()) {
@@ -116,7 +116,7 @@ public class PropertyIndexClient {
     public List<PropertyType> getIndexPropertiesForCategories(List<String> categoryUris) {
         try {
             HttpRequest request = Unirest.get(indexingUrl + "/properties")
-                    .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken());
+                    .header(HttpHeaders.AUTHORIZATION, credentialsUtil.getBearerToken());
             for(String categoryUri : categoryUris) {
                 request = request.queryString("class", categoryUri);
             }

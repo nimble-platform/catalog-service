@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.common.rest.identity.IdentityClient;
 import eu.nimble.common.rest.trust.TrustClient;
 import eu.nimble.service.catalogue.index.PartyIndexClient;
-import eu.nimble.service.catalogue.util.ExecutionContext;
+import eu.nimble.service.catalogue.util.CredentialsUtil;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.QualityIndicatorType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
@@ -37,11 +37,11 @@ public class PartyIndexLoader {
     @Autowired
     private TrustClient trustClient;
     @Autowired
-    private ExecutionContext executionContext;
+    private CredentialsUtil credentialsUtil;
 
     public void indexParties() {
         // get all parties from the identity service
-        Response partiesResponse = identityClient.getPartyPartiesInUBL(executionContext.getBearerToken(), "0", "false", Integer.MAX_VALUE + "");
+        Response partiesResponse = identityClient.getPartyPartiesInUBL(credentialsUtil.getBearerToken(), "0", "false", Integer.MAX_VALUE + "");
         if (partiesResponse.status() != 200) {
             logger.error("Failed to get parties from identity client. Error code: {}, body: {}", partiesResponse.status(), partiesResponse.body().toString());
         }
@@ -61,7 +61,7 @@ public class PartyIndexLoader {
 
 
         // get all the trust values from the trust service
-        partiesResponse = trustClient.getAllTrustValues(executionContext.getBearerToken());
+        partiesResponse = trustClient.getAllTrustValues(credentialsUtil.getBearerToken());
         if (partiesResponse.status() != 200) {
             logger.error("Failed to get parties from trust client. Error code: {}, body: {}", partiesResponse.status(), partiesResponse.body().toString());
         }

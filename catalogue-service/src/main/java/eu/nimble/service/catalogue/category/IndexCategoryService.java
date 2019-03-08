@@ -9,6 +9,7 @@ import eu.nimble.service.catalogue.index.ClassIndexClient;
 import eu.nimble.service.catalogue.index.IndexingWrapper;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
+import eu.nimble.service.catalogue.util.CredentialsUtil;
 import eu.nimble.service.catalogue.util.ExecutionContext;
 import eu.nimble.service.model.solr.SearchResult;
 import eu.nimble.service.model.solr.owl.ClassType;
@@ -46,7 +47,7 @@ public class IndexCategoryService {
     private String solrPassword;
 
     @Autowired
-    private ExecutionContext executionContext;
+    private CredentialsUtil credentialsUtil;
     @Autowired
     private ClassIndexClient classIndexClient;
     @Autowired
@@ -287,7 +288,7 @@ public class IndexCategoryService {
                     .queryString("q", query)
                     .queryString("rows", Integer.MAX_VALUE)
 
-                    .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken());
+                    .header(HttpHeaders.AUTHORIZATION, credentialsUtil.getBearerToken());
 
             HttpResponse<String> response = request.asString();
             if (response.getStatus() == HttpStatus.OK.value()) {

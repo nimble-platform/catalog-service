@@ -160,6 +160,11 @@ nimble:
     topics:
       companyUpdates: ${KAFKA_TOPIC_COMPANY_UPDATES:company-updates}
       trustScoreUpdates: ${KAFKA_TOPIC_TRUST_SCORE_UPDATES:trust-score-updates}
+  oauth:
+    client:
+      clientId: ${OAUTH_CLIENT_ID}
+      clientSecret: ${OAUTH_CLIENT_SECRET}
+      accessTokenUri: ${OAUTH_CLIENT_ACCESSTOKEN_URI}
   check-entity-ids: ${CHECK_ENTITY_IDS:false}
 
 hystrix:
