@@ -42,6 +42,8 @@ public class CatalogueDatabaseAdapter {
 
         } else {
             DataModelUtility.nullifyPartyFieldsExceptHjid(catalogueParty);
+            // updating the entity to delete the old data. Otherwise, we get a duplicate id exception for party identifications
+            new JPARepositoryFactory().forCatalogueRepository().updateEntity(catalogueParty);
             DataModelUtility.copyPartyExceptHjid(catalogueParty, identityParty);
             new JPARepositoryFactory().forCatalogueRepository().updateEntity(catalogueParty);
             indexParty(catalogueParty);
