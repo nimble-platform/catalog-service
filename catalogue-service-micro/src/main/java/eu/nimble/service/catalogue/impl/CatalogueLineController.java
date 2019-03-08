@@ -100,7 +100,7 @@ public class CatalogueLineController {
     public ResponseEntity getCatalogueLine(@ApiParam(value = "uuid of the catalogue containing the line to be retrieved. (catalogue.uuid)", required = true) @PathVariable String catalogueUuid,
                                            @ApiParam(value = "Identifier of the catalogue line to be retrieved. (line.id)", required = true) @PathVariable String lineId,
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
-        log.info("Incoming request to get catalogue line with lineId: {}", lineId);
+        log.info("Incoming request to get catalogue line with lineId: {}, catalogue uuid: {}", lineId, catalogueUuid);
         // check token
         ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
         if (tokenCheck != null) {
@@ -116,7 +116,8 @@ public class CatalogueLineController {
         try {
             catalogueLine = service.getCatalogueLine(catalogueUuid, lineId);
         } catch (Exception e) {
-            return createErrorResponseEntity("Failed to get catalogue line", HttpStatus.INTERNAL_SERVER_ERROR, e);
+            String msg = String.format("Failed to get catalogue line: %s, catalogue uuid: %s", lineId, catalogueUuid);
+            return createErrorResponseEntity(msg, HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
 
         if (catalogueLine == null) {
@@ -333,7 +334,7 @@ public class CatalogueLineController {
     }
 
     private ResponseEntity createErrorResponseEntity(String msg, HttpStatus status, Exception e) {
-        msg = msg + e.getMessage();
+        msg = msg + "\n" + e.getMessage();
         log.error(msg, e);
         return ResponseEntity.status(status).body(msg);
     }
