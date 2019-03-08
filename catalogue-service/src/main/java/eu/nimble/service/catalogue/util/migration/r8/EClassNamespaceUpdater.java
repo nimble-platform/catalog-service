@@ -21,7 +21,8 @@ public class EClassNamespaceUpdater {
     private static final String QUERY_UPDATE_ITEM_PROPERTIES = "update item_property_type set id = ?, uri = ? where id = ?";
     private static final String QUERY_GET_FURNITURE_ONTOLOGY_ITEM_PROPERTIES = "select id from item_property_type where id like '%FurnitureSector%'";
     private static final String QUERY_GET_ECLASS_CODES = "select uri, value_ from code_type where uri like '%eclass%'";
-    private static final String QUERY_UPDATE_ECLASS_CODES = "update code_type set uri = ?, value_ = ? where value_ = ?";
+    private static final String QUERY_UPDATE_CODES = "update code_type set uri = ?, value_ = ? where value_ = ?";
+    private static final String QUERY_GET_FURNITURE_ONTOLOGY_CODES = "select uri, value_ from code_type where uri like '%FurnitureSector%'";
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(EClassNamespaceUpdater.class);
 
@@ -43,8 +44,10 @@ public class EClassNamespaceUpdater {
 
             // correct item property type uris
             script.fixUrisInItemProperties(c);
-            // correct commodity classification type uris
+            // correct eclass uris in codes
             script.fixEClassCategoryUrisInCodes(c);
+            // correct furniture ontology uris in codes
+            script.fixFurnitureOntologyUrisInCodes(c);
 
         } catch (Exception e) {
             logger.error("", e);
@@ -140,12 +143,57 @@ public class EClassNamespaceUpdater {
             rs.close();
             logger.info("Ids obtained. size: {}", ids.size());
 
-            pstmt = c.prepareStatement(QUERY_UPDATE_ECLASS_CODES);
+            pstmt = c.prepareStatement(QUERY_UPDATE_CODES);
             for (String id : ids) {
                 String uri = TaxonomyEnum.eClass.getNamespace() + id;
                 pstmt.setString(1, uri);
                 pstmt.setString(2, uri);
                 pstmt.setString(3, id);
+                pstmt.execute();
+                pstmt.clearParameters();
+            }
+            logger.info("properties uris are updated");
+
+        } catch (Exception e) {
+            logger.error("", e);
+            System.exit(0);
+        } finally {
+            try {
+                if (stmt != null) {
+                    stmt.close();
+                }
+            } catch (Exception e) {
+                logger.error("", e);
+            }
+            try {
+                if (pstmt != null) {
+                    pstmt.close();
+                }
+            } catch (Exception e) {
+                logger.error("", e);
+            }
+        }
+    }
+
+    private void fixFurnitureOntologyUrisInCodes(Connection c) {
+        Statement stmt = null;
+        PreparedStatement pstmt = null;
+        try {
+            stmt = c.createStatement();
+
+            ResultSet rs = stmt.executeQuery(QUERY_GET_FURNITURE_ONTOLOGY_CODES);
+            Set<String> values = new HashSet<>();
+            while (rs.next()) {
+                values.add(rs.getString("value_"));
+            }
+            rs.close();
+            logger.info("Furniture ontology value obtained. size: {}", values.size());
+
+            pstmt = c.prepareStatement(QUERY_UPDATE_CODES);
+            for (String value : values) {
+                pstmt.setString(1, value);
+                pstmt.setString(2, value);
+                pstmt.setString(3, value);
                 pstmt.execute();
                 pstmt.clearParameters();
             }
