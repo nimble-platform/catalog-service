@@ -75,7 +75,7 @@ public class PartyIndexClient {
         try {
             HttpResponse<String> response;
             response = Unirest.delete(indexingUrl + "/party")
-                    .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken())
+                    .header(HttpHeaders.AUTHORIZATION, credentialsUtil.getBearerToken())
                     .queryString("uri", partyId)
                     .asString();
 
