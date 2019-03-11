@@ -536,7 +536,6 @@ public class TemplateParser {
                         TextType textType = new TextType();
                         textType.setLanguageID(defaultLanguage);
                         textType.setValue(stvalue);
-                        item.getName().add(textType);
 
                         catalogueLine.getGoodsItem().getDeliveryTerms().getSpecialTerms().add(textType);
                     }
