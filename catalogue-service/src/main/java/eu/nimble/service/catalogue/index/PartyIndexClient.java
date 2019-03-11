@@ -70,4 +70,25 @@ public class PartyIndexClient {
             return;
         }
     }
+
+    public void removeParty(String partyId) {
+        try {
+            HttpResponse<String> response;
+            response = Unirest.delete(indexingUrl + "/party")
+                    .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken())
+                    .queryString("uri", partyId)
+                    .asString();
+
+            if (response.getStatus() == HttpStatus.OK.value()) {
+                logger.info("Deleted indexed Party. partyId: {}", partyId);
+
+            } else {
+                logger.error("Failed to delete indexed Party. partyId: {}, indexing call status: {}, message: {}",
+                        partyId, response.getStatus(), response.getBody());
+            }
+
+        } catch (UnirestException e) {
+            logger.error("Failed to delete indexed Catalogue. uuid: {}", partyId, e);
+        }
+    }
 }
