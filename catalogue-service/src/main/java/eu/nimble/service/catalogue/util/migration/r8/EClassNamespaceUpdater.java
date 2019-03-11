@@ -23,6 +23,7 @@ public class EClassNamespaceUpdater {
     private static final String QUERY_GET_ECLASS_CODES = "select uri, value_ from code_type where uri like '%eclass%'";
     private static final String QUERY_UPDATE_CODES = "update code_type set uri = ?, value_ = ? where value_ = ?";
     private static final String QUERY_GET_FURNITURE_ONTOLOGY_CODES = "select uri, value_ from code_type where uri like '%FurnitureSector%'";
+    private static final String QUERY_GET_FURNITURE_ONTOLOGY_CODES_WITH_NULL_URIS = "select value_ from code_type where uri is null and value_ like '%FurnitureSector%' and value_ not like '%::%'";
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(EClassNamespaceUpdater.class);
 
@@ -48,6 +49,8 @@ public class EClassNamespaceUpdater {
             script.fixEClassCategoryUrisInCodes(c);
             // correct furniture ontology uris in codes
             script.fixFurnitureOntologyUrisInCodes(c);
+            // correct furniture ontology uris with null codes
+            script.fixFurnitureOntologyNullUrisInCodes(c);
 
         } catch (Exception e) {
             logger.error("", e);
@@ -198,6 +201,51 @@ public class EClassNamespaceUpdater {
                 pstmt.clearParameters();
             }
             logger.info("properties uris are updated");
+
+        } catch (Exception e) {
+            logger.error("", e);
+            System.exit(0);
+        } finally {
+            try {
+                if (stmt != null) {
+                    stmt.close();
+                }
+            } catch (Exception e) {
+                logger.error("", e);
+            }
+            try {
+                if (pstmt != null) {
+                    pstmt.close();
+                }
+            } catch (Exception e) {
+                logger.error("", e);
+            }
+        }
+    }
+
+    private void fixFurnitureOntologyNullUrisInCodes(Connection c) {
+        Statement stmt = null;
+        PreparedStatement pstmt = null;
+        try {
+            stmt = c.createStatement();
+
+            ResultSet rs = stmt.executeQuery(QUERY_GET_FURNITURE_ONTOLOGY_CODES_WITH_NULL_URIS);
+            Set<String> values = new HashSet<>();
+            while (rs.next()) {
+                values.add(rs.getString("value_"));
+            }
+            rs.close();
+            logger.info("Furniture ontology codes with null uris obtained. size: {}", values.size());
+
+            pstmt = c.prepareStatement(QUERY_UPDATE_CODES);
+            for (String value : values) {
+                pstmt.setString(1, value);
+                pstmt.setString(2, value);
+                pstmt.setString(3, value);
+                pstmt.execute();
+                pstmt.clearParameters();
+            }
+            logger.info("null core uris are updated");
 
         } catch (Exception e) {
             logger.error("", e);
