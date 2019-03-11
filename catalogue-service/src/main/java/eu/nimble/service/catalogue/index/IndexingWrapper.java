@@ -4,6 +4,8 @@ import eu.nimble.service.catalogue.category.TaxonomyEnum;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.template.TemplateConfig;
+import eu.nimble.service.catalogue.validation.AmountValidator;
+import eu.nimble.service.catalogue.validation.QuantityValidator;
 import eu.nimble.service.model.solr.item.ItemType;
 import eu.nimble.service.model.solr.owl.ClassType;
 import eu.nimble.service.model.solr.owl.PropertyType;
@@ -43,17 +45,20 @@ public class IndexingWrapper {
         catalogueLine.getGoodsItem().getItem().getName().forEach(name -> indexItem.addLabel(name.getLanguageID(), name.getValue()));
         indexItem.setApplicableCountries(getCountries(catalogueLine));
         indexItem.setCertificateType(getCertificates(catalogueLine));
-        if(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue() != null) {
+        AmountValidator amountValidator = new AmountValidator(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount());
+        if(amountValidator.bothFieldsPopulated()) {
             indexItem.addPrice(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getCurrencyID(), catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue().doubleValue());
         }
-        if(catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure().getValue() != null) {
+        QuantityValidator quantityValidator = new QuantityValidator(catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure());
+        if(quantityValidator.bothFieldsPopulated()) {
             indexItem.addDeliveryTime(catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure().getUnitCode(), catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure().getValue().doubleValue());
         }
         indexItem.setDescription(getLabelMapFromMultilingualLabels(catalogueLine.getGoodsItem().getItem().getDescription()));
         indexItem.setFreeOfCharge(catalogueLine.isFreeOfChargeIndicator());
         indexItem.setImgageUri(getImageUris(catalogueLine));
         indexItem.setManufacturerId(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID());
-        if(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getValue() != null) {
+        quantityValidator = new QuantityValidator(catalogueLine.getGoodsItem().getContainingPackage().getQuantity());
+        if(quantityValidator.bothFieldsPopulated()) {
             indexItem.addPackageAmounts(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getUnitCode(), Arrays.asList(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getValue().doubleValue()));
         }
         transformCommodityClassifications(indexItem, catalogueLine);
