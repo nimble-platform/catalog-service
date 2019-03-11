@@ -328,10 +328,19 @@ public class TemplateParser {
 
             } else if (property.getPreferredName(defaultLanguage).equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION)) {
                 List<String> productDescriptions = (List<String>) parseCell(cell,TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION, TEMPLATE_DATA_TYPE_TEXT, true);
-                for(String productDescriptionValue: productDescriptions) {
+                if(productDescriptions.size() != 0){
+                    for(String productDescriptionValue: productDescriptions) {
+                        TextType textType = new TextType();
+                        textType.setLanguageID(defaultLanguage);
+                        textType.setValue(productDescriptionValue);
+                        item.getDescription().add(textType);
+                    }
+                }
+                // if no description is provided, then add an empty description to the item to get rid of null exceptions on the UI
+                else{
                     TextType textType = new TextType();
+                    textType.setValue("");
                     textType.setLanguageID(defaultLanguage);
-                    textType.setValue(productDescriptionValue);
                     item.getDescription().add(textType);
                 }
 
@@ -527,7 +536,6 @@ public class TemplateParser {
                         TextType textType = new TextType();
                         textType.setLanguageID(defaultLanguage);
                         textType.setValue(stvalue);
-                        item.getName().add(textType);
 
                         catalogueLine.getGoodsItem().getDeliveryTerms().getSpecialTerms().add(textType);
                     }

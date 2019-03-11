@@ -11,7 +11,7 @@ import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.category.TaxonomyEnum;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.Property;
-import eu.nimble.service.catalogue.util.ExecutionContext;
+import eu.nimble.service.catalogue.util.CredentialsUtil;
 import eu.nimble.service.model.solr.Search;
 import eu.nimble.service.model.solr.SearchResult;
 import eu.nimble.service.model.solr.owl.ClassType;
@@ -51,7 +51,7 @@ public class ClassIndexClient {
     private String solrPassword;
 
     @Autowired
-    private ExecutionContext executionContext;
+    private CredentialsUtil credentialsUtil;
     @Autowired
     private PropertyIndexClient propertyIndexClient;
 
@@ -70,7 +70,7 @@ public class ClassIndexClient {
             }
 
             HttpResponse<String> response = Unirest.post(indexingUrl + "/class")
-                    .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken())
+                    .header(HttpHeaders.AUTHORIZATION, credentialsUtil.getBearerToken())
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .body(categoryJson)
                     .asString();
@@ -107,9 +107,6 @@ public class ClassIndexClient {
 
     public List<ClassType> getIndexCategories(Set<String> uris) {
         try {
-//            HttpRequest request = Unirest.get(indexingUrl + "/classes")
-//                    .queryString("uri", uris)
-//                    .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken());
             StringBuilder queryStr = new StringBuilder("");
             for(String uri : uris) {
                 queryStr.append("id:\"").append(uri).append("\" OR ");
@@ -123,7 +120,7 @@ public class ClassIndexClient {
             try {
                 request = Unirest.post(indexingUrl + "/class/search")
                         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                        .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken())
+                        .header(HttpHeaders.AUTHORIZATION, credentialsUtil.getBearerToken())
                         .body(JsonSerializationUtility.getObjectMapper().writeValueAsString(search))
                         .getHttpRequest();
             } catch (JsonProcessingException e) {
@@ -190,7 +187,7 @@ public class ClassIndexClient {
         try {
             HttpRequest request = Unirest.get(indexingUrl + "/class/select")
                     .queryString("rows", Integer.MAX_VALUE)
-                    .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken());
+                    .header(HttpHeaders.AUTHORIZATION, credentialsUtil.getBearerToken());
             if(query != null) {
                 request = request.queryString("q", query);
             }
