@@ -3,7 +3,7 @@ package eu.nimble.service.catalogue.index;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import eu.nimble.service.catalogue.util.ExecutionContext;
+import eu.nimble.service.catalogue.util.CredentialsUtil;
 import eu.nimble.service.model.solr.item.ItemType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
@@ -44,7 +44,7 @@ public class ItemIndexClient {
     private Boolean indexingSync;
 
     @Autowired
-    private ExecutionContext executionContext;
+    private CredentialsUtil credentialsUtil;
     @Autowired
     private HttpSolrClient httpSolrClient;
 
@@ -71,7 +71,7 @@ public class ItemIndexClient {
 
         try {
             response = Unirest.post(indexingUrl + "/catalogue")
-                    .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken())
+                    .header(HttpHeaders.AUTHORIZATION, credentialsUtil.getBearerToken())
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .queryString("catalogueId", catalogue.getUUID())
                     .body(indexItemsJson)
@@ -116,7 +116,7 @@ public class ItemIndexClient {
 
         try {
             response = Unirest.post(indexingUrl + "/item")
-                    .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken())
+                    .header(HttpHeaders.AUTHORIZATION, credentialsUtil.getBearerToken())
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .body(indexItemJson)
                     .asString();
@@ -145,7 +145,7 @@ public class ItemIndexClient {
         try {
             HttpResponse<String> response;
             response = Unirest.delete(indexingUrl + "/catalogue")
-                    .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken())
+                    .header(HttpHeaders.AUTHORIZATION, credentialsUtil.getBearerToken())
                     .queryString("catalogueId", catalogueUuid)
                     .asString();
 
@@ -172,7 +172,7 @@ public class ItemIndexClient {
             HttpResponse<String> response;
             response = Unirest.delete(indexingUrl + "/item")
                     .queryString("uri", catalogueLineHjid)
-                    .header(HttpHeaders.AUTHORIZATION, executionContext.getBearerToken())
+                    .header(HttpHeaders.AUTHORIZATION, credentialsUtil.getBearerToken())
                     .asString();
 
             if (response.getStatus() == HttpStatus.OK.value()) {
