@@ -34,15 +34,21 @@ public class TemplateConfig {
     public static String TEMPLATE_INFO_EX1 = "                Ex: 250|500|1000";
     public static String TEMPLATE_INFO_EX2 = "                Ex: blue|yellow";
     public static String TEMPLATE_INFO_EX3 = "                Ex: C:\\Documents\\image1.png|C:\\Documents\\image2.png|C:\\Documents\\image3.png";
+    public static String TEMPLATE_INFO_MULTILINGUALITY = "*** Multilingual values are represented by using following format:";
+    public static String TEMPLATE_INFO_MULTILINGUALITY_FORMAT ="        <en_value>@en|<es_value>@es|<tr_value>@tr";
+    public static String TEMPLATE_INFO_MULTILINGUALITY_REMAINDER = "       If no language id is provided for the value, then, \"en\" is used for that value by default";
+    public static String TEMPLATE_INFO_MULTILINGUALITY_EXAMPLE = "                Ex:blue@en|red|azul@es";
     public static String TEMPLATE_INFO_THE_TOP_FOUR_COLUMNS = "The top 4 rows of the Product Properties tab present  the information about the properties to be filled in for each product variation.";
     public static String TEMPLATE_INFO_THE_FIRST_ROW = "The 1st, i.e. the topmost, row shows categories for which this template is generated. Each product published through this template will be annotated with these categories.";
     public static String TEMPLATE_INFO_THE_SECOND_ROW = "The 2nd row contains three groups of properties as described below:";
     public static String TEMPLATE_INFO_FIXED_PROPERTIES = "        1) Fixed properties regardless from the selected categories such as product name, description, images, etc.";
     public static String TEMPLATE_INFO_PROPERTIES_ASSOCIATED = "        2) Properties associated to the selected categories. For each category, relevant properties are listed under the merged cell including the category name";
     public static String TEMPLATE_INFO_CUSTOM_PROPERTIES = "        3) Custom properties that can be created based for your own need. They should be specified right after the last property belonging to a category.";
+    public static String TEMPLATE_INFO_CUSTOM_PROPERTIES_REMAINDER = "                Note that custom properties can not have TEXT data type. Please, use MULTILINGUAL TEXT data type instead.";
     public static String TEMPLATE_INFO_DETAILS_OF_THE_PROPERTY = "Details of the property and allowed values can be investigated in " + TEMPLATE_TAB_PROPERTY_DETAILS + " and " + TEMPLATE_TAB_ALLOWED_VALUES_FOR_PROPERTIES + " tabs respectively based on the name of the property ";
     public static String TEMPLATE_INFO_THE_THIRD_ROW = "The 3rd row shows the data type of the property. Following properties are applicable:";
     public static String TEMPLATE_INFO_TEXT = "        TEXT : The data that should be set for properties representing textual values";
+    public static String TEMPLATE_INFO_MULTILINGUAL_TEXT = "        MULTILINGUAL TEXT : The data type that should be set for properties which can have different values for different languages.";
     public static String TEMPLATE_INFO_NUMBER = "        NUMBER : The data type that should be specified for properties representing numeric values";
     public static String TEMPLATE_INFO_QUANTITY = "        QUANTITY : If a numeric property must have an associated unit (e.g. a dimension property), such a property must have QUANTITY type.";
     public static String TEMPLATE_INFO_FILE = "        FILE : When a file (image, pdf, etc.) is to be specified for a property (e.g. images, safety sheet, etc.), this data type is used. You should specify the location of the file on your system e.g. C:\\Documents\\safetysheet.pdf.";
@@ -103,6 +109,7 @@ public class TemplateConfig {
     public static String TEMPLATE_PROPERTY_DETAILS_DATA_TYPE = "Data Type";
 
     public static String TEMPLATE_DATA_TYPE_TEXT = "TEXT";
+    public static String TEMPLATE_DATA_TYPE_MULTILINGUAL_TEXT = "MULTILINGUAL TEXT";
     public static String TEMPLATE_DATA_TYPE_NUMBER = "NUMBER";
     public static String TEMPLATE_DATA_TYPE_FILE = "FILE";
     public static String TEMPLATE_DATA_TYPE_QUANTITY = "QUANTITY";
