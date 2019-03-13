@@ -356,17 +356,7 @@ public class TemplateParser {
                     item.getDescription().add(textType);
                 }
 
-            } else if (property.getPreferredName(null).equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_CERTIFICATIONS)) {
-                List<String> certificateNames = (List<String>) parseCell(cell,TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_CERTIFICATIONS, TEMPLATE_DATA_TYPE_TEXT, true);
-                List<CertificateType> certificates = new ArrayList<>();
-                for (String name : certificateNames) {
-                    CertificateType cert = new CertificateType();
-                    cert.setCertificateType(name);
-                    certificates.add(cert);
-                }
-                item.setCertificate(certificates);
-
-            } /*else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PRODUCT_DATA_SHEET)) {
+            }  /*else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PRODUCT_DATA_SHEET)) {
                 List<BinaryObjectType> documents = (List<BinaryObjectType>) parseCell(cell, TEMPLATE_DATA_TYPE_FILE, true);
                 List<DocumentReferenceType> docRefs = new ArrayList<>();
                 for (BinaryObjectType document : documents) {

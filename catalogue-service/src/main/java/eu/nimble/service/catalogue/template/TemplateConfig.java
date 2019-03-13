@@ -74,7 +74,6 @@ public class TemplateConfig {
     public static String TEMPLATE_PRODUCT_PROPERTIES_WIDTH = "Width";
     public static String TEMPLATE_PRODUCT_PROPERTIES_LENGTH = "Length";
     public static String TEMPLATE_PRODUCT_PROPERTIES_HEIGHT = "Height";
-    public static String TEMPLATE_PRODUCT_PROPERTIES_CERTIFICATIONS = "Certifications";
     public static String TEMPLATE_PRODUCT_PROPERTIES_PRODUCT_DATA_SHEET = "Product Data Sheet";
     public static String TEMPLATE_PRODUCT_PROPERTIES_PRODUCT_SAFETY_SHEET = "Product Safety Sheet";
 
@@ -158,12 +157,6 @@ public class TemplateConfig {
         // description
         prop = new Property();
         prop.addPreferredName(TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION, defaultLanguage);
-        prop.setDataType("STRING");
-        properties.add(prop);
-
-        // certifications
-        prop = new Property();
-        prop.addPreferredName(TEMPLATE_PRODUCT_PROPERTIES_CERTIFICATIONS, defaultLanguage);
         prop.setDataType("STRING");
         properties.add(prop);
 
