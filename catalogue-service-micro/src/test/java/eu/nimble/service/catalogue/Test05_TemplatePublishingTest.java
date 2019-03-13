@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.DimensionType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemPropertyType;
 import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
@@ -53,9 +54,11 @@ public class Test05_TemplatePublishingTest {
     final private String partyName = "alpCompany";
     final private String partyId = "381";
     final private String uploadMode = "replace";
+    final private String uploadMode2 = "append";
 
     final private String productID1 = "Product_id1";
     final private String productID2 = "Product_id2";
+    final private String productID4 = "Product_id4";
     final private String colorProperty = "Color";
     final private String usageProperty = "Usage";
     final private String incoterms = "DAT (Delivered at Terminal)";
@@ -63,6 +66,12 @@ public class Test05_TemplatePublishingTest {
     final private String contentType = "application/octet-stream";
     final private String fileName = "product_data_template.xlsx";
 
+    /*
+        The user publishes three products using the template. Their ids are:
+            - Product_id1
+            - Product_id2
+            - Product_id3
+     */
     @Test
     public void test1_uploadTemplate() throws Exception {
         InputStream is = Test05_TemplatePublishingTest.class.getResourceAsStream("/template/product_data_template.xlsx");
@@ -132,4 +141,75 @@ public class Test05_TemplatePublishingTest {
         }
     }
 
+    /*
+        The user publishes two products using the template. The ids are:
+            - Product_id2 : Since we have the product with this id, we will replace it with the new product.
+                * The custom properties of this product are removed in the new template.
+                * Dimension-Length is increased to 70 mm in the new template
+                * Price amount is increased to 20 EUR in the new template.
+            - Product_id4 : This product will be added to the catalogue.
+                * It has two product names: One for english and the other one for spanish
+                * It has one additional item property
+                * Price amount is 14 EUR
+     */
+    @Test
+    public void test2_uploadTemplate() throws Exception {
+        InputStream is = Test05_TemplatePublishingTest.class.getResourceAsStream("/template/product_data_template_new.xlsx");
+        MockMultipartFile mutipartFile = new MockMultipartFile("file", fileName, contentType, is);
+
+        MvcResult result = this.mockMvc.perform(MockMvcRequestBuilders
+                .fileUpload("/catalogue/template/upload")
+                .file(mutipartFile)
+                .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                .header("Authorization", environment.getProperty("nimble.test-token"))
+                .param("uploadMode",uploadMode2)
+                .param("partyId",partyId)
+                .param("partyName",partyName))
+                .andExpect(status().isCreated()).andReturn();
+        CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
+        // check catalogue line size
+        Assert.assertSame(catalogue.getCatalogueLine().size(),4);
+        // get catalogue lines
+        // catalogue line with id : Product_id2
+        CatalogueLineType existingCatalogueLine = null;
+        // catalogue line with id : Product_id4
+        CatalogueLineType newCatalogueLine = null;
+        for(CatalogueLineType catalogueLineType : catalogue.getCatalogueLine()){
+            if(catalogueLineType.getID().equals(productID2)){
+                existingCatalogueLine = catalogueLineType;
+            }
+            else if(catalogueLineType.getID().equals(productID4)){
+                newCatalogueLine = catalogueLineType;
+            }
+        }
+
+        // check whether the existing catalogue line is updated properly or not
+
+        // check extra properties
+        Assert.assertEquals(existingCatalogueLine.getGoodsItem().getItem().getAdditionalItemProperty().size(),0);
+        // check dimension-length
+        DimensionType lengthDimension = null;
+        for(DimensionType dimensionType :existingCatalogueLine.getGoodsItem().getItem().getDimension()){
+            if(dimensionType.getAttributeID().contentEquals("Length")){
+                lengthDimension = dimensionType;
+            }
+        }
+        Assert.assertNotNull(lengthDimension);
+        Assert.assertEquals(lengthDimension.getMeasure().getValue().intValue(),70);
+        Assert.assertEquals(lengthDimension.getMeasure().getUnitCode(),"mm");
+        // check price amount
+        Assert.assertEquals(existingCatalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue().intValue(),20);
+        Assert.assertEquals(existingCatalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getCurrencyID(),"EUR");
+
+        // check whether the new product is added to the catalogue properly or not
+
+        // check product names
+        Assert.assertEquals(newCatalogueLine.getGoodsItem().getItem().getName().size(),2);
+        // check extra properties
+        Assert.assertEquals(newCatalogueLine.getGoodsItem().getItem().getAdditionalItemProperty().size(),1);
+        Assert.assertEquals(newCatalogueLine.getGoodsItem().getItem().getAdditionalItemProperty().get(0).getValue().size(),1);
+        // check price amount
+        Assert.assertEquals(newCatalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue().intValue(),14);
+        Assert.assertEquals(newCatalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getCurrencyID(),"EUR");
+    }
 }
