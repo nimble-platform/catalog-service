@@ -186,10 +186,7 @@ public class TemplateParser {
         CodeType associatedClassificationCode = new CodeType();
         itemProp.setItemClassificationCode(associatedClassificationCode);
 
-        TextType textType = new TextType();
-        textType.setLanguageID(defaultLanguage);
-        textType.setValue(property.getPreferredName(defaultLanguage));
-        itemProp.getName().add(textType);
+        itemProp.getName().addAll(property.getPreferredName());
 
         String valueQualifier = TemplateGenerator.normalizeDataTypeForTemplate(property.getDataType().toUpperCase());
         itemProp.setValueQualifier(property.getDataType());
