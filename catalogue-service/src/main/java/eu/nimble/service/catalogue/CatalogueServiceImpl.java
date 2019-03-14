@@ -455,6 +455,11 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
+    public List<CatalogueLineType> getCatalogueLines(List<Long> hjids) {
+        return CatalogueLinePersistenceUtil.getCatalogueLines(hjids);
+    }
+
+    @Override
     public <T> T getCatalogueLine(String catalogueId, String catalogueLineId) {
         T catalogueLine = (T) CatalogueLinePersistenceUtil.getCatalogueLine(catalogueId, catalogueLineId);
         return catalogueLine;

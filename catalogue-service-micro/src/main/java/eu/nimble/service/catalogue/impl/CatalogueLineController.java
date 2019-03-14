@@ -87,6 +87,36 @@ public class CatalogueLineController {
     }
 
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieves the catalogue lines with the DB-scoped identifiers")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved catalogue lines successfully", response = CatalogueLineType.class,responseContainer = "List"),
+            @ApiResponse(code = 401, message = "No user exists for the given token"),
+            @ApiResponse(code = 500, message = "Unexpected error while getting catalogue lines")
+    })
+    @RequestMapping(value = "/cataloguelines",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity getCatalogueLinesByHjids(@ApiParam(value = "Identifiers of the catalogue lines to be retrieved. (line.hjid)", required = true) @RequestParam(value = "ids") List<Long> hjids,
+                                                 @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        log.info("Incoming request to get catalogue lines with hjids: {}", hjids);
+        // check token
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return tokenCheck;
+        }
+
+        List<CatalogueLineType> catalogueLines;
+        try {
+            catalogueLines = service.getCatalogueLines(hjids);
+        } catch (Exception e) {
+            return createErrorResponseEntity("Failed to get catalogue lines", HttpStatus.INTERNAL_SERVER_ERROR, e);
+        }
+
+        log.info("Completed the request to get catalogue lines with hjids: {}", hjids);
+        return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLines));
+    }
+
+    @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves the catalogue line specified with the catalogueUuid and lineId parameters")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieved catalogue line successfully", response = CatalogueLineType.class),

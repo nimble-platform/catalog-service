@@ -3,6 +3,8 @@ package eu.nimble.service.catalogue.persistence.util;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
 
+import java.util.List;
+
 /**
  * Created by suat on 31-Dec-18.
  */
@@ -23,6 +25,7 @@ public class CatalogueLinePersistenceUtil {
             + " WHERE c.UUID = :catalogueUuid "
             + " AND clj.ID = :lineId";
     private static final String QUERY_GET_BY_HJID = "SELECT cl FROM CatalogueLineType as cl WHERE cl.hjid = :hjid";
+    private static final String QUERY_GET_BY_HJIDS = "SELECT cl FROM CatalogueLineType as cl WHERE cl.hjid in :hjids";
 
     public static Boolean checkCatalogueLineExistence(String catalogueUuid, String lineId) {
         long lineExistence = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_CHECK_EXISTENCE_BY_ID, new String[]{"catalogueUuid", "lineId"}, new Object[]{catalogueUuid, lineId});
@@ -36,6 +39,10 @@ public class CatalogueLinePersistenceUtil {
 
     public static CatalogueLineType getCatalogueLine(Long hjid) {
         return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_BY_HJID, new String[]{"hjid"}, new Object[]{hjid});
+    }
+
+    public static List<CatalogueLineType> getCatalogueLines(List<Long> hjids) {
+        return new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_BY_HJIDS, new String[]{"hjids"}, new Object[]{hjids});
     }
 
     public static CatalogueLineType getCatalogueLine(String catalogueUuid, String lineId) {
