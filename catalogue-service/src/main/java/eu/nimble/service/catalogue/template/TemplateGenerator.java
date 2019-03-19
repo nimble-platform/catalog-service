@@ -102,6 +102,15 @@ public class TemplateGenerator {
         row.createCell(0).setCellValue(TemplateConfig.TEMPLATE_INFO_EX2);
         row = infoTab.createRow(++rowIndex);
         row.createCell(0).setCellValue(TemplateConfig.TEMPLATE_INFO_EX3);
+        row = infoTab.createRow(++rowIndex);
+        row.createCell(0).setCellValue(TemplateConfig.TEMPLATE_INFO_MULTILINGUALITY);
+        row = infoTab.createRow(++rowIndex);
+        row.createCell(0).setCellValue(TemplateConfig.TEMPLATE_INFO_MULTILINGUALITY_FORMAT);
+        row = infoTab.createRow(++rowIndex);
+        row.createCell(0).setCellValue(TemplateConfig.TEMPLATE_INFO_MULTILINGUALITY_REMAINDER);
+        row = infoTab.createRow(++rowIndex);
+        row.createCell(0).setCellValue(TemplateConfig.TEMPLATE_INFO_MULTILINGUALITY_EXAMPLE);
+
         rowIndex++;
 
         // product properties tab info
@@ -123,12 +132,18 @@ public class TemplateGenerator {
         row = infoTab.createRow(++rowIndex);
         row.createCell(0).setCellValue(TemplateConfig.TEMPLATE_INFO_CUSTOM_PROPERTIES);
         row = infoTab.createRow(++rowIndex);
+        cell = row.createCell(0);
+        cell.setCellValue(TemplateConfig.TEMPLATE_INFO_CUSTOM_PROPERTIES_REMAINDER);
+        cell.setCellStyle(mandatoryCellStyle);
+        row = infoTab.createRow(++rowIndex);
         row.createCell(0).setCellValue(TemplateConfig.TEMPLATE_INFO_DETAILS_OF_THE_PROPERTY);
         rowIndex++;
         row = infoTab.createRow(++rowIndex);
         row.createCell(0).setCellValue(TemplateConfig.TEMPLATE_INFO_THE_THIRD_ROW);
         row = infoTab.createRow(++rowIndex);
         row.createCell(0).setCellValue(TemplateConfig.TEMPLATE_INFO_TEXT);
+        row = infoTab.createRow(++rowIndex);
+        row.createCell(0).setCellValue(TemplateConfig.TEMPLATE_INFO_MULTILINGUAL_TEXT);
         row = infoTab.createRow(++rowIndex);
         row.createCell(0).setCellValue(TemplateConfig.TEMPLATE_INFO_NUMBER);
         row = infoTab.createRow(++rowIndex);
@@ -218,10 +233,10 @@ public class TemplateGenerator {
             topRow.createCell(i).setCellStyle(readOnlyStyle);
         }
 
-        Cell cell = getCellWithMissingCellPolicy(topRow, 5);
+        Cell cell = getCellWithMissingCellPolicy(topRow, 4);
         cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_DIMENSIONS);
         cell.setCellStyle(tabCellStyle);
-        CellRangeAddress cra = new CellRangeAddress(0, 0, 5, 7);
+        CellRangeAddress cra = new CellRangeAddress(0, 0, 4, 6);
         productPropertiesTab.addMergedRegion(cra);
 
         // create the titles for categories
@@ -270,7 +285,14 @@ public class TemplateGenerator {
                 productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
             }
             Cell thirdRowCell = thirdRow.createCell(columnOffset);
-            thirdRowCell.setCellValue(normalizeDataTypeForTemplate(property));
+            String dataType = normalizeDataTypeForTemplate(property);
+            // for some cases, we need to use TEXT data type instead of MULTILINGUAL_TEXT
+            if(property.getPreferredName(defaultLanguage).contentEquals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION)){
+                thirdRowCell.setCellValue(TemplateConfig.TEMPLATE_DATA_TYPE_TEXT);
+            }
+            else{
+                thirdRowCell.setCellValue(dataType);
+            }
             // make thirdRow read only
             thirdRowCell.setCellStyle(readOnlyStyle);
 
@@ -376,7 +398,7 @@ public class TemplateGenerator {
         Cell cell = getCellWithMissingCellPolicy(topRow, 5);
         cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_DIMENSIONS);
         cell.setCellStyle(tabCellStyle);
-        CellRangeAddress cra = new CellRangeAddress(0, 0, 5, 7);
+        CellRangeAddress cra = new CellRangeAddress(0, 0, 4, 6);
         productPropertiesExampleTab.addMergedRegion(cra);
 
         // create the titles for categories
@@ -427,7 +449,14 @@ public class TemplateGenerator {
                 productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
             }
             Cell thirdRowCell = thirdRow.createCell(columnOffset);
-            thirdRowCell.setCellValue(normalizeDataTypeForTemplate(property));
+            String dataType = normalizeDataTypeForTemplate(property);
+            // for some cases, we need to use TEXT data type instead of MULTILINGUAL_TEXT
+            if(property.getPreferredName(defaultLanguage).contentEquals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION)){
+                thirdRowCell.setCellValue(TemplateConfig.TEMPLATE_DATA_TYPE_TEXT);
+            }
+            else{
+                thirdRowCell.setCellValue(dataType);
+            }
             // make thirdRow read only
             thirdRowCell.setCellStyle(readOnlyStyle);
 
@@ -447,11 +476,6 @@ public class TemplateGenerator {
                 productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue("Mallet that can be used mosaic tiling");
                 productPropertiesExampleTab.getRow(5).createCell(columnOffset).setCellValue("Strong mallet");
                 productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("Great for metal working");
-            }
-            else if(property.getPreferredName(defaultLanguage).equals(TEMPLATE_PRODUCT_PROPERTIES_CERTIFICATIONS)){
-                productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue("Mineral Oil MSDB");
-                productPropertiesExampleTab.getRow(5).createCell(columnOffset).setCellValue("ISO9001");
-                productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("SGS Test Report|Wood Spoon Food Safe Test Report");
             }
             else if(property.getPreferredName(defaultLanguage).equals(TEMPLATE_PRODUCT_PROPERTIES_WIDTH) || property.getPreferredName(defaultLanguage).equals(TEMPLATE_PRODUCT_PROPERTIES_LENGTH) || property.getPreferredName(defaultLanguage).equals(TEMPLATE_PRODUCT_PROPERTIES_HEIGHT)){
                 CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3,3,columnOffset,columnOffset);
@@ -613,7 +637,13 @@ public class TemplateGenerator {
                 termsTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
             }
             Cell thirdRowCell = thirdRow.createCell(columnIndex);
-            thirdRowCell.setCellValue(property.getDataType());
+            String dataType = normalizeDataTypeForTemplate(property);
+            // in this tab, all properties with STRING data type can be represented with TEXT data type instead of MULTILINGUAL_TEXT
+            if(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_MULTILINGUAL_TEXT)){
+                thirdRowCell.setCellValue(TemplateConfig.TEMPLATE_DATA_TYPE_TEXT);
+            } else{
+                thirdRowCell.setCellValue(property.getDataType());
+            }
             // make thirdRow read only
             thirdRowCell.setCellStyle(readOnlyStyle);
             fourthRow.createCell(columnIndex).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
@@ -771,7 +801,13 @@ public class TemplateGenerator {
                 termsExampleTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
             }
             Cell thirdRowCell = thirdRow.createCell(columnIndex);
-            thirdRowCell.setCellValue(property.getDataType());
+            String dataType = normalizeDataTypeForTemplate(property);
+            // in this tab, all properties with STRING data type can be represented with TEXT data type instead of MULTILINGUAL_TEXT
+            if(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_MULTILINGUAL_TEXT)){
+                thirdRowCell.setCellValue(TemplateConfig.TEMPLATE_DATA_TYPE_TEXT);
+            } else{
+                thirdRowCell.setCellValue(dataType);
+            }
             // make thirdRow read only
             thirdRowCell.setCellStyle(readOnlyStyle);
             fourthRow.createCell(columnIndex).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
@@ -1252,7 +1288,7 @@ public class TemplateGenerator {
     public static String normalizeDataTypeForTemplate(String dataType) {
         String normalizedType;
         if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_STRING) == 0) {
-            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_TEXT;
+            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_MULTILINGUAL_TEXT;
 
         } else {
             normalizedType = dataType;
@@ -1275,7 +1311,7 @@ public class TemplateGenerator {
         } else if (datatypeStr.compareToIgnoreCase(TEMPLATE_DATA_TYPE_BOOLEAN) == 0) {
             denormalizedDatatype = TEMPLATE_DATA_TYPE_BOOLEAN;
 
-        } else if(datatypeStr.compareToIgnoreCase(TEMPLATE_DATA_TYPE_TEXT) == 0){
+        } else if(datatypeStr.compareToIgnoreCase(TEMPLATE_DATA_TYPE_TEXT) == 0 || datatypeStr.compareToIgnoreCase(TEMPLATE_DATA_TYPE_MULTILINGUAL_TEXT) == 0){
             denormalizedDatatype = TEMPLATE_DATA_TYPE_STRING;
         } else {
             // for text or other unknown properties

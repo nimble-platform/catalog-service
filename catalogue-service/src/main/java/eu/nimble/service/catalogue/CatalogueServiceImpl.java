@@ -307,43 +307,42 @@ public class CatalogueServiceImpl implements CatalogueService {
     /**
      * Populates catalogue line list of the catalogue based on the given update mode.
      */
-    private void updateLinesForUploadMode(CatalogueType catalogue, String uploadMode, List<CatalogueLineType> newLines) {
-        List<CatalogueLineType> mergedList = new ArrayList<>();
+    private void updateLinesForUploadMode(CatalogueType catalogue, String uploadMode, List<CatalogueLineType> catalogueLines) {
+        List<CatalogueLineType> newCatalogueLines = new ArrayList<>();
         if (uploadMode.compareToIgnoreCase("replace") == 0) {
-            mergedList = newLines;
-
+            catalogue.getCatalogueLine().clear();
+            catalogue.getCatalogueLine().addAll(catalogueLines);
         } else {
 
-            // first process the existing list by also considering potential new versions
-            for (int i = 0; i < catalogue.getCatalogueLine().size(); i++) {
-                CatalogueLineType lineToMerge = catalogue.getCatalogueLine().get(i);
-                for (int j = 0; j < newLines.size(); j++) {
-                    if (newLines.get(j).getGoodsItem().getItem().getManufacturersItemIdentification().getID().equals(
-                            catalogue.getCatalogueLine().get(i).getGoodsItem().getItem().getManufacturersItemIdentification().getID())) {
-                        lineToMerge = newLines.get(j);
+            // add catalogue lines which do not match with the existing ones to the new catalogue line list
+            for(CatalogueLineType catalogueLine : catalogueLines){
+                boolean isNewLine = true;
+                for(CatalogueLineType existingCatalogueLine : catalogue.getCatalogueLine()){
+                    if(catalogueLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID().contentEquals(
+                            existingCatalogueLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID())){
+                        isNewLine = false;
                         break;
                     }
                 }
-                mergedList.add(lineToMerge);
 
-                // insert new items
-                for (CatalogueLineType newLine : newLines) {
-                    boolean alreadyMerged = false;
-                    for (CatalogueLineType mergedLine : mergedList) {
-                        if (newLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID().equals(
-                                mergedLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID())) {
-                            alreadyMerged = true;
-                            break;
-                        }
-                    }
-                    if (!alreadyMerged) {
-                        mergedList.add(newLine);
+                if(isNewLine){
+                    newCatalogueLines.add(catalogueLine);
+                }
+            }
+
+            // find catalogue lines which we need to update
+            for(CatalogueLineType catalogueLine : catalogueLines){
+                for(CatalogueLineType existingCatalogueLine : catalogue.getCatalogueLine()){
+                    if(catalogueLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID().contentEquals(
+                            existingCatalogueLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID())){
+                        // update existing catalogue line
+                        updateExistingCatalogueLine(existingCatalogueLine,catalogueLine);
                     }
                 }
             }
         }
-        catalogue.getCatalogueLine().clear();
-        catalogue.getCatalogueLine().addAll(mergedList);
+        // add new catalogue lines
+        catalogue.getCatalogueLine().addAll(newCatalogueLines);
     }
 
     @Override
@@ -456,6 +455,11 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
+    public List<CatalogueLineType> getCatalogueLines(List<Long> hjids) {
+        return CatalogueLinePersistenceUtil.getCatalogueLines(hjids);
+    }
+
+    @Override
     public <T> T getCatalogueLine(String catalogueId, String catalogueLineId) {
         T catalogueLine = (T) CatalogueLinePersistenceUtil.getCatalogueLine(catalogueId, catalogueLineId);
         return catalogueLine;
@@ -503,5 +507,25 @@ public class CatalogueServiceImpl implements CatalogueService {
             // delete indexed item
             itemIndexClient.deleteCatalogueLine(catalogueLine.getHjid());
         }
+    }
+
+    private void updateExistingCatalogueLine(CatalogueLineType existingCatalogueLine, CatalogueLineType newCatalogueLine){
+        existingCatalogueLine.getGoodsItem().getItem().setName(newCatalogueLine.getGoodsItem().getItem().getName());
+        existingCatalogueLine.getGoodsItem().getItem().setDescription(newCatalogueLine.getGoodsItem().getItem().getDescription());
+        existingCatalogueLine.getGoodsItem().getItem().setDimension(newCatalogueLine.getGoodsItem().getItem().getDimension());
+        existingCatalogueLine.getGoodsItem().getItem().setAdditionalItemProperty(newCatalogueLine.getGoodsItem().getItem().getAdditionalItemProperty());
+
+        existingCatalogueLine.getRequiredItemLocationQuantity().getPrice().setPriceAmount(newCatalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount());
+        existingCatalogueLine.getRequiredItemLocationQuantity().getPrice().setBaseQuantity(newCatalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity());
+        existingCatalogueLine.setMinimumOrderQuantity(newCatalogueLine.getMinimumOrderQuantity());
+        existingCatalogueLine.setFreeOfChargeIndicator(newCatalogueLine.isFreeOfChargeIndicator());
+        existingCatalogueLine.setWarrantyValidityPeriod(newCatalogueLine.getWarrantyValidityPeriod());
+        existingCatalogueLine.setWarrantyInformation(newCatalogueLine.getWarrantyInformation());
+        existingCatalogueLine.getGoodsItem().getDeliveryTerms().setIncoterms(newCatalogueLine.getGoodsItem().getDeliveryTerms().getIncoterms());
+        existingCatalogueLine.getGoodsItem().getDeliveryTerms().setSpecialTerms(newCatalogueLine.getGoodsItem().getDeliveryTerms().getSpecialTerms());
+        existingCatalogueLine.getGoodsItem().getDeliveryTerms().setEstimatedDeliveryPeriod(newCatalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod());
+        existingCatalogueLine.getRequiredItemLocationQuantity().setApplicableTerritoryAddress(newCatalogueLine.getRequiredItemLocationQuantity().getApplicableTerritoryAddress());
+        existingCatalogueLine.getGoodsItem().getDeliveryTerms().setTransportModeCode(newCatalogueLine.getGoodsItem().getDeliveryTerms().getTransportModeCode());
+        existingCatalogueLine.getGoodsItem().setContainingPackage(newCatalogueLine.getGoodsItem().getContainingPackage());
     }
 }

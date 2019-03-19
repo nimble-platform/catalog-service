@@ -19,6 +19,7 @@ import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HttpResponseUtil;
 import eu.nimble.utility.JAXBUtility;
 import eu.nimble.utility.JsonSerializationUtility;
+import eu.nimble.utility.exception.BinaryContentException;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import eu.nimble.utility.serialization.TransactionEnabledSerializationUtility;
 import io.swagger.annotations.ApiOperation;
@@ -600,7 +601,6 @@ public class CatalogueController {
             if (tokenCheck != null) {
                 return tokenCheck;
             }
-
             if (service.getCatalogue(uuid) == null) {
                 log.error("Catalogue with uuid : {} does not exist", uuid);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", uuid));
@@ -616,7 +616,11 @@ public class CatalogueController {
                 return createErrorResponseEntity("Failed obtain a Zip package from the provided data", HttpStatus.BAD_REQUEST, e);
             } catch (CatalogueServiceException e) {
                 return createErrorResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST, e);
-            } finally {
+            } catch (BinaryContentException e){
+                return createErrorResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST, null);
+            } catch (Exception e){
+                return createErrorResponseEntity(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, e);
+            }finally {
                 try {
                     zis.close();
                 } catch (IOException e) {
