@@ -1,8 +1,11 @@
 package eu.nimble.service.catalogue.persistence.util;
 
+import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -41,8 +44,29 @@ public class CatalogueLinePersistenceUtil {
         return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_BY_HJID, new String[]{"hjid"}, new Object[]{hjid});
     }
 
-    public static List<CatalogueLineType> getCatalogueLines(List<Long> hjids) {
-        return new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_BY_HJIDS, new String[]{"hjids"}, new Object[]{hjids});
+    public static List<CatalogueLineType> getCatalogueLines(List<Long> hjids,CatalogueLineSortOptions sortOption,int limit, int offset) {
+
+        List<CatalogueLineType> catalogueLines = new ArrayList<>();
+        String getCatalogueLinesQuery = QUERY_GET_BY_HJIDS;
+        if(sortOption != null){
+            switch (sortOption){
+                case PRICE_HIGH_TO_LOW:
+                    getCatalogueLinesQuery += " ORDER BY cl.requiredItemLocationQuantity.price.priceAmount.value DESC NULLS LAST";
+                    break;
+                case PRICE_LOW_TO_HIGH:
+                    getCatalogueLinesQuery += " ORDER BY cl.requiredItemLocationQuantity.price.priceAmount.value ASC NULLS LAST";
+                    break;
+            }
+        }
+
+        catalogueLines = new JPARepositoryFactory().forCatalogueRepository().getEntities(getCatalogueLinesQuery, new String[]{"hjids"}, new Object[]{hjids});
+
+        if(limit != 0){
+            int startIndex = limit*offset;
+            int endIndex = startIndex+limit;
+            catalogueLines = catalogueLines.subList(startIndex,endIndex);
+        }
+        return catalogueLines;
     }
 
     public static CatalogueLineType getCatalogueLine(String catalogueUuid, String lineId) {

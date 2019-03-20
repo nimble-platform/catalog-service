@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
+import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.catalogue.validation.CatalogueLineValidator;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
@@ -97,6 +98,9 @@ public class CatalogueLineController {
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity getCatalogueLinesByHjids(@ApiParam(value = "Identifiers of the catalogue lines to be retrieved. (line.hjid)", required = true) @RequestParam(value = "ids") List<Long> hjids,
+                                                   @ApiParam(value = "Number of catalogue lines to be included in CataloguePaginationResponse ") @RequestParam(value = "limit",required = true) Integer limit,
+                                                   @ApiParam(value = "Offset of the first catalogue line among all catalogue lines of the default catalogue for the party") @RequestParam(value = "offset",required = true) Integer offset,
+                                                   @ApiParam(value = "Option used to sort catalogue lines") @RequestParam(value = "sortOption",required = true) CatalogueLineSortOptions sortOption,
                                                  @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to get catalogue lines with hjids: {}", hjids);
         // check token
@@ -107,7 +111,7 @@ public class CatalogueLineController {
 
         List<CatalogueLineType> catalogueLines;
         try {
-            catalogueLines = service.getCatalogueLines(hjids);
+            catalogueLines = service.getCatalogueLines(hjids,sortOption,limit,offset);
         } catch (Exception e) {
             return createErrorResponseEntity("Failed to get catalogue lines", HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
