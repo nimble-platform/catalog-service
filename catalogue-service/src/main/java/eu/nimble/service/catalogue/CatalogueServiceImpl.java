@@ -17,6 +17,7 @@ import eu.nimble.service.catalogue.validation.ValidationException;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CommodityClassificationType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
@@ -310,7 +311,35 @@ public class CatalogueServiceImpl implements CatalogueService {
     private void updateLinesForUploadMode(CatalogueType catalogue, String uploadMode, List<CatalogueLineType> catalogueLines) {
         List<CatalogueLineType> newCatalogueLines = new ArrayList<>();
         if (uploadMode.compareToIgnoreCase("replace") == 0) {
-            catalogue.getCatalogueLine().clear();
+            // since each catalogue line has the same categories, it is OK to get categories using the first one
+            CommodityClassificationType defaultCategory = DataIntegratorUtil.getDefaultCategories(catalogueLines.get(0));
+            List<String> categoriesUris = DataIntegratorUtil.getCategoryUris(catalogueLines.get(0));
+            // catalogue lines which will be removed and will be replaced by the new ones
+            List<CatalogueLineType> catalogueLinesToBeRemoved = new ArrayList<>();
+            for(CatalogueLineType catalogueLine:catalogue.getCatalogueLine()){
+                // firstly,both catalogue line should have the same number of categories,otherwise that means that they do not have the same categories.
+                if(catalogueLine.getGoodsItem().getItem().getCommodityClassification().size() == categoriesUris.size() + 1){
+                    boolean remove = true;
+                    // check catalogue line's categories
+                    for (CommodityClassificationType classificationType:catalogueLine.getGoodsItem().getItem().getCommodityClassification()){
+                        if(classificationType.getItemClassificationCode().getListID().contentEquals("Default")){
+                            if(!defaultCategory.getItemClassificationCode().getValue().contentEquals(classificationType.getItemClassificationCode().getValue())){
+                                remove = false;
+                                break;
+                            }
+                        } else if(!categoriesUris.contains(classificationType.getItemClassificationCode().getURI())){
+                            remove = false;
+                            break;
+                        }
+                    }
+
+                    if(remove){
+                        catalogueLinesToBeRemoved.add(catalogueLine);
+                    }
+                }
+            }
+
+            catalogue.getCatalogueLine().removeAll(catalogueLinesToBeRemoved);
             catalogue.getCatalogueLine().addAll(catalogueLines);
         } else {
 

@@ -128,4 +128,21 @@ public class DataIntegratorUtil {
 
         return commodityClassificationType;
     }
+
+    // this method returns uris of categories ( and their parents) which are included in the given catalogue line
+    public static List<String> getCategoryUris(CatalogueLineType catalogueLine){
+        List<String> uris = new ArrayList<>();
+        // get uri of categories
+        for(CommodityClassificationType classificationType: catalogueLine.getGoodsItem().getItem().getCommodityClassification()){
+            if(!classificationType.getItemClassificationCode().getListID().contentEquals("Default")){
+                uris.add(classificationType.getItemClassificationCode().getURI());
+            }
+        }
+        List<CommodityClassificationType> parentCategories = getParentCategories(catalogueLine.getGoodsItem().getItem().getCommodityClassification());
+        // get uri of parent categories
+        for(CommodityClassificationType classificationType:parentCategories){
+            uris.add(classificationType.getItemClassificationCode().getURI());
+        }
+        return uris;
+    }
 }
