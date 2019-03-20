@@ -66,31 +66,8 @@ public class DataIntegratorUtil {
     }
 
     private static void setDefaultCategories(CatalogueLineType catalogueLine){
-        // check whether we need to add a default category or not
-        for (CommodityClassificationType classificationType : catalogueLine.getGoodsItem().getItem().getCommodityClassification()){
-            if(classificationType.getItemClassificationCode().getListID().equals("Default")){
-                return;
-            }
-        }
-
-        // Transport Service
-        if(catalogueLine.getGoodsItem().getItem().getTransportationServiceDetails() != null){
-            CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
-            CodeType codeType = new CodeType();
-            codeType.setListID("Default");
-            codeType.setName("Transport Service");
-            codeType.setValue("Transport Service");
-            commodityClassificationType.setItemClassificationCode(codeType);
-            catalogueLine.getGoodsItem().getItem().getCommodityClassification().add(commodityClassificationType);
-        }
-        // Product
-        else{
-            CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
-            CodeType codeType = new CodeType();
-            codeType.setListID("Default");
-            codeType.setName("Product");
-            codeType.setValue("Product");
-            commodityClassificationType.setItemClassificationCode(codeType);
+        CommodityClassificationType commodityClassificationType = getDefaultCategories(catalogueLine);
+        if(commodityClassificationType != null){
             catalogueLine.getGoodsItem().getItem().getCommodityClassification().add(commodityClassificationType);
         }
     }
@@ -121,5 +98,34 @@ public class DataIntegratorUtil {
             }
         }
         return commodityClassificationTypeList;
+    }
+
+    public static CommodityClassificationType getDefaultCategories(CatalogueLineType catalogueLine){
+        // check whether we need to add a default category or not
+        for (CommodityClassificationType classificationType : catalogueLine.getGoodsItem().getItem().getCommodityClassification()){
+            if(classificationType.getItemClassificationCode().getListID().equals("Default")){
+                return null;
+            }
+        }
+
+        CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
+        // Transport Service
+        if(catalogueLine.getGoodsItem().getItem().getTransportationServiceDetails() != null){
+            CodeType codeType = new CodeType();
+            codeType.setListID("Default");
+            codeType.setName("Transport Service");
+            codeType.setValue("Transport Service");
+            commodityClassificationType.setItemClassificationCode(codeType);
+        }
+        // Product
+        else{
+            CodeType codeType = new CodeType();
+            codeType.setListID("Default");
+            codeType.setName("Product");
+            codeType.setValue("Product");
+            commodityClassificationType.setItemClassificationCode(codeType);
+        }
+
+        return commodityClassificationType;
     }
 }
