@@ -486,7 +486,8 @@ public class CatalogueController {
             "standard, which is UBL. If there is a published catalogue already, the type of update is realized according to " +
             "the update mode. There are two update modes: append and replace. In the former mode, if some of the products were " +
             "already published, they are replaced with the new ones; furthermore, the brand new ones are appended to the " +
-            "existing product list. In the latter mode, all previously published products are deleted, the new list of products is set as it is.")
+            "existing product list. In the latter mode, all previously published products having the same categories specified in the template are deleted," +
+            "the new list of products is set as it is.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Persisted uploaded template successfully and returned the corresponding catalogue", response = CatalogueType.class),
             @ApiResponse(code = 400, message = "Invalid template content"),
