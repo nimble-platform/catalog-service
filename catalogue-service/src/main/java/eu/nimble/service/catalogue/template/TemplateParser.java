@@ -569,20 +569,15 @@ public class TemplateParser {
                     List<AddressType> applicableAddressList = new ArrayList<>();
                     cell = getCellWithMissingCellPolicy(row, columnIndex);
                     List<String> countries = parseMultiValues(cell);
-                    cell = getCellWithMissingCellPolicy(row, columnIndex + 1);
-                    List<String> cities = parseMultiValues(cell);
                     for(String addr : countries) {
-                        for(String city : cities) {
-                            AddressType address = new AddressType();
-                            applicableAddressList.add(address);
-                            CountryType country = new CountryType();
-                            TextType cName = new TextType();
-                            cName.setLanguageID(defaultLanguage);
-                            cName.setValue(addr);
-                            country.setName(cName);
-                            address.setCountry(country);
-                            address.setCityName(city);
-                        }
+                        AddressType address = new AddressType();
+                        applicableAddressList.add(address);
+                        CountryType country = new CountryType();
+                        TextType cName = new TextType();
+                        cName.setLanguageID(defaultLanguage);
+                        cName.setValue(addr);
+                        country.setName(cName);
+                        address.setCountry(country);
                     }
                     catalogueLine.getRequiredItemLocationQuantity().setApplicableTerritoryAddress(applicableAddressList);
 
