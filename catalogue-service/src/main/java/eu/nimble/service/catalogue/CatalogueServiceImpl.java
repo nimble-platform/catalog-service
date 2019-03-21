@@ -38,10 +38,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -271,6 +268,49 @@ public class CatalogueServiceImpl implements CatalogueService {
         TemplateGenerator templateGenerator = new TemplateGenerator();
         Workbook template = templateGenerator.generateTemplateForCategory(categories,templateLanguage);
         return template;
+    }
+
+    @Override
+    public List<Workbook> generateTemplateForCatalogue(CatalogueType catalogue,String languageId) {
+        Map<HashSet<String>,List<CatalogueLineType>> categoryCatalogueLineMap = new HashMap<>();
+        // create category-catalogue lines map
+        for(CatalogueLineType catalogueLine:catalogue.getCatalogueLine()){
+            List<String> uris = new ArrayList<>();
+            for(CommodityClassificationType commodityClassification:catalogueLine.getGoodsItem().getItem().getCommodityClassification()){
+                if(commodityClassification.getItemClassificationCode().getURI() != null){
+                    uris.add(commodityClassification.getItemClassificationCode().getURI());
+                }
+            }
+
+            HashSet<String> categories = new HashSet<>(uris);
+            if(categoryCatalogueLineMap.containsKey(categories)){
+                List<CatalogueLineType> catalogueLineTypes = new ArrayList<>();
+                catalogueLineTypes.add(catalogueLine);
+                catalogueLineTypes.addAll(categoryCatalogueLineMap.get(categories));
+                categoryCatalogueLineMap.put(categories,catalogueLineTypes);
+            } else{
+                categoryCatalogueLineMap.put(categories,Arrays.asList(catalogueLine));
+            }
+        }
+
+        List<Workbook> workbooks = new ArrayList<>();
+
+        for (Map.Entry<HashSet<String>, List<CatalogueLineType>> entry : categoryCatalogueLineMap.entrySet()) {
+            // get categories which are not Default or Custom categories
+            List<Category> categories = new ArrayList<>();
+            CatalogueLineType catalogueLine = entry.getValue().get(0);
+            for(CommodityClassificationType commodityClassification:catalogueLine.getGoodsItem().getItem().getCommodityClassification()){
+                if(!commodityClassification.getItemClassificationCode().getListID().contentEquals("Default") &&
+                        !commodityClassification.getItemClassificationCode().getListID().contentEquals("Custom")){
+                    categories.add(indexCategoryService.getCategory(commodityClassification.getItemClassificationCode().getListID(),commodityClassification.getItemClassificationCode().getValue()));
+                }
+            }
+            // generate a template for the catalogue lines
+            TemplateGenerator templateGenerator = new TemplateGenerator();
+            Workbook template = templateGenerator.generateTemplateForCatalogueLines(entry.getValue(),categories,languageId);
+            workbooks.add(template);
+        }
+        return workbooks;
     }
 
     @Override

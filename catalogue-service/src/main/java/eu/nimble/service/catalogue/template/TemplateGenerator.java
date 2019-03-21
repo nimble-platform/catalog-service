@@ -4,11 +4,16 @@ import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.model.category.Value;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.AddressType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.DimensionType;
+import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.*;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +65,238 @@ public class TemplateGenerator {
         populateMetadataTab(categories, metadataTab);
 
         return template;
+    }
+
+    public Workbook generateTemplateForCatalogueLines(List<CatalogueLineType> catalogueLines, List<Category> categories, String languageId){
+        Workbook template = generateTemplateForCategory(categories,languageId);
+        fillProductPropertiesTab(template.getSheet(TemplateConfig.TEMPLATE_TAB_PRODUCT_PROPERTIES),catalogueLines);
+        fillTradingDeliveryTermsTab(template.getSheet(TemplateConfig.TEMPLATE_TAB_TRADING_DELIVERY_TERMS),catalogueLines);
+        return template;
+    }
+
+    private void fillProductPropertiesTab(Sheet productPropertiesTab,List<CatalogueLineType> catalogueLines){
+        // 5th row is the first editable row
+        int rowIndex = 4;
+        Row row = productPropertiesTab.getRow(rowIndex);
+
+        for(CatalogueLineType catalogueLine : catalogueLines){
+            // fill fixed properties
+
+            // manufacturer item identification
+            Cell cell = row.createCell(1);
+            cell.setCellValue(catalogueLine.getID());
+            if(rowIndex == 4){
+                cell.setCellStyle(mandatoryCellStyle);
+            }
+
+            // name
+            cell = row.createCell(2);
+            cell.setCellValue(this.getMultiValueText(catalogueLine.getGoodsItem().getItem().getName()));
+            if(rowIndex == 4){
+                cell.setCellStyle(mandatoryCellStyle);
+            }
+
+            // description
+            cell = row.createCell(3);
+            cell.setCellValue(this.getMultiValueText(catalogueLine.getGoodsItem().getItem().getDescription()));
+            if(rowIndex == 4){
+                cell.setCellStyle(editableStyle);
+            }
+
+            // dimensions
+            for(DimensionType dimensionType : catalogueLine.getGoodsItem().getItem().getDimension()){
+                int columnIndex = 6;
+                if(dimensionType.getAttributeID().contentEquals(TEMPLATE_PRODUCT_PROPERTIES_WIDTH)){
+                    columnIndex = 4;
+                }
+                else if(dimensionType.getAttributeID().contentEquals(TEMPLATE_PRODUCT_PROPERTIES_LENGTH)){
+                    columnIndex = 5;
+                }
+//                else if(dimensionType.getAttributeID().contentEquals(TEMPLATE_PRODUCT_PROPERTIES_HEIGHT)){
+//                    columnIndex = 6;
+//                }
+                cell = row.createCell(columnIndex);
+                // get unit cell
+                Row unitRow = productPropertiesTab.getRow(3);
+                Cell unitCell = unitRow.getCell(columnIndex);
+                // set value and unit
+                unitCell.setCellValue(dimensionType.getMeasure().getUnitCode());
+                unitCell.setCellStyle(editableStyle);
+                if(dimensionType.getMeasure().getValue() != null){
+                    cell.setCellValue(dimensionType.getMeasure().getValue().toString());
+                }
+                if(rowIndex == 4){
+                    cell.setCellStyle(editableStyle);
+                }
+            }
+            // TODO: handle category properties
+            row = productPropertiesTab.createRow(++rowIndex);
+        }
+    }
+
+    private void fillTradingDeliveryTermsTab(Sheet termsTab,List<CatalogueLineType> catalogueLines){
+        // 5th row is the first editable row
+        int rowIndex = 4;
+        Row row = termsTab.getRow(rowIndex);
+
+        for(CatalogueLineType catalogueLine : catalogueLines){
+            int columnIndex = 1;
+            // fill fixed properties
+
+            // manufacturer item identification
+            Cell cell = row.createCell(columnIndex++);
+            cell.setCellValue(catalogueLine.getID());
+            if(rowIndex == 4){
+                cell.setCellStyle(mandatoryCellStyle);
+            }
+
+            // price amount
+            cell = row.createCell(columnIndex);
+            // get unit cell
+            Row unitRow = termsTab.getRow(3);
+            Cell unitCell = unitRow.getCell(columnIndex++);
+            // set value and unit
+            unitCell.setCellValue(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getCurrencyID());
+            unitCell.setCellStyle(editableStyle);
+            if(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue() != null){
+                cell.setCellValue(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue().toString());
+            }
+            if(rowIndex == 4){
+                cell.setCellStyle(editableStyle);
+            }
+
+            // price base quantity
+            cell = row.createCell(columnIndex);
+            // get unit cell
+            unitRow = termsTab.getRow(3);
+            unitCell = unitRow.getCell(columnIndex++);
+            // set value and unit
+            unitCell.setCellValue(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getUnitCode());
+            unitCell.setCellStyle(editableStyle);
+            if(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getValue() != null){
+                cell.setCellValue(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getValue().toString());
+            }
+            if(rowIndex == 4){
+                cell.setCellStyle(editableStyle);
+            }
+
+            // minimum order quantity
+            cell = row.createCell(columnIndex);
+            // get unit cell
+            unitRow = termsTab.getRow(3);
+            unitCell = unitRow.getCell(columnIndex++);
+            // set value and unit
+            unitCell.setCellValue(catalogueLine.getMinimumOrderQuantity().getUnitCode());
+            unitCell.setCellStyle(editableStyle);
+            if(catalogueLine.getMinimumOrderQuantity().getValue() != null){
+                cell.setCellValue(catalogueLine.getMinimumOrderQuantity().getValue().toString());
+            }
+
+            if(rowIndex == 4){
+                cell.setCellStyle(editableStyle);
+            }
+
+            // free sample
+            cell = row.createCell(columnIndex++);
+            String freeSample = catalogueLine.isFreeOfChargeIndicator() == null ? "": catalogueLine.isFreeOfChargeIndicator() ? "TRUE":"FALSE";
+            cell.setCellValue(freeSample);
+            if(rowIndex == 4){
+                cell.setCellStyle(editableStyle);
+            }
+
+            // warranty validity period
+            cell = row.createCell(columnIndex);
+            // get unit cell
+            unitRow = termsTab.getRow(3);
+            unitCell = unitRow.getCell(columnIndex++);
+            // set value and unit
+            unitCell.setCellValue(catalogueLine.getWarrantyValidityPeriod().getDurationMeasure().getUnitCode());
+            unitCell.setCellStyle(editableStyle);
+            if(catalogueLine.getWarrantyValidityPeriod().getDurationMeasure().getValue() != null){
+                cell.setCellValue(catalogueLine.getWarrantyValidityPeriod().getDurationMeasure().getValue().toString());
+            }
+            if(rowIndex == 4){
+                cell.setCellStyle(editableStyle);
+            }
+
+            // warranty information
+            cell = row.createCell(columnIndex++);
+            cell.setCellValue(getMultiValueString(catalogueLine.getWarrantyInformation()));
+            if(rowIndex == 4){
+                cell.setCellStyle(editableStyle);
+            }
+
+            // incoterms
+            cell = row.createCell(columnIndex++);
+            cell.setCellValue(catalogueLine.getGoodsItem().getDeliveryTerms().getIncoterms());
+            if(rowIndex == 4){
+                cell.setCellStyle(editableStyle);
+            }
+
+            // special terms
+            // although special terms are multilingual, we assume that they are not.
+            List<String> values = new ArrayList<>();
+            for(TextType textType:catalogueLine.getGoodsItem().getDeliveryTerms().getSpecialTerms()){
+                values.add(textType.getValue());
+            }
+            cell = row.createCell(columnIndex++);
+            cell.setCellValue(getMultiValueString(values));
+            if(rowIndex == 4){
+                cell.setCellStyle(editableStyle);
+            }
+            // estimated delivery period
+            cell = row.createCell(columnIndex);
+            // get unit cell
+            unitRow = termsTab.getRow(3);
+            unitCell = unitRow.getCell(columnIndex++);
+            // set value and unit
+            unitCell.setCellValue(catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure().getUnitCode());
+            unitCell.setCellStyle(editableStyle);
+            if(catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure().getValue() != null){
+                cell.setCellValue(catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure().getValue().toString());
+            }
+            if(rowIndex == 4){
+                cell.setCellStyle(editableStyle);
+            }
+            // applicable address country
+            List<String> countries = new ArrayList<>();
+            for(AddressType address:catalogueLine.getRequiredItemLocationQuantity().getApplicableTerritoryAddress()){
+                countries.add(address.getCountry().getName().getValue());
+            }
+            cell = row.createCell(columnIndex++);
+            cell.setCellValue(getMultiValueString(countries));
+            if(rowIndex == 4){
+                cell.setCellStyle(editableStyle);
+            }
+            // transport mode
+            cell = row.createCell(columnIndex++);
+            cell.setCellValue(catalogueLine.getGoodsItem().getDeliveryTerms().getTransportModeCode().getValue());
+            if(rowIndex == 4){
+                cell.setCellStyle(editableStyle);
+            }
+            // packaging type
+            cell = row.createCell(columnIndex++);
+            cell.setCellValue(catalogueLine.getGoodsItem().getContainingPackage().getPackagingTypeCode().getValue());
+            if(rowIndex == 4){
+                cell.setCellStyle(editableStyle);
+            }
+            // package quantity
+            cell = row.createCell(columnIndex);
+            // get unit cell
+            unitRow = termsTab.getRow(3);
+            unitCell = unitRow.getCell(columnIndex++);
+            // set value and unit
+            unitCell.setCellValue(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getUnitCode());
+            unitCell.setCellStyle(editableStyle);
+            if(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getValue() != null){
+                cell.setCellValue(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getValue().toString());
+            }
+            if(rowIndex == 4){
+                cell.setCellStyle(editableStyle);
+            }
+
+            row = termsTab.createRow(++rowIndex);
+        }
     }
 
     private void populateInfoTab(Sheet infoTab) {
@@ -1318,5 +1555,35 @@ public class TemplateGenerator {
             throw new TemplateParseException("The data type of the property can not be '" + datatypeStr+"'" );
         }
         return denormalizedDatatype;
+    }
+
+    private String getMultiValueString(List<String> values){
+        StringBuilder stringBuilder = new StringBuilder();
+        // number of warranty information
+        int size = values.size();
+        // get certificate names
+        for(int i = 0;i < size;i++){
+            stringBuilder.append(values.get(i));
+            if(i != size-1){
+                stringBuilder.append("|");
+            }
+        }
+        return stringBuilder.toString();
+    }
+
+    private String getMultiValueText(List<TextType> textTypes){
+        StringBuilder stringBuilder = new StringBuilder();
+        int size = textTypes.size();
+        for(int i = 0;i < size;i++){
+            if(!textTypes.get(i).getValue().contentEquals("")){
+                stringBuilder.append(textTypes.get(i).getValue());
+                stringBuilder.append("@");
+                stringBuilder.append(textTypes.get(i).getLanguageID());
+                if(i != size-1){
+                    stringBuilder.append("|");
+                }
+            }
+        }
+        return stringBuilder.toString();
     }
 }

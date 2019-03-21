@@ -54,6 +54,11 @@ public interface CatalogueService {
     /**
      * @return
      */
+    public List<Workbook> generateTemplateForCatalogue(CatalogueType catalogue,String languageId);
+
+    /**
+     * @return
+     */
     public Workbook generateTemplateForCategory(List<String> categoryId, List<String> taxonomyIds,String templateLanguage);
 
     /**
