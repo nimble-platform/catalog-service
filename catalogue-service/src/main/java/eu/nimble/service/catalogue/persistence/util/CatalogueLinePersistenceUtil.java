@@ -44,7 +44,7 @@ public class CatalogueLinePersistenceUtil {
         return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_BY_HJID, new String[]{"hjid"}, new Object[]{hjid});
     }
 
-    public static List<CatalogueLineType> getCatalogueLines(List<Long> hjids,CatalogueLineSortOptions sortOption,int limit, int offset) {
+    public static List<CatalogueLineType> getCatalogueLines(List<Long> hjids,CatalogueLineSortOptions sortOption,int limit, int pageNo) {
 
         List<CatalogueLineType> catalogueLines = new ArrayList<>();
         String getCatalogueLinesQuery = QUERY_GET_BY_HJIDS;
@@ -62,8 +62,10 @@ public class CatalogueLinePersistenceUtil {
         catalogueLines = new JPARepositoryFactory().forCatalogueRepository().getEntities(getCatalogueLinesQuery, new String[]{"hjids"}, new Object[]{hjids});
 
         if(limit != 0){
-            int startIndex = limit*offset;
+            int startIndex = limit*pageNo;
             int endIndex = startIndex+limit;
+            if(endIndex > catalogueLines.size())
+                endIndex = catalogueLines.size();
             catalogueLines = catalogueLines.subList(startIndex,endIndex);
         }
         return catalogueLines;
