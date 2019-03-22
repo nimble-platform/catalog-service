@@ -589,8 +589,8 @@ public class CatalogueServiceImpl implements CatalogueService {
         existingCatalogueLine.setMinimumOrderQuantity(newCatalogueLine.getMinimumOrderQuantity());
         existingCatalogueLine.setFreeOfChargeIndicator(newCatalogueLine.isFreeOfChargeIndicator());
         existingCatalogueLine.setWarrantyValidityPeriod(newCatalogueLine.getWarrantyValidityPeriod());
+        existingCatalogueLine.getWarrantyInformationItems().clear();
         existingCatalogueLine.setWarrantyInformation(newCatalogueLine.getWarrantyInformation());
-        existingCatalogueLine.setWarrantyInformationItems(newCatalogueLine.getWarrantyInformationItems());
         existingCatalogueLine.getGoodsItem().getDeliveryTerms().setIncoterms(newCatalogueLine.getGoodsItem().getDeliveryTerms().getIncoterms());
         existingCatalogueLine.getGoodsItem().getDeliveryTerms().setSpecialTerms(newCatalogueLine.getGoodsItem().getDeliveryTerms().getSpecialTerms());
         existingCatalogueLine.getGoodsItem().getDeliveryTerms().setEstimatedDeliveryPeriod(newCatalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod());
