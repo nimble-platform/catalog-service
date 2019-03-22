@@ -108,6 +108,41 @@ public class DataIntegratorUtil {
         return commodityClassificationTypeList;
     }
 
+    public static List<CommodityClassificationType> getLeafCategories(List<CommodityClassificationType> commodityClassifications){
+        // get uris of the given categories
+        List<String> categoryUris = new ArrayList<>();
+        for(CommodityClassificationType commodityClassificationType:commodityClassifications){
+            if(commodityClassificationType.getItemClassificationCode().getURI() != null){
+                categoryUris.add(commodityClassificationType.getItemClassificationCode().getURI());
+            }
+        }
+
+        for(CommodityClassificationType commodityClassificationType:commodityClassifications){
+            if (commodityClassificationType.getItemClassificationCode().getURI() != null) {
+                // find parent categories uris
+                List<Category> parentCategories = SpringBridge.getInstance().getIndexCategoryService().getParentCategories(commodityClassificationType.getItemClassificationCode().getListID(),commodityClassificationType.getItemClassificationCode().getValue());
+                List<String> parentCategoriesUris = new ArrayList<>();
+                for(Category category:parentCategories){
+                    if(!category.getCategoryUri().contentEquals(commodityClassificationType.getItemClassificationCode().getURI())){
+                        parentCategoriesUris.add(category.getCategoryUri());
+                    }
+                }
+                // remove parent categories
+                categoryUris.removeAll(parentCategoriesUris);
+            }
+        }
+        // get commodity classifications of leaf categories
+        List<CommodityClassificationType> classificationTypes = new ArrayList<>();
+        for (CommodityClassificationType commodityClassificationType:commodityClassifications){
+            if(!commodityClassificationType.getItemClassificationCode().getListID().contentEquals("Default")
+                    && !commodityClassificationType.getItemClassificationCode().getListID().contentEquals("Custom")
+                    && commodityClassificationType.getItemClassificationCode().getURI() != null && categoryUris.contains(commodityClassificationType.getItemClassificationCode().getURI())){
+                classificationTypes.add(commodityClassificationType);
+            }
+        }
+        return classificationTypes;
+    }
+
     public static CommodityClassificationType getDefaultCategories(CatalogueLineType catalogueLine){
         // check whether we need to add a default category or not
         for (CommodityClassificationType classificationType : catalogueLine.getGoodsItem().getItem().getCommodityClassification()){

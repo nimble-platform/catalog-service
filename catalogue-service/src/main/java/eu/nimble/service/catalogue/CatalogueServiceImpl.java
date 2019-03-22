@@ -34,6 +34,7 @@ import org.springframework.stereotype.Component;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.activation.MimetypesFileTypeMap;
+import javax.xml.crypto.Data;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -298,12 +299,9 @@ public class CatalogueServiceImpl implements CatalogueService {
         for (Map.Entry<HashSet<String>, List<CatalogueLineType>> entry : categoryCatalogueLineMap.entrySet()) {
             // get categories which are not Default or Custom categories
             List<Category> categories = new ArrayList<>();
-            CatalogueLineType catalogueLine = entry.getValue().get(0);
-            for(CommodityClassificationType commodityClassification:catalogueLine.getGoodsItem().getItem().getCommodityClassification()){
-                if(!commodityClassification.getItemClassificationCode().getListID().contentEquals("Default") &&
-                        !commodityClassification.getItemClassificationCode().getListID().contentEquals("Custom")){
-                    categories.add(indexCategoryService.getCategory(commodityClassification.getItemClassificationCode().getListID(),commodityClassification.getItemClassificationCode().getValue()));
-                }
+            List<CommodityClassificationType> leafCommodityClassifications = DataIntegratorUtil.getLeafCategories(entry.getValue().get(0).getGoodsItem().getItem().getCommodityClassification());
+            for(CommodityClassificationType commodityClassification:leafCommodityClassifications){
+                categories.add(indexCategoryService.getCategory(commodityClassification.getItemClassificationCode().getListID(),commodityClassification.getItemClassificationCode().getValue()));
             }
             // generate a template for the catalogue lines
             TemplateGenerator templateGenerator = new TemplateGenerator();
