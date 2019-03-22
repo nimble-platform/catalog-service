@@ -81,9 +81,16 @@ public class TemplateGenerator {
     private void fillProductPropertiesTab(Sheet productPropertiesTab,List<CatalogueLineType> catalogueLines){
         // 5th row is the first editable row
         int rowIndex = 4;
-        Row row = productPropertiesTab.getRow(rowIndex);
 
         for(CatalogueLineType catalogueLine : catalogueLines){
+            Row row;
+            // we have already created a row for rowIndex = 4, use it
+            if(rowIndex == 4){
+                row = productPropertiesTab.getRow(rowIndex);
+            }
+            else{
+                row = productPropertiesTab.createRow(rowIndex);
+            }
             // fill fixed properties
 
             // manufacturer item identification
@@ -134,16 +141,24 @@ public class TemplateGenerator {
                 }
             }
             // TODO: handle category properties
-            row = productPropertiesTab.createRow(++rowIndex);
+            rowIndex++;
         }
     }
 
     private void fillTradingDeliveryTermsTab(Sheet termsTab,List<CatalogueLineType> catalogueLines){
         // 5th row is the first editable row
         int rowIndex = 4;
-        Row row = termsTab.getRow(rowIndex);
 
         for(CatalogueLineType catalogueLine : catalogueLines){
+            Row row;
+            // we have already created a row for rowIndex = 4, use it
+            if(rowIndex == 4){
+                row = termsTab.getRow(rowIndex);
+            }
+            else{
+                row = termsTab.createRow(rowIndex);
+            }
+
             int columnIndex = 1;
             // fill fixed properties
 
@@ -299,7 +314,7 @@ public class TemplateGenerator {
                 cell.setCellStyle(editableStyle);
             }
 
-            row = termsTab.createRow(++rowIndex);
+            rowIndex++;
         }
     }
 
