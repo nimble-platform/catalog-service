@@ -205,12 +205,13 @@ public class TemplateGenerator {
             unitRow = termsTab.getRow(3);
             unitCell = unitRow.getCell(columnIndex++);
             // set value and unit
-            unitCell.setCellValue(catalogueLine.getMinimumOrderQuantity().getUnitCode());
-            unitCell.setCellStyle(editableStyle);
-            if(catalogueLine.getMinimumOrderQuantity().getValue() != null){
-                cell.setCellValue(catalogueLine.getMinimumOrderQuantity().getValue().toString());
+            if(catalogueLine.getMinimumOrderQuantity() != null){
+                unitCell.setCellValue(catalogueLine.getMinimumOrderQuantity().getUnitCode());
+                unitCell.setCellStyle(editableStyle);
+                if(catalogueLine.getMinimumOrderQuantity().getValue() != null){
+                    cell.setCellValue(catalogueLine.getMinimumOrderQuantity().getValue().toString());
+                }
             }
-
             if(rowIndex == 4){
                 cell.setCellStyle(editableStyle);
             }
@@ -289,7 +290,9 @@ public class TemplateGenerator {
             }
             // transport mode
             cell = row.createCell(columnIndex++);
-            cell.setCellValue(catalogueLine.getGoodsItem().getDeliveryTerms().getTransportModeCode().getValue());
+            if(catalogueLine.getGoodsItem().getDeliveryTerms().getTransportModeCode() != null){
+                cell.setCellValue(catalogueLine.getGoodsItem().getDeliveryTerms().getTransportModeCode().getValue());
+            }
             if(rowIndex == 4){
                 cell.setCellStyle(editableStyle);
             }
