@@ -197,6 +197,7 @@ public class TemplateParser {
             associatedClassificationCode.setValue(category.getId());
             associatedClassificationCode.setName(category.getPreferredName(defaultLanguage));
             associatedClassificationCode.setListID(category.getTaxonomyId());
+            associatedClassificationCode.setURI(category.getCategoryUri());
         } else {
             itemProp.setID(UUID.randomUUID().toString());
             associatedClassificationCode.setListID("Custom");
