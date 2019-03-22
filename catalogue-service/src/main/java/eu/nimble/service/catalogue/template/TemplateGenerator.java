@@ -7,12 +7,15 @@ import eu.nimble.service.catalogue.exception.TemplateParseException;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.AddressType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DimensionType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemPropertyType;
+import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -71,6 +74,7 @@ public class TemplateGenerator {
         Workbook template = generateTemplateForCategory(categories,languageId);
         fillProductPropertiesTab(template.getSheet(TemplateConfig.TEMPLATE_TAB_PRODUCT_PROPERTIES),catalogueLines);
         fillTradingDeliveryTermsTab(template.getSheet(TemplateConfig.TEMPLATE_TAB_TRADING_DELIVERY_TERMS),catalogueLines);
+        fillCustomProperties(template.getSheet(TemplateConfig.TEMPLATE_TAB_PRODUCT_PROPERTIES),catalogueLines,categories);
         return template;
     }
 
@@ -296,6 +300,58 @@ public class TemplateGenerator {
             }
 
             row = termsTab.createRow(++rowIndex);
+        }
+    }
+
+    private void fillCustomProperties(Sheet productPropertiesTab,List<CatalogueLineType> catalogueLines,List<Category> categories){
+        // find the offset for the custom properties
+        int totalCategoryPropertyNumber = 0;
+        for (Category category : categories) {
+            if(category.getProperties() != null){
+                totalCategoryPropertyNumber += category.getProperties().size();
+            }
+        }
+        int customPropertyColumnIndex = 1 + TemplateConfig.getFixedPropertiesForProductPropertyTab().size() + totalCategoryPropertyNumber;
+
+        int rowIndex = 4;
+        Row row = productPropertiesTab.getRow(rowIndex);
+        for(CatalogueLineType catalogueLine:catalogueLines){
+            int propertyColumnIndex = customPropertyColumnIndex;
+            for(ItemPropertyType itemProperty:catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty()){
+                // consider only custom properties
+                if(itemProperty.getItemClassificationCode().getListID().contentEquals("Custom")){
+                    // set the name of property
+                    Cell cell = productPropertiesTab.getRow(1).createCell(propertyColumnIndex);
+                    cell.setCellValue(getMultiValueText(itemProperty.getName()));
+                    // set data type of property
+                    String dataType = normalizeDataTypeForTemplate(itemProperty.getValueQualifier());
+                    cell = productPropertiesTab.getRow(2).createCell(propertyColumnIndex);
+                    cell.setCellValue(dataType);
+                    // set the value of property
+                    if(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)){
+                        if(itemProperty.getValueQuantity().size() > 0){
+                            // we need to set unit as well
+                            Cell unitCell = productPropertiesTab.getRow(3).createCell(propertyColumnIndex);
+                            unitCell.setCellValue(itemProperty.getValueQuantity().get(0).getUnitCode());
+                            // set the value
+                            cell = productPropertiesTab.getRow(rowIndex).createCell(propertyColumnIndex);
+                            cell.setCellValue(getMultiValueQuantity(itemProperty.getValueQuantity()));
+                        }
+                    } else if(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_MULTILINGUAL_TEXT)){
+                        cell = productPropertiesTab.getRow(rowIndex).createCell(propertyColumnIndex);
+                        cell.setCellValue(getMultiValueText(itemProperty.getValue()));
+                    } else if(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN)){
+                        cell = productPropertiesTab.getRow(rowIndex).createCell(propertyColumnIndex);
+                        cell.setCellValue(getMultiValueText(itemProperty.getValue(),false));
+                    } else if(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_NUMBER)){
+                        cell = productPropertiesTab.getRow(rowIndex).createCell(propertyColumnIndex);
+                        cell.setCellValue(getMultiValueDecimal(itemProperty.getValueDecimal()));
+                    }
+                }
+
+                propertyColumnIndex++;
+            }
+            rowIndex++;
         }
     }
 
@@ -1607,9 +1663,7 @@ public class TemplateGenerator {
 
     private String getMultiValueString(List<String> values){
         StringBuilder stringBuilder = new StringBuilder();
-        // number of warranty information
         int size = values.size();
-        // get certificate names
         for(int i = 0;i < size;i++){
             stringBuilder.append(values.get(i));
             if(i != size-1){
@@ -1620,16 +1674,46 @@ public class TemplateGenerator {
     }
 
     private String getMultiValueText(List<TextType> textTypes){
+        return getMultiValueText(textTypes,true);
+    }
+
+    private String getMultiValueText(List<TextType> textTypes,boolean withLanguageId){
         StringBuilder stringBuilder = new StringBuilder();
         int size = textTypes.size();
         for(int i = 0;i < size;i++){
             if(!textTypes.get(i).getValue().contentEquals("")){
                 stringBuilder.append(textTypes.get(i).getValue());
-                stringBuilder.append("@");
-                stringBuilder.append(textTypes.get(i).getLanguageID());
+                if(withLanguageId){
+                    stringBuilder.append("@");
+                    stringBuilder.append(textTypes.get(i).getLanguageID());
+                }
                 if(i != size-1){
                     stringBuilder.append("|");
                 }
+            }
+        }
+        return stringBuilder.toString();
+    }
+
+    private String getMultiValueQuantity(List<QuantityType> quantities){
+        StringBuilder stringBuilder = new StringBuilder();
+        int size = quantities.size();
+        for(int i = 0;i < size;i++){
+            stringBuilder.append(quantities.get(i).getValue());
+            if(i != size-1){
+                stringBuilder.append("|");
+            }
+        }
+        return stringBuilder.toString();
+    }
+
+    private String getMultiValueDecimal(List<BigDecimal> decimals){
+        StringBuilder stringBuilder = new StringBuilder();
+        int size = decimals.size();
+        for(int i = 0;i < size;i++){
+            stringBuilder.append(decimals.get(i));
+            if(i != size-1){
+                stringBuilder.append("|");
             }
         }
         return stringBuilder.toString();
