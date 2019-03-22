@@ -75,6 +75,7 @@ public class TemplateGenerator {
         fillProductPropertiesTab(template.getSheet(TemplateConfig.TEMPLATE_TAB_PRODUCT_PROPERTIES),catalogueLines);
         fillTradingDeliveryTermsTab(template.getSheet(TemplateConfig.TEMPLATE_TAB_TRADING_DELIVERY_TERMS),catalogueLines);
         fillCustomProperties(template.getSheet(TemplateConfig.TEMPLATE_TAB_PRODUCT_PROPERTIES),catalogueLines,categories);
+        fillCategoryProperties(template.getSheet(TemplateConfig.TEMPLATE_TAB_PRODUCT_PROPERTIES),catalogueLines,categories);
         return template;
     }
 
@@ -140,7 +141,6 @@ public class TemplateGenerator {
                     cell.setCellStyle(editableStyle);
                 }
             }
-            // TODO: handle category properties
             rowIndex++;
         }
     }
@@ -367,6 +367,56 @@ public class TemplateGenerator {
                 }
 
                 propertyColumnIndex++;
+            }
+            rowIndex++;
+        }
+    }
+
+    private void fillCategoryProperties(Sheet productPropertiesTab,List<CatalogueLineType> catalogueLines,List<Category> categories){
+        int rowIndex = 4;
+        for(CatalogueLineType catalogueLine:catalogueLines){
+            for(ItemPropertyType itemProperty:catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty()){
+                // consider category properties
+                if(!itemProperty.getItemClassificationCode().getListID().contentEquals("Custom")){
+                    // get the category names
+                    List<TextType> categoryNames = getNamesOfCategory(categories,itemProperty.getItemClassificationCode().getURI());
+                    // get column index
+                    int columnIndex = findCellIndexForProperty(productPropertiesTab,itemProperty.getName(),categoryNames);
+                    String dataType = normalizeDataTypeForTemplate(itemProperty.getValueQualifier());
+                    // set the value of property
+                    if(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)){
+                        if(itemProperty.getValueQuantity().size() > 0){
+                            // we need to set unit as well
+                            Cell unitCell = productPropertiesTab.getRow(3).createCell(columnIndex);
+                            unitCell.setCellValue(itemProperty.getValueQuantity().get(0).getUnitCode());
+                            unitCell.setCellStyle(editableStyle);
+                            // set the value
+                            Cell cell = productPropertiesTab.getRow(rowIndex).createCell(columnIndex);
+                            cell.setCellValue(getMultiValueRepresentation(itemProperty.getValueQuantity(),TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY));
+                            if(rowIndex == 4){
+                                cell.setCellStyle(editableStyle);
+                            }
+                        }
+                    } else if(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_MULTILINGUAL_TEXT)){
+                        Cell cell = productPropertiesTab.getRow(rowIndex).createCell(columnIndex);
+                        cell.setCellValue(getMultiValueText(itemProperty.getValue()));
+                        if(rowIndex == 4){
+                            cell.setCellStyle(editableStyle);
+                        }
+                    } else if(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN)){
+                        Cell cell = productPropertiesTab.getRow(rowIndex).createCell(columnIndex);
+                        cell.setCellValue(getMultiValueText(itemProperty.getValue(),false));
+                        if(rowIndex == 4){
+                            cell.setCellStyle(editableStyle);
+                        }
+                    } else if(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_NUMBER)){
+                        Cell cell = productPropertiesTab.getRow(rowIndex).createCell(columnIndex);
+                        cell.setCellValue(getMultiValueRepresentation(itemProperty.getValueDecimal(),TemplateConfig.TEMPLATE_DATA_TYPE_NUMBER));
+                        if(rowIndex == 4){
+                            cell.setCellStyle(editableStyle);
+                        }
+                    }
+                }
             }
             rowIndex++;
         }
@@ -1534,27 +1584,46 @@ public class TemplateGenerator {
         return row.getCell(cellNum, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
     }
 
-    /**
-     * Identifies the column index for a specific property given the columns allocated for the associated category
-     *
-     * @param propertyName
-     * @return
-     */
-    public static Integer findCellIndexForProperty(Sheet sheet,String propertyName) {
-        // get the row where property names are specified
-//        Sheet productPropertiesTab = wb.getSheet(TemplateConfig.TEMPLATE_TAB_PRODUCT_PROPERTIES);
-        Row row = sheet.getRow(1);
+    public static Integer findCellIndexForProperty(Sheet sheet,List<TextType> propertyNames, List<TextType> categoryNames){
+        // get values of property and category names
+        List<String> propertyNamesString = new ArrayList<>();
+        for(TextType text: propertyNames){
+            propertyNamesString.add(text.getValue());
+        }
+        List<String> categoryNamesString = new ArrayList<>();
+        for(TextType text: categoryNames){
+            categoryNamesString.add(text.getValue());
+        }
 
-        // identify the cell with the
-        for(int i = TemplateConfig.getFixedPropertiesForProductPropertyTab().size() + 1; i<row.getLastCellNum(); i++) {
+        Integer categoryIndex = null;
+        // get the row where category names are specified
+        Row row = sheet.getRow(0);
+        for(int i = 0; i<row.getLastCellNum(); i++) {
             Cell cell = getCellWithMissingCellPolicy(row, i);
             // null cell means we reach to the end of the template
             if(cell == null) {
                 break;
             }
             String value = getCellStringValue(cell);
-            if(value.contentEquals(propertyName)) {
-                return i;
+            if(categoryNamesString.contains(value)) {
+                categoryIndex = i;
+                break;
+            }
+        }
+
+        if(categoryIndex != null){
+            // get the row where property names are specified
+            row = sheet.getRow(1);
+            for(int i = categoryIndex; i<row.getLastCellNum(); i++) {
+                Cell cell = getCellWithMissingCellPolicy(row, i);
+                // null cell means we reach to the end of the template
+                if(cell == null) {
+                    break;
+                }
+                String value = getCellStringValue(cell);
+                if(propertyNamesString.contains(value)) {
+                    return i;
+                }
             }
         }
         return null;
@@ -1731,5 +1800,14 @@ public class TemplateGenerator {
             return stringBuilder.toString();
         }
         return "";
+    }
+
+    private List<TextType> getNamesOfCategory(List<Category> categories,String categoryUri){
+        for(Category category:categories){
+            if(category.getCategoryUri() != null && category.getCategoryUri().contentEquals(categoryUri)){
+                return category.getPreferredName();
+            }
+        }
+        return null;
     }
 }

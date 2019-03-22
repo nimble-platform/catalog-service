@@ -125,7 +125,7 @@ public class TemplateParser {
                     // check unit
                     // if the user provided unit for a number data type
                     Row row = productPropertiesTab.getRow(3);
-                    Integer columnIndex = TemplateGenerator.findCellIndexForProperty(productPropertiesTab,property.getPreferredName(defaultLanguage));
+                    Integer columnIndex = TemplateGenerator.findCellIndexForProperty(productPropertiesTab,property.getPreferredName(),category.getPreferredName());
                     if(columnIndex == null) {
                         continue;
                     }
