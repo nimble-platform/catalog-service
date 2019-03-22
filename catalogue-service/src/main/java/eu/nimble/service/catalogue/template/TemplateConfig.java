@@ -121,6 +121,8 @@ public class TemplateConfig {
     public static String TEMPLATE_DATA_TYPE_STRING_TRANSLATABLE = "STRING_TRANSLATABLE";
     public static String TEMPLATE_DATA_TYPE_BOOLEAN = "BOOLEAN";
 
+    public static String TEMPLATE_QUANTITY_VALUE = "QUANTITY VALUE";
+    public static String TEMPLATE_QUANTITY_UNIT = "QUANTITY UNIT";
 
     private static String defaultLanguage = "en";
 
@@ -175,19 +177,19 @@ public class TemplateConfig {
         // width
         prop = new Property();
         prop.addPreferredName(TEMPLATE_PRODUCT_PROPERTIES_WIDTH, defaultLanguage);
-        prop.setDataType("QUANTITY");
+        prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
         properties.add(prop);
 
         // length
         prop = new Property();
         prop.addPreferredName(TEMPLATE_PRODUCT_PROPERTIES_LENGTH, defaultLanguage);
-        prop.setDataType("QUANTITY");
+        prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
         properties.add(prop);
 
         // height
         prop = new Property();
         prop.addPreferredName(TEMPLATE_PRODUCT_PROPERTIES_HEIGHT, defaultLanguage);
-        prop.setDataType("QUANTITY");
+        prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
         properties.add(prop);
         return properties;
     }
@@ -255,7 +257,7 @@ public class TemplateConfig {
         // estimated delivery period
         prop = new Property();
         prop.addPreferredName(TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD, defaultLanguage);
-        prop.setDataType("QUANTITY");
+        prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
         properties.add(prop);
 
         // applicable address territory country
@@ -285,7 +287,7 @@ public class TemplateConfig {
         // packaging quantity
         prop = new Property();
         prop.addPreferredName(TEMPLATE_TRADING_DELIVERY_PACKAGE_QUANTITY, defaultLanguage);
-        prop.setDataType("QUANTITY");
+        prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
         properties.add(prop);
 
         return properties;

@@ -117,20 +117,19 @@ public class TemplateGenerator {
 
             // dimensions
             for(DimensionType dimensionType : catalogueLine.getGoodsItem().getItem().getDimension()){
-                int columnIndex = 6;
+                int columnIndex = 8;
                 if(dimensionType.getAttributeID().contentEquals(TEMPLATE_PRODUCT_PROPERTIES_WIDTH)){
                     columnIndex = 4;
                 }
                 else if(dimensionType.getAttributeID().contentEquals(TEMPLATE_PRODUCT_PROPERTIES_LENGTH)){
-                    columnIndex = 5;
+                    columnIndex = 6;
                 }
 //                else if(dimensionType.getAttributeID().contentEquals(TEMPLATE_PRODUCT_PROPERTIES_HEIGHT)){
-//                    columnIndex = 6;
+//                    columnIndex = 8;
 //                }
                 cell = row.createCell(columnIndex);
                 // get unit cell
-                Row unitRow = productPropertiesTab.getRow(3);
-                Cell unitCell = unitRow.getCell(columnIndex);
+                Cell unitCell = row.createCell(columnIndex+1);
                 // set value and unit
                 unitCell.setCellValue(dimensionType.getMeasure().getUnitCode());
                 unitCell.setCellStyle(editableStyle);
@@ -170,10 +169,9 @@ public class TemplateGenerator {
             }
 
             // price amount
-            cell = row.createCell(columnIndex);
+            cell = row.createCell(columnIndex++);
             // get unit cell
-            Row unitRow = termsTab.getRow(3);
-            Cell unitCell = unitRow.getCell(columnIndex++);
+            Cell unitCell = row.getCell(columnIndex++);
             // set value and unit
             unitCell.setCellValue(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getCurrencyID());
             unitCell.setCellStyle(editableStyle);
@@ -185,10 +183,9 @@ public class TemplateGenerator {
             }
 
             // price base quantity
-            cell = row.createCell(columnIndex);
+            cell = row.createCell(columnIndex++);
             // get unit cell
-            unitRow = termsTab.getRow(3);
-            unitCell = unitRow.getCell(columnIndex++);
+            unitCell = row.getCell(columnIndex++);
             // set value and unit
             unitCell.setCellValue(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getUnitCode());
             unitCell.setCellStyle(editableStyle);
@@ -200,10 +197,9 @@ public class TemplateGenerator {
             }
 
             // minimum order quantity
-            cell = row.createCell(columnIndex);
+            cell = row.createCell(columnIndex++);
             // get unit cell
-            unitRow = termsTab.getRow(3);
-            unitCell = unitRow.getCell(columnIndex++);
+            unitCell = row.getCell(columnIndex++);
             // set value and unit
             if(catalogueLine.getMinimumOrderQuantity() != null){
                 unitCell.setCellValue(catalogueLine.getMinimumOrderQuantity().getUnitCode());
@@ -225,10 +221,9 @@ public class TemplateGenerator {
             }
 
             // warranty validity period
-            cell = row.createCell(columnIndex);
+            cell = row.createCell(columnIndex++);
             // get unit cell
-            unitRow = termsTab.getRow(3);
-            unitCell = unitRow.getCell(columnIndex++);
+            unitCell = row.getCell(columnIndex++);
             // set value and unit
             unitCell.setCellValue(catalogueLine.getWarrantyValidityPeriod().getDurationMeasure().getUnitCode());
             unitCell.setCellStyle(editableStyle);
@@ -265,10 +260,9 @@ public class TemplateGenerator {
                 cell.setCellStyle(editableStyle);
             }
             // estimated delivery period
-            cell = row.createCell(columnIndex);
+            cell = row.createCell(columnIndex++);
             // get unit cell
-            unitRow = termsTab.getRow(3);
-            unitCell = unitRow.getCell(columnIndex++);
+            unitCell = row.getCell(columnIndex++);
             // set value and unit
             unitCell.setCellValue(catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure().getUnitCode());
             unitCell.setCellStyle(editableStyle);
@@ -303,10 +297,9 @@ public class TemplateGenerator {
                 cell.setCellStyle(editableStyle);
             }
             // package quantity
-            cell = row.createCell(columnIndex);
+            cell = row.createCell(columnIndex++);
             // get unit cell
-            unitRow = termsTab.getRow(3);
-            unitCell = unitRow.getCell(columnIndex++);
+            unitCell = row.getCell(columnIndex++);
             // set value and unit
             unitCell.setCellValue(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getUnitCode());
             unitCell.setCellStyle(editableStyle);
@@ -325,11 +318,14 @@ public class TemplateGenerator {
         // find the offset for the custom properties
         int totalCategoryPropertyNumber = 0;
         for (Category category : categories) {
-            if(category.getProperties() != null){
-                totalCategoryPropertyNumber += category.getProperties().size();
+            for(Property property : category.getProperties()){
+                totalCategoryPropertyNumber++;
+                if(property.getDataType().contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)){
+                    totalCategoryPropertyNumber++;
+                }
             }
         }
-        int customPropertyColumnIndex = 1 + TemplateConfig.getFixedPropertiesForProductPropertyTab().size() + totalCategoryPropertyNumber;
+        int customPropertyColumnIndex = 4 + TemplateConfig.getFixedPropertiesForProductPropertyTab().size() + totalCategoryPropertyNumber;
 
         int rowIndex = 4;
         for(CatalogueLineType catalogueLine:catalogueLines){
@@ -347,12 +343,13 @@ public class TemplateGenerator {
                     // set the value of property
                     if(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)){
                         if(itemProperty.getValueQuantity().size() > 0){
-                            // we need to set unit as well
-                            Cell unitCell = productPropertiesTab.getRow(3).createCell(propertyColumnIndex);
-                            unitCell.setCellValue(itemProperty.getValueQuantity().get(0).getUnitCode());
                             // set the value
                             cell = productPropertiesTab.getRow(rowIndex).createCell(propertyColumnIndex);
                             cell.setCellValue(getMultiValueRepresentation(itemProperty.getValueQuantity(),TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY));
+                            // we need to set unit as well
+                            Cell unitCell = productPropertiesTab.getRow(rowIndex).createCell(++propertyColumnIndex);
+                            unitCell.setCellValue(itemProperty.getValueQuantity().get(0).getUnitCode());
+                            productPropertiesTab.getRow(2).createCell(propertyColumnIndex).setCellValue(TemplateConfig.TEMPLATE_QUANTITY_UNIT);
                         }
                     } else if(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_MULTILINGUAL_TEXT)){
                         cell = productPropertiesTab.getRow(rowIndex).createCell(propertyColumnIndex);
@@ -386,13 +383,13 @@ public class TemplateGenerator {
                     // set the value of property
                     if(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)){
                         if(itemProperty.getValueQuantity().size() > 0){
-                            // we need to set unit as well
-                            Cell unitCell = productPropertiesTab.getRow(3).createCell(columnIndex);
-                            unitCell.setCellValue(itemProperty.getValueQuantity().get(0).getUnitCode());
-                            unitCell.setCellStyle(editableStyle);
                             // set the value
                             Cell cell = productPropertiesTab.getRow(rowIndex).createCell(columnIndex);
                             cell.setCellValue(getMultiValueRepresentation(itemProperty.getValueQuantity(),TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY));
+                            // we need to set unit as well
+                            Cell unitCell = productPropertiesTab.getRow(rowIndex).createCell(++columnIndex);
+                            unitCell.setCellValue(itemProperty.getValueQuantity().get(0).getUnitCode());
+                            unitCell.setCellStyle(editableStyle);
                             if(rowIndex == 4){
                                 cell.setCellStyle(editableStyle);
                             }
@@ -596,15 +593,24 @@ public class TemplateGenerator {
         Cell cell = getCellWithMissingCellPolicy(topRow, 4);
         cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_DIMENSIONS);
         cell.setCellStyle(tabCellStyle);
-        CellRangeAddress cra = new CellRangeAddress(0, 0, 4, 6);
+        CellRangeAddress cra = new CellRangeAddress(0, 0, 4, 9);
         productPropertiesTab.addMergedRegion(cra);
 
         // create the titles for categories
-        int columnOffset = TemplateConfig.getFixedPropertiesForProductPropertyTab().size() + 1;
+        int columnOffset = TemplateConfig.getFixedPropertiesForProductPropertyTab().size() + 4;
         for (int i = 0; i < categories.size(); i++) {
             if(categories.get(i).getProperties() != null && categories.get(i).getProperties().size() > 0) {
+                // get the number of properties the category have
+                // for each quantity, we need to increment it by two since we need a column for the quantity unit
+                int propertiesSize = 0;
+                for(Property property : categories.get(i).getProperties()){
+                    propertiesSize++;
+                    if(property.getDataType().contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)){
+                        propertiesSize++;
+                    }
+                }
                 int colFrom = columnOffset;
-                int colTo = columnOffset + categories.get(i).getProperties().size() - 1;
+                int colTo = columnOffset + propertiesSize - 1;
                 cell = getCellWithMissingCellPolicy(topRow, colFrom);
                 cell.setCellValue(categories.get(i).getPreferredName(defaultLanguage));
                 cell.setCellStyle(tabCellStyle);
@@ -645,19 +651,22 @@ public class TemplateGenerator {
                 productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
             }
             Cell thirdRowCell = thirdRow.createCell(columnOffset);
+            // get data type of the property
+            // if its data type is Quantity or Amount, we should add Value to its data type to have a consistent template view
             String dataType = normalizeDataTypeForTemplate(property);
             // for some cases, we need to use TEXT data type instead of MULTILINGUAL_TEXT
             if(property.getPreferredName(defaultLanguage).contentEquals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION)){
                 thirdRowCell.setCellValue(TemplateConfig.TEMPLATE_DATA_TYPE_TEXT);
             }
             else{
-                thirdRowCell.setCellValue(dataType);
+                thirdRowCell.setCellValue(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY) ? TemplateConfig.TEMPLATE_QUANTITY_VALUE
+                        : dataType.contentEquals("AMOUNT") ? "AMOUNT VALUE"
+                        : dataType);
             }
             // make thirdRow read only
             thirdRowCell.setCellStyle(readOnlyStyle);
 
-            fourthRow.createCell(columnOffset).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
-
+            fourthRow.createCell(columnOffset).setCellStyle(readOnlyStyle);
             if (property.getDataType().equals("BOOLEAN")){
                 CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnOffset,columnOffset);
                 DataValidationHelper dataValidationHelper = productPropertiesTab.getDataValidationHelper();
@@ -673,7 +682,17 @@ public class TemplateGenerator {
             }
 
             if(property.getPreferredName(defaultLanguage).equals(TEMPLATE_PRODUCT_PROPERTIES_WIDTH) || property.getPreferredName(defaultLanguage).equals(TEMPLATE_PRODUCT_PROPERTIES_LENGTH) || property.getPreferredName(defaultLanguage).equals(TEMPLATE_PRODUCT_PROPERTIES_HEIGHT)){
-                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3,3,columnOffset,columnOffset);
+                // quantity unit
+                cell = secondRow.createCell(++columnOffset);
+                cell.setCellStyle(readOnlyStyle);
+                cell = thirdRow.createCell(columnOffset);
+                cell.setCellValue(TemplateConfig.TEMPLATE_QUANTITY_UNIT);
+                cell.setCellStyle(readOnlyStyle);
+                cell = fourthRow.createCell(columnOffset);
+                cell.setCellStyle(readOnlyStyle);
+                productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
+
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnOffset,columnOffset);
                 DataValidationHelper dataValidationHelper = productPropertiesTab.getDataValidationHelper();
                 DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_DIMENSION_LIST);
                 DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
@@ -685,15 +704,6 @@ public class TemplateGenerator {
                 dataValidation.setEmptyCellAllowed(true);
                 productPropertiesTab.addValidationData(dataValidation);
             }
-
-            // check whether the property needs a unit
-            if(!property.getDataType().equals("AMOUNT") && !property.getDataType().equals("QUANTITY")){
-                fourthRow.getCell(columnOffset).setCellStyle(readOnlyStyle);
-            }
-            else {
-                fourthRow.getCell(columnOffset).setCellStyle(editableStyle);
-            }
-
             columnOffset++;
         }
 
@@ -705,13 +715,17 @@ public class TemplateGenerator {
                     cell.setCellValue(property.getPreferredName(defaultLanguage));
                     cell.setCellStyle(boldCellStyle);
                     Cell thirdRowCell = thirdRow.createCell(columnOffset);
-                    thirdRowCell.setCellValue(normalizeDataTypeForTemplate(property));
+                    // get data type of the property
+                    // if its data type is Quantity or Amount, we should add Value to its data type to have a consistent template view
+                    String dataType = normalizeDataTypeForTemplate(property);
+                    thirdRowCell.setCellValue(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY) ? TemplateConfig.TEMPLATE_QUANTITY_VALUE
+                            : dataType.contentEquals("AMOUNT") ? "AMOUNT VALUE"
+                            : dataType);
                     // make thirdRow read only
                     thirdRowCell.setCellStyle(readOnlyStyle);
-                    fourthRow.createCell(columnOffset).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
 
                     productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
-
+                    fourthRow.createCell(columnOffset).setCellStyle(readOnlyStyle);
                     if (property.getDataType().equals("BOOLEAN")){
                         CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnOffset,columnOffset);
                         DataValidationHelper dataValidationHelper = productPropertiesTab.getDataValidationHelper();
@@ -727,13 +741,31 @@ public class TemplateGenerator {
                     }
 
                     // check whether the property needs a unit
-                    if(!property.getDataType().equals("AMOUNT") && !property.getDataType().equals("QUANTITY")){
-                        fourthRow.getCell(columnOffset).setCellStyle(readOnlyStyle);
+                    if(property.getDataType().equals("AMOUNT")){
+                        // quantity unit
+                        productPropertiesTab.getRow(0).createCell(++columnOffset).setCellStyle(readOnlyStyle);
+                        cell = secondRow.createCell(columnOffset);
+                        cell.setCellStyle(readOnlyStyle);
+                        cell = thirdRow.createCell(columnOffset);
+                        cell.setCellValue("CURRENCY");
+                        cell.setCellStyle(readOnlyStyle);
+                        cell = fourthRow.createCell(columnOffset);
+                        cell.setCellStyle(readOnlyStyle);
+                        productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
                     }
-                    else {
-                        fourthRow.getCell(columnOffset).setCellStyle(editableStyle);
+                    else if(property.getDataType().equals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)){
+                        // quantity unit
+                        productPropertiesTab.getRow(0).createCell(++columnOffset).setCellStyle(readOnlyStyle);
+                        cell = secondRow.createCell(columnOffset);
+                        cell.setCellStyle(readOnlyStyle);
+                        cell = thirdRow.createCell(columnOffset);
+                        cell.setCellValue(TemplateConfig.TEMPLATE_QUANTITY_UNIT);
+                        cell.setCellStyle(readOnlyStyle);
+                        cell = fourthRow.createCell(columnOffset);
+                        cell.setCellStyle(readOnlyStyle);
+                        productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
                     }
-
+                    fourthRow.getCell(columnOffset).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
                     columnOffset++;
                 }
             }
@@ -755,26 +787,33 @@ public class TemplateGenerator {
             topRow.createCell(i).setCellStyle(readOnlyStyle);
         }
 
-        Cell cell = getCellWithMissingCellPolicy(topRow, 5);
+        Cell cell = getCellWithMissingCellPolicy(topRow, 4);
         cell.setCellValue(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_DIMENSIONS);
         cell.setCellStyle(tabCellStyle);
-        CellRangeAddress cra = new CellRangeAddress(0, 0, 4, 6);
+        CellRangeAddress cra = new CellRangeAddress(0, 0, 4, 9);
         productPropertiesExampleTab.addMergedRegion(cra);
 
         // create the titles for categories
-        int columnOffset = TemplateConfig.getFixedPropertiesForProductPropertyTab().size() + 1;
+        int columnOffset = TemplateConfig.getFixedPropertiesForProductPropertyTab().size() + 4;
         for (int i = 0; i < categories.size(); i++) {
-            if(categories.get(i).getProperties() != null){
-                if(categories.get(i).getProperties().size() > 0) {
-                    int colFrom = columnOffset;
-                    int colTo = columnOffset + categories.get(i).getProperties().size() - 1;
-                    cell = getCellWithMissingCellPolicy(topRow, colFrom);
-                    cell.setCellValue(categories.get(i).getPreferredName(defaultLanguage));
-                    cell.setCellStyle(tabCellStyle);
-                    cra = new CellRangeAddress(0, 0, colFrom, colTo);
-                    productPropertiesExampleTab.addMergedRegion(cra);
-                    columnOffset = colTo + 1;
+            if(categories.get(i).getProperties() != null && categories.get(i).getProperties().size() > 0){
+                // get the number of properties the category have
+                // for each quantity, we need to increment it by two since we need a column for the quantity unit
+                int propertiesSize = 0;
+                for(Property property : categories.get(i).getProperties()){
+                    propertiesSize++;
+                    if(property.getDataType().contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)){
+                        propertiesSize++;
+                    }
                 }
+                int colFrom = columnOffset;
+                int colTo = columnOffset + propertiesSize - 1;
+                cell = getCellWithMissingCellPolicy(topRow, colFrom);
+                cell.setCellValue(categories.get(i).getPreferredName(defaultLanguage));
+                cell.setCellStyle(tabCellStyle);
+                cra = new CellRangeAddress(0, 0, colFrom, colTo);
+                productPropertiesExampleTab.addMergedRegion(cra);
+                columnOffset = colTo + 1;
             }
         }
 
@@ -809,18 +848,22 @@ public class TemplateGenerator {
                 productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
             }
             Cell thirdRowCell = thirdRow.createCell(columnOffset);
+            // get data type of the property
+            // if its data type is Quantity or Amount, we should add Value to its data type to have a consistent template view
             String dataType = normalizeDataTypeForTemplate(property);
             // for some cases, we need to use TEXT data type instead of MULTILINGUAL_TEXT
             if(property.getPreferredName(defaultLanguage).contentEquals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION)){
                 thirdRowCell.setCellValue(TemplateConfig.TEMPLATE_DATA_TYPE_TEXT);
             }
             else{
-                thirdRowCell.setCellValue(dataType);
+                thirdRowCell.setCellValue(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY) ? TemplateConfig.TEMPLATE_QUANTITY_VALUE
+                        : dataType.contentEquals("AMOUNT") ? "AMOUNT VALUE"
+                        : dataType);
             }
             // make thirdRow read only
             thirdRowCell.setCellStyle(readOnlyStyle);
 
-            fourthRow.createCell(columnOffset).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
+            fourthRow.createCell(columnOffset).setCellStyle(readOnlyStyle);
 
             if(property.getPreferredName(defaultLanguage).equals(TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION)){
                 productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue("Product_id1");
@@ -838,7 +881,38 @@ public class TemplateGenerator {
                 productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("Great for metal working");
             }
             else if(property.getPreferredName(defaultLanguage).equals(TEMPLATE_PRODUCT_PROPERTIES_WIDTH) || property.getPreferredName(defaultLanguage).equals(TEMPLATE_PRODUCT_PROPERTIES_LENGTH) || property.getPreferredName(defaultLanguage).equals(TEMPLATE_PRODUCT_PROPERTIES_HEIGHT)){
-                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3,3,columnOffset,columnOffset);
+                if(property.getPreferredName(defaultLanguage).equals(TEMPLATE_PRODUCT_PROPERTIES_WIDTH)){
+                    productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue("3");
+                    productPropertiesExampleTab.getRow(5).createCell(columnOffset).setCellValue("78");
+                    productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("80");
+                    productPropertiesExampleTab.getRow(5).createCell(++columnOffset).setCellValue("cm");
+                    productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("mm");
+                }
+                else if(property.getPreferredName(defaultLanguage).equals(TEMPLATE_PRODUCT_PROPERTIES_LENGTH)){
+                    productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue("4");
+                    productPropertiesExampleTab.getRow(5).createCell(columnOffset).setCellValue("35");
+                    productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("40");
+                    productPropertiesExampleTab.getRow(5).createCell(++columnOffset).setCellValue("mm");
+                    productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("mm");
+                }
+                else if(property.getPreferredName(defaultLanguage).equals(TEMPLATE_PRODUCT_PROPERTIES_HEIGHT)){
+                    productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue("2");
+                    productPropertiesExampleTab.getRow(5).createCell(columnOffset).setCellValue("3");
+                    productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("320");
+                    productPropertiesExampleTab.getRow(5).createCell(++columnOffset).setCellValue("cm");
+                    productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("mm");
+                }
+                // quantity unit
+                cell = secondRow.createCell(columnOffset);
+                cell.setCellStyle(readOnlyStyle);
+                cell = thirdRow.createCell(columnOffset);
+                cell.setCellValue(TemplateConfig.TEMPLATE_QUANTITY_UNIT);
+                cell.setCellStyle(readOnlyStyle);
+                cell = fourthRow.createCell(columnOffset);
+                cell.setCellStyle(readOnlyStyle);
+                productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
+
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnOffset,columnOffset);
                 DataValidationHelper dataValidationHelper = productPropertiesExampleTab.getDataValidationHelper();
                 DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_DIMENSION_LIST);
                 DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
@@ -850,33 +924,9 @@ public class TemplateGenerator {
                 dataValidation.setEmptyCellAllowed(true);
                 productPropertiesExampleTab.addValidationData(dataValidation);
 
-                productPropertiesExampleTab.getRow(3).getCell(columnOffset).setCellValue("mm");
-
-                if(property.getPreferredName(defaultLanguage).equals(TEMPLATE_PRODUCT_PROPERTIES_WIDTH)){
-                    productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue("83");
-                    productPropertiesExampleTab.getRow(5).createCell(columnOffset).setCellValue("78");
-                    productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("80");
-                }
-                else if(property.getPreferredName(defaultLanguage).equals(TEMPLATE_PRODUCT_PROPERTIES_LENGTH)){
-                    productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue("43");
-                    productPropertiesExampleTab.getRow(5).createCell(columnOffset).setCellValue("35");
-                    productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("40");
-                }
-                else if(property.getPreferredName(defaultLanguage).equals(TEMPLATE_PRODUCT_PROPERTIES_HEIGHT)){
-                    productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue("315");
-                    productPropertiesExampleTab.getRow(5).createCell(columnOffset).setCellValue("300");
-                    productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("320");
-                }
+                productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellValue("cm");
+                productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellStyle(editableStyle);
             }
-
-            // check whether the property needs a unit
-            if(!property.getDataType().equals("AMOUNT") && !property.getDataType().equals("QUANTITY")){
-                fourthRow.getCell(columnOffset).setCellStyle(readOnlyStyle);
-            }
-            else {
-                fourthRow.getCell(columnOffset).setCellStyle(editableStyle);
-            }
-
             columnOffset++;
         }
 
@@ -888,13 +938,16 @@ public class TemplateGenerator {
                     cell.setCellValue(property.getPreferredName(defaultLanguage));
                     cell.setCellStyle(boldCellStyle);
                     Cell thirdRowCell = thirdRow.createCell(columnOffset);
-                    thirdRowCell.setCellValue(normalizeDataTypeForTemplate(property));
+                    // get data type of the property
+                    // if its data type is Quantity or Amount, we should add Value to its data type to have a consistent template view
+                    String dataType = normalizeDataTypeForTemplate(property);
+                    thirdRowCell.setCellValue(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY) ? TemplateConfig.TEMPLATE_QUANTITY_VALUE
+                            : dataType.contentEquals("AMOUNT") ? "AMOUNT VALUE"
+                            : dataType);
                     // make thirdRow read only
                     thirdRowCell.setCellStyle(readOnlyStyle);
-                    fourthRow.createCell(columnOffset).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
-
                     productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
-
+                    fourthRow.createCell(columnOffset).setCellStyle(readOnlyStyle);
                     if (property.getDataType().equals("BOOLEAN")){
                         CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnOffset,columnOffset);
                         DataValidationHelper dataValidationHelper = productPropertiesExampleTab.getDataValidationHelper();
@@ -910,13 +963,31 @@ public class TemplateGenerator {
                     }
 
                     // check whether the property needs a unit
-                    if(!property.getDataType().equals("AMOUNT") && !property.getDataType().equals("QUANTITY")){
-                        fourthRow.getCell(columnOffset).setCellStyle(readOnlyStyle);
+                    if(property.getDataType().equals("AMOUNT")){
+                        // quantity unit
+                        productPropertiesExampleTab.getRow(0).createCell(++columnOffset).setCellStyle(readOnlyStyle);
+                        cell = secondRow.createCell(columnOffset);
+                        cell.setCellStyle(readOnlyStyle);
+                        cell = thirdRow.createCell(columnOffset);
+                        cell.setCellValue("CURRENCY");
+                        cell.setCellStyle(readOnlyStyle);
+                        cell = fourthRow.createCell(columnOffset);
+                        cell.setCellStyle(readOnlyStyle);
+                        productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
                     }
-                    else {
-                        fourthRow.getCell(columnOffset).setCellStyle(editableStyle);
+                    else if(property.getDataType().equals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)){
+                        // quantity unit
+                        productPropertiesExampleTab.getRow(0).createCell(++columnOffset).setCellStyle(readOnlyStyle);
+                        cell = secondRow.createCell(columnOffset);
+                        cell.setCellStyle(readOnlyStyle);
+                        cell = thirdRow.createCell(columnOffset);
+                        cell.setCellValue(TemplateConfig.TEMPLATE_QUANTITY_UNIT);
+                        cell.setCellStyle(readOnlyStyle);
+                        cell = fourthRow.createCell(columnOffset);
+                        cell.setCellStyle(readOnlyStyle);
+                        productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
                     }
-
+                    fourthRow.getCell(columnOffset).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
                     columnOffset++;
                 }
             }
@@ -939,28 +1010,28 @@ public class TemplateGenerator {
         Cell cell = getCellWithMissingCellPolicy(topRow, 2);
         cell.setCellValue(TemplateConfig.TEMPLATE_TRADING_DELIVERY_TRADING_DETAILS);
         cell.setCellStyle(boldCellStyle);
-        CellRangeAddress cra = new CellRangeAddress(0, 0, 2, 5);
+        CellRangeAddress cra = new CellRangeAddress(0, 0, 2, 8);
         termsTab.addMergedRegion(cra);
 
         // warranty block
-        cell = getCellWithMissingCellPolicy(topRow, 6);
+        cell = getCellWithMissingCellPolicy(topRow, 9);
         cell.setCellValue(TemplateConfig.TEMPLATE_TRADING_DELIVERY_WARRANTY);
         cell.setCellStyle(boldCellStyle);
-        cra = new CellRangeAddress(0, 0, 6, 7);
+        cra = new CellRangeAddress(0, 0, 9, 11);
         termsTab.addMergedRegion(cra);
 
         // delivery terms block
-        cell = getCellWithMissingCellPolicy(topRow, 8);
+        cell = getCellWithMissingCellPolicy(topRow, 12);
         cell.setCellValue(TemplateConfig.TEMPLATE_TRADING_DELIVERY_DELIVERY_TERMS);
         cell.setCellStyle(boldCellStyle);
-        cra = new CellRangeAddress(0, 0, 8, 12);
+        cra = new CellRangeAddress(0, 0, 12, 17);
         termsTab.addMergedRegion(cra);
 
         // packaging block
-        cell = getCellWithMissingCellPolicy(topRow, 13);
+        cell = getCellWithMissingCellPolicy(topRow, 18);
         cell.setCellValue(TemplateConfig.TEMPLATE_TRADING_DELIVERY_PACKAGING);
         cell.setCellStyle(boldCellStyle);
-        cra = new CellRangeAddress(0, 0, 13, 14);
+        cra = new CellRangeAddress(0, 0, 18, 20);
         termsTab.addMergedRegion(cra);
 
 
@@ -997,17 +1068,57 @@ public class TemplateGenerator {
                 termsTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
             }
             Cell thirdRowCell = thirdRow.createCell(columnIndex);
+            // get data type of the property
+            // if its data type is Quantity or Amount, we should add Value to its data type to have a consistent template view
             String dataType = normalizeDataTypeForTemplate(property);
             // in this tab, all properties with STRING data type can be represented with TEXT data type instead of MULTILINGUAL_TEXT
             if(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_MULTILINGUAL_TEXT)){
                 thirdRowCell.setCellValue(TemplateConfig.TEMPLATE_DATA_TYPE_TEXT);
             } else{
-                thirdRowCell.setCellValue(property.getDataType());
+                thirdRowCell.setCellValue(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY) ? TemplateConfig.TEMPLATE_QUANTITY_VALUE
+                        : dataType.contentEquals("AMOUNT") ? "AMOUNT VALUE"
+                        : dataType);
             }
             // make thirdRow read only
             thirdRowCell.setCellStyle(readOnlyStyle);
-            fourthRow.createCell(columnIndex).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
+            fourthRow.createCell(columnIndex).setCellStyle(readOnlyStyle);
+            // check whether the property needs a unit
+            if(property.getDataType().equals("AMOUNT")){
+                // quantity unit
+                termsTab.getRow(0).createCell(++columnIndex).setCellStyle(readOnlyStyle);
+                cell = secondRow.createCell(columnIndex);
+                cell.setCellStyle(readOnlyStyle);
+                cell = thirdRow.createCell(columnIndex);
+                cell.setCellValue("CURRENCY");
+                cell.setCellStyle(readOnlyStyle);
+                cell = fourthRow.createCell(columnIndex);
+                cell.setCellStyle(readOnlyStyle);
+                termsTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
 
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnIndex,columnIndex);
+                DataValidationHelper dataValidationHelper = termsTab.getDataValidationHelper();
+                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_CURRENCY_LIST);
+                DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
+                dataValidation.setSuppressDropDownArrow(true);
+                // error box
+                dataValidation.setShowErrorBox(true);
+                dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
+                // empty cell
+                dataValidation.setEmptyCellAllowed(true);
+                termsTab.addValidationData(dataValidation);
+            }
+            else if(property.getDataType().equals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)){
+                // quantity unit
+                termsTab.getRow(0).createCell(++columnIndex).setCellStyle(readOnlyStyle);
+                cell = secondRow.createCell(columnIndex);
+                cell.setCellStyle(readOnlyStyle);
+                cell = thirdRow.createCell(columnIndex);
+                cell.setCellValue(TemplateConfig.TEMPLATE_QUANTITY_UNIT);
+                cell.setCellStyle(readOnlyStyle);
+                cell = fourthRow.createCell(columnIndex);
+                cell.setCellStyle(readOnlyStyle);
+                termsTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
+            }
             // dropdown menu for incoterms
             if(property.getPreferredName(defaultLanguage).equals(TEMPLATE_TRADING_DELIVERY_INCOTERMS)){
                 CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnIndex,columnIndex);
@@ -1037,7 +1148,7 @@ public class TemplateGenerator {
                 termsTab.addValidationData(dataValidation);
             }
             else if(property.getPreferredName(defaultLanguage).equals(TemplateConfig.TEMPLATE_TRADING_DELIVERY_WARRANTY_VALIDITY_PERIOD)){
-                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3,3,columnIndex,columnIndex);
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnIndex,columnIndex);
                 DataValidationHelper dataValidationHelper = termsTab.getDataValidationHelper();
                 DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_WARRANTY_VALIDITY_LIST);
                 DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
@@ -1050,7 +1161,7 @@ public class TemplateGenerator {
                 termsTab.addValidationData(dataValidation);
             }
             else if(property.getPreferredName(defaultLanguage).equals(TemplateConfig.TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD)){
-                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3,3,columnIndex,columnIndex);
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnIndex,columnIndex);
                 DataValidationHelper dataValidationHelper = termsTab.getDataValidationHelper();
                 DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_DELIVERY_PERIOD_LIST);
                 DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
@@ -1061,27 +1172,6 @@ public class TemplateGenerator {
                 // empty cell
                 dataValidation.setEmptyCellAllowed(true);
                 termsTab.addValidationData(dataValidation);
-            }
-            // check whether the property needs a unit
-            if(!property.getDataType().equals("AMOUNT") && !property.getDataType().equals("QUANTITY")){
-                fourthRow.getCell(columnIndex).setCellStyle(readOnlyStyle);
-            }
-            else if(property.getDataType().equals("AMOUNT")){
-                fourthRow.getCell(columnIndex).setCellStyle(editableStyle);
-                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3,3,columnIndex,columnIndex);
-                DataValidationHelper dataValidationHelper = termsTab.getDataValidationHelper();
-                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_CURRENCY_LIST);
-                DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
-                dataValidation.setSuppressDropDownArrow(true);
-                // error box
-                dataValidation.setShowErrorBox(true);
-                dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
-                // empty cell
-                dataValidation.setEmptyCellAllowed(true);
-                termsTab.addValidationData(dataValidation);
-            }
-            else {
-                fourthRow.getCell(columnIndex).setCellStyle(editableStyle);
             }
             columnIndex++;
         }
@@ -1103,28 +1193,28 @@ public class TemplateGenerator {
         Cell cell = getCellWithMissingCellPolicy(topRow, 2);
         cell.setCellValue(TemplateConfig.TEMPLATE_TRADING_DELIVERY_TRADING_DETAILS);
         cell.setCellStyle(boldCellStyle);
-        CellRangeAddress cra = new CellRangeAddress(0, 0, 2, 5);
+        CellRangeAddress cra = new CellRangeAddress(0, 0, 2, 8);
         termsExampleTab.addMergedRegion(cra);
 
         // warranty block
-        cell = getCellWithMissingCellPolicy(topRow, 6);
+        cell = getCellWithMissingCellPolicy(topRow, 9);
         cell.setCellValue(TemplateConfig.TEMPLATE_TRADING_DELIVERY_WARRANTY);
         cell.setCellStyle(boldCellStyle);
-        cra = new CellRangeAddress(0, 0, 6, 7);
+        cra = new CellRangeAddress(0, 0, 9, 11);
         termsExampleTab.addMergedRegion(cra);
 
         // delivery terms block
-        cell = getCellWithMissingCellPolicy(topRow, 8);
+        cell = getCellWithMissingCellPolicy(topRow, 12);
         cell.setCellValue(TemplateConfig.TEMPLATE_TRADING_DELIVERY_DELIVERY_TERMS);
         cell.setCellStyle(boldCellStyle);
-        cra = new CellRangeAddress(0, 0, 8, 12);
+        cra = new CellRangeAddress(0, 0, 12, 17);
         termsExampleTab.addMergedRegion(cra);
 
         // packaging block
-        cell = getCellWithMissingCellPolicy(topRow, 13);
+        cell = getCellWithMissingCellPolicy(topRow, 18);
         cell.setCellValue(TemplateConfig.TEMPLATE_TRADING_DELIVERY_PACKAGING);
         cell.setCellStyle(boldCellStyle);
-        cra = new CellRangeAddress(0, 0, 13, 14);
+        cra = new CellRangeAddress(0, 0, 18, 20);
         termsExampleTab.addMergedRegion(cra);
 
 
@@ -1161,16 +1251,20 @@ public class TemplateGenerator {
                 termsExampleTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
             }
             Cell thirdRowCell = thirdRow.createCell(columnIndex);
+            // get data type of the property
+            // if its data type is Quantity or Amount, we should add Value to its data type to have a consistent template view
             String dataType = normalizeDataTypeForTemplate(property);
             // in this tab, all properties with STRING data type can be represented with TEXT data type instead of MULTILINGUAL_TEXT
             if(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_MULTILINGUAL_TEXT)){
                 thirdRowCell.setCellValue(TemplateConfig.TEMPLATE_DATA_TYPE_TEXT);
             } else{
-                thirdRowCell.setCellValue(dataType);
+                thirdRowCell.setCellValue(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY) ? TemplateConfig.TEMPLATE_QUANTITY_VALUE
+                        : dataType.contentEquals("AMOUNT") ? "AMOUNT VALUE"
+                        : dataType);
             }
             // make thirdRow read only
             thirdRowCell.setCellStyle(readOnlyStyle);
-            fourthRow.createCell(columnIndex).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
+            fourthRow.createCell(columnIndex).setCellStyle(readOnlyStyle);
 
             // fill cells with example values
             if (property.getPreferredName(defaultLanguage).equals(TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION)){
@@ -1179,31 +1273,48 @@ public class TemplateGenerator {
                 termsExampleTab.createRow(6).createCell(columnIndex).setCellValue("Product_id3");
             }
             else if(property.getPreferredName(defaultLanguage).equals(TEMPLATE_TRADING_DELIVERY_PRICE_BASE_QUANTITY)){
-                termsExampleTab.getRow(3).getCell(columnIndex).setCellValue("piece");
                 termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("1");
                 termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("1");
                 termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("1");
+                // quantity unit
+                termsExampleTab.getRow(0).createCell(++columnIndex).setCellStyle(readOnlyStyle);
+                cell = secondRow.createCell(columnIndex);
+                cell.setCellStyle(readOnlyStyle);
+                cell = thirdRow.createCell(columnIndex);
+                cell.setCellValue(TemplateConfig.TEMPLATE_QUANTITY_UNIT);
+                cell.setCellStyle(readOnlyStyle);
+                cell = fourthRow.createCell(columnIndex);
+                cell.setCellStyle(readOnlyStyle);
+                termsExampleTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
+
+                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("piece");
+                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("piece");
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("piece");
+
             }
             else if(property.getPreferredName(defaultLanguage).equals(TEMPLATE_TRADING_DELIVERY_MINIMUM_ORDER_QUANTITY)){
-                termsExampleTab.getRow(3).getCell(columnIndex).setCellValue("piece");
                 termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("3000");
                 termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("3000");
                 termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("1000");
+                // quantity unit
+                termsExampleTab.getRow(0).createCell(++columnIndex).setCellStyle(readOnlyStyle);
+                cell = secondRow.createCell(columnIndex);
+                cell.setCellStyle(readOnlyStyle);
+                cell = thirdRow.createCell(columnIndex);
+                cell.setCellValue(TemplateConfig.TEMPLATE_QUANTITY_UNIT);
+                cell.setCellStyle(readOnlyStyle);
+                cell = fourthRow.createCell(columnIndex);
+                cell.setCellStyle(readOnlyStyle);
+                termsExampleTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
+
+                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("piece");
+                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("piece");
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("piece");
             }
-//            else if(property.getPreferredName().equals(TEMPLATE_TRADING_DELIVERY_WARRANTY_INFORMATION)){
-//                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("Warranty information here");
-//                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("Warranty information here");
-//                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("Warranty information here");
-//            }
-//            else if(property.getPreferredName().equals(TEMPLATE_TRADING_DELIVERY_SPECIAL_TERMS)){
-//                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("Special terms here");
-//                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("Special terms here");
-//                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("Special terms here");
-//            }
             else if(property.getPreferredName(defaultLanguage).equals(TEMPLATE_TRADING_DELIVERY_APPLICABLE_ADDRESS_COUNTRY)){
                 termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("China");
-                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("");
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("");
+                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("Turkey");
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("Spain|France");
             }
             else if(property.getPreferredName(defaultLanguage).equals(TEMPLATE_TRADING_DELIVERY_TRANSPORT_MODE)){
                 termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("Sea | Air");
@@ -1216,10 +1327,23 @@ public class TemplateGenerator {
                 termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("polybag");
             }
             else if(property.getPreferredName(defaultLanguage).equals(TEMPLATE_TRADING_DELIVERY_PACKAGE_QUANTITY)){
-                termsExampleTab.getRow(3).getCell(columnIndex).setCellValue("items");
                 termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("10");
                 termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("30");
                 termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("1");
+                // quantity unit
+                termsExampleTab.getRow(0).createCell(++columnIndex).setCellStyle(readOnlyStyle);
+                cell = secondRow.createCell(columnIndex);
+                cell.setCellStyle(readOnlyStyle);
+                cell = thirdRow.createCell(columnIndex);
+                cell.setCellValue(TemplateConfig.TEMPLATE_QUANTITY_UNIT);
+                cell.setCellStyle(readOnlyStyle);
+                cell = fourthRow.createCell(columnIndex);
+                cell.setCellStyle(readOnlyStyle);
+                termsExampleTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
+
+                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("items");
+                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("items");
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("items");
             }
             // dropdown menu for incoterms
             else if(property.getPreferredName(defaultLanguage).equals(TEMPLATE_TRADING_DELIVERY_INCOTERMS)){
@@ -1257,7 +1381,21 @@ public class TemplateGenerator {
                 termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("FALSE");
             }
             else if(property.getPreferredName(defaultLanguage).equals(TemplateConfig.TEMPLATE_TRADING_DELIVERY_WARRANTY_VALIDITY_PERIOD)){
-                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3,3,columnIndex,columnIndex);
+                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("1");
+                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("3");
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("2");
+                // quantity unit
+                termsExampleTab.getRow(0).createCell(++columnIndex).setCellStyle(readOnlyStyle);
+                cell = secondRow.createCell(columnIndex);
+                cell.setCellStyle(readOnlyStyle);
+                cell = thirdRow.createCell(columnIndex);
+                cell.setCellValue(TemplateConfig.TEMPLATE_QUANTITY_UNIT);
+                cell.setCellStyle(readOnlyStyle);
+                cell = fourthRow.createCell(columnIndex);
+                cell.setCellStyle(readOnlyStyle);
+                termsExampleTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
+
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnIndex,columnIndex);
                 DataValidationHelper dataValidationHelper = termsExampleTab.getDataValidationHelper();
                 DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_WARRANTY_VALIDITY_LIST);
                 DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
@@ -1269,13 +1407,24 @@ public class TemplateGenerator {
                 dataValidation.setEmptyCellAllowed(true);
                 termsExampleTab.addValidationData(dataValidation);
 
-                termsExampleTab.getRow(3).getCell(columnIndex).setCellValue("year");
-                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("1");
-                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("3");
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("2");
+                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("year");
+                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("month");
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("month");
             }
             else if(property.getPreferredName(defaultLanguage).equals(TemplateConfig.TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD)){
-                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3,3,columnIndex,columnIndex);
+                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("1");
+                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("4");
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("2");
+                // quantity unit
+                termsExampleTab.getRow(0).createCell(++columnIndex).setCellStyle(readOnlyStyle);
+                termsExampleTab.getRow(1).createCell(columnIndex).setCellStyle(readOnlyStyle);
+                cell = termsExampleTab.getRow(2).createCell(columnIndex);
+                cell.setCellValue(TemplateConfig.TEMPLATE_QUANTITY_UNIT);
+                cell.setCellStyle(readOnlyStyle);
+                termsExampleTab.getRow(3).createCell(columnIndex).setCellStyle(readOnlyStyle);
+                termsExampleTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
+
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnIndex,columnIndex);
                 DataValidationHelper dataValidationHelper = termsExampleTab.getDataValidationHelper();
                 DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_DELIVERY_PERIOD_LIST);
                 DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
@@ -1287,18 +1436,26 @@ public class TemplateGenerator {
                 dataValidation.setEmptyCellAllowed(true);
                 termsExampleTab.addValidationData(dataValidation);
 
-                termsExampleTab.getRow(3).getCell(columnIndex).setCellValue("weeks");
-                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("1");
-                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("4");
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("2");
+                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("working days");
+                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("days");
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("weeks");
             }
             // check whether the property needs a unit
-            if(!property.getDataType().equals("AMOUNT") && !property.getDataType().equals("QUANTITY")){
-                fourthRow.getCell(columnIndex).setCellStyle(readOnlyStyle);
-            }
-            else if(property.getDataType().equals("AMOUNT")){
-                fourthRow.getCell(columnIndex).setCellStyle(editableStyle);
-                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3,3,columnIndex,columnIndex);
+            if(property.getDataType().equals("AMOUNT")){
+                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("4");
+                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("6");
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("1");
+
+                // quantity unit
+                termsExampleTab.getRow(0).createCell(++columnIndex).setCellStyle(readOnlyStyle);
+                termsExampleTab.getRow(1).createCell(columnIndex).setCellStyle(readOnlyStyle);
+                cell = termsExampleTab.getRow(2).createCell(columnIndex);
+                cell.setCellValue("CURRENCY");
+                cell.setCellStyle(readOnlyStyle);
+                termsExampleTab.getRow(3).createCell(columnIndex).setCellStyle(readOnlyStyle);
+                termsExampleTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
+
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnIndex,columnIndex);
                 DataValidationHelper dataValidationHelper = termsExampleTab.getDataValidationHelper();
                 DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_CURRENCY_LIST);
                 DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
@@ -1310,13 +1467,9 @@ public class TemplateGenerator {
                 dataValidation.setEmptyCellAllowed(true);
                 termsExampleTab.addValidationData(dataValidation);
 
-                termsExampleTab.getRow(3).getCell(columnIndex).setCellValue("EUR");
-                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("4");
-                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("6");
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("1");
-            }
-            else {
-                fourthRow.getCell(columnIndex).setCellStyle(editableStyle);
+                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("EUR");
+                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("USD");
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("SEK");
             }
             columnIndex++;
         }
@@ -1732,7 +1885,8 @@ public class TemplateGenerator {
         } else if (datatypeStr.compareToIgnoreCase(TEMPLATE_DATA_TYPE_FILE) == 0) {
             denormalizedDatatype = TEMPLATE_DATA_TYPE_BINARY;
 
-        } else if (datatypeStr.compareToIgnoreCase(TEMPLATE_DATA_TYPE_QUANTITY) == 0) {
+            // we should also accept 'QUANTITY VALUE' as QUANTITY property
+        } else if (datatypeStr.compareToIgnoreCase(TEMPLATE_DATA_TYPE_QUANTITY) == 0 || datatypeStr.compareToIgnoreCase(TEMPLATE_QUANTITY_VALUE) == 0) {
             denormalizedDatatype = TEMPLATE_DATA_TYPE_QUANTITY;
 
         } else if (datatypeStr.compareToIgnoreCase(TEMPLATE_DATA_TYPE_BOOLEAN) == 0) {
