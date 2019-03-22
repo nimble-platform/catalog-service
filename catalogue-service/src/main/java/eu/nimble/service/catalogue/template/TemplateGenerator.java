@@ -225,7 +225,7 @@ public class TemplateGenerator {
 
             // warranty information
             cell = row.createCell(columnIndex++);
-            cell.setCellValue(getMultiValueString(catalogueLine.getWarrantyInformation()));
+            cell.setCellValue(getMultiValueRepresentation(catalogueLine.getWarrantyInformation(),TemplateConfig.TEMPLATE_DATA_TYPE_STRING));
             if(rowIndex == 4){
                 cell.setCellStyle(editableStyle);
             }
@@ -244,7 +244,7 @@ public class TemplateGenerator {
                 values.add(textType.getValue());
             }
             cell = row.createCell(columnIndex++);
-            cell.setCellValue(getMultiValueString(values));
+            cell.setCellValue(getMultiValueRepresentation(values,TemplateConfig.TEMPLATE_DATA_TYPE_TEXT));
             if(rowIndex == 4){
                 cell.setCellStyle(editableStyle);
             }
@@ -268,7 +268,7 @@ public class TemplateGenerator {
                 countries.add(address.getCountry().getName().getValue());
             }
             cell = row.createCell(columnIndex++);
-            cell.setCellValue(getMultiValueString(countries));
+            cell.setCellValue(getMultiValueRepresentation(countries,TemplateConfig.TEMPLATE_DATA_TYPE_TEXT));
             if(rowIndex == 4){
                 cell.setCellStyle(editableStyle);
             }
@@ -314,7 +314,6 @@ public class TemplateGenerator {
         int customPropertyColumnIndex = 1 + TemplateConfig.getFixedPropertiesForProductPropertyTab().size() + totalCategoryPropertyNumber;
 
         int rowIndex = 4;
-        Row row = productPropertiesTab.getRow(rowIndex);
         for(CatalogueLineType catalogueLine:catalogueLines){
             int propertyColumnIndex = customPropertyColumnIndex;
             for(ItemPropertyType itemProperty:catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty()){
@@ -335,7 +334,7 @@ public class TemplateGenerator {
                             unitCell.setCellValue(itemProperty.getValueQuantity().get(0).getUnitCode());
                             // set the value
                             cell = productPropertiesTab.getRow(rowIndex).createCell(propertyColumnIndex);
-                            cell.setCellValue(getMultiValueQuantity(itemProperty.getValueQuantity()));
+                            cell.setCellValue(getMultiValueRepresentation(itemProperty.getValueQuantity(),TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY));
                         }
                     } else if(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_MULTILINGUAL_TEXT)){
                         cell = productPropertiesTab.getRow(rowIndex).createCell(propertyColumnIndex);
@@ -345,7 +344,7 @@ public class TemplateGenerator {
                         cell.setCellValue(getMultiValueText(itemProperty.getValue(),false));
                     } else if(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_NUMBER)){
                         cell = productPropertiesTab.getRow(rowIndex).createCell(propertyColumnIndex);
-                        cell.setCellValue(getMultiValueDecimal(itemProperty.getValueDecimal()));
+                        cell.setCellValue(getMultiValueRepresentation(itemProperty.getValueDecimal(),TemplateConfig.TEMPLATE_DATA_TYPE_NUMBER));
                     }
                 }
 
@@ -1661,18 +1660,6 @@ public class TemplateGenerator {
         return denormalizedDatatype;
     }
 
-    private String getMultiValueString(List<String> values){
-        StringBuilder stringBuilder = new StringBuilder();
-        int size = values.size();
-        for(int i = 0;i < size;i++){
-            stringBuilder.append(values.get(i));
-            if(i != size-1){
-                stringBuilder.append("|");
-            }
-        }
-        return stringBuilder.toString();
-    }
-
     private String getMultiValueText(List<TextType> textTypes){
         return getMultiValueText(textTypes,true);
     }
@@ -1695,27 +1682,36 @@ public class TemplateGenerator {
         return stringBuilder.toString();
     }
 
-    private String getMultiValueQuantity(List<QuantityType> quantities){
-        StringBuilder stringBuilder = new StringBuilder();
-        int size = quantities.size();
-        for(int i = 0;i < size;i++){
-            stringBuilder.append(quantities.get(i).getValue());
-            if(i != size-1){
-                stringBuilder.append("|");
-            }
-        }
-        return stringBuilder.toString();
-    }
+    private String getMultiValueRepresentation(List values, String valueQualifier){
+        if(values != null && values.size() > 0){
+            // strings which are used to create the representation of the given values
+            List<String> strings = new ArrayList<>();
 
-    private String getMultiValueDecimal(List<BigDecimal> decimals){
-        StringBuilder stringBuilder = new StringBuilder();
-        int size = decimals.size();
-        for(int i = 0;i < size;i++){
-            stringBuilder.append(decimals.get(i));
-            if(i != size-1){
-                stringBuilder.append("|");
+            if(valueQualifier.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_STRING)){
+                strings = (List<String>) values;
             }
+            else if(valueQualifier.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_NUMBER)){
+                for(BigDecimal bigDecimal:(List<BigDecimal>)values){
+                    strings.add(bigDecimal.toString());
+                }
+            }
+            else if(valueQualifier.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)){
+                for(QuantityType quantityType:(List<QuantityType>)values){
+                    strings.add(quantityType.getValue().toString());
+                }
+            }
+
+            // create the representation
+            StringBuilder stringBuilder = new StringBuilder();
+            int size = strings.size();
+            for(int i = 0;i < size;i++){
+                stringBuilder.append(strings.get(i));
+                if(i != size-1){
+                    stringBuilder.append("|");
+                }
+            }
+            return stringBuilder.toString();
         }
-        return stringBuilder.toString();
+        return "";
     }
 }
