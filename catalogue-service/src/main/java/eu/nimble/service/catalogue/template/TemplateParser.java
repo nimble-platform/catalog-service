@@ -189,7 +189,7 @@ public class TemplateParser {
             for (Boolean value : bools) {
                 TextType booleanText = new TextType();
                 booleanText.setValue(value.toString());
-                booleanText.setValue("en");
+                booleanText.setLanguageID("en");
                 stringVals.add(booleanText);
             }
             itemProp.setValue(stringVals);
