@@ -73,6 +73,13 @@ public class DataIntegratorUtil {
     }
 
     private static List<CommodityClassificationType> getParentCategories(List<CommodityClassificationType> commodityClassifications){
+        // get uris of the given categories
+        List<String> uris = new ArrayList<>();
+        for(CommodityClassificationType commodityClassificationType:commodityClassifications){
+            if(commodityClassificationType.getItemClassificationCode().getURI() != null){
+                uris.add(commodityClassificationType.getItemClassificationCode().getURI());
+            }
+        }
         List<CommodityClassificationType> commodityClassificationTypeList = new ArrayList<>();
         // find parents of the selected categories
         for(CommodityClassificationType cct : commodityClassifications){
@@ -92,7 +99,8 @@ public class DataIntegratorUtil {
                 codeType.setListID(category.getTaxonomyId());
                 codeType.setURI(category.getCategoryUri());
                 commodityClassificationType.setItemClassificationCode(codeType);
-                if(!commodityClassificationTypeList.contains(commodityClassificationType) && !commodityClassifications.contains(commodityClassificationType)){
+                // check whether it is one of the given categories or it is already added to the list
+                if(!commodityClassificationTypeList.contains(commodityClassificationType) && !uris.contains(commodityClassificationType.getItemClassificationCode().getURI())){
                     commodityClassificationTypeList.add(commodityClassificationType);
                 }
             }
