@@ -1457,8 +1457,56 @@ public class TemplateGenerator {
         return row;
     }
 
-    private Cell getCellWithMissingCellPolicy(Row row, int cellNum) {
+    public static Cell getCellWithMissingCellPolicy(Row row, int cellNum) {
         return row.getCell(cellNum, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+    }
+
+    /**
+     * Identifies the column index for a specific property given the columns allocated for the associated category
+     *
+     * @param propertyName
+     * @return
+     */
+    public static Integer findCellIndexForProperty(Sheet sheet,String propertyName) {
+        // get the row where property names are specified
+//        Sheet productPropertiesTab = wb.getSheet(TemplateConfig.TEMPLATE_TAB_PRODUCT_PROPERTIES);
+        Row row = sheet.getRow(1);
+
+        // identify the cell with the
+        for(int i = TemplateConfig.getFixedPropertiesForProductPropertyTab().size() + 1; i<row.getLastCellNum(); i++) {
+            Cell cell = getCellWithMissingCellPolicy(row, i);
+            // null cell means we reach to the end of the template
+            if(cell == null) {
+                break;
+            }
+            String value = getCellStringValue(cell);
+            if(value.contentEquals(propertyName)) {
+                return i;
+            }
+        }
+        return null;
+    }
+
+    public static String getCellStringValue(Cell cell) {
+        if(cell == null) {
+            return "";
+        }
+
+        cell.setCellType(CellType.STRING);
+        switch (cell.getCellTypeEnum()) {
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    return cell.getDateCellValue().toString();
+                } else {
+                    return cell.getNumericCellValue() + "";
+                }
+            case BOOLEAN:
+                return cell.getBooleanCellValue() ? "True" : "False";
+            default:
+                return "";
+        }
     }
 
     private void createStyles() {
