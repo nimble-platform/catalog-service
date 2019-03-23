@@ -286,8 +286,7 @@ public class TemplateParser {
             // get the cell containing unit information
             Cell unitCell = null;
             if(dataType.contentEquals(TEMPLATE_DATA_TYPE_QUANTITY)){
-                row = productPropertiesTab.getRow(4);
-                unitCell = TemplateGenerator.getCellWithMissingCellPolicy(row, columnIndex+1);
+                unitCell = TemplateGenerator.getCellWithMissingCellPolicy(productPropertiesTab.getRow(rowIndex), columnIndex+1);
                 // if it is a quantity property, then we need to increase i by one
                 i++;
             }
