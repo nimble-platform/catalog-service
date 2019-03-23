@@ -171,45 +171,45 @@ public class TemplateGenerator {
             // price amount
             cell = row.createCell(columnIndex++);
             // get unit cell
-            Cell unitCell = row.getCell(columnIndex++);
+            Cell unitCell = row.createCell(columnIndex++);
             // set value and unit
             unitCell.setCellValue(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getCurrencyID());
-            unitCell.setCellStyle(editableStyle);
             if(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue() != null){
                 cell.setCellValue(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue().toString());
             }
             if(rowIndex == 4){
                 cell.setCellStyle(editableStyle);
+                unitCell.setCellStyle(editableStyle);
             }
 
             // price base quantity
             cell = row.createCell(columnIndex++);
             // get unit cell
-            unitCell = row.getCell(columnIndex++);
+            unitCell = row.createCell(columnIndex++);
             // set value and unit
             unitCell.setCellValue(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getUnitCode());
-            unitCell.setCellStyle(editableStyle);
             if(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getValue() != null){
                 cell.setCellValue(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getValue().toString());
             }
             if(rowIndex == 4){
+                unitCell.setCellStyle(editableStyle);
                 cell.setCellStyle(editableStyle);
             }
 
             // minimum order quantity
             cell = row.createCell(columnIndex++);
             // get unit cell
-            unitCell = row.getCell(columnIndex++);
+            unitCell = row.createCell(columnIndex++);
             // set value and unit
             if(catalogueLine.getMinimumOrderQuantity() != null){
                 unitCell.setCellValue(catalogueLine.getMinimumOrderQuantity().getUnitCode());
-                unitCell.setCellStyle(editableStyle);
                 if(catalogueLine.getMinimumOrderQuantity().getValue() != null){
                     cell.setCellValue(catalogueLine.getMinimumOrderQuantity().getValue().toString());
                 }
             }
             if(rowIndex == 4){
                 cell.setCellStyle(editableStyle);
+                unitCell.setCellStyle(editableStyle);
             }
 
             // free sample
@@ -223,14 +223,14 @@ public class TemplateGenerator {
             // warranty validity period
             cell = row.createCell(columnIndex++);
             // get unit cell
-            unitCell = row.getCell(columnIndex++);
+            unitCell = row.createCell(columnIndex++);
             // set value and unit
             unitCell.setCellValue(catalogueLine.getWarrantyValidityPeriod().getDurationMeasure().getUnitCode());
-            unitCell.setCellStyle(editableStyle);
             if(catalogueLine.getWarrantyValidityPeriod().getDurationMeasure().getValue() != null){
                 cell.setCellValue(catalogueLine.getWarrantyValidityPeriod().getDurationMeasure().getValue().toString());
             }
             if(rowIndex == 4){
+                unitCell.setCellStyle(editableStyle);
                 cell.setCellStyle(editableStyle);
             }
 
@@ -262,14 +262,14 @@ public class TemplateGenerator {
             // estimated delivery period
             cell = row.createCell(columnIndex++);
             // get unit cell
-            unitCell = row.getCell(columnIndex++);
+            unitCell = row.createCell(columnIndex++);
             // set value and unit
             unitCell.setCellValue(catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure().getUnitCode());
-            unitCell.setCellStyle(editableStyle);
             if(catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure().getValue() != null){
                 cell.setCellValue(catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure().getValue().toString());
             }
             if(rowIndex == 4){
+                unitCell.setCellStyle(editableStyle);
                 cell.setCellStyle(editableStyle);
             }
             // applicable address country
@@ -299,14 +299,14 @@ public class TemplateGenerator {
             // package quantity
             cell = row.createCell(columnIndex++);
             // get unit cell
-            unitCell = row.getCell(columnIndex++);
+            unitCell = row.createCell(columnIndex++);
             // set value and unit
             unitCell.setCellValue(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getUnitCode());
-            unitCell.setCellStyle(editableStyle);
             if(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getValue() != null){
                 cell.setCellValue(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getValue().toString());
             }
             if(rowIndex == 4){
+                unitCell.setCellStyle(editableStyle);
                 cell.setCellStyle(editableStyle);
             }
 
