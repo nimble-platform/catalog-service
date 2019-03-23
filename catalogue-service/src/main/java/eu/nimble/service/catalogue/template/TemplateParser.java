@@ -251,18 +251,22 @@ public class TemplateParser {
             List<TextType> propertyNames = new ArrayList<>();
             List<String> propertyNamesString = parseMultiValues(TemplateGenerator.getCellWithMissingCellPolicy(row, columnIndex));
             for(String propertyNameString: propertyNamesString){
-                // check whether we have a valid language id
-                String languageIdWithAtSign = propertyNameString.substring(propertyNameString.length()-3);
-                // get language id
                 String languageId;
                 String textValue;
-                // if no language id is provided, use en by default
-                if(languageIdWithAtSign.charAt(0) != '@'){
+                // if the value's length is smaller than 3, it does not have any language id
+                if(propertyNameString.length() >= 3){
+                    String languageIdWithAtSign = propertyNameString.substring(propertyNameString.length()-3);
+                    // if no language id is provided, use en by default
+                    if(languageIdWithAtSign.charAt(0) != '@'){
+                        languageId = "en";
+                        textValue = propertyNameString;
+                    } else{
+                        languageId = languageIdWithAtSign.substring(1);
+                        textValue = propertyNameString.substring(0,propertyNameString.length()-3);
+                    }
+                } else{
                     languageId = "en";
                     textValue = propertyNameString;
-                } else{
-                    languageId = languageIdWithAtSign.substring(1);
-                    textValue = propertyNameString.substring(0,propertyNameString.length()-3);
                 }
 
                 TextType textType = new TextType();
@@ -624,18 +628,22 @@ public class TemplateParser {
             } else if (normalizedDataType.compareToIgnoreCase("TEXT") == 0) {
                 results.add(value);
             } else if (normalizedDataType.compareToIgnoreCase("MULTILINGUAL TEXT") == 0){
-                // check whether we have a valid language id
-                String languageIdWithAtSign = value.substring(value.length()-3);
-                // get language id
                 String languageId;
                 String textValue;
-                // if no language id is provided, use en by default
-                if(languageIdWithAtSign.charAt(0) != '@'){
+                // if the value's length is smaller than 3, it does not have any language id
+                if(value.length() >= 3){
+                    String languageIdWithAtSign = value.substring(value.length()-3);
+                    // if no language id is provided, use en by default
+                    if(languageIdWithAtSign.charAt(0) != '@'){
+                        languageId = "en";
+                        textValue = value;
+                    } else{
+                        languageId = languageIdWithAtSign.substring(1);
+                        textValue = value.substring(0,value.length()-3);
+                    }
+                } else{
                     languageId = "en";
                     textValue = value;
-                } else{
-                    languageId = languageIdWithAtSign.substring(1);
-                    textValue = value.substring(0,value.length()-3);
                 }
 
                 // create text type instance
