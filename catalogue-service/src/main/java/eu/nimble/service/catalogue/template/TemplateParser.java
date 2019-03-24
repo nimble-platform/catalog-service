@@ -124,24 +124,13 @@ public class TemplateParser {
                 for (Property property : category.getProperties()) {
                     // check unit
                     // if the user provided unit for a number data type
-                    Row row = productPropertiesTab.getRow(3);
                     Integer columnIndex = TemplateGenerator.findCellIndexForProperty(productPropertiesTab,property.getPreferredName(),category.getPreferredName());
                     if(columnIndex == null) {
                         continue;
                     }
 
-                    Cell cell = TemplateGenerator.getCellWithMissingCellPolicy(row, columnIndex);
-                    if (cell != null) {
-                        String unit = TemplateGenerator.getCellStringValue(cell);
-                        if(!unit.isEmpty()) {
-                            property.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
-                            Unit unitObj = new Unit();
-                            unitObj.setShortName(unit);
-                            property.setUnit(unitObj);
-                        }
-                    }
                     Row propertyRow =  productPropertiesTab.getRow(rowIndex);
-                    cell = TemplateGenerator.getCellWithMissingCellPolicy(propertyRow, columnIndex);
+                    Cell cell = TemplateGenerator.getCellWithMissingCellPolicy(propertyRow, columnIndex);
                     // for Quantity properties, get the cell containing the unit information
                     Cell unitCell = null;
                     if(property.getDataType().contentEquals(TEMPLATE_DATA_TYPE_QUANTITY)){
@@ -167,7 +156,13 @@ public class TemplateParser {
         CodeType associatedClassificationCode = new CodeType();
         itemProp.setItemClassificationCode(associatedClassificationCode);
 
-        itemProp.getName().addAll(property.getPreferredName());
+        // copy names of Property to itemProp
+        for(TextType textType: property.getPreferredName()){
+            TextType text = new TextType();
+            text.setLanguageID(textType.getLanguageID());
+            text.setValue(textType.getValue());
+            itemProp.getName().add(text);
+        }
 
         String valueQualifier = TemplateGenerator.normalizeDataTypeForTemplate(property.getDataType().toUpperCase());
         itemProp.setValueQualifier(property.getDataType());
