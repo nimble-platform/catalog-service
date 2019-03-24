@@ -449,7 +449,7 @@ public class TemplateParser {
                 }
             }
             if (row == null) {
-                throw new TemplateParseException("No trading & delivery terms for item name: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
+                throw new TemplateParseException("No trading & delivery terms for item name: " + getValue(item.getName()) + " id: " + item.getManufacturersItemIdentification().getID());
             }
 
             // parse the terms
@@ -472,7 +472,7 @@ public class TemplateParser {
                     Boolean currencyNotExist = (tmp == null || TemplateGenerator.getCellStringValue(tmp).contentEquals(""));
 
                     if((priceNotExist && !currencyNotExist) || (!priceNotExist && currencyNotExist)){
-                        throw new TemplateParseException("Both amount and currency must be filled for the price of the item name:"+item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
+                        throw new TemplateParseException("Both amount and currency must be filled for the price of the item name:"+getValue(item.getName()) + " id: " + item.getManufacturersItemIdentification().getID());
                     }
 
                     amount.setValue((BigDecimal) parseCell(cell,TEMPLATE_TRADING_DELIVERY_PRICE_AMOUNT, TEMPLATE_DATA_TYPE_NUMBER, false));
@@ -493,7 +493,7 @@ public class TemplateParser {
                     QuantityType minimumOrderQuantity = (QuantityType) parseCell(termsTab,cell,unitCell,TEMPLATE_TRADING_DELIVERY_MINIMUM_ORDER_QUANTITY, TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (minimumOrderQuantity != null) {
                         if (minimumOrderQuantity.getUnitCode() == null) {
-                            throw new TemplateParseException("A unit must be provided for the minimum order quantity of the item name: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
+                            throw new TemplateParseException("A unit must be provided for the minimum order quantity of the item name: " + getValue(item.getName()) + " id: " + item.getManufacturersItemIdentification().getID());
                         }
                     } else {
                         minimumOrderQuantity = new QuantityType();
@@ -508,7 +508,7 @@ public class TemplateParser {
                     QuantityType warrantyValidityPeriod = (QuantityType) parseCell(termsTab,cell,unitCell,TEMPLATE_TRADING_DELIVERY_WARRANTY_VALIDITY_PERIOD, TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (warrantyValidityPeriod != null) {
                         if (warrantyValidityPeriod.getUnitCode() == null) {
-                            throw new TemplateParseException("A unit must be provided for the warranty validity period of the item name: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
+                            throw new TemplateParseException("A unit must be provided for the warranty validity period of the item name: " + getValue(item.getName()) + " id: " + item.getManufacturersItemIdentification().getID());
                         }
                     } else {
                         warrantyValidityPeriod = new QuantityType();
@@ -549,7 +549,7 @@ public class TemplateParser {
                     QuantityType estimatedDeliveryQuantity = (QuantityType) parseCell(termsTab,cell,unitCell,TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD, TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (estimatedDeliveryQuantity != null) {
                         if (estimatedDeliveryQuantity.getUnitCode() == null) {
-                            throw new TemplateParseException("A unit must be provided for the estimated delivery period of the item name: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
+                            throw new TemplateParseException("A unit must be provided for the estimated delivery period of the item name: " + getValue(item.getName()) + " id: " + item.getManufacturersItemIdentification().getID());
                         }
 
                     } else {
@@ -602,7 +602,7 @@ public class TemplateParser {
                     QuantityType packageQuantity = (QuantityType) parseCell(termsTab,cell,unitCell,TEMPLATE_TRADING_DELIVERY_PACKAGE_QUANTITY, TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (packageQuantity != null) {
                         if (packageQuantity.getUnitCode() == null) {
-                            throw new TemplateParseException("A unit must be provided for the package quantity of the item name: " + item.getName() + " id: " + item.getManufacturersItemIdentification().getID());
+                            throw new TemplateParseException("A unit must be provided for the package quantity of the item name: " + getValue(item.getName()) + " id: " + item.getManufacturersItemIdentification().getID());
                         }
                     } else {
                         packageQuantity = new QuantityType();
@@ -791,5 +791,26 @@ public class TemplateParser {
         }
 
         return categories;
+    }
+
+    private String getValue(List<TextType> texts){
+        if(texts == null || texts.size() == 0){
+            return null;
+        }
+        String englishValue = null;
+        for(TextType text:texts){
+            if(text.getLanguageID().contentEquals("en")){
+                englishValue = text.getValue();
+            }
+            else if(text.getLanguageID().contentEquals(defaultLanguage)){
+                return text.getValue();
+            }
+        }
+
+        if(englishValue != null){
+            return englishValue;
+        }
+
+        return texts.get(0).getValue();
     }
 }
