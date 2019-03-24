@@ -16,6 +16,7 @@ import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.*;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -134,7 +135,7 @@ public class TemplateGenerator {
                 unitCell.setCellValue(dimensionType.getMeasure().getUnitCode());
                 unitCell.setCellStyle(editableStyle);
                 if(dimensionType.getMeasure().getValue() != null){
-                    cell.setCellValue(dimensionType.getMeasure().getValue().toString());
+                    cell.setCellValue(new DecimalFormat(".00").format(dimensionType.getMeasure().getValue()));
                 }
                 if(rowIndex == 4){
                     cell.setCellStyle(editableStyle);
@@ -175,7 +176,7 @@ public class TemplateGenerator {
             // set value and unit
             unitCell.setCellValue(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getCurrencyID());
             if(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue() != null){
-                cell.setCellValue(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue().toString());
+                cell.setCellValue(new DecimalFormat(".00").format(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue()));
             }
             if(rowIndex == 4){
                 cell.setCellStyle(editableStyle);
@@ -189,7 +190,7 @@ public class TemplateGenerator {
             // set value and unit
             unitCell.setCellValue(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getUnitCode());
             if(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getValue() != null){
-                cell.setCellValue(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getValue().toString());
+                cell.setCellValue(new DecimalFormat(".00").format(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getValue()));
             }
             if(rowIndex == 4){
                 unitCell.setCellStyle(editableStyle);
@@ -204,7 +205,7 @@ public class TemplateGenerator {
             if(catalogueLine.getMinimumOrderQuantity() != null){
                 unitCell.setCellValue(catalogueLine.getMinimumOrderQuantity().getUnitCode());
                 if(catalogueLine.getMinimumOrderQuantity().getValue() != null){
-                    cell.setCellValue(catalogueLine.getMinimumOrderQuantity().getValue().toString());
+                    cell.setCellValue(new DecimalFormat(".00").format(catalogueLine.getMinimumOrderQuantity().getValue()));
                 }
             }
             if(rowIndex == 4){
@@ -227,7 +228,7 @@ public class TemplateGenerator {
             // set value and unit
             unitCell.setCellValue(catalogueLine.getWarrantyValidityPeriod().getDurationMeasure().getUnitCode());
             if(catalogueLine.getWarrantyValidityPeriod().getDurationMeasure().getValue() != null){
-                cell.setCellValue(catalogueLine.getWarrantyValidityPeriod().getDurationMeasure().getValue().toString());
+                cell.setCellValue(new DecimalFormat(".00").format(catalogueLine.getWarrantyValidityPeriod().getDurationMeasure().getValue()));
             }
             if(rowIndex == 4){
                 unitCell.setCellStyle(editableStyle);
@@ -266,7 +267,7 @@ public class TemplateGenerator {
             // set value and unit
             unitCell.setCellValue(catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure().getUnitCode());
             if(catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure().getValue() != null){
-                cell.setCellValue(catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure().getValue().toString());
+                cell.setCellValue(new DecimalFormat(".00").format(catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure().getValue()));
             }
             if(rowIndex == 4){
                 unitCell.setCellStyle(editableStyle);
@@ -303,7 +304,7 @@ public class TemplateGenerator {
             // set value and unit
             unitCell.setCellValue(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getUnitCode());
             if(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getValue() != null){
-                cell.setCellValue(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getValue().toString());
+                cell.setCellValue(new DecimalFormat(".00").format(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getValue()));
             }
             if(rowIndex == 4){
                 unitCell.setCellStyle(editableStyle);
@@ -389,9 +390,9 @@ public class TemplateGenerator {
                             // we need to set unit as well
                             Cell unitCell = productPropertiesTab.getRow(rowIndex).createCell(++columnIndex);
                             unitCell.setCellValue(itemProperty.getValueQuantity().get(0).getUnitCode());
-                            unitCell.setCellStyle(editableStyle);
                             if(rowIndex == 4){
                                 cell.setCellStyle(editableStyle);
+                                unitCell.setCellStyle(editableStyle);
                             }
                         }
                     } else if(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_MULTILINGUAL_TEXT)){
@@ -1933,12 +1934,12 @@ public class TemplateGenerator {
             }
             else if(valueQualifier.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_NUMBER)){
                 for(BigDecimal bigDecimal:(List<BigDecimal>)values){
-                    strings.add(bigDecimal.toString());
+                    strings.add(new DecimalFormat(".00").format(bigDecimal));
                 }
             }
             else if(valueQualifier.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)){
                 for(QuantityType quantityType:(List<QuantityType>)values){
-                    strings.add(quantityType.getValue().toString());
+                    strings.add(new DecimalFormat(".00").format(quantityType.getValue()));
                 }
             }
 
