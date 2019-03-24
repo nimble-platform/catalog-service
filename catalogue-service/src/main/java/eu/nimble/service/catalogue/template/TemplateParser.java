@@ -438,6 +438,7 @@ public class TemplateParser {
                 row = termsTab.getRow(rowIndex);
                 cell = row.getCell(1);
                 if (cell == null) {
+                    row = null;
                     continue;
                 } else {
                     if (TemplateGenerator.getCellStringValue(cell).contentEquals(item.getManufacturersItemIdentification().getID())) {
