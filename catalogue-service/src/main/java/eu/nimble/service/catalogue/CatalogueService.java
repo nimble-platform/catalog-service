@@ -81,7 +81,7 @@ public interface CatalogueService {
 
     CatalogueLineType getCatalogueLine(long hjid);
 
-    List<CatalogueLineType> getCatalogueLines(List<Long> hjids);
+    List<CatalogueLineType> getCatalogueLines(List<Long> hjids,CatalogueLineSortOptions sortOption,int limit, int pageNo);
 
     <T> T getCatalogueLine(String catalogueId, String catalogueLineId);
 

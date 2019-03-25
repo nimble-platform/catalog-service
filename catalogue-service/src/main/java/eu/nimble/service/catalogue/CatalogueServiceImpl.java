@@ -455,8 +455,8 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public List<CatalogueLineType> getCatalogueLines(List<Long> hjids) {
-        return CatalogueLinePersistenceUtil.getCatalogueLines(hjids);
+    public List<CatalogueLineType> getCatalogueLines(List<Long> hjids,CatalogueLineSortOptions sortOption,int limit, int pageNo) {
+        return CatalogueLinePersistenceUtil.getCatalogueLines(hjids,sortOption,limit,pageNo);
     }
 
     @Override

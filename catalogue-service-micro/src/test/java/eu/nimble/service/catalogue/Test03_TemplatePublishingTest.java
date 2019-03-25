@@ -39,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @ActiveProfiles("local_dev")
 @RunWith(SpringJUnit4ClassRunner.class)
-public class Test05_TemplatePublishingTest {
+public class Test03_TemplatePublishingTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -74,7 +74,7 @@ public class Test05_TemplatePublishingTest {
      */
     @Test
     public void test1_uploadTemplate() throws Exception {
-        InputStream is = Test05_TemplatePublishingTest.class.getResourceAsStream("/template/product_data_template.xlsx");
+        InputStream is = Test03_TemplatePublishingTest.class.getResourceAsStream("/template/product_data_template.xlsx");
         MockMultipartFile mutipartFile = new MockMultipartFile("file", fileName, contentType, is);
 
         MvcResult result = this.mockMvc.perform(MockMvcRequestBuilders
@@ -154,7 +154,7 @@ public class Test05_TemplatePublishingTest {
      */
     @Test
     public void test2_uploadTemplate() throws Exception {
-        InputStream is = Test05_TemplatePublishingTest.class.getResourceAsStream("/template/product_data_template_new.xlsx");
+        InputStream is = Test03_TemplatePublishingTest.class.getResourceAsStream("/template/product_data_template_new.xlsx");
         MockMultipartFile mutipartFile = new MockMultipartFile("file", fileName, contentType, is);
 
         MvcResult result = this.mockMvc.perform(MockMvcRequestBuilders
