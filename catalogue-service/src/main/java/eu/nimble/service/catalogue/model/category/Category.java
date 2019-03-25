@@ -34,9 +34,17 @@ public class Category {
             language = "en";
         }
 
+        String englishValue = null;
+
         for(TextType pNames: preferredName) {
             if(pNames.getLanguageID().equals(language))
                 return pNames.getValue();
+            else if(pNames.getLanguageID().equals("en"))
+                englishValue = pNames.getValue();
+        }
+        // if we have a english value,return it
+        if(englishValue != null){
+            return englishValue;
         }
         return null;
     }

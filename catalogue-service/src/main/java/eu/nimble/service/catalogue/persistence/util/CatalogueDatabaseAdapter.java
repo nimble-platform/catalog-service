@@ -24,29 +24,30 @@ import java.util.ArrayList;
 public class CatalogueDatabaseAdapter {
     private static final Logger logger = LoggerFactory.getLogger(CatalogueDatabaseAdapter.class);
 
-    public static void syncPartyInUBLDB(String partyId, String bearerToken) {
-        PartyType catalogueParty = PartyTypePersistenceUtil.getPartyById(partyId);
-        PartyType identityParty;
+    public static PartyType syncPartyInUBLDB(String partyId, String bearerToken) {
         try {
-            identityParty = SpringBridge.getInstance().getIdentityClientTyped().getParty(bearerToken, partyId);
-            identityParty = checkPartyIntegrity(identityParty);
-        } catch (IOException e) {
-            String msg = String.format("Failed to get party with id: %s", partyId);
-            logger.error(msg, e);
-            throw new RuntimeException(msg, e);
-        }
+            SpringBridge.getInstance().getLockPool().getLockForParty(partyId).writeLock().lock();
 
-        if(catalogueParty == null) {
-            new JPARepositoryFactory().forCatalogueRepository().persistEntity(identityParty);
-            indexParty(identityParty);
+            PartyType catalogueParty = PartyTypePersistenceUtil.getPartyById(partyId);
+            if (catalogueParty == null) {
+                PartyType identityParty;
+                try {
+                    identityParty = SpringBridge.getInstance().getIdentityClientTyped().getParty(bearerToken, partyId);
+                    identityParty = checkPartyIntegrity(identityParty);
 
-        } else {
-            DataModelUtility.nullifyPartyFieldsExceptHjid(catalogueParty);
-            // updating the entity to delete the old data. Otherwise, we get a duplicate id exception for party identifications
-            new JPARepositoryFactory().forCatalogueRepository().updateEntity(catalogueParty);
-            DataModelUtility.copyPartyExceptHjid(catalogueParty, identityParty);
-            new JPARepositoryFactory().forCatalogueRepository().updateEntity(catalogueParty);
-            indexParty(catalogueParty);
+                } catch (IOException e) {
+                    String msg = String.format("Failed to get party with id: %s", partyId);
+                    logger.error(msg, e);
+                    throw new RuntimeException(msg, e);
+                }
+                new JPARepositoryFactory().forCatalogueRepository().persistEntity(identityParty);
+                return identityParty;
+
+            } else {
+                return catalogueParty;
+            }
+        } finally {
+            SpringBridge.getInstance().getLockPool().getLockForParty(partyId).writeLock().unlock();
         }
     }
 

@@ -50,7 +50,7 @@ public class TemplateConfig {
     public static String TEMPLATE_INFO_TEXT = "        TEXT : The data that should be set for properties representing textual values";
     public static String TEMPLATE_INFO_MULTILINGUAL_TEXT = "        MULTILINGUAL TEXT : The data type that should be set for properties which can have different values for different languages.";
     public static String TEMPLATE_INFO_NUMBER = "        NUMBER : The data type that should be specified for properties representing numeric values";
-    public static String TEMPLATE_INFO_QUANTITY = "        QUANTITY : If a numeric property must have an associated unit (e.g. a dimension property), such a property must have QUANTITY type.";
+    public static String TEMPLATE_INFO_QUANTITY = "        QUANTITY : If a numeric property must have an associated unit (e.g. a dimension property), such a property must have QUANTITY type. Each quantity property is represented by two adjacent columns QUANTITY VALUE and QUANTITY UNIT.";
     public static String TEMPLATE_INFO_FILE = "        FILE : When a file (image, pdf, etc.) is to be specified for a property (e.g. images, safety sheet, etc.), this data type is used. You should specify the location of the file on your system e.g. C:\\Documents\\safetysheet.pdf.";
     public static String TEMPLATE_INFO_BOOLEAN = "        BOOLEAN : Properties indicating a yes/no or true/false values must be annotated with this data type. Available values are: yes, no, true, false.";
     public static String TEMPLATE_INFO_THE_FOURTH_ROW = "The 4th row shows the unit associated with the property value if there is any.";
@@ -121,6 +121,8 @@ public class TemplateConfig {
     public static String TEMPLATE_DATA_TYPE_STRING_TRANSLATABLE = "STRING_TRANSLATABLE";
     public static String TEMPLATE_DATA_TYPE_BOOLEAN = "BOOLEAN";
 
+    public static String TEMPLATE_QUANTITY_VALUE = "QUANTITY VALUE";
+    public static String TEMPLATE_QUANTITY_UNIT = "QUANTITY UNIT";
 
     private static String defaultLanguage = "en";
 
@@ -175,19 +177,19 @@ public class TemplateConfig {
         // width
         prop = new Property();
         prop.addPreferredName(TEMPLATE_PRODUCT_PROPERTIES_WIDTH, defaultLanguage);
-        prop.setDataType("QUANTITY");
+        prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
         properties.add(prop);
 
         // length
         prop = new Property();
         prop.addPreferredName(TEMPLATE_PRODUCT_PROPERTIES_LENGTH, defaultLanguage);
-        prop.setDataType("QUANTITY");
+        prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
         properties.add(prop);
 
         // height
         prop = new Property();
         prop.addPreferredName(TEMPLATE_PRODUCT_PROPERTIES_HEIGHT, defaultLanguage);
-        prop.setDataType("QUANTITY");
+        prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
         properties.add(prop);
         return properties;
     }
@@ -255,7 +257,7 @@ public class TemplateConfig {
         // estimated delivery period
         prop = new Property();
         prop.addPreferredName(TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD, defaultLanguage);
-        prop.setDataType("QUANTITY");
+        prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
         properties.add(prop);
 
         // applicable address territory country
@@ -285,7 +287,7 @@ public class TemplateConfig {
         // packaging quantity
         prop = new Property();
         prop.addPreferredName(TEMPLATE_TRADING_DELIVERY_PACKAGE_QUANTITY, defaultLanguage);
-        prop.setDataType("QUANTITY");
+        prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
         properties.add(prop);
 
         return properties;

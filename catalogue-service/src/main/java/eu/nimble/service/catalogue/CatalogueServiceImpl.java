@@ -12,11 +12,13 @@ import eu.nimble.service.catalogue.index.ItemIndexClient;
 import eu.nimble.service.catalogue.template.TemplateGenerator;
 import eu.nimble.service.catalogue.template.TemplateParser;
 import eu.nimble.service.catalogue.util.DataIntegratorUtil;
+import eu.nimble.service.catalogue.util.LanguageUtil;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
 import eu.nimble.service.catalogue.validation.ValidationException;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CommodityClassificationType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
@@ -25,6 +27,7 @@ import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
 import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
 import org.apache.commons.io.IOUtils;
+import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,14 +36,12 @@ import org.springframework.stereotype.Component;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.activation.MimetypesFileTypeMap;
+import javax.xml.crypto.Data;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -273,6 +274,48 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
+    public Map<Workbook,String> generateTemplateForCatalogue(CatalogueType catalogue,String languageId) {
+        Map<HashSet<String>,List<CatalogueLineType>> categoryCatalogueLineMap = new HashMap<>();
+        // create category-catalogue lines map
+        for(CatalogueLineType catalogueLine:catalogue.getCatalogueLine()){
+            List<String> uris = new ArrayList<>();
+            for(CommodityClassificationType commodityClassification:catalogueLine.getGoodsItem().getItem().getCommodityClassification()){
+                if(commodityClassification.getItemClassificationCode().getURI() != null){
+                    uris.add(commodityClassification.getItemClassificationCode().getURI());
+                }
+            }
+
+            HashSet<String> categories = new HashSet<>(uris);
+            if(categoryCatalogueLineMap.containsKey(categories)){
+                List<CatalogueLineType> catalogueLineTypes = new ArrayList<>();
+                catalogueLineTypes.add(catalogueLine);
+                catalogueLineTypes.addAll(categoryCatalogueLineMap.get(categories));
+                categoryCatalogueLineMap.put(categories,catalogueLineTypes);
+            } else{
+                categoryCatalogueLineMap.put(categories,Arrays.asList(catalogueLine));
+            }
+        }
+        // workbook-file name map
+        Map<Workbook,String> workbooks = new HashMap<>();
+
+        for (Map.Entry<HashSet<String>, List<CatalogueLineType>> entry : categoryCatalogueLineMap.entrySet()) {
+            // get categories which are not Default or Custom categories
+            List<Category> categories = new ArrayList<>();
+            List<CommodityClassificationType> leafCommodityClassifications = DataIntegratorUtil.getLeafCategories(entry.getValue().get(0).getGoodsItem().getItem().getCommodityClassification());
+            for(CommodityClassificationType commodityClassification:leafCommodityClassifications){
+                categories.add(indexCategoryService.getCategory(commodityClassification.getItemClassificationCode().getListID(),commodityClassification.getItemClassificationCode().getValue()));
+            }
+            // generate a template for the catalogue lines
+            TemplateGenerator templateGenerator = new TemplateGenerator();
+            Workbook template = templateGenerator.generateTemplateForCatalogueLines(entry.getValue(),categories,languageId);
+            // add it to the map
+            workbooks.put(template,createWorkbookName(categories,languageId));
+        }
+        return workbooks;
+    }
+
+
+    @Override
     public CatalogueType parseCatalogue(InputStream catalogueTemplate, String uploadMode, PartyType party) {
         CatalogueType catalogue = getCatalogue("default", party.getPartyIdentification().get(0).getID());
         boolean newCatalogue = false;
@@ -310,7 +353,35 @@ public class CatalogueServiceImpl implements CatalogueService {
     private void updateLinesForUploadMode(CatalogueType catalogue, String uploadMode, List<CatalogueLineType> catalogueLines) {
         List<CatalogueLineType> newCatalogueLines = new ArrayList<>();
         if (uploadMode.compareToIgnoreCase("replace") == 0) {
-            catalogue.getCatalogueLine().clear();
+            // since each catalogue line has the same categories, it is OK to get categories using the first one
+            CommodityClassificationType defaultCategory = DataIntegratorUtil.getDefaultCategories(catalogueLines.get(0));
+            List<String> categoriesUris = DataIntegratorUtil.getCategoryUris(catalogueLines.get(0));
+            // catalogue lines which will be removed and will be replaced by the new ones
+            List<CatalogueLineType> catalogueLinesToBeRemoved = new ArrayList<>();
+            for(CatalogueLineType catalogueLine:catalogue.getCatalogueLine()){
+                // firstly,both catalogue line should have the same number of categories,otherwise that means that they do not have the same categories.
+                if(catalogueLine.getGoodsItem().getItem().getCommodityClassification().size() == categoriesUris.size() + 1){
+                    boolean remove = true;
+                    // check catalogue line's categories
+                    for (CommodityClassificationType classificationType:catalogueLine.getGoodsItem().getItem().getCommodityClassification()){
+                        if(classificationType.getItemClassificationCode().getListID().contentEquals("Default")){
+                            if(!defaultCategory.getItemClassificationCode().getValue().contentEquals(classificationType.getItemClassificationCode().getValue())){
+                                remove = false;
+                                break;
+                            }
+                        } else if(!categoriesUris.contains(classificationType.getItemClassificationCode().getURI())){
+                            remove = false;
+                            break;
+                        }
+                    }
+
+                    if(remove){
+                        catalogueLinesToBeRemoved.add(catalogueLine);
+                    }
+                }
+            }
+
+            catalogue.getCatalogueLine().removeAll(catalogueLinesToBeRemoved);
             catalogue.getCatalogueLine().addAll(catalogueLines);
         } else {
 
@@ -356,55 +427,61 @@ public class CatalogueServiceImpl implements CatalogueService {
                 try {
                     String fileName = ze.getName();
                     String mimeType = MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(fileName);
+                    String type = mimeType.split("/")[0];
                     String prefix = fileName.split("\\.")[0];
 
-                    // find the item according to the prefix provided in the image name
-                    ItemType item = null;
-                    for (CatalogueLineType line : catalogue.getCatalogueLine()) {
-                        if (line.getGoodsItem().getItem().getManufacturersItemIdentification().getID().contentEquals(prefix)) {
-                            item = line.getGoodsItem().getItem();
-                            break;
+                    if (type.equals("image")) {
+                        // find the item according to the prefix provided in the image name
+                        ItemType item = null;
+                        for (CatalogueLineType line : catalogue.getCatalogueLine()) {
+                            if (line.getGoodsItem().getItem().getManufacturersItemIdentification().getID().contentEquals(prefix)) {
+                                item = line.getGoodsItem().getItem();
+                                break;
+                            }
                         }
-                    }
-                    if (item == null) {
-                        logger.warn("No product to assign image with prefix: {}", prefix);
+                        if (item == null) {
+                            logger.warn("No product to assign image with prefix: {}", prefix);
 
-                        // item is available
-                    } else {
-                        // prepare the new binary content
-                        IOUtils.copy(imagePackage, baos);
-                        BinaryObjectType binaryObject = new BinaryObjectType();
-                        binaryObject.setMimeCode(mimeType);
-                        binaryObject.setFileName(ze.getName());
-                        binaryObject.setValue(baos.toByteArray());
-
-                        // check whether the image is already attached to the item
-                        ItemType finalItem = item;
-                        ZipEntry finalZe = ze;
-                        int itemIndex = IntStream.range(0, item.getProductImage().size())
-                                .filter(i -> finalItem.getProductImage().get(i).getFileName().contentEquals(finalZe.getName()))
-                                .findFirst()
-                                .orElse(-1);
-                        // if an image exists with the same name put it to the previous index
-                        if(itemIndex != -1) {
-                            item.getProductImage().remove(itemIndex);
-                            item.getProductImage().add(itemIndex, binaryObject);
+                            // item is available
                         } else {
-                            item.getProductImage().add(binaryObject);
+                            // prepare the new binary content
+                            IOUtils.copy(imagePackage, baos);
+                            BinaryObjectType binaryObject = new BinaryObjectType();
+                            binaryObject.setMimeCode(mimeType);
+                            binaryObject.setFileName(ze.getName());
+                            binaryObject.setValue(baos.toByteArray());
+
+                            // check whether the image is already attached to the item
+                            ItemType finalItem = item;
+                            ZipEntry finalZe = ze;
+                            int itemIndex = IntStream.range(0, item.getProductImage().size())
+                                    .filter(i -> finalItem.getProductImage().get(i).getFileName().contentEquals(finalZe.getName()))
+                                    .findFirst()
+                                    .orElse(-1);
+                            // if an image exists with the same name put it to the previous index
+                            if (itemIndex != -1) {
+                                item.getProductImage().remove(itemIndex);
+                                item.getProductImage().add(itemIndex, binaryObject);
+                            } else {
+                                item.getProductImage().add(binaryObject);
+                            }
+
+                            logger.info("Image {} added to item {}", fileName, item.getManufacturersItemIdentification().getID());
                         }
 
-                        logger.info("Image {} added to item {}", fileName, item.getManufacturersItemIdentification().getID());
+                    } else {
+                        logger.warn("The file: {} is not an image", fileName);
                     }
-
-                } catch (IOException e) {
+                } catch(IOException e){
                     logger.warn("Failed to get data from the zip entry: {}", ze.getName(), e);
-                } finally {
+                } finally{
                     try {
                         baos.close();
                     } catch (IOException e) {
                         logger.warn("Failed to close baos", e);
                     }
                 }
+
                 imagePackage.closeEntry();
                 ze = imagePackage.getNextEntry();
             }
@@ -455,8 +532,8 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public List<CatalogueLineType> getCatalogueLines(List<Long> hjids) {
-        return CatalogueLinePersistenceUtil.getCatalogueLines(hjids);
+    public List<CatalogueLineType> getCatalogueLines(List<Long> hjids,CatalogueLineSortOptions sortOption,int limit, int pageNo) {
+        return CatalogueLinePersistenceUtil.getCatalogueLines(hjids,sortOption,limit,pageNo);
     }
 
     @Override
@@ -520,6 +597,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         existingCatalogueLine.setMinimumOrderQuantity(newCatalogueLine.getMinimumOrderQuantity());
         existingCatalogueLine.setFreeOfChargeIndicator(newCatalogueLine.isFreeOfChargeIndicator());
         existingCatalogueLine.setWarrantyValidityPeriod(newCatalogueLine.getWarrantyValidityPeriod());
+        existingCatalogueLine.getWarrantyInformationItems().clear();
         existingCatalogueLine.setWarrantyInformation(newCatalogueLine.getWarrantyInformation());
         existingCatalogueLine.getGoodsItem().getDeliveryTerms().setIncoterms(newCatalogueLine.getGoodsItem().getDeliveryTerms().getIncoterms());
         existingCatalogueLine.getGoodsItem().getDeliveryTerms().setSpecialTerms(newCatalogueLine.getGoodsItem().getDeliveryTerms().getSpecialTerms());
@@ -527,5 +605,26 @@ public class CatalogueServiceImpl implements CatalogueService {
         existingCatalogueLine.getRequiredItemLocationQuantity().setApplicableTerritoryAddress(newCatalogueLine.getRequiredItemLocationQuantity().getApplicableTerritoryAddress());
         existingCatalogueLine.getGoodsItem().getDeliveryTerms().setTransportModeCode(newCatalogueLine.getGoodsItem().getDeliveryTerms().getTransportModeCode());
         existingCatalogueLine.getGoodsItem().setContainingPackage(newCatalogueLine.getGoodsItem().getContainingPackage());
+    }
+
+    // using the given categories' names, it creates a name for the workbook consisting of the given categories
+    private String createWorkbookName(List<Category> categories,String languageId){
+        // get category names
+        StringBuilder stringBuilder = new StringBuilder();
+        int size = categories.size();
+        for(int i = 0 ; i < size; i++){
+            stringBuilder.append(LanguageUtil.getValue(categories.get(i).getPreferredName(),languageId));
+            if(i != size-1){
+                stringBuilder.append("_");
+            }
+        }
+        // check whether the filename exceeds the limit (256 characters including the extension)
+        if(stringBuilder.length() > 250){
+            stringBuilder = new StringBuilder(stringBuilder.substring(0,247));
+            stringBuilder.append("...");
+        }
+        // add the extension
+        stringBuilder.append(".xlsx");
+        return stringBuilder.toString();
     }
 }
