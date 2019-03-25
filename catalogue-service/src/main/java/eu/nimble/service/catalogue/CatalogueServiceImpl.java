@@ -26,6 +26,7 @@ import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
 import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
 import org.apache.commons.io.IOUtils;
+import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -423,55 +424,64 @@ public class CatalogueServiceImpl implements CatalogueService {
                 try {
                     String fileName = ze.getName();
                     String mimeType = MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(fileName);
+                    String type = mimeType.split("/")[0];
                     String prefix = fileName.split("\\.")[0];
 
-                    // find the item according to the prefix provided in the image name
-                    ItemType item = null;
-                    for (CatalogueLineType line : catalogue.getCatalogueLine()) {
-                        if (line.getGoodsItem().getItem().getManufacturersItemIdentification().getID().contentEquals(prefix)) {
-                            item = line.getGoodsItem().getItem();
-                            break;
+                    if (type.equals("image")) {
+                        imagePackage.closeEntry();
+                        ze = imagePackage.getNextEntry();
+
+                        // find the item according to the prefix provided in the image name
+                        ItemType item = null;
+                        for (CatalogueLineType line : catalogue.getCatalogueLine()) {
+                            if (line.getGoodsItem().getItem().getManufacturersItemIdentification().getID().contentEquals(prefix)) {
+                                item = line.getGoodsItem().getItem();
+                                break;
+                            }
                         }
-                    }
-                    if (item == null) {
-                        logger.warn("No product to assign image with prefix: {}", prefix);
+                        if (item == null) {
+                            logger.warn("No product to assign image with prefix: {}", prefix);
 
-                        // item is available
-                    } else {
-                        // prepare the new binary content
-                        IOUtils.copy(imagePackage, baos);
-                        BinaryObjectType binaryObject = new BinaryObjectType();
-                        binaryObject.setMimeCode(mimeType);
-                        binaryObject.setFileName(ze.getName());
-                        binaryObject.setValue(baos.toByteArray());
-
-                        // check whether the image is already attached to the item
-                        ItemType finalItem = item;
-                        ZipEntry finalZe = ze;
-                        int itemIndex = IntStream.range(0, item.getProductImage().size())
-                                .filter(i -> finalItem.getProductImage().get(i).getFileName().contentEquals(finalZe.getName()))
-                                .findFirst()
-                                .orElse(-1);
-                        // if an image exists with the same name put it to the previous index
-                        if(itemIndex != -1) {
-                            item.getProductImage().remove(itemIndex);
-                            item.getProductImage().add(itemIndex, binaryObject);
+                            // item is available
                         } else {
-                            item.getProductImage().add(binaryObject);
+                            // prepare the new binary content
+                            IOUtils.copy(imagePackage, baos);
+                            BinaryObjectType binaryObject = new BinaryObjectType();
+                            binaryObject.setMimeCode(mimeType);
+                            binaryObject.setFileName(ze.getName());
+                            binaryObject.setValue(baos.toByteArray());
+
+                            // check whether the image is already attached to the item
+                            ItemType finalItem = item;
+                            ZipEntry finalZe = ze;
+                            int itemIndex = IntStream.range(0, item.getProductImage().size())
+                                    .filter(i -> finalItem.getProductImage().get(i).getFileName().contentEquals(finalZe.getName()))
+                                    .findFirst()
+                                    .orElse(-1);
+                            // if an image exists with the same name put it to the previous index
+                            if (itemIndex != -1) {
+                                item.getProductImage().remove(itemIndex);
+                                item.getProductImage().add(itemIndex, binaryObject);
+                            } else {
+                                item.getProductImage().add(binaryObject);
+                            }
+
+                            logger.info("Image {} added to item {}", fileName, item.getManufacturersItemIdentification().getID());
                         }
 
-                        logger.info("Image {} added to item {}", fileName, item.getManufacturersItemIdentification().getID());
+                    } else {
+                        logger.warn("The file: {} is not an image", fileName);
                     }
-
-                } catch (IOException e) {
+                } catch(IOException e){
                     logger.warn("Failed to get data from the zip entry: {}", ze.getName(), e);
-                } finally {
+                } finally{
                     try {
                         baos.close();
                     } catch (IOException e) {
                         logger.warn("Failed to close baos", e);
                     }
                 }
+
                 imagePackage.closeEntry();
                 ze = imagePackage.getNextEntry();
             }
