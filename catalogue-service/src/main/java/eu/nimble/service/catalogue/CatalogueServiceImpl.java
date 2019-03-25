@@ -12,6 +12,7 @@ import eu.nimble.service.catalogue.index.ItemIndexClient;
 import eu.nimble.service.catalogue.template.TemplateGenerator;
 import eu.nimble.service.catalogue.template.TemplateParser;
 import eu.nimble.service.catalogue.util.DataIntegratorUtil;
+import eu.nimble.service.catalogue.util.LanguageUtil;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
 import eu.nimble.service.catalogue.validation.ValidationException;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
@@ -273,7 +274,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public List<Workbook> generateTemplateForCatalogue(CatalogueType catalogue,String languageId) {
+    public Map<Workbook,String> generateTemplateForCatalogue(CatalogueType catalogue,String languageId) {
         Map<HashSet<String>,List<CatalogueLineType>> categoryCatalogueLineMap = new HashMap<>();
         // create category-catalogue lines map
         for(CatalogueLineType catalogueLine:catalogue.getCatalogueLine()){
@@ -294,8 +295,8 @@ public class CatalogueServiceImpl implements CatalogueService {
                 categoryCatalogueLineMap.put(categories,Arrays.asList(catalogueLine));
             }
         }
-
-        List<Workbook> workbooks = new ArrayList<>();
+        // workbook-file name map
+        Map<Workbook,String> workbooks = new HashMap<>();
 
         for (Map.Entry<HashSet<String>, List<CatalogueLineType>> entry : categoryCatalogueLineMap.entrySet()) {
             // get categories which are not Default or Custom categories
@@ -307,10 +308,12 @@ public class CatalogueServiceImpl implements CatalogueService {
             // generate a template for the catalogue lines
             TemplateGenerator templateGenerator = new TemplateGenerator();
             Workbook template = templateGenerator.generateTemplateForCatalogueLines(entry.getValue(),categories,languageId);
-            workbooks.add(template);
+            // add it to the map
+            workbooks.put(template,createWorkbookName(categories,languageId));
         }
         return workbooks;
     }
+
 
     @Override
     public CatalogueType parseCatalogue(InputStream catalogueTemplate, String uploadMode, PartyType party) {
@@ -532,8 +535,8 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public List<CatalogueLineType> getCatalogueLines(List<Long> hjids) {
-        return CatalogueLinePersistenceUtil.getCatalogueLines(hjids);
+    public List<CatalogueLineType> getCatalogueLines(List<Long> hjids,CatalogueLineSortOptions sortOption,int limit, int pageNo) {
+        return CatalogueLinePersistenceUtil.getCatalogueLines(hjids,sortOption,limit,pageNo);
     }
 
     @Override
@@ -605,5 +608,26 @@ public class CatalogueServiceImpl implements CatalogueService {
         existingCatalogueLine.getRequiredItemLocationQuantity().setApplicableTerritoryAddress(newCatalogueLine.getRequiredItemLocationQuantity().getApplicableTerritoryAddress());
         existingCatalogueLine.getGoodsItem().getDeliveryTerms().setTransportModeCode(newCatalogueLine.getGoodsItem().getDeliveryTerms().getTransportModeCode());
         existingCatalogueLine.getGoodsItem().setContainingPackage(newCatalogueLine.getGoodsItem().getContainingPackage());
+    }
+
+    // using the given categories' names, it creates a name for the workbook consisting of the given categories
+    private String createWorkbookName(List<Category> categories,String languageId){
+        // get category names
+        StringBuilder stringBuilder = new StringBuilder();
+        int size = categories.size();
+        for(int i = 0 ; i < size; i++){
+            stringBuilder.append(LanguageUtil.getValue(categories.get(i).getPreferredName(),languageId));
+            if(i != size-1){
+                stringBuilder.append("_");
+            }
+        }
+        // check whether the filename exceeds the limit (256 characters including the extension)
+        if(stringBuilder.length() > 250){
+            stringBuilder = new StringBuilder(stringBuilder.substring(0,247));
+            stringBuilder.append("...");
+        }
+        // add the extension
+        stringBuilder.append(".xlsx");
+        return stringBuilder.toString();
     }
 }

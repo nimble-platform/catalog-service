@@ -35,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @ActiveProfiles("local_dev")
 @RunWith(SpringJUnit4ClassRunner.class)
-public class Test06_BinaryContentTest {
+public class Test04_BinaryContentTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -157,7 +157,7 @@ public class Test06_BinaryContentTest {
      */
     @Test
     public void test16_uploadImages() throws Exception {
-        InputStream is = Test06_BinaryContentTest.class.getResourceAsStream("/images/ProductImages.zip");
+        InputStream is = Test04_BinaryContentTest.class.getResourceAsStream("/images/ProductImages.zip");
         MockMultipartFile mutipartFile = new MockMultipartFile("package", imagesZipName, contentType, is);
         // upload images
         MvcResult result = this.mockMvc.perform(MockMvcRequestBuilders
@@ -191,7 +191,7 @@ public class Test06_BinaryContentTest {
      */
     @Test
     public void test17_uploadImages() throws Exception {
-        InputStream is = Test06_BinaryContentTest.class.getResourceAsStream("/images/ProductImagesNew.zip");
+        InputStream is = Test04_BinaryContentTest.class.getResourceAsStream("/images/ProductImagesNew.zip");
         MockMultipartFile mutipartFile = new MockMultipartFile("package", imagesZipName, contentType, is);
         // upload images
         MvcResult result = this.mockMvc.perform(MockMvcRequestBuilders
