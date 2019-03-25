@@ -14,6 +14,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Controller
 public class ImportExportController {
@@ -85,6 +94,112 @@ public class ImportExportController {
         } catch (Exception e) {
             String msg = String.format("Failed to import catalogue: %s", serializedCatalogue);
             return HttpResponseUtil.createResponseEntityAndLog(msg, e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+        }
+    }
+
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Exports the catalogue specified with uuid. The products are exported to separate " +
+            "Excel sheets according to the commodity classifications (categories). Each distinct combination of categories " +
+            "of products are exported to a separate sheet. The sheets are collected into a ZIP-compressed file.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Imported the catalogue successfully"),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 500, message = "Unexpected error while exporting catalogue")
+    })
+    @RequestMapping(value = "/catalogue/export",
+            method = RequestMethod.GET,
+            produces = {"application/zip"})
+    public void exportCatalogue(
+            @ApiParam(value = "Identifier of the catalogue to be exported", required = true) @RequestParam("uuid") String catalogueUuid,
+            @ApiParam(value = "language id", required = true) @RequestParam("languageId") String languageId,
+            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
+            HttpServletResponse response) {
+
+        log.info("Incoming request to export catalogue with uuid {}", catalogueUuid);
+        // token check
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return;
+        }
+        // check whether the catalogue with the given uuid exists or not
+        CatalogueType catalogue;
+        try {
+            catalogue = service.getCatalogue(catalogueUuid);
+        } catch (Exception e) {
+            String msg = "Failed to get catalogue for uuid: "+catalogueUuid + "\n" + e.getMessage();
+            log.error(msg);
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            try {
+                response.getOutputStream().write(msg.getBytes());
+            } catch (IOException e1) {
+                log.error("Failed to write the error message to the output stream", e1);
+            }
+            return;
+        }
+
+        // no catalogue for the given uuid
+        if (catalogue == null) {
+            String msg = "No catalogue for uuid: " + catalogueUuid;
+            log.info(msg);
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+            try {
+                response.getOutputStream().write(msg.getBytes());
+            } catch (IOException e) {
+                log.error("Failed to write the error message to the output stream", e);
+            }
+            return;
+        }
+        // get workbooks
+        Map<Workbook,String> workbooks = service.generateTemplateForCatalogue(catalogue,languageId);
+
+        // export catalogue
+        ZipOutputStream zos = null;
+        try {
+            zos = new ZipOutputStream(response.getOutputStream());
+
+            // zip all workbooks
+            for (Map.Entry<Workbook,String> workbook : workbooks.entrySet()) {
+                addToZip(workbook.getValue(),zos,workbook.getKey());
+            }
+
+            response.flushBuffer();
+        } catch (IOException e) {
+            String msg = "Failed to write the catalogue content to the response output stream\n" + e.getMessage();
+            log.error(msg, e);
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            try {
+                response.getOutputStream().write(msg.getBytes());
+            } catch (IOException e1) {
+                log.error("Failed to write the error message to the output stream", e);
+            }
+        } finally {
+            try {
+                if(zos != null){
+                    zos.close();
+                }
+            } catch (IOException e) {
+                log.warn("Failed to close zip output stream");
+            }
+        }
+
+        log.info("Exported catalogue successfully: uuid {}", catalogueUuid);
+    }
+
+    private static void addToZip(String fileName, ZipOutputStream zos, Workbook workbook) throws IOException {
+        ByteArrayOutputStream bos = null;
+        try {
+            ZipEntry zipEntry = new ZipEntry(fileName);
+            zos.putNextEntry(zipEntry);
+
+            bos = new ByteArrayOutputStream();
+            workbook.write(bos);
+            bos.writeTo(zos);
+        }finally {
+            zos.closeEntry();
+            if(bos != null){
+                bos.close();
+            }
         }
     }
 }

@@ -66,36 +66,20 @@ public class DataIntegratorUtil {
     }
 
     private static void setDefaultCategories(CatalogueLineType catalogueLine){
-        // check whether we need to add a default category or not
-        for (CommodityClassificationType classificationType : catalogueLine.getGoodsItem().getItem().getCommodityClassification()){
-            if(classificationType.getItemClassificationCode().getListID().equals("Default")){
-                return;
-            }
-        }
-
-        // Transport Service
-        if(catalogueLine.getGoodsItem().getItem().getTransportationServiceDetails() != null){
-            CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
-            CodeType codeType = new CodeType();
-            codeType.setListID("Default");
-            codeType.setName("Transport Service");
-            codeType.setValue("Transport Service");
-            commodityClassificationType.setItemClassificationCode(codeType);
-            catalogueLine.getGoodsItem().getItem().getCommodityClassification().add(commodityClassificationType);
-        }
-        // Product
-        else{
-            CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
-            CodeType codeType = new CodeType();
-            codeType.setListID("Default");
-            codeType.setName("Product");
-            codeType.setValue("Product");
-            commodityClassificationType.setItemClassificationCode(codeType);
+        CommodityClassificationType commodityClassificationType = getDefaultCategories(catalogueLine);
+        if(commodityClassificationType != null){
             catalogueLine.getGoodsItem().getItem().getCommodityClassification().add(commodityClassificationType);
         }
     }
 
     private static List<CommodityClassificationType> getParentCategories(List<CommodityClassificationType> commodityClassifications){
+        // get uris of the given categories
+        List<String> uris = new ArrayList<>();
+        for(CommodityClassificationType commodityClassificationType:commodityClassifications){
+            if(commodityClassificationType.getItemClassificationCode().getURI() != null){
+                uris.add(commodityClassificationType.getItemClassificationCode().getURI());
+            }
+        }
         List<CommodityClassificationType> commodityClassificationTypeList = new ArrayList<>();
         // find parents of the selected categories
         for(CommodityClassificationType cct : commodityClassifications){
@@ -115,11 +99,93 @@ public class DataIntegratorUtil {
                 codeType.setListID(category.getTaxonomyId());
                 codeType.setURI(category.getCategoryUri());
                 commodityClassificationType.setItemClassificationCode(codeType);
-                if(!commodityClassificationTypeList.contains(commodityClassificationType) && !commodityClassifications.contains(commodityClassificationType)){
+                // check whether it is one of the given categories or it is already added to the list
+                if(!commodityClassificationTypeList.contains(commodityClassificationType) && !uris.contains(commodityClassificationType.getItemClassificationCode().getURI())){
                     commodityClassificationTypeList.add(commodityClassificationType);
                 }
             }
         }
         return commodityClassificationTypeList;
+    }
+
+    public static List<CommodityClassificationType> getLeafCategories(List<CommodityClassificationType> commodityClassifications){
+        // get uris of the given categories
+        List<String> categoryUris = new ArrayList<>();
+        for(CommodityClassificationType commodityClassificationType:commodityClassifications){
+            if(commodityClassificationType.getItemClassificationCode().getURI() != null){
+                categoryUris.add(commodityClassificationType.getItemClassificationCode().getURI());
+            }
+        }
+
+        for(CommodityClassificationType commodityClassificationType:commodityClassifications){
+            if (commodityClassificationType.getItemClassificationCode().getURI() != null) {
+                // find parent categories uris
+                List<Category> parentCategories = SpringBridge.getInstance().getIndexCategoryService().getParentCategories(commodityClassificationType.getItemClassificationCode().getListID(),commodityClassificationType.getItemClassificationCode().getValue());
+                List<String> parentCategoriesUris = new ArrayList<>();
+                for(Category category:parentCategories){
+                    if(!category.getCategoryUri().contentEquals(commodityClassificationType.getItemClassificationCode().getURI())){
+                        parentCategoriesUris.add(category.getCategoryUri());
+                    }
+                }
+                // remove parent categories
+                categoryUris.removeAll(parentCategoriesUris);
+            }
+        }
+        // get commodity classifications of leaf categories
+        List<CommodityClassificationType> classificationTypes = new ArrayList<>();
+        for (CommodityClassificationType commodityClassificationType:commodityClassifications){
+            if(!commodityClassificationType.getItemClassificationCode().getListID().contentEquals("Default")
+                    && !commodityClassificationType.getItemClassificationCode().getListID().contentEquals("Custom")
+                    && commodityClassificationType.getItemClassificationCode().getURI() != null && categoryUris.contains(commodityClassificationType.getItemClassificationCode().getURI())){
+                classificationTypes.add(commodityClassificationType);
+            }
+        }
+        return classificationTypes;
+    }
+
+    public static CommodityClassificationType getDefaultCategories(CatalogueLineType catalogueLine){
+        // check whether we need to add a default category or not
+        for (CommodityClassificationType classificationType : catalogueLine.getGoodsItem().getItem().getCommodityClassification()){
+            if(classificationType.getItemClassificationCode().getListID().equals("Default")){
+                return null;
+            }
+        }
+
+        CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
+        // Transport Service
+        if(catalogueLine.getGoodsItem().getItem().getTransportationServiceDetails() != null){
+            CodeType codeType = new CodeType();
+            codeType.setListID("Default");
+            codeType.setName("Transport Service");
+            codeType.setValue("Transport Service");
+            commodityClassificationType.setItemClassificationCode(codeType);
+        }
+        // Product
+        else{
+            CodeType codeType = new CodeType();
+            codeType.setListID("Default");
+            codeType.setName("Product");
+            codeType.setValue("Product");
+            commodityClassificationType.setItemClassificationCode(codeType);
+        }
+
+        return commodityClassificationType;
+    }
+
+    // this method returns uris of categories ( and their parents) which are included in the given catalogue line
+    public static List<String> getCategoryUris(CatalogueLineType catalogueLine){
+        List<String> uris = new ArrayList<>();
+        // get uri of categories
+        for(CommodityClassificationType classificationType: catalogueLine.getGoodsItem().getItem().getCommodityClassification()){
+            if(!classificationType.getItemClassificationCode().getListID().contentEquals("Default")){
+                uris.add(classificationType.getItemClassificationCode().getURI());
+            }
+        }
+        List<CommodityClassificationType> parentCategories = getParentCategories(catalogueLine.getGoodsItem().getItem().getCommodityClassification());
+        // get uri of parent categories
+        for(CommodityClassificationType classificationType:parentCategories){
+            uris.add(classificationType.getItemClassificationCode().getURI());
+        }
+        return uris;
     }
 }

@@ -5,6 +5,7 @@ import eu.nimble.common.rest.trust.TrustClient;
 import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.index.PartyIndexClient;
+import eu.nimble.service.catalogue.persistence.util.LockPool;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -33,6 +34,8 @@ public class SpringBridge implements ApplicationContextAware {
     private IndexCategoryService indexCategoryService;
     @Autowired
     private PartyIndexClient partyIndexClient;
+    @Autowired
+    private LockPool lockPool;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext)
@@ -58,5 +61,9 @@ public class SpringBridge implements ApplicationContextAware {
 
     public PartyIndexClient getPartyIndexClient() {
         return partyIndexClient;
+    }
+
+    public LockPool getLockPool() {
+        return lockPool;
     }
 }

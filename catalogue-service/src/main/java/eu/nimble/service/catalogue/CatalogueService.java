@@ -10,6 +10,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipInputStream;
 
 public interface CatalogueService {
@@ -50,6 +51,11 @@ public interface CatalogueService {
      * @return
      */
     public List<Configuration.Standard> getSupportedStandards();
+
+    /**
+     * @return
+     */
+    public Map<Workbook,String> generateTemplateForCatalogue(CatalogueType catalogue, String languageId);
 
     /**
      * @return
