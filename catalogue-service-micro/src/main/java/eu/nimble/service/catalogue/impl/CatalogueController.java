@@ -8,6 +8,7 @@ import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
+import eu.nimble.service.catalogue.persistence.util.LockPool;
 import eu.nimble.service.catalogue.persistence.util.PartyTypePersistenceUtil;
 import eu.nimble.service.catalogue.util.SemanticTransformationUtil;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
@@ -45,6 +46,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.zip.ZipInputStream;
 
 /**
@@ -68,6 +70,8 @@ public class CatalogueController {
     private TransactionEnabledSerializationUtility serializationUtility;
     @Autowired
     private ResourceValidationUtility resourceValidationUtil;
+    @Autowired
+    private LockPool lockPool;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves the default catalogue for the specified party. The catalogue is supposed to have \"default\" value in the id field and be compliant with UBL standard.")
@@ -517,31 +521,39 @@ public class CatalogueController {
                 party = CatalogueDatabaseAdapter.syncPartyInUBLDB(party);
             }
 
-            // parse catalogue
+            // lock the update for the specified party
             try {
-                catalogue = service.parseCatalogue(file.getInputStream(), uploadMode, party);
-            } catch (Exception e) {
-                String msg = e.getMessage() != null ? e.getMessage() : "Failed to retrieve the template";
-                return HttpResponseUtil.createResponseEntityAndLog(msg, e, HttpStatus.BAD_REQUEST, LogLevel.INFO);
-            }
+                lockPool.getLockForParty(partyId).writeLock().lock();
 
-            // save catalogue
-            // check whether an insert or update operations is needed
-            if (catalogue.getHjid() == null) {
-                catalogue = service.addCatalogue(catalogue, Configuration.Standard.UBL);
-            } else {
-                catalogue = service.updateCatalogue(catalogue);
+                // parse catalogue
+                try {
+                    catalogue = service.parseCatalogue(file.getInputStream(), uploadMode, party);
+                } catch (Exception e) {
+                    String msg = e.getMessage() != null ? e.getMessage() : "Failed to retrieve the template";
+                    return HttpResponseUtil.createResponseEntityAndLog(msg, e, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                }
+
+                // save catalogue
+                // check whether an insert or update operations is needed
+                if (catalogue.getHjid() == null) {
+                    catalogue = service.addCatalogue(catalogue, Configuration.Standard.UBL);
+                } else {
+                    catalogue = service.updateCatalogue(catalogue);
+                }
+            } finally {
+                lockPool.getLockForParty(partyId).writeLock().unlock();
             }
 
             URI catalogueURI;
             try {
                 catalogueURI = new URI(HttpResponseUtil.baseUrl(request) + catalogue.getUUID());
+                log.info("Completed the request to upload template. Added catalogue uuid: {}", catalogue.getUUID());
+                return ResponseEntity.created(catalogueURI).body(serializationUtility.serializeUBLObject(catalogue));
+
             } catch (URISyntaxException e) {
                 return createErrorResponseEntity("Failed to generate a URI for the newly created item", HttpStatus.INTERNAL_SERVER_ERROR, e);
             }
 
-            log.info("Completed the request to upload template. Added catalogue uuid: {}", catalogue.getUUID());
-            return ResponseEntity.created(catalogueURI).body(serializationUtility.serializeUBLObject(catalogue));
 
         } catch (Exception e) {
             return HttpResponseUtil.createResponseEntityAndLog("Unexpected error while uploading the template", e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
