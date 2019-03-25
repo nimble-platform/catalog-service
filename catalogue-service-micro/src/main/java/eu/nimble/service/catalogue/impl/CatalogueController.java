@@ -515,7 +515,7 @@ public class CatalogueController {
             }
 
             // check the existence of the specified party in the catalogue DB
-            CatalogueDatabaseAdapter.syncPartyInUBLDB(partyId, bearerToken);
+            PartyType party = CatalogueDatabaseAdapter.syncPartyInUBLDB(partyId, bearerToken);
 
             CatalogueType catalogue;
 

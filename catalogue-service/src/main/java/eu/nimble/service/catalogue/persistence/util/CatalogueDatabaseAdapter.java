@@ -24,7 +24,7 @@ import java.util.ArrayList;
 public class CatalogueDatabaseAdapter {
     private static final Logger logger = LoggerFactory.getLogger(CatalogueDatabaseAdapter.class);
 
-    public static void syncPartyInUBLDB(String partyId, String bearerToken) {
+    public static PartyType syncPartyInUBLDB(String partyId, String bearerToken) {
         try {
             SpringBridge.getInstance().getLockPool().getLockForParty(partyId).writeLock().lock();
 
@@ -41,6 +41,10 @@ public class CatalogueDatabaseAdapter {
                     throw new RuntimeException(msg, e);
                 }
                 new JPARepositoryFactory().forCatalogueRepository().persistEntity(identityParty);
+                return identityParty;
+
+            } else {
+                return catalogueParty;
             }
         } finally {
             SpringBridge.getInstance().getLockPool().getLockForParty(partyId).writeLock().unlock();
