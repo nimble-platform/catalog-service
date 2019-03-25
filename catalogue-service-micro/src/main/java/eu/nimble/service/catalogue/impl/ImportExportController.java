@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -142,7 +143,7 @@ public class ImportExportController {
             return;
         }
         // get workbooks
-        List<Workbook> workbooks = service.generateTemplateForCatalogue(catalogue,languageId);
+        Map<Workbook,String> workbooks = service.generateTemplateForCatalogue(catalogue,languageId);
 
         // export catalogue
         ZipOutputStream zos = null;
@@ -150,9 +151,8 @@ public class ImportExportController {
             zos = new ZipOutputStream(response.getOutputStream());
 
             // zip all workbooks
-            int index = 0;
-            for(Workbook workbook:workbooks){
-                addToZip("CatalogueExport_" + index++ +".xlsx",zos,workbook);
+            for (Map.Entry<Workbook,String> workbook : workbooks.entrySet()) {
+                addToZip(workbook.getValue(),zos,workbook.getKey());
             }
 
             response.flushBuffer();
