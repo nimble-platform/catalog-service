@@ -99,6 +99,14 @@ public class ImportExportController {
 
 
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Exports the catalogue specified with uuid. The products are exported to separate " +
+            "Excel sheets according to the commodity classifications (categories). Each distinct combination of categories " +
+            "of products are exported to a separate sheet. The sheets are collected into a ZIP-compressed file.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Imported the catalogue successfully"),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 500, message = "Unexpected error while exporting catalogue")
+    })
     @RequestMapping(value = "/catalogue/export",
             method = RequestMethod.GET,
             produces = {"application/zip"})
@@ -175,8 +183,7 @@ public class ImportExportController {
             }
         }
 
-        log.info("Exported catalogue successfully");
-
+        log.info("Exported catalogue successfully: uuid {}", catalogueUuid);
     }
 
     private static void addToZip(String fileName, ZipOutputStream zos, Workbook workbook) throws IOException {
