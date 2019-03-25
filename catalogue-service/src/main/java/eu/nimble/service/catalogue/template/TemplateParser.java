@@ -26,10 +26,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static eu.nimble.service.catalogue.template.TemplateConfig.*;
 
@@ -337,17 +334,39 @@ public class TemplateParser {
 
             } else if (property.getPreferredName(null).equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION)) {
                 List<TextType> productDescriptions = (List<TextType>) parseCell(cell,TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION, TEMPLATE_DATA_TYPE_MULTILINGUAL_TEXT, true);
-                for(TextType productDescription: productDescriptions) {
-                    item.getDescription().add(productDescription);
+                // be sure that each item name has a corresponding item description
+                for(TextType itemName: item.getName()){
+                    boolean descriptionFound = false;
+                    for(TextType itemDescription: productDescriptions){
+                        // there is a description for the name
+                        if(itemName.getLanguageID().contentEquals(itemDescription.getLanguageID())){
+                            descriptionFound = true;
+                            item.getDescription().add(itemDescription);
+                            productDescriptions.remove(itemDescription);
+                            break;
+                        }
+                    }
+                    // there is no description for the name
+                    if(!descriptionFound){
+                        TextType text = new TextType();
+                        text.setLanguageID(itemName.getLanguageID());
+                        item.getDescription().add(text);
+                    }
                 }
-
-                if(productDescriptions.size() == 0){
-                    TextType textType = new TextType();
-                    textType.setValue("");
-                    textType.setLanguageID(defaultLanguage);
-                    item.getDescription().add(textType);
+                // add name-description pair for the remaining descriptions
+                if(productDescriptions.size() > 0){
+                    for(TextType itemDescription: productDescriptions){
+                        // add description
+                        TextType description = new TextType();
+                        description.setValue(itemDescription.getValue());
+                        description.setLanguageID(itemDescription.getLanguageID());
+                        item.getDescription().add(description);
+                        // create a name
+                        TextType name = new TextType();
+                        name.setLanguageID(itemDescription.getLanguageID());
+                        item.getName().add(name);
+                    }
                 }
-
             }  /*else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PRODUCT_DATA_SHEET)) {
                 List<BinaryObjectType> documents = (List<BinaryObjectType>) parseCell(cell, TEMPLATE_DATA_TYPE_FILE, true);
                 List<DocumentReferenceType> docRefs = new ArrayList<>();
