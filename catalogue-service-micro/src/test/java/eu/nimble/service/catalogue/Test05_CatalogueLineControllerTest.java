@@ -1,7 +1,8 @@
 package eu.nimble.service.catalogue;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
@@ -22,6 +23,8 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -32,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @ActiveProfiles("local_dev")
 @RunWith(SpringJUnit4ClassRunner.class)
-public class Test02_CatalogueLineControllerTest {
+public class Test05_CatalogueLineControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -61,7 +64,7 @@ public class Test02_CatalogueLineControllerTest {
         catalogueId = catalogue.getUUID();
 
         // add the catalogue line
-        String catalogueLineJson = IOUtils.toString(Test02_CatalogueLineControllerTest.class.getResourceAsStream("/example_catalogue_line.json"));
+        String catalogueLineJson = IOUtils.toString(Test05_CatalogueLineControllerTest.class.getResourceAsStream("/example_catalogue_line.json"));
         CatalogueLineType catalogueLine = mapper.readValue(catalogueLineJson, CatalogueLineType.class);
         catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().setID(catalogueId);
         catalogueLineJson = mapper.writeValueAsString(catalogueLine);
@@ -114,5 +117,19 @@ public class Test02_CatalogueLineControllerTest {
         MockHttpServletRequestBuilder request = get("/catalogue/" + catalogueId + "/catalogueline/" + catalogueLineId)
                 .header("Authorization", environment.getProperty("nimble.test-token"));
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isNotFound()).andReturn();
+    }
+
+    @Test
+    public void test6_getCatalogueLines() throws Exception{
+
+        MockHttpServletRequestBuilder request = get("/cataloguelines")
+                .header("Authorization", environment.getProperty("nimble.test-token"))
+                .param("limit","2")
+                .param("offset","1")
+                .param("ids" , "365","406","447","505","591")
+                .param("sortOption", CatalogueLineSortOptions.PRICE_HIGH_TO_LOW.toString());
+        MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+        List<CatalogueLineType> catalogueLines = mapper.readValue(result.getResponse().getContentAsString(),new TypeReference<List<CatalogueLineType>>() {});
+        Assert.assertEquals(2,catalogueLines.size());
     }
 }
