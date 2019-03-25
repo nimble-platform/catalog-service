@@ -514,12 +514,10 @@ public class CatalogueController {
                 return tokenCheck;
             }
 
+            // check the existence of the specified party in the catalogue DB
+            PartyType party = CatalogueDatabaseAdapter.syncPartyInUBLDB(partyId, bearerToken);
+
             CatalogueType catalogue;
-            PartyType party = PartyTypePersistenceUtil.getPartyById(partyId);
-            if (party == null) {
-                party = identityClient.getParty(bearerToken, partyId);
-                party = CatalogueDatabaseAdapter.syncPartyInUBLDB(party);
-            }
 
             // lock the update for the specified party
             try {
