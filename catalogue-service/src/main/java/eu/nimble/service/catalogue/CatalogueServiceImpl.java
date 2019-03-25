@@ -431,9 +431,6 @@ public class CatalogueServiceImpl implements CatalogueService {
                     String prefix = fileName.split("\\.")[0];
 
                     if (type.equals("image")) {
-                        imagePackage.closeEntry();
-                        ze = imagePackage.getNextEntry();
-
                         // find the item according to the prefix provided in the image name
                         ItemType item = null;
                         for (CatalogueLineType line : catalogue.getCatalogueLine()) {
