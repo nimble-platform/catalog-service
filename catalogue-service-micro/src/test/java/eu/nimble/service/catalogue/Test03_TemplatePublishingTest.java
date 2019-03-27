@@ -66,6 +66,11 @@ public class Test03_TemplatePublishingTest {
     final private String contentType = "application/octet-stream";
     final private String fileName = "product_data_template.xlsx";
 
+    // these hjids are used to retrieve this catalogue lines later
+    public static Long catalogueLineHjid1;
+    public static Long catalogueLineHjid2;
+    public static Long catalogueLineHjid3;
+    public static Long catalogueLineHjid4;
     /*
         The user publishes three products using the template. Their ids are:
             - Product_id1
@@ -139,6 +144,11 @@ public class Test03_TemplatePublishingTest {
             }
             Assert.assertTrue("Managed ids do not contain the catalogue ids", managedIds.containsAll(catalogueIds));
         }
+
+        // get hjids of the catalogue lines
+        Test03_TemplatePublishingTest.catalogueLineHjid1 = catalogueLineType1.getHjid();
+        Test03_TemplatePublishingTest.catalogueLineHjid2 = catalogueLineType2.getHjid();
+        Test03_TemplatePublishingTest.catalogueLineHjid3 = catalogueLineType3.getHjid();
     }
 
     /*
@@ -211,5 +221,8 @@ public class Test03_TemplatePublishingTest {
         // check price amount
         Assert.assertEquals(newCatalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue().intValue(),14);
         Assert.assertEquals(newCatalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getCurrencyID(),"EUR");
+
+        // get hjid of the new catalogu line
+        Test03_TemplatePublishingTest.catalogueLineHjid4 = newCatalogueLine.getHjid();
     }
 }

@@ -126,7 +126,8 @@ public class Test05_CatalogueLineControllerTest {
                 .header("Authorization", environment.getProperty("nimble.test-token"))
                 .param("limit","2")
                 .param("offset","1")
-                .param("ids" , "365","406","447","505","591")
+                .param("ids" , Test03_TemplatePublishingTest.catalogueLineHjid1.toString(),Test03_TemplatePublishingTest.catalogueLineHjid2.toString(),
+                        Test03_TemplatePublishingTest.catalogueLineHjid3.toString(),Test03_TemplatePublishingTest.catalogueLineHjid4.toString())
                 .param("sortOption", CatalogueLineSortOptions.PRICE_HIGH_TO_LOW.toString());
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         List<CatalogueLineType> catalogueLines = mapper.readValue(result.getResponse().getContentAsString(),new TypeReference<List<CatalogueLineType>>() {});
