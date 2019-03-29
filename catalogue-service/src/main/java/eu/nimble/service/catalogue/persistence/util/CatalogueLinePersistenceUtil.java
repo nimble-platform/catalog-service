@@ -27,6 +27,10 @@ public class CatalogueLinePersistenceUtil {
             + " JOIN c.catalogueLine as clj"
             + " WHERE c.UUID = :catalogueUuid "
             + " AND clj.ID = :lineId";
+    private static final String QUERY_GET_HJID_AND_PARTY_ID_BY_CAT_UUID_AND_ID = "SELECT clj.hjid,partyIdentification.ID FROM CatalogueType as c"
+            + " JOIN c.catalogueLine as clj join clj.goodsItem.item.manufacturerParty.partyIdentification partyIdentification"
+            + " WHERE c.UUID = :catalogueUuid "
+            + " AND clj.ID = :lineId";
     private static final String QUERY_GET_BY_HJID = "SELECT cl FROM CatalogueLineType as cl WHERE cl.hjid = :hjid";
     private static final String QUERY_GET_BY_HJIDS = "SELECT cl FROM CatalogueLineType as cl WHERE cl.hjid in :hjids";
 
@@ -74,5 +78,12 @@ public class CatalogueLinePersistenceUtil {
 
     public static CatalogueLineType getCatalogueLine(String catalogueUuid, String lineId) {
         return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_BY_CAT_UUID_AND_ID, new String[]{"catalogueUuid", "lineId"}, new Object[]{catalogueUuid, lineId});
+    }
+
+    // this method returns an array of objects
+    // first one is the hjid of the catalogue line
+    // second one is the id of the party owning the catalogue line
+    public static Object[] getCatalogueLineHjidAndPartyId(String catalogueUuid, String lineId){
+        return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_HJID_AND_PARTY_ID_BY_CAT_UUID_AND_ID, new String[]{"catalogueUuid", "lineId"}, new Object[]{catalogueUuid, lineId});
     }
 }
