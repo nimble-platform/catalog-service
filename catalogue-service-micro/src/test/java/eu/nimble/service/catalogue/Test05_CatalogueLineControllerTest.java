@@ -133,4 +133,19 @@ public class Test05_CatalogueLineControllerTest {
         List<CatalogueLineType> catalogueLines = mapper.readValue(result.getResponse().getContentAsString(),new TypeReference<List<CatalogueLineType>>() {});
         Assert.assertEquals(2,catalogueLines.size());
     }
+
+    // since no hjids are provided, we should get an empty list of catalogue lines
+    @Test
+    public void test7_getCatalogueLines() throws Exception{
+
+        MockHttpServletRequestBuilder request = get("/cataloguelines")
+                .header("Authorization", environment.getProperty("nimble.test-token"))
+                .param("limit","2")
+                .param("offset","1")
+                .param("ids","")
+                .param("sortOption", CatalogueLineSortOptions.PRICE_HIGH_TO_LOW.toString());
+        MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+        List<CatalogueLineType> catalogueLines = mapper.readValue(result.getResponse().getContentAsString(),new TypeReference<List<CatalogueLineType>>() {});
+        Assert.assertEquals(0,catalogueLines.size());
+    }
 }
