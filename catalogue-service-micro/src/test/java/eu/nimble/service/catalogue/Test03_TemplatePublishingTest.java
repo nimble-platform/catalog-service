@@ -65,12 +65,17 @@ public class Test03_TemplatePublishingTest {
 
     final private String contentType = "application/octet-stream";
     final private String fileName = "MDF_Raw.xlsx";
+    final private String fileName2 = "MDF_Raw_MDF_Painted.xlsx";
 
     // these hjids are used to retrieve this catalogue lines later
     public static Long catalogueLineHjid1;
     public static Long catalogueLineHjid2;
     public static Long catalogueLineHjid3;
     public static Long catalogueLineHjid4;
+
+    // the uuid of the created catalogue
+    public static String catalogueUUID;
+
     /*
         The user publishes three products using the template. Their ids are:
             - Product_id1
@@ -222,7 +227,34 @@ public class Test03_TemplatePublishingTest {
         Assert.assertEquals(newCatalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue().intValue(),14);
         Assert.assertEquals(newCatalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getCurrencyID(),"EUR");
 
-        // get hjid of the new catalogu line
+        // get hjid of the new catalogue line
         Test03_TemplatePublishingTest.catalogueLineHjid4 = newCatalogueLine.getHjid();
+    }
+
+    /*
+        The user publishes one products using the template.
+            - Product_id5 : It has two different categories :MDF Raw and MDF Painted
+                * Since in this catalogue, other products have only MDF Raw, when we try to upload this template with replace mode,
+                  we have to end up with 5 products.
+     */
+    @Test
+    public void test3_uploadTemplate() throws Exception {
+        InputStream is = Test03_TemplatePublishingTest.class.getResourceAsStream("/template/MDF_Raw_MDF_Painted.xlsx");
+        MockMultipartFile mutipartFile = new MockMultipartFile("file", fileName2, contentType, is);
+
+        MvcResult result = this.mockMvc.perform(MockMvcRequestBuilders
+                .fileUpload("/catalogue/template/upload")
+                .file(mutipartFile)
+                .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                .header("Authorization", environment.getProperty("nimble.test-token"))
+                .param("uploadMode",uploadMode)
+                .param("partyId",partyId)
+                .param("partyName",partyName))
+                .andExpect(status().isCreated()).andReturn();
+        CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
+        // check catalogue line size
+        Assert.assertSame(catalogue.getCatalogueLine().size(),5);
+        // set catalogue uuid
+        Test03_TemplatePublishingTest.catalogueUUID = catalogue.getUUID();
     }
 }
