@@ -10,6 +10,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipInputStream;
 
 public interface CatalogueService {
@@ -54,6 +55,11 @@ public interface CatalogueService {
     /**
      * @return
      */
+    public Map<Workbook,String> generateTemplateForCatalogue(CatalogueType catalogue, String languageId);
+
+    /**
+     * @return
+     */
     public Workbook generateTemplateForCategory(List<String> categoryId, List<String> taxonomyIds,String templateLanguage);
 
     /**
@@ -81,7 +87,7 @@ public interface CatalogueService {
 
     CatalogueLineType getCatalogueLine(long hjid);
 
-    List<CatalogueLineType> getCatalogueLines(List<Long> hjids);
+    List<CatalogueLineType> getCatalogueLines(List<Long> hjids,CatalogueLineSortOptions sortOption,int limit, int pageNo);
 
     <T> T getCatalogueLine(String catalogueId, String catalogueLineId);
 
