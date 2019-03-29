@@ -47,26 +47,27 @@ public class CatalogueLinePersistenceUtil {
     public static List<CatalogueLineType> getCatalogueLines(List<Long> hjids,CatalogueLineSortOptions sortOption,int limit, int pageNo) {
 
         List<CatalogueLineType> catalogueLines = new ArrayList<>();
-        String getCatalogueLinesQuery = QUERY_GET_BY_HJIDS;
-        if(sortOption != null){
-            switch (sortOption){
-                case PRICE_HIGH_TO_LOW:
-                    getCatalogueLinesQuery += " ORDER BY cl.requiredItemLocationQuantity.price.priceAmount.value DESC NULLS LAST";
-                    break;
-                case PRICE_LOW_TO_HIGH:
-                    getCatalogueLinesQuery += " ORDER BY cl.requiredItemLocationQuantity.price.priceAmount.value ASC NULLS LAST";
-                    break;
+        if(hjids.size() > 0){
+            String getCatalogueLinesQuery = QUERY_GET_BY_HJIDS;
+            if(sortOption != null){
+                switch (sortOption){
+                    case PRICE_HIGH_TO_LOW:
+                        getCatalogueLinesQuery += " ORDER BY cl.requiredItemLocationQuantity.price.priceAmount.value DESC NULLS LAST";
+                        break;
+                    case PRICE_LOW_TO_HIGH:
+                        getCatalogueLinesQuery += " ORDER BY cl.requiredItemLocationQuantity.price.priceAmount.value ASC NULLS LAST";
+                        break;
+                }
             }
-        }
+            catalogueLines = new JPARepositoryFactory().forCatalogueRepository().getEntities(getCatalogueLinesQuery, new String[]{"hjids"}, new Object[]{hjids});
 
-        catalogueLines = new JPARepositoryFactory().forCatalogueRepository().getEntities(getCatalogueLinesQuery, new String[]{"hjids"}, new Object[]{hjids});
-
-        if(limit != 0){
-            int startIndex = limit*pageNo;
-            int endIndex = startIndex+limit;
-            if(endIndex > catalogueLines.size())
-                endIndex = catalogueLines.size();
-            catalogueLines = catalogueLines.subList(startIndex,endIndex);
+            if(limit != 0){
+                int startIndex = limit*pageNo;
+                int endIndex = startIndex+limit;
+                if(endIndex > catalogueLines.size())
+                    endIndex = catalogueLines.size();
+                catalogueLines = catalogueLines.subList(startIndex,endIndex);
+            }
         }
         return catalogueLines;
     }
