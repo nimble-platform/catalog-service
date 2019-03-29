@@ -319,10 +319,12 @@ public class TemplateGenerator {
         // find the offset for the custom properties
         int totalCategoryPropertyNumber = 0;
         for (Category category : categories) {
-            for(Property property : category.getProperties()){
-                totalCategoryPropertyNumber++;
-                if(property.getDataType().contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)){
+            if(category.getProperties() != null){
+                for(Property property : category.getProperties()){
                     totalCategoryPropertyNumber++;
+                    if(property.getDataType().contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)){
+                        totalCategoryPropertyNumber++;
+                    }
                 }
             }
         }
@@ -1910,7 +1912,8 @@ public class TemplateGenerator {
         StringBuilder stringBuilder = new StringBuilder();
         int size = textTypes.size();
         for(int i = 0;i < size;i++){
-            if(!textTypes.get(i).getValue().contentEquals("")){
+            String value = textTypes.get(i).getValue();
+            if(value != null && !value.contentEquals("")){
                 stringBuilder.append(textTypes.get(i).getValue());
                 if(withLanguageId){
                     stringBuilder.append("@");
