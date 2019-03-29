@@ -1,4 +1,13 @@
 
+## [9.0.0] - 2019-03-29
+### Added
+- Added the functionality of exporting catalogues
+- Validated the mimetypes of the images
+- Made party creation thread-safe
+
+### Changed
+- Updated bulk product publishing mechanism so that only the products having the same categories are updated in the replace mode
+- Updated the representation of quantity in the template
 
 ## [8.0.0] - 2019-02-28
 ### Added
