@@ -64,7 +64,7 @@ public class Test03_TemplatePublishingTest {
     final private String incoterms = "DAT (Delivered at Terminal)";
 
     final private String contentType = "application/octet-stream";
-    final private String fileName = "product_data_template.xlsx";
+    final private String fileName = "MDF_Raw.xlsx";
 
     // these hjids are used to retrieve this catalogue lines later
     public static Long catalogueLineHjid1;
@@ -79,7 +79,7 @@ public class Test03_TemplatePublishingTest {
      */
     @Test
     public void test1_uploadTemplate() throws Exception {
-        InputStream is = Test03_TemplatePublishingTest.class.getResourceAsStream("/template/product_data_template.xlsx");
+        InputStream is = Test03_TemplatePublishingTest.class.getResourceAsStream("/template/MDF_Raw.xlsx");
         MockMultipartFile mutipartFile = new MockMultipartFile("file", fileName, contentType, is);
 
         MvcResult result = this.mockMvc.perform(MockMvcRequestBuilders
@@ -164,7 +164,7 @@ public class Test03_TemplatePublishingTest {
      */
     @Test
     public void test2_uploadTemplate() throws Exception {
-        InputStream is = Test03_TemplatePublishingTest.class.getResourceAsStream("/template/product_data_template_new.xlsx");
+        InputStream is = Test03_TemplatePublishingTest.class.getResourceAsStream("/template/MDF_Raw_new.xlsx");
         MockMultipartFile mutipartFile = new MockMultipartFile("file", fileName, contentType, is);
 
         MvcResult result = this.mockMvc.perform(MockMvcRequestBuilders
