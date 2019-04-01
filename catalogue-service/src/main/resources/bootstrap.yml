@@ -271,7 +271,7 @@ persistence:
 ---
 
 spring:
-  profiles: local_dev
+  profiles: test
   datasource:
     ubldb:
       url: jdbc:h2:mem:db3;AUTO_RECONNECT=TRUE;DB_CLOSE_DELAY=-1;INIT=create schema IF NOT EXISTS APPS
