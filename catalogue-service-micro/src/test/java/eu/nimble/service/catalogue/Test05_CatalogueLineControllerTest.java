@@ -56,7 +56,7 @@ public class Test05_CatalogueLineControllerTest {
         String catalogueJson = IOUtils.toString(Test01_CatalogueControllerTest.class.getResourceAsStream("/example_catalogue.json"));
 
         MockHttpServletRequestBuilder request = post("/catalogue/ubl")
-                .header("Authorization", environment.getProperty("nimble.test-token"))
+                .header("Authorization", environment.getProperty("nimble.test-responder-person-id"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(catalogueJson);
         MvcResult result = this.mockMvc.perform(request).andExpect(status().isCreated()).andReturn();
@@ -70,7 +70,7 @@ public class Test05_CatalogueLineControllerTest {
         catalogueLineJson = mapper.writeValueAsString(catalogueLine);
 
         request = post("/catalogue/" + catalogue.getUUID() + "/catalogueline")
-                .header("Authorization", environment.getProperty("nimble.test-token"))
+                .header("Authorization", environment.getProperty("nimble.test-responder-person-id"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(catalogueLineJson);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isCreated()).andReturn();
@@ -80,7 +80,7 @@ public class Test05_CatalogueLineControllerTest {
     @Test
     public void test2_getCatalogueLine() throws Exception{
         MockHttpServletRequestBuilder request = get("/catalogue/" + catalogueId + "/catalogueline/" + catalogueLineId)
-                .header("Authorization", environment.getProperty("nimble.test-token"));
+                .header("Authorization", environment.getProperty("nimble.test-responder-person-id"));
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         CatalogueLineType catalogueLine = mapper.readValue(result.getResponse().getContentAsString(), CatalogueLineType.class);
         Assert.assertEquals(catalogueLineId, catalogueLine.getID());
@@ -89,7 +89,7 @@ public class Test05_CatalogueLineControllerTest {
     @Test
     public void test3_updateCatalogueLine() throws Exception{
         MockHttpServletRequestBuilder request = get("/catalogue/" + catalogueId + "/catalogueline/" + catalogueLineId)
-                .header("Authorization", environment.getProperty("nimble.test-token"));
+                .header("Authorization", environment.getProperty("nimble.test-responder-person-id"));
         MvcResult result = this.mockMvc.perform(request).andReturn();
         CatalogueLineType catalogueLine = mapper.readValue(result.getResponse().getContentAsString(), CatalogueLineType.class);
 
@@ -99,7 +99,7 @@ public class Test05_CatalogueLineControllerTest {
 
         String catalogueLineJson = mapper.writeValueAsString(catalogueLine);
         request = put("/catalogue/" + catalogueId + "/catalogueline")
-                .header("Authorization", environment.getProperty("nimble.test-token"))
+                .header("Authorization", environment.getProperty("nimble.test-responder-person-id"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(catalogueLineJson);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
@@ -108,14 +108,14 @@ public class Test05_CatalogueLineControllerTest {
     @Test
     public void test4_deleteCatalogueLineById() throws Exception {
         MockHttpServletRequestBuilder request = delete("/catalogue/" + catalogueId + "/catalogueline/" + catalogueLineId)
-                .header("Authorization", environment.getProperty("nimble.test-token"));
+                .header("Authorization", environment.getProperty("nimble.test-responder-person-id"));
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
     }
 
     @Test
     public void test5_getJsonNonExistingCatalogueLine() throws Exception {
         MockHttpServletRequestBuilder request = get("/catalogue/" + catalogueId + "/catalogueline/" + catalogueLineId)
-                .header("Authorization", environment.getProperty("nimble.test-token"));
+                .header("Authorization", environment.getProperty("nimble.test-responder-person-id"));
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isNotFound()).andReturn();
     }
 
@@ -123,7 +123,7 @@ public class Test05_CatalogueLineControllerTest {
     public void test6_getCatalogueLines() throws Exception{
 
         MockHttpServletRequestBuilder request = get("/cataloguelines")
-                .header("Authorization", environment.getProperty("nimble.test-token"))
+                .header("Authorization", environment.getProperty("nimble.test-responder-person-id"))
                 .param("limit","2")
                 .param("offset","1")
                 .param("ids" , Test03_TemplatePublishingTest.catalogueLineHjid1.toString(),Test03_TemplatePublishingTest.catalogueLineHjid2.toString(),
@@ -139,7 +139,7 @@ public class Test05_CatalogueLineControllerTest {
     public void test7_getCatalogueLines() throws Exception{
 
         MockHttpServletRequestBuilder request = get("/cataloguelines")
-                .header("Authorization", environment.getProperty("nimble.test-token"))
+                .header("Authorization", environment.getProperty("nimble.test-responder-person-id"))
                 .param("limit","2")
                 .param("offset","1")
                 .param("ids","")

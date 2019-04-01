@@ -50,7 +50,7 @@ public class Test07_ImportExportControllerText {
     public void test1_generateTemplateForCatalogue() throws Exception {
         // get the catalogue
         MockHttpServletRequestBuilder request = get("/catalogue/ubl/" + Test03_TemplatePublishingTest.catalogueUUID)
-                .header("Authorization", environment.getProperty("nimble.test-token"));
+                .header("Authorization", environment.getProperty("nimble.test-responder-person-id"));
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
         Assert.assertEquals(Test03_TemplatePublishingTest.catalogueUUID, catalogue.getUUID());

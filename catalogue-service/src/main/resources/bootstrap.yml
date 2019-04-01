@@ -301,7 +301,7 @@ persistence:
 nimble:
   identity:
     url: ${IDENTITY_SERVICE_URL:localhost:9096}
-  test-token: ${NIMBLE_TEST_TOKEN}
+  test-responder-person-id: ${NIMBLE_TEST_RESPONDER_PERSON_ID}
   indexing:
     sync: false
 

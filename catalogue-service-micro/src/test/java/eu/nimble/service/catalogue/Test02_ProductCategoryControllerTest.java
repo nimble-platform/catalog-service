@@ -43,7 +43,7 @@ public class Test02_ProductCategoryControllerTest {
     @Test
     public void test1_getAvailableTaxonomies() throws Exception {
         MockHttpServletRequestBuilder request = get("/taxonomies/id")
-                .header("Authorization", environment.getProperty("nimble.test-token"));
+                .header("Authorization", environment.getProperty("nimble.test-responder-person-id"));
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
         JsonParser parser = mapper.getFactory().createParser(result.getResponse().getContentAsString());
@@ -54,7 +54,7 @@ public class Test02_ProductCategoryControllerTest {
     @Test
     public void test2_getCategoriesByName() throws Exception {
         MockHttpServletRequestBuilder request = get("/taxonomies/eClass/categories").param("name", "die")
-                .header("Authorization", environment.getProperty("nimble.test-token"));
+                .header("Authorization", environment.getProperty("nimble.test-responder-person-id"));
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
         List<Category> categories = mapper.readValue(result.getResponse().getContentAsString(), new TypeReference<List<Category>>() {});
@@ -69,7 +69,7 @@ public class Test02_ProductCategoryControllerTest {
     public void test3_getCategoriesByName() throws Exception {
         // get logistic categories for warehouse
         MockHttpServletRequestBuilder request = get("/taxonomies/eClass/categories")
-                .header("Authorization", environment.getProperty("nimble.test-token"))
+                .header("Authorization", environment.getProperty("nimble.test-responder-person-id"))
                 .param("name", "warehouse")
                 .param("forLogistics","true");
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
@@ -81,7 +81,7 @@ public class Test02_ProductCategoryControllerTest {
 
         // get logistic categories for mdf
         request = get("/taxonomies/eClass/categories")
-                .header("Authorization", environment.getProperty("nimble.test-token"))
+                .header("Authorization", environment.getProperty("nimble.test-responder-person-id"))
                 .param("name", "mdf")
                 .param("forLogistics","true");
         result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
@@ -94,7 +94,7 @@ public class Test02_ProductCategoryControllerTest {
     @Test
     public void test4_getCategoriesByIds() throws Exception {
         MockHttpServletRequestBuilder request = get("/categories")
-                .header("Authorization", environment.getProperty("nimble.test-token"))
+                .header("Authorization", environment.getProperty("nimble.test-responder-person-id"))
                 .param("categoryIds", "0173-1#01-BAA975#013")
                 .param("taxonomyIds", "eClass");
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
