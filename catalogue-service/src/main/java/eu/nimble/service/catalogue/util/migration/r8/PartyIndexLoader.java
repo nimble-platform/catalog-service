@@ -3,7 +3,7 @@ package eu.nimble.service.catalogue.util.migration.r8;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.nimble.common.rest.identity.IdentityClientTyped;
+import eu.nimble.common.rest.identity.IIdentityClientTyped;
 import eu.nimble.common.rest.trust.TrustClient;
 import eu.nimble.service.catalogue.index.PartyIndexClient;
 import eu.nimble.service.catalogue.util.CredentialsUtil;
@@ -33,7 +33,7 @@ public class PartyIndexLoader {
     @Autowired
     private PartyIndexClient partyIndexClient;
     @Autowired
-    private IdentityClientTyped identityClientTyped;
+    private IIdentityClientTyped iIdentityClientTyped;
     @Autowired
     private TrustClient trustClient;
     @Autowired
@@ -41,7 +41,13 @@ public class PartyIndexLoader {
 
     public void indexParties() {
         // get all parties from the identity service
-        Response partiesResponse = identityClientTyped.getPartyPartiesInUBL(credentialsUtil.getBearerToken(), "0", "false", Integer.MAX_VALUE + "");
+        Response partiesResponse = null;
+        try {
+            partiesResponse = iIdentityClientTyped.getPartyPartiesInUBL(credentialsUtil.getBearerToken(), "0", "false", Integer.MAX_VALUE + "");
+        } catch (Exception e) {
+            logger.error("Unexpected error while getting parties from identity service:",e);
+            return;
+        }
         if (partiesResponse.status() != 200) {
             logger.error("Failed to get parties from identity client. Error code: {}, body: {}", partiesResponse.status(), partiesResponse.body().toString());
         }
