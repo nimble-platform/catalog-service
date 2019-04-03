@@ -18,6 +18,10 @@ node('nimble-jenkins-slave') {
             }
         }
 
+        stage('Run Tests') {
+            sh '/bin/bash -xe deploy.sh run-tests'
+        }
+
         stage('Build Java') {
             sh '/bin/bash -xe deploy.sh java-build'
         }
@@ -52,6 +56,10 @@ node('nimble-jenkins-slave') {
             }
         }
 
+        stage('Run Tests') {
+            sh '/bin/bash -xe deploy.sh run-tests'
+        }
+
         stage('Build Java') {
             sh '/bin/bash -xe deploy.sh java-build'
         }
@@ -78,6 +86,10 @@ node('nimble-jenkins-slave') {
         stage('Set version') {
             sh 'mvn org.codehaus.mojo:versions-maven-plugin:2.1:set -DnewVersion=' + env.TAG_NAME
             sh 'mvn -f catalogue-service-micro/pom.xml org.codehaus.mojo:versions-maven-plugin:2.1:set -DnewVersion=' + env.TAG_NAME
+        }
+
+        stage('Run Tests') {
+            sh '/bin/bash -xe deploy.sh run-tests'
         }
 
         stage('Build Java') {
