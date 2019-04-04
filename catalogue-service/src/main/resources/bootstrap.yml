@@ -271,7 +271,7 @@ persistence:
 ---
 
 spring:
-  profiles: local_dev
+  profiles: test
   datasource:
     ubldb:
       url: jdbc:h2:mem:db3;AUTO_RECONNECT=TRUE;DB_CLOSE_DELAY=-1;INIT=create schema IF NOT EXISTS APPS
@@ -301,7 +301,6 @@ persistence:
 nimble:
   identity:
     url: ${IDENTITY_SERVICE_URL:localhost:9096}
-  test-token: ${NIMBLE_TEST_TOKEN}
   indexing:
     sync: false
 

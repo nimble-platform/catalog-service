@@ -29,6 +29,10 @@ public class CatalogueLinePersistenceUtil {
             + " JOIN c.catalogueLine as clj"
             + " WHERE c.UUID = :catalogueUuid "
             + " AND clj.ID = :lineId";
+    private static final String QUERY_GET_HJID_AND_PARTY_ID_BY_CAT_UUID_AND_ID = "SELECT clj.hjid,partyIdentification.ID FROM CatalogueType as c"
+            + " JOIN c.catalogueLine as clj join clj.goodsItem.item.manufacturerParty.partyIdentification partyIdentification"
+            + " WHERE c.UUID = :catalogueUuid "
+            + " AND clj.ID = :lineId";
     private static final String QUERY_GET_BY_HJID = "SELECT cl FROM CatalogueLineType as cl WHERE cl.hjid = :hjid";
     private static final String QUERY_GET_BY_HJIDS = "SELECT cl FROM CatalogueLineType as cl WHERE cl.hjid in :hjids";
     private static final String QUUERY_GET_LINE_IDS_WITH_LCPA_INPUT_WITHOUT_LCPA_OUTPUT = "SELECT cl.hjid, lcpa.LCPAInput FROM CatalogueLineType cl" +
@@ -55,26 +59,27 @@ public class CatalogueLinePersistenceUtil {
     public static List<CatalogueLineType> getCatalogueLines(List<Long> hjids,CatalogueLineSortOptions sortOption,int limit, int pageNo) {
 
         List<CatalogueLineType> catalogueLines = new ArrayList<>();
-        String getCatalogueLinesQuery = QUERY_GET_BY_HJIDS;
-        if(sortOption != null){
-            switch (sortOption){
-                case PRICE_HIGH_TO_LOW:
-                    getCatalogueLinesQuery += " ORDER BY cl.requiredItemLocationQuantity.price.priceAmount.value DESC NULLS LAST";
-                    break;
-                case PRICE_LOW_TO_HIGH:
-                    getCatalogueLinesQuery += " ORDER BY cl.requiredItemLocationQuantity.price.priceAmount.value ASC NULLS LAST";
-                    break;
+        if(hjids.size() > 0){
+            String getCatalogueLinesQuery = QUERY_GET_BY_HJIDS;
+            if(sortOption != null){
+                switch (sortOption){
+                    case PRICE_HIGH_TO_LOW:
+                        getCatalogueLinesQuery += " ORDER BY cl.requiredItemLocationQuantity.price.priceAmount.value DESC NULLS LAST";
+                        break;
+                    case PRICE_LOW_TO_HIGH:
+                        getCatalogueLinesQuery += " ORDER BY cl.requiredItemLocationQuantity.price.priceAmount.value ASC NULLS LAST";
+                        break;
+                }
             }
-        }
+            catalogueLines = new JPARepositoryFactory().forCatalogueRepository().getEntities(getCatalogueLinesQuery, new String[]{"hjids"}, new Object[]{hjids});
 
-        catalogueLines = new JPARepositoryFactory().forCatalogueRepository().getEntities(getCatalogueLinesQuery, new String[]{"hjids"}, new Object[]{hjids});
-
-        if(limit != 0){
-            int startIndex = limit*pageNo;
-            int endIndex = startIndex+limit;
-            if(endIndex > catalogueLines.size())
-                endIndex = catalogueLines.size();
-            catalogueLines = catalogueLines.subList(startIndex,endIndex);
+            if(limit != 0){
+                int startIndex = limit*pageNo;
+                int endIndex = startIndex+limit;
+                if(endIndex > catalogueLines.size())
+                    endIndex = catalogueLines.size();
+                catalogueLines = catalogueLines.subList(startIndex,endIndex);
+            }
         }
         return catalogueLines;
     }
@@ -86,12 +91,19 @@ public class CatalogueLinePersistenceUtil {
     public static List<ItemLCPAInput> getLinesIdsWithValidLcpaInput() {
         List<Object[]> dbResults = new JPARepositoryFactory().forCatalogueRepository().getEntities(QUUERY_GET_LINE_IDS_WITH_LCPA_INPUT_WITHOUT_LCPA_OUTPUT);
         List<ItemLCPAInput> results = new ArrayList<>();
-        for(Object[] result : dbResults) {
+        for (Object[] result : dbResults) {
             ItemLCPAInput itemLcpaInput = new ItemLCPAInput();
             itemLcpaInput.setCatalogueLineHjid((result[0]).toString());
             itemLcpaInput.setLcpaInput((LCPAInputType) result[1]);
             results.add(itemLcpaInput);
         }
         return results;
+    }
+    
+    // this method returns an array of objects
+    // first one is the hjid of the catalogue line
+    // second one is the id of the party owning the catalogue line
+    public static Object[] getCatalogueLineHjidAndPartyId(String catalogueUuid, String lineId){
+        return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_HJID_AND_PARTY_ID_BY_CAT_UUID_AND_ID, new String[]{"catalogueUuid", "lineId"}, new Object[]{catalogueUuid, lineId});
     }
 }

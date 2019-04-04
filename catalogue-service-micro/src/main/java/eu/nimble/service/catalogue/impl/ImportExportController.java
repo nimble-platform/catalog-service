@@ -71,9 +71,9 @@ public class ImportExportController {
             CatalogueType catalogue = JsonSerializationUtility.getObjectMapper().readValue(object.toString(), CatalogueType.class);
 
             // get person using the given bearer token
-            PersonType person = SpringBridge.getInstance().getIdentityClientTyped().getPerson(bearerToken);
+            PersonType person = SpringBridge.getInstance().getiIdentityClientTyped().getPerson(bearerToken);
             // get party for the person
-            PartyType party = SpringBridge.getInstance().getIdentityClientTyped().getPartyByPersonID(person.getID()).get(0);
+            PartyType party = SpringBridge.getInstance().getiIdentityClientTyped().getPartyByPersonID(person.getID()).get(0);
 
             // remove hjid fields of party
             JSONObject partyObject = new JSONObject(party);

@@ -1,6 +1,6 @@
 package eu.nimble.service.catalogue.util;
 
-import eu.nimble.common.rest.identity.IdentityClientTyped;
+import eu.nimble.common.rest.identity.IIdentityClientTyped;
 import eu.nimble.common.rest.trust.TrustClient;
 import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
@@ -27,7 +27,7 @@ public class SpringBridge implements ApplicationContextAware {
     @Autowired
     private CatalogueServiceConfig catalogueServiceConfig;
     @Autowired
-    private IdentityClientTyped identityClientTyped;
+    private IIdentityClientTyped iIdentityClientTyped;
     @Autowired
     private TrustClient trustClient;
     @Autowired
@@ -47,8 +47,8 @@ public class SpringBridge implements ApplicationContextAware {
         return catalogueServiceConfig;
     }
 
-    public IdentityClientTyped getIdentityClientTyped() {
-        return identityClientTyped;
+    public IIdentityClientTyped getiIdentityClientTyped() {
+        return iIdentityClientTyped;
     }
 
     public TrustClient getTrustClient() {

@@ -573,16 +573,15 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     @Override
     public void deleteCatalogueLineById(String catalogueId, String id) {
-        // delete catalogue from relational db
-        CatalogueLineType catalogueLine = getCatalogueLine(catalogueId, id);
+        Object[] lineHjidAndPartyId = CatalogueLinePersistenceUtil.getCatalogueLineHjidAndPartyId(catalogueId,id);
 
-        if (catalogueLine != null) {
-            Long hjid = catalogueLine.getHjid();
-            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID());
+        if (lineHjidAndPartyId != null) {
+            Long hjid = (Long) lineHjidAndPartyId[0];
+            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper((String) lineHjidAndPartyId[1]);
             repositoryWrapper.deleteEntityByHjid(CatalogueLineType.class, hjid);
 
             // delete indexed item
-            itemIndexClient.deleteCatalogueLine(catalogueLine.getHjid());
+            itemIndexClient.deleteCatalogueLine(hjid);
         }
     }
 

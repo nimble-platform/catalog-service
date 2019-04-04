@@ -1,6 +1,5 @@
 package eu.nimble.service.catalogue.impl;
 
-import eu.nimble.common.rest.identity.IdentityClientTyped;
 import eu.nimble.data.transformer.ontmalizer.XML2OWLMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
@@ -64,8 +63,6 @@ public class CatalogueController {
 
     @Autowired
     private CatalogueService service;
-    @Autowired
-    private IdentityClientTyped identityClient;
     @Autowired
     private TransactionEnabledSerializationUtility serializationUtility;
     @Autowired
