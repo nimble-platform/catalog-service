@@ -89,7 +89,7 @@ public class CatalogueLinePersistenceUtil {
     }
 
     public static List<ItemLCPAInput> getLinesIdsWithValidLcpaInput() {
-        List<Object[]> dbResults = new JPARepositoryFactory().forCatalogueRepository().getEntities(QUUERY_GET_LINE_IDS_WITH_LCPA_INPUT_WITHOUT_LCPA_OUTPUT);
+        List<Object[]> dbResults = new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUUERY_GET_LINE_IDS_WITH_LCPA_INPUT_WITHOUT_LCPA_OUTPUT);
         List<ItemLCPAInput> results = new ArrayList<>();
         for (Object[] result : dbResults) {
             ItemLCPAInput itemLcpaInput = new ItemLCPAInput();
