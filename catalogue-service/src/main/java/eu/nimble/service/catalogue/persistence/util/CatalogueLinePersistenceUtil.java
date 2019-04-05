@@ -45,7 +45,7 @@ public class CatalogueLinePersistenceUtil {
     }
 
     public static CatalogueLineType getCatalogueLine(Long hjid) {
-        return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_BY_HJID, new String[]{"hjid"}, new Object[]{hjid});
+        return new JPARepositoryFactory().forCatalogueRepository(true).getSingleEntity(QUERY_GET_BY_HJID, new String[]{"hjid"}, new Object[]{hjid});
     }
 
     public static List<CatalogueLineType> getCatalogueLines(List<Long> hjids,CatalogueLineSortOptions sortOption,int limit, int pageNo) {
@@ -63,7 +63,7 @@ public class CatalogueLinePersistenceUtil {
                         break;
                 }
             }
-            catalogueLines = new JPARepositoryFactory().forCatalogueRepository().getEntities(getCatalogueLinesQuery, new String[]{"hjids"}, new Object[]{hjids});
+            catalogueLines = new JPARepositoryFactory().forCatalogueRepository(true).getEntities(getCatalogueLinesQuery, new String[]{"hjids"}, new Object[]{hjids});
 
             if(limit != 0){
                 int startIndex = limit*pageNo;
@@ -77,7 +77,7 @@ public class CatalogueLinePersistenceUtil {
     }
 
     public static CatalogueLineType getCatalogueLine(String catalogueUuid, String lineId) {
-        return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_BY_CAT_UUID_AND_ID, new String[]{"catalogueUuid", "lineId"}, new Object[]{catalogueUuid, lineId});
+        return new JPARepositoryFactory().forCatalogueRepository(true).getSingleEntity(QUERY_GET_BY_CAT_UUID_AND_ID, new String[]{"catalogueUuid", "lineId"}, new Object[]{catalogueUuid, lineId});
     }
 
     // this method returns an array of objects

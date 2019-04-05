@@ -71,8 +71,8 @@ class UBLDBConfig {
 
         Properties hibernateProperties = new Properties();
         hibernateProperties.putAll(hibernateConfigs);
-        // disable hibernate.enable_lazy_load_no_trans property by removing it
-        hibernateProperties.remove("hibernate.enable_lazy_load_no_trans");
+        // enable hibernate.enable_lazy_load_no_trans property
+        hibernateProperties.put("hibernate.enable_lazy_load_no_trans",true);
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         emfBean.setJpaVendorAdapter(vendorAdapter);
         emfBean.setJpaProperties(hibernateProperties);

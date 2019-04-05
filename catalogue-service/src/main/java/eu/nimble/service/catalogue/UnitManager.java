@@ -23,7 +23,7 @@ public class UnitManager {
     @PostConstruct
     private void checkUnits(){
         List<UnitType> resultSet;
-        resultSet = UnitPersistenceUtil.getUnitMarker(repoFactory.forCatalogueRepository());
+        resultSet = UnitPersistenceUtil.getUnitMarker(repoFactory.forCatalogueRepository(true));
         if(resultSet.size() > 0){
             return;
         }

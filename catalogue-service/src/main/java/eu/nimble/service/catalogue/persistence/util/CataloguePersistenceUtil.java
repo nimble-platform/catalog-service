@@ -85,19 +85,19 @@ public class CataloguePersistenceUtil {
 
     public static CataloguePaginationResponse getCatalogueLinesForParty(String catalogueId, String partyId, String selectedCategoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset) {
         // get catalogue uuid
-        String catalogueUuid = new JPARepositoryFactory().forCatalogueRepository(false).getSingleEntity(QUERY_GET_CATALOGUE_UUID_FOR_PARTY,new String[]{"catalogueId","partyId"}, new Object[]{catalogueId,partyId});
+        String catalogueUuid = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_CATALOGUE_UUID_FOR_PARTY,new String[]{"catalogueId","partyId"}, new Object[]{catalogueId,partyId});
         long size = 0;
         List<String> categoryNames = new ArrayList<>();
         List<CatalogueLineType> catalogueLines = new ArrayList<>();
         if(catalogueUuid != null){
             // get names of the categories for all catalogue lines which the catalogue contains
-            categoryNames = new JPARepositoryFactory().forCatalogueRepository(false).getEntities(QUERY_GET_COMMODITY_CLASSIFICATION_NAMES_OF_CATALOGUE_LINES,new String[]{"catalogueUuid"}, new Object[]{catalogueUuid});
+            categoryNames = new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_COMMODITY_CLASSIFICATION_NAMES_OF_CATALOGUE_LINES,new String[]{"catalogueUuid"}, new Object[]{catalogueUuid});
             // if limit is equal to 0,then no catalogue lines are returned
             if(limit != 0){
                 // get the query
                 QueryData queryData = getQuery(catalogueId,partyId,searchText,languageId,selectedCategoryName,sortOption);
                 // get all catalogue line ids
-                List<String> catalogueLineIds = new JPARepositoryFactory().forCatalogueRepository(false).getEntities(queryData.query,queryData.parameterNames.toArray(new String[0]), queryData.parameterValues.toArray(),null,null,queryData.isNativeQuery);
+                List<String> catalogueLineIds = new JPARepositoryFactory().forCatalogueRepository().getEntities(queryData.query,queryData.parameterNames.toArray(new String[0]), queryData.parameterValues.toArray(),null,null,queryData.isNativeQuery);
                 // set the size of catalogue lines
                 size = catalogueLineIds.size();
                 // update catalogue line ids according to the offset
@@ -124,7 +124,7 @@ public class CataloguePersistenceUtil {
                 }
 
                 if(catalogueLineIds.size() != 0)
-                    catalogueLines = new JPARepositoryFactory().forCatalogueRepository().getEntities(getCatalogueLinesQuery,new String[]{"catalogueLineIds"}, new Object[]{catalogueLineIds});
+                    catalogueLines = new JPARepositoryFactory().forCatalogueRepository(true).getEntities(getCatalogueLinesQuery,new String[]{"catalogueLineIds"}, new Object[]{catalogueLineIds});
             }
         }
         // created CataloguePaginationResponse
@@ -137,11 +137,11 @@ public class CataloguePersistenceUtil {
     }
 
     public static CatalogueType getCatalogueByUuid(String catalogueUuid) {
-        return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_BY_UUID, new String[]{"uuid"}, new Object[]{catalogueUuid});
+        return new JPARepositoryFactory().forCatalogueRepository(true).getSingleEntity(QUERY_GET_BY_UUID, new String[]{"uuid"}, new Object[]{catalogueUuid});
     }
 
     public static CatalogueType getCatalogueForParty(String catalogueId, String partyId) {
-        return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_FOR_PARTY, new String[]{"catalogueId", "partyId"}, new Object[]{catalogueId, partyId});
+        return new JPARepositoryFactory().forCatalogueRepository(true).getSingleEntity(QUERY_GET_FOR_PARTY, new String[]{"catalogueId", "partyId"}, new Object[]{catalogueId, partyId});
     }
 
     public static Boolean checkCatalogueExistenceById(String catalogueId, String partyId) {
