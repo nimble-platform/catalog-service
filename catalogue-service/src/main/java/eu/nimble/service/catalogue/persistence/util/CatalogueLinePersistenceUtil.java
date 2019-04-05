@@ -1,7 +1,9 @@
 package eu.nimble.service.catalogue.persistence.util;
 
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
+import eu.nimble.service.catalogue.model.lcpa.ItemLCPAInput;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.LCPAInputType;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
 
 import java.util.ArrayList;
@@ -33,6 +35,12 @@ public class CatalogueLinePersistenceUtil {
             + " AND clj.ID = :lineId";
     private static final String QUERY_GET_BY_HJID = "SELECT cl FROM CatalogueLineType as cl WHERE cl.hjid = :hjid";
     private static final String QUERY_GET_BY_HJIDS = "SELECT cl FROM CatalogueLineType as cl WHERE cl.hjid in :hjids";
+    private static final String QUUERY_GET_LINE_IDS_WITH_LCPA_INPUT_WITHOUT_LCPA_OUTPUT = "SELECT cl.hjid, lcpa.LCPAInput FROM CatalogueLineType cl" +
+            " JOIN cl.goodsItem gi" +
+            " JOIN gi.item i" +
+            " JOIN i.lifeCyclePerformanceAssessmentDetails lcpa WHERE" +
+            " lcpa.LCPAInput is not null AND" +
+            " lcpa.LCPAOutput is null";
 
     public static Boolean checkCatalogueLineExistence(String catalogueUuid, String lineId) {
         long lineExistence = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_CHECK_EXISTENCE_BY_ID, new String[]{"catalogueUuid", "lineId"}, new Object[]{catalogueUuid, lineId});
@@ -80,6 +88,18 @@ public class CatalogueLinePersistenceUtil {
         return new JPARepositoryFactory().forCatalogueRepository(true).getSingleEntity(QUERY_GET_BY_CAT_UUID_AND_ID, new String[]{"catalogueUuid", "lineId"}, new Object[]{catalogueUuid, lineId});
     }
 
+    public static List<ItemLCPAInput> getLinesIdsWithValidLcpaInput() {
+        List<Object[]> dbResults = new JPARepositoryFactory().forCatalogueRepository().getEntities(QUUERY_GET_LINE_IDS_WITH_LCPA_INPUT_WITHOUT_LCPA_OUTPUT);
+        List<ItemLCPAInput> results = new ArrayList<>();
+        for (Object[] result : dbResults) {
+            ItemLCPAInput itemLcpaInput = new ItemLCPAInput();
+            itemLcpaInput.setCatalogueLineHjid((result[0]).toString());
+            itemLcpaInput.setLcpaInput((LCPAInputType) result[1]);
+            results.add(itemLcpaInput);
+        }
+        return results;
+    }
+    
     // this method returns an array of objects
     // first one is the hjid of the catalogue line
     // second one is the id of the party owning the catalogue line
