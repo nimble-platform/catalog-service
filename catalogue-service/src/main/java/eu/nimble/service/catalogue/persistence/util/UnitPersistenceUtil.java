@@ -24,15 +24,15 @@ public class UnitPersistenceUtil {
     }
 
     public static List<UnitType> getUnitsInList(String listId) {
-        return new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_UNITS_IN_LIST, new String[]{"listId"}, new Object[]{listId});
+        return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_UNITS_IN_LIST, new String[]{"listId"}, new Object[]{listId});
     }
 
     public static List<UnitType> getAllUnits() {
-        return new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_ALL_UNITS);
+        return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_ALL_UNITS);
     }
 
     public static List<UnitTypeUnitCodeItem> getUnitCodesInList(String listId) {
-        return new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_UNIT_CODES_IN_LIST, new String[]{"listId"}, new Object[]{listId});
+        return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_UNIT_CODES_IN_LIST, new String[]{"listId"}, new Object[]{listId});
     }
 
     public static List<String> getAllUnitListIds() {
