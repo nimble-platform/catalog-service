@@ -303,6 +303,8 @@ nimble:
     url: ${IDENTITY_SERVICE_URL:localhost:9096}
   indexing:
     sync: false
+  platformHost: ${CATALOGUE_SERVICE_URL:http://localhost:8095}
+
 
 hystrix:
   command:
