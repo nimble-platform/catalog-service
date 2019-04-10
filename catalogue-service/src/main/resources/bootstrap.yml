@@ -140,6 +140,8 @@ security:
       check-token-access:
 
 nimble:
+  catalog:
+    max-file-size: 5 #in MB
   binary-content:
     url: ${BINARY_CONTENT_URL}
   identity:
