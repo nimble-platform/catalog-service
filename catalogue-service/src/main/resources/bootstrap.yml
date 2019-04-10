@@ -165,6 +165,8 @@ nimble:
       clientSecret: ${CATALOG_SERVICE_OAUTH_SECRET}
       accessTokenUri: ${OAUTH_CLIENT_ACCESSTOKEN_URI}
   check-entity-ids: ${CHECK_ENTITY_IDS:false}
+  platformHost: ${CATALOGUE_SERVICE_URL:http://localhost:8095}
+
 
 hystrix:
   command:
@@ -302,6 +304,7 @@ nimble:
     url: ${IDENTITY_SERVICE_URL:localhost:9096}
   indexing:
     sync: false
+
 
 hystrix:
   command:
