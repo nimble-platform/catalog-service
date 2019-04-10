@@ -19,7 +19,7 @@ node('nimble-jenkins-slave') {
         }
 
         stage('Run Tests') {
-            sh '/bin/bash -xe deploy.sh run-tests'
+            sh '/bin/bash \n source /var/jenkins_home/test_staging.sh && -xe deploy.sh run-tests'
         }
 
         stage('Build Java') {
