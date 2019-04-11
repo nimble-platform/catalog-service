@@ -4,7 +4,7 @@
     "preferredName": [
       {
         "value": "ID de catálogo",
-        "languageID": "en"
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -14,7 +14,7 @@
     "preferredName": [
       {
         "value": "Muestra gratuita",
-        "languageID": "en"
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#boolean"
@@ -24,7 +24,7 @@
     "preferredName": [
       {
         "value": "Certificado de producto / servicio",
-        "languageID": "en"
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -34,7 +34,7 @@
     "preferredName": [
       {
         "value": "País de destino",
-        "languageID": "en"
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -44,7 +44,7 @@
     "preferredName": [
       {
         "value": "Nombre del fabricante",
-        "languageID": "en"
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -54,7 +54,7 @@
     "preferredName": [
       {
         "value": "ID del fabricante del producto",
-        "languageID": "en"
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -64,7 +64,7 @@
     "preferredName": [
       {
         "value": "Origen del proveedor",
-        "languageID": "en"
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -74,7 +74,7 @@
     "preferredName": [
       {
         "value": "Certificado del proveedor",
-        "languageID": "en"
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -84,7 +84,7 @@
     "preferredName": [
       {
         "value": "Nivel de conformidad PPAP",
-        "languageID": "en"
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
@@ -94,7 +94,7 @@
     "preferredName": [
       {
         "value": "Documento PPAP",
-        "languageID": "en"
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -104,7 +104,7 @@
     "preferredName": [
       {
         "value": "Tipo de servicio",
-        "languageID": "en"
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -114,7 +114,7 @@
     "preferredName": [
       {
         "value": "Naturaleza de producto admitida",
-        "languageID": "en"
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -124,7 +124,7 @@
     "preferredName": [
       {
         "value": "Tipo de cargamento admitido",
-        "languageID": "en"
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -134,7 +134,7 @@
     "preferredName": [
       {
         "value": "Estándar de emisión",
-        "languageID": "en"
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -144,7 +144,7 @@
     "preferredName": [
       {
         "value": "Puntuación en confianza",
-        "languageID": "en"
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
@@ -154,7 +154,7 @@
     "preferredName": [
       {
         "value": "Valoración general",
-        "languageID": "en"
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
@@ -164,7 +164,7 @@
     "preferredName": [
       {
         "value": "Volumen de negocio",
-        "languageID": "en"
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
@@ -174,7 +174,7 @@
     "preferredName": [
       {
         "value": "Comunicación con el vendedor",
-        "languageID": "en"
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
@@ -184,7 +184,7 @@
     "preferredName": [
       {
         "value": "Cumplimiento de los términos",
-        "languageID": "en"
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
@@ -194,7 +194,7 @@
     "preferredName": [
       {
         "value": "Entrega y embalaje",
-        "languageID": "en"
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
@@ -204,7 +204,7 @@
     "preferredName": [
       {
         "value": "Número de transacciones de la empresa",
-        "languageID": "en"
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
@@ -214,7 +214,7 @@
     "preferredName": [
       {
         "value": "Nombre legal de la empresa",
-        "languageID": "en"
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -224,7 +224,7 @@
     "preferredName": [
       {
         "value": "Nombre comercial de la empresa",
-        "languageID": "en"
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
