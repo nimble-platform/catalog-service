@@ -1,0 +1,232 @@
+[
+  {
+    "id": "catalogueId",
+    "preferredName": [
+      {
+        "value": "ID de catálogo",
+        "languageID": "en"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "freeOfCharge",
+    "preferredName": [
+      {
+        "value": "Muestra gratuita",
+        "languageID": "en"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#boolean"
+  },
+  {
+    "id": "certificateType",
+    "preferredName": [
+      {
+        "value": "Certificado de producto / servicio",
+        "languageID": "en"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "applicableCountries",
+    "preferredName": [
+      {
+        "value": "País de destino",
+        "languageID": "en"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "manufacturer.name",
+    "preferredName": [
+      {
+        "value": "Nombre del fabricante",
+        "languageID": "en"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "manufacturerId",
+    "preferredName": [
+      {
+        "value": "ID del fabricante del producto",
+        "languageID": "en"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "manufacturer.origin",
+    "preferredName": [
+      {
+        "value": "Origen del proveedor",
+        "languageID": "en"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "manufacturer.certificateType",
+    "preferredName": [
+      {
+        "value": "Certificado del proveedor",
+        "languageID": "en"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "manufacturer.ppapComplianceLevel",
+    "preferredName": [
+      {
+        "value": "Nivel de conformidad PPAP",
+        "languageID": "en"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#double"
+  },
+  {
+    "id": "manufacturer.ppapDocumentType",
+    "preferredName": [
+      {
+        "value": "Documento PPAP",
+        "languageID": "en"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "serviceType",
+    "preferredName": [
+      {
+        "value": "Tipo de servicio",
+        "languageID": "en"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "supportedProductNature",
+    "preferredName": [
+      {
+        "value": "Naturaleza de producto admitida",
+        "languageID": "en"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "supportedCargoType",
+    "preferredName": [
+      {
+        "value": "Tipo de cargamento admitido",
+        "languageID": "en"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "emissionStandard",
+    "preferredName": [
+      {
+        "value": "Estándar de emisión",
+        "languageID": "en"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "manufacturer.trustScore",
+    "preferredName": [
+      {
+        "value": "Puntuación en confianza",
+        "languageID": "en"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#double"
+  },
+  {
+    "id": "manufacturer.trustRating",
+    "preferredName": [
+      {
+        "value": "Valoración general",
+        "languageID": "en"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#double"
+  },
+  {
+    "id": "manufacturer.trustTradingVolume",
+    "preferredName": [
+      {
+        "value": "Volumen de negocio",
+        "languageID": "en"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#double"
+  },
+  {
+    "id": "manufacturer.trustSellerCommunication",
+    "preferredName": [
+      {
+        "value": "Comunicación con el vendedor",
+        "languageID": "en"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#double"
+  },
+  {
+    "id": "manufacturer.trustFullfillmentOfTerms",
+    "preferredName": [
+      {
+        "value": "Cumplimiento de los términos",
+        "languageID": "en"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#double"
+  },
+  {
+    "id": "manufacturer.trustDeliveryPackaging",
+    "preferredName": [
+      {
+        "value": "Entrega y embalaje",
+        "languageID": "en"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#double"
+  },
+  {
+    "id": "manufacturer.trustNumberOfTransactions",
+    "preferredName": [
+      {
+        "value": "Número de transacciones de la empresa",
+        "languageID": "en"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#double"
+  },
+  {
+    "id": "manufacturer.legalName",
+    "preferredName": [
+      {
+        "value": "Nombre legal de la empresa",
+        "languageID": "en"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "manufacturer.brandName",
+    "preferredName": [
+      {
+        "value": "Nombre comercial de la empresa",
+        "languageID": "en"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  }
+]
