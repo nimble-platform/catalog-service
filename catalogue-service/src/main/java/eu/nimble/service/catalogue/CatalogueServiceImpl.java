@@ -543,6 +543,12 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
+    public <T> T getCatalogueLines(String catalogueId, List<String> catalogueLineIds) {
+        T catalogueLines = (T) CatalogueLinePersistenceUtil.getCatalogueLines(catalogueId, catalogueLineIds);
+        return catalogueLines;
+    }
+
+    @Override
     public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine) {
         catalogue.getCatalogueLine().add(catalogueLine);
         DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(catalogue);

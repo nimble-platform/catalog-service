@@ -91,6 +91,8 @@ public interface CatalogueService {
 
     <T> T getCatalogueLine(String catalogueId, String catalogueLineId);
 
+    <T> T getCatalogueLines(String catalogueId, List<String> catalogueLineIds);
+
     CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine);
 
     CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine);
