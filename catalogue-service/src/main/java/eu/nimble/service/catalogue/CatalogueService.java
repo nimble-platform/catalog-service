@@ -96,4 +96,7 @@ public interface CatalogueService {
     CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine);
 
     void deleteCatalogueLineById(String catalogueId, String lineId);
+
+    List<String> getCatalogueIdsForParty(String partyId);
+
 }

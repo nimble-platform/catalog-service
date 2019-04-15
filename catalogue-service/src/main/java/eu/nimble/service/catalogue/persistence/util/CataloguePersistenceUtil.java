@@ -25,6 +25,9 @@ public class CataloguePersistenceUtil {
     private static final String QUERY_GET_CATALOGUE_IDS_FOR_PARTY = "SELECT catalogue.UUID FROM CatalogueType as catalogue" +
             " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification" +
             " WHERE partyIdentification.ID = :partyId";
+    private static final String QUERY_GET_CATALOGUE_IDLIST_FOR_PARTY = "SELECT catalogue.ID FROM CatalogueType as catalogue" +
+            " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification" +
+            " WHERE partyIdentification.ID = :partyId";
 
     private static final String QUERY_GET_CATALOGUE_LINES_BY_IDS = "SELECT catalogueLine FROM CatalogueLineType catalogueLine " +
             " WHERE catalogueLine.ID in :catalogueLineIds";
@@ -151,6 +154,10 @@ public class CataloguePersistenceUtil {
 
     public static List<String> getCatalogueIdsForParty(String partyId) {
         return new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_CATALOGUE_IDS_FOR_PARTY, new String[]{"partyId"}, new Object[]{partyId});
+    }
+
+    public static List<String> getCatalogueIdListsForParty(String partyId) {
+        return new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_CATALOGUE_IDLIST_FOR_PARTY, new String[]{"partyId"}, new Object[]{partyId});
     }
 
     private static QueryData getQuery(String catalogueId,String partyId,String searchText,String languageId,String selectedCategoryName,CatalogueLineSortOptions sortOption){
