@@ -211,9 +211,10 @@ public class PropertyIndexClient {
             searchResult = mapper.readValue(response.getBody(), new TypeReference<SearchResult<PropertyType>>() {});
             indexProperties = searchResult.getResult();
 
-            // filter properties so that only datatype properties are included
+            // filter properties so that only datatype properties and properties that are not hidden on the UI are included
             indexProperties = indexProperties.stream()
-                    .filter(indexProperty -> indexProperty.getPropertyType().contentEquals("DatatypeProperty") || indexProperty.getPropertyType().contentEquals("FunctionalProperty") )
+                    .filter(indexProperty -> !indexProperty.isHiddenOnUI() &&
+                            (indexProperty.getPropertyType().contentEquals("DatatypeProperty") || indexProperty.getPropertyType().contentEquals("FunctionalProperty")) )
                     .collect(Collectors.toList());
             return indexProperties;
 
