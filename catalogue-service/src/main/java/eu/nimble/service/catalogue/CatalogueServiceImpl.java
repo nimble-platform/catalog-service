@@ -585,6 +585,12 @@ public class CatalogueServiceImpl implements CatalogueService {
         }
     }
 
+
+    @Override
+    public List<String> getCatalogueIdsForParty(String partyId) {
+        return CataloguePersistenceUtil.getCatalogueIdListsForParty(partyId);
+    }
+
     private void updateExistingCatalogueLine(CatalogueLineType existingCatalogueLine, CatalogueLineType newCatalogueLine){
         existingCatalogueLine.getGoodsItem().getItem().setName(newCatalogueLine.getGoodsItem().getItem().getName());
         existingCatalogueLine.getGoodsItem().getItem().setDescription(newCatalogueLine.getGoodsItem().getItem().getDescription());
