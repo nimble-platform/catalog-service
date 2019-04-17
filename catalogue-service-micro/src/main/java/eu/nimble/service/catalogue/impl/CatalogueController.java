@@ -737,6 +737,14 @@ public class CatalogueController {
         }
     }
 
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieves the catalogue id's for a party.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved the catalogue id's successfully"),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 404, message = "No catalogue ids found for the given party"),
+            @ApiResponse(code = 500, message = "Unexpected error while getting catalogue id's")
+    })
     @RequestMapping(value = "/catalogue/{partyId}",
             produces = {"application/json"},
             method = RequestMethod.GET)
@@ -764,6 +772,14 @@ public class CatalogueController {
         return ResponseEntity.ok(catalogueIds);
     }
 
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieves catalogue from id specific for a party.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved the catalogue successfully"),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 404, message = "No catalogue found for the given id and party id"),
+            @ApiResponse(code = 500, message = "Unexpected error while getting catalogue id's")
+    })
     @RequestMapping(value = "/catalogue/{partyId}/{id}/{standard}",
             produces = {"application/json"},
             method = RequestMethod.GET)
