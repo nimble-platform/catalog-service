@@ -47,7 +47,7 @@ public class UnitManager {
 
         UnitType unitType3 = new UnitType();
         unitType3.setID("time_quantity");
-        unitType3.setUnitCode(Arrays.asList("working days","days","weeks"));
+        unitType3.setUnitCode(Arrays.asList("hour(s)", "working day(s)","day(s)","week(s)"));
         repoFactory.forCatalogueRepository().persistEntity(unitType3);
 
         UnitType unitType4 = new UnitType();
@@ -77,7 +77,7 @@ public class UnitManager {
 
         UnitType unitType9 = new UnitType();
         unitType9.setID("warranty_period");
-        unitType9.setUnitCode(Arrays.asList("month","year"));
+        unitType9.setUnitCode(Arrays.asList("month(s)","year(s)"));
         repoFactory.forCatalogueRepository().persistEntity(unitType9);
     }
 
