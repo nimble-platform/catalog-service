@@ -1,4 +1,4 @@
-package eu.nimble.service.catalogue.category.furnitureontology;
+package eu.nimble.service.catalogue.category.eclass;
 
 import eu.nimble.service.catalogue.category.TaxonomyEnum;
 import eu.nimble.service.catalogue.category.TaxonomyQueryInterface;
@@ -10,19 +10,17 @@ import org.springframework.stereotype.Component;
  * Created by suat on 08-Feb-19.
  */
 @Component
-public class FurnitureOntologyTaxonomyQueryInterface implements TaxonomyQueryInterface {
-    private static final String FURNITURE_ONTOLOGY_LOGISTICS_SERVICE = "http://www.aidimme.es/FurnitureSectorOntology.owl#LogisticsService";
-
+public class EClassTaxonomyQueryImpl implements TaxonomyQueryInterface {
     @Override
     public TaxonomyEnum getTaxonomy() {
-        return TaxonomyEnum.FurnitureOntology;
+        return TaxonomyEnum.eClass;
     }
 
     @Override
     public String getQuery(boolean forLogistics) {
         StringBuilder sb = new StringBuilder(commonQuery());
         if(forLogistics) {
-            sb.append(" AND ").append(IClassType.ALL_PARENTS_FIELD).append(":\"").append(FURNITURE_ONTOLOGY_LOGISTICS_SERVICE).append("\"");
+            sb.append(" AND ").append(IClassType.CODE_FIELD).append(":14*");
         }
         StringBuilder finalQuery = new StringBuilder();
         finalQuery.append("(").append(sb).append(")");
@@ -31,7 +29,8 @@ public class FurnitureOntologyTaxonomyQueryInterface implements TaxonomyQueryInt
 
     private StringBuilder commonQuery() {
         StringBuilder sb = new StringBuilder("");
-        sb.append(IConcept.NAME_SPACE_FIELD).append(":\"").append(TaxonomyEnum.FurnitureOntology.getNamespace()).append("\"");
+        sb.append(IConcept.NAME_SPACE_FIELD).append(":\"").append(TaxonomyEnum.eClass.getNamespace()).append("\" AND ")
+                .append(IClassType.LEVEL_FIELD).append(":4");
         return sb;
     }
 }
