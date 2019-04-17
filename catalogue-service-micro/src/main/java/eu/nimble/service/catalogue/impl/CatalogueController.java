@@ -764,6 +764,43 @@ public class CatalogueController {
         return ResponseEntity.ok(catalogueIds);
     }
 
+    @RequestMapping(value = "/catalogue/{partyId}/{id}/{standard}",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity getCatalogueFromId(@ApiParam(value = "Identifier of the party for which the catalogue to be retrieved", required = true) @PathVariable String partyId,
+                                                        @ApiParam(value = "Identifier of the catalogue", required = true) @PathVariable String id,
+                                                        @ApiParam(value = "Data model standard that the provided catalogue is compatible with.", defaultValue = "ubl", required = true) @PathVariable String standard,
+                                                     @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+
+        log.info("Incoming request to get catalogue for id: {} for party: {}",id,partyId);
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+
+        if (tokenCheck != null) {
+            return tokenCheck;
+        }
+
+        Configuration.Standard std;
+        try {
+            std = getStandardEnum(standard);
+        } catch (Exception e) {
+            return createErrorResponseEntity("Invalid standard: " + standard, HttpStatus.BAD_REQUEST, e);
+        }
+
+        Object catalogue;
+        try {
+            catalogue = service.getCatalogue(id,partyId,std);
+        } catch (Exception e) {
+            return createErrorResponseEntity("Failed to get catalogue for party id: " + partyId, HttpStatus.INTERNAL_SERVER_ERROR, e);
+        }
+
+        if (catalogue == null) {
+            log.info("No catalogue for id: {}", id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("No catalogue for id: %s", id));
+        }
+
+        log.info("Completed request to get catalogue for party: {} and id {}", partyId,id);
+        return ResponseEntity.ok(catalogue);
+    }
 
     private ResponseEntity createErrorResponseEntity(String msg, HttpStatus status, Exception e) {
         if (e != null) {
