@@ -740,7 +740,7 @@ public class CatalogueController {
     @RequestMapping(value = "/catalogue/{partyId}",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getCatalogues(@ApiParam(value = "Identifier of the party for which the catalogue to be retrieved", required = true) @PathVariable String partyId,
+    public ResponseEntity getAllCatalogueIdsForParty(@ApiParam(value = "Identifier of the party for which the catalogue to be retrieved", required = true) @PathVariable String partyId,
                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         log.info("Incoming request to get catalogue id list for party: {}", partyId);
         ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
@@ -760,7 +760,7 @@ public class CatalogueController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("No default catalogue for party: %s", partyId));
         }
 
-        log.info("Completed request to get default catalogue for party: {}", partyId);
+        log.info("Completed request to get catalogue id list for party: {}", partyId);
         return ResponseEntity.ok(catalogueIds);
     }
 
