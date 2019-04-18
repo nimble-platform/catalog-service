@@ -103,8 +103,9 @@ public class CatalogueController {
         }
 
         CataloguePaginationResponse cataloguePaginationResponse;
+
         try {
-            cataloguePaginationResponse = service.getCataloguePaginationResponse("default", partyId,categoryName,searchText,languageId,sortOption,limit,offset);
+            cataloguePaginationResponse = service.getCataloguePaginationResponse(catalogueId, partyId,categoryName,searchText,languageId,sortOption,limit,offset);
         } catch (Exception e) {
             return createErrorResponseEntity(String.format("Failed to get CataloguePaginationResponse for party id: %s catalogue id: %s", partyId, catalogueId), HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
