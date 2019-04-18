@@ -10,9 +10,7 @@ import eu.nimble.service.model.solr.item.ItemType;
 import eu.nimble.service.model.solr.owl.ClassType;
 import eu.nimble.service.model.solr.owl.PropertyType;
 import eu.nimble.service.model.solr.owl.ValueQualifier;
-import eu.nimble.service.model.solr.party.*;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
@@ -250,7 +248,7 @@ public class IndexingWrapper {
         Property property = new Property();
         property.setPreferredName(getLabelListFromMap(indexProperty.getLabel()));
         property.setDefinition(getSingleLabel(indexProperty.getDescription()));
-        property.setRemark(getSingleLabel(indexProperty.getComment()));
+        property.setRemark(getLabelListFromMap(indexProperty.getComment()));
 
         // TODO the data type is currently keeping the value qualifier. However, it should be stored in the value qualifier field.
         if(indexProperty.getUri().startsWith(TaxonomyEnum.eClass.getNamespace())) {
@@ -372,8 +370,7 @@ public class IndexingWrapper {
             indexProperty.setLocalName(getRemainder(indexProperty.getUri(), TaxonomyEnum.eClass.getNamespace()));
             indexProperty.setNameSpace(TaxonomyEnum.eClass.getNamespace());
             indexProperty.setItemFieldNames(Arrays.asList(ItemType.dynamicFieldPart(property.getUri())));
-            // TODO below by default the english language is assumed
-            indexProperty.addComment("en", property.getRemark());
+            property.getRemark().forEach(label -> indexProperty.addComment(label.getLanguageID(), label.getValue()));
 
         } else {
             indexProperty.setLocalName(getRemainder(indexProperty.getUri(), taxonomy.getNamespace()));

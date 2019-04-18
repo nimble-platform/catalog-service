@@ -1552,7 +1552,7 @@ public class TemplateGenerator {
                     cell.setCellStyle(wordWrapStyle);
                     row.createCell(++columnIndex).setCellValue(property.getNote());
                     cell = row.createCell(++columnIndex);
-                    cell.setCellValue(property.getRemark());
+                    cell.setCellValue(property.getRemark(defaultLanguage));
                     cell.setCellStyle(wordWrapStyle);
                     row.createCell(++columnIndex).setCellValue(property.getPreferredSymbol());
                     row.createCell(++columnIndex).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
