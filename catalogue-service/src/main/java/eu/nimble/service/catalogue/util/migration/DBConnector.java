@@ -31,14 +31,14 @@ public class DBConnector {
             Map map = ((MapPropertySource) applicationYamlPropertySource).getSource();
 
             String url = (String) map.get("hibernate.connection.url");
-            url = url.replace("${DB_HOST}", System.getenv("DB_HOST")).
-                    replace("${DB_PORT}", System.getenv("DB_PORT")).
-                    replace("${DB_DATABASE}", System.getenv("DB_DATABASE"));
+            url = url.replace("${UBL_DB_HOST}", System.getenv("UBL_DB_HOST")).
+                    replace("${UBL_DB_HOST_PORT}", System.getenv("UBL_DB_HOST_PORT")).
+                    replace("${UBL_DB_NAME}", System.getenv("UBL_DB_NAME"));
 
             // set staging parameters
             DBConnector.url = url;
-            DBConnector.username = System.getenv("DB_USERNAME");
-            DBConnector.password = System.getenv("DB_PASSWORD");
+            DBConnector.username = System.getenv("UBL_DB_USERNAME");
+            DBConnector.password = System.getenv("UBL_DB_PASSWORD");
             //
 
             map.put("hibernate.connection.url", url);
