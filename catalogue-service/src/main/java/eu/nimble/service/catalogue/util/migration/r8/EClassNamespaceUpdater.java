@@ -272,7 +272,7 @@ public class EClassNamespaceUpdater {
         YamlPropertySourceLoader loader = new YamlPropertySourceLoader();
         try {
             PropertySource<?> applicationYamlPropertySource = loader.load(
-                    "properties", new ClassPathResource("releases/r5/r5migration.yml"), null);
+                    "properties", new ClassPathResource("releases/r9/r9migration.yml"), null);
 
             Map map = ((MapPropertySource) applicationYamlPropertySource).getSource();
 

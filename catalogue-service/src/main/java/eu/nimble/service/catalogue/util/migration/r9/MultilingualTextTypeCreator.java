@@ -1,4 +1,4 @@
-package eu.nimble.service.catalogue.util.migration.r8;
+package eu.nimble.service.catalogue.util.migration.r9;
 
 import eu.nimble.service.catalogue.util.migration.DBConnector;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
