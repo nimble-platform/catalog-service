@@ -83,7 +83,7 @@ public class CataloguePersistenceUtil {
             ")";
 
     public static List<CatalogueType> getAllCatalogues() {
-        return new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_ALL_CATALOGUES);
+        return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_ALL_CATALOGUES);
     }
 
     public static CataloguePaginationResponse getCatalogueLinesForParty(String catalogueId, String partyId, String selectedCategoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset) {
