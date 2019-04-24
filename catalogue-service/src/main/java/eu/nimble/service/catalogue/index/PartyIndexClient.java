@@ -48,7 +48,7 @@ public class PartyIndexClient {
                 return;
             }
 
-            HttpResponse<String> response = Unirest.post(indexingUrl + "/party")
+            HttpResponse<String> response = Unirest.put(indexingUrl + "/party")
                     .header(HttpHeaders.AUTHORIZATION, credentialsUtil.getBearerToken())
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .body(partyJson)
