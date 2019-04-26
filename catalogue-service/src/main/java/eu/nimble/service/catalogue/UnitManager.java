@@ -79,6 +79,11 @@ public class UnitManager {
         unitType9.setID("warranty_period");
         unitType9.setUnitCode(Arrays.asList("month(s)","year(s)"));
         repoFactory.forCatalogueRepository().persistEntity(unitType9);
+
+        UnitType unitType10 = new UnitType();
+        unitType10.setID("frame_contract_period");
+        unitType10.setUnitCode(Arrays.asList("day(s)", "week(s)", "month(s)","year(s)"));
+        repoFactory.forCatalogueRepository().persistEntity(unitType10);
     }
 
 
