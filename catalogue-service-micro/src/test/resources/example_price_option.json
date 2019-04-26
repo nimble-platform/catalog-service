@@ -137,7 +137,7 @@
           }
         ],
         "tradingTermFormat": null,
-        "value": [],
+        "value": null,
         "hjid": null,
         "valueItems": []
       },
@@ -150,20 +150,22 @@
           }
         ],
         "tradingTermFormat": "%s, %s, %s",
-        "value": [
-          {
-            "value": "10",
-            "languageId": "en"
-          },
-          {
-            "value": "1",
-            "languageId": "en"
-          },
-          {
-            "value": "1",
-            "languageId": "en"
-          }
-        ],
+        "value": {
+          "value": [
+            {
+              "value": "10",
+              "languageId": "en"
+            },
+            {
+              "value": "1",
+              "languageId": "en"
+            },
+            {
+              "value": "1",
+              "languageId": "en"
+            }
+          ]
+        },
         "hjid": null,
         "valueItems": [
           {
