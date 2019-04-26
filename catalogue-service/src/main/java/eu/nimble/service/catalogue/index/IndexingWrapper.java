@@ -433,6 +433,8 @@ public class IndexingWrapper {
                     indexParty.setTrustNumberOfTransactions(qualityIndicator.getQuantity().getValue().doubleValue());
                 } else if(qualityIndicator.getQualityParameter().contentEquals(QualityIndicatorParameter.TRADING_VOLUME.toString())) {
                     indexParty.setTrustTradingVolume(qualityIndicator.getQuantity().getValue().doubleValue());
+                } else if(qualityIndicator.getQualityParameter().contentEquals(QualityIndicatorParameter.Number_OF_EVALUATIONS.toString())) {
+                    indexParty.setTrustNumberOfEvaluations(qualityIndicator.getQuantity().getValue().doubleValue());
                 }
             }
         });

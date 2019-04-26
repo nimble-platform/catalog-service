@@ -72,7 +72,7 @@ public class UnitManager {
 
         UnitType unitType8 = new UnitType();
         unitType8.setID("dimensions");
-        unitType8.setUnitCode(Arrays.asList("length","width","height","depth"));
+        unitType8.setUnitCode(Arrays.asList("length","width","height"));
         repoFactory.forCatalogueRepository().persistEntity(unitType8);
 
         UnitType unitType9 = new UnitType();
