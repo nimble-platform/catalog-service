@@ -23,7 +23,7 @@ public interface CatalogueService {
 
     public CatalogueType getCatalogue(String id, String partyId);
 
-    public CataloguePaginationResponse getCataloguePaginationResponse(String id, String partyId, String categoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset);
+    public CataloguePaginationResponse getCataloguePaginationResponse(String catalogueId, String partyId, String categoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset);
 
     public CatalogueType updateCatalogue(CatalogueType catalogue);
 
