@@ -557,6 +557,35 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
+    public CatalogueLineType updateLinesCatalogue(String newCatalogueUuid, String oldeCatalogueUuid,CatalogueLineType catalogueLine) {
+        CatalogueType oldcatalogue = getCatalogue(oldeCatalogueUuid);
+        CatalogueType newcatalogue = getCatalogue(newCatalogueUuid);
+
+        List<CatalogueLineType> lisLine = oldcatalogue.getCatalogueLine();
+
+        Long hjidLine = catalogueLine.getHjid();
+        CatalogueLineType catLine =  lisLine.stream()
+            .filter(line -> line.getHjid().equals(hjidLine))
+            .findFirst().get();
+
+        oldcatalogue.getCatalogueLine().remove(catLine);
+        catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().setID(newCatalogueUuid);
+        newcatalogue.getCatalogueLine().add(catalogueLine);
+        DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(oldcatalogue);
+        DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(newcatalogue);
+
+        EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(newcatalogue.getProviderParty().getPartyIdentification().get(0).getID());
+        oldcatalogue = repositoryWrapper.updateEntity(oldcatalogue);
+        newcatalogue = repositoryWrapper.updateEntity(newcatalogue);
+        catalogueLine = newcatalogue.getCatalogueLine().get(newcatalogue.getCatalogueLine().size() - 1);
+
+        // index the line
+        itemIndexClient.indexCatalogueLine(catalogueLine);
+
+        return catalogueLine;
+    }
+
+    @Override
     public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine) {
         CatalogueType catalogue = getCatalogue(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID());
         DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(catalogueLine, catalogue);
