@@ -93,6 +93,8 @@ public interface CatalogueService {
 
     CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine);
 
+    CatalogueLineType updateLinesCatalogue(String newCatalogueUuid, String oldeCatalogueUuid,CatalogueLineType catalogueLin);
+
     CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine);
 
     void deleteCatalogueLineById(String catalogueId, String lineId);

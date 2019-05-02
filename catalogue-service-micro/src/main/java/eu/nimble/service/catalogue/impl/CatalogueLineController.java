@@ -299,33 +299,66 @@ public class CatalogueLineController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
             }
 
-            // validate the incoming content
             CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogue, catalogueLine);
-            List<String> errors = catalogueLineValidator.validate();
-            if (errors.size() > 0) {
-                StringBuilder sb = new StringBuilder("");
-                for (String error : errors) {
-                    sb.append(error).append(System.lineSeparator());
+
+            if(!catalogueUuid.equals(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID())){
+                String newCatalogueUuid = catalogueUuid;
+                String oldCatalogueUuid = catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID();
+
+                catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().setID(newCatalogueUuid);
+                List<String> errors = catalogueLineValidator.validate();
+                if (errors.size() > 0) {
+                    StringBuilder sb = new StringBuilder("");
+                    for (String error : errors) {
+                        sb.append(error).append(System.lineSeparator());
+                    }
+                    return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
                 }
-                return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
-            }
 
-            // validate the entity ids
-            boolean hjidsBelongToCompany = resourceValidationUtil.hjidsBelongsToParty(catalogueLine, catalogue.getProviderParty().getPartyIdentification().get(0).getID(), Configuration.Standard.UBL.toString());
-            if(!hjidsBelongToCompany) {
-                return HttpResponseUtil.createResponseEntityAndLog(String.format("Some of the identifiers (hjid fields) do not belong to the party in the passed catalogue line: %s.", catalogueLineJson), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
-            }
+                // validate the entity ids
+                boolean hjidsBelongToCompany = resourceValidationUtil.hjidsBelongsToParty(catalogueLine, catalogue.getProviderParty().getPartyIdentification().get(0).getID(), Configuration.Standard.UBL.toString());
+                if(!hjidsBelongToCompany) {
+                    return HttpResponseUtil.createResponseEntityAndLog(String.format("Some of the identifiers (hjid fields) do not belong to the party in the passed catalogue line: %s.", catalogueLineJson), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                }
 
-            // consider the case of an updated line id conflicting with the id of an existing line
-            boolean lineExists = CatalogueLinePersistenceUtil.checkCatalogueLineExistence(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid());
-            if (!lineExists) {
-                service.updateCatalogueLine(catalogueLine);
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("There already exists a product with the given id");
-            }
+                // consider the case of an updated line id conflicting with the id of an existing line
+                boolean lineExists = CatalogueLinePersistenceUtil.checkCatalogueLineExistence(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid());
+                if (!lineExists) {
+                    service.updateLinesCatalogue(newCatalogueUuid,oldCatalogueUuid,catalogueLine);
+                } else {
+                    return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("There already exists a product with the given id");
+                }
 
-            log.info("Completed the request to add catalogue line catalogue uuid, line lineId: {}", catalogueUuid, catalogueLine.getID());
-            return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLine));
+                log.info("Completed the request to add catalogue line catalogue uuid, line lineId: {}", catalogueUuid, catalogueLine.getID());
+                return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLine));
+            }else{
+                // validate the incoming content
+                List<String> errors = catalogueLineValidator.validate();
+                if (errors.size() > 0) {
+                    StringBuilder sb = new StringBuilder("");
+                    for (String error : errors) {
+                        sb.append(error).append(System.lineSeparator());
+                    }
+                    return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
+                }
+
+                // validate the entity ids
+                boolean hjidsBelongToCompany = resourceValidationUtil.hjidsBelongsToParty(catalogueLine, catalogue.getProviderParty().getPartyIdentification().get(0).getID(), Configuration.Standard.UBL.toString());
+                if(!hjidsBelongToCompany) {
+                    return HttpResponseUtil.createResponseEntityAndLog(String.format("Some of the identifiers (hjid fields) do not belong to the party in the passed catalogue line: %s.", catalogueLineJson), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                }
+
+                // consider the case of an updated line id conflicting with the id of an existing line
+                boolean lineExists = CatalogueLinePersistenceUtil.checkCatalogueLineExistence(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid());
+                if (!lineExists) {
+                    service.updateCatalogueLine(catalogueLine);
+                } else {
+                    return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("There already exists a product with the given id");
+                }
+
+                log.info("Completed the request to add catalogue line catalogue uuid, line lineId: {}", catalogueUuid, catalogueLine.getID());
+                return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLine));
+            }
 
         } catch (Exception e) {
             log.warn("The following catalogue line could not be updated: {}", catalogueLineJson);
