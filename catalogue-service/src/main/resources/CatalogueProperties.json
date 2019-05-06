@@ -5,6 +5,10 @@
       {
         "value": "Catalogue ID",
         "languageID": "en"
+      },
+      {
+        "value": "ID de catálogo",
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -15,6 +19,10 @@
       {
         "value": "Free Sample",
         "languageID": "en"
+      },
+      {
+        "value": "Muestra gratuita",
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#boolean"
@@ -25,6 +33,10 @@
       {
         "value": "Product / Service Certificate",
         "languageID": "en"
+      },
+      {
+        "value": "Certificado de producto / servicio",
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -35,6 +47,10 @@
       {
         "value": "Destination Country",
         "languageID": "en"
+      },
+      {
+        "value": "País de destino",
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -45,6 +61,10 @@
       {
         "value": "Vendor Name",
         "languageID": "en"
+      },
+      {
+        "value": "Nombre del fabricante",
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -55,6 +75,10 @@
       {
         "value": "Item manufacturer ID",
         "languageID": "en"
+      },
+      {
+        "value": "ID del fabricante del producto",
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -65,6 +89,10 @@
       {
         "value": "Vendor Origin",
         "languageID": "en"
+      },
+      {
+        "value": "Origen del proveedor",
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -75,6 +103,10 @@
       {
         "value": "Vendor Certificate",
         "languageID": "en"
+      },
+      {
+        "value": "Certificado del proveedor",
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -85,6 +117,10 @@
       {
         "value": "PPAP Compliance Level",
         "languageID": "en"
+      },
+      {
+        "value": "Nivel de conformidad PPAP",
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
@@ -95,6 +131,10 @@
       {
         "value": "PPAP Document",
         "languageID": "en"
+      },
+      {
+        "value": "Documento PPAP",
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -105,6 +145,10 @@
       {
         "value": "Service type",
         "languageID": "en"
+      },
+      {
+        "value": "Tipo de servicio",
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -115,6 +159,10 @@
       {
         "value": "Supported product nature",
         "languageID": "en"
+      },
+      {
+        "value": "Naturaleza de producto admitida",
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -125,6 +173,10 @@
       {
         "value": "Supported cargo type",
         "languageID": "en"
+      },
+      {
+        "value": "Tipo de cargamento admitido",
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -135,6 +187,10 @@
       {
         "value": "Emission standard",
         "languageID": "en"
+      },
+      {
+        "value": "Estándar de emisión",
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -145,6 +201,10 @@
       {
         "value": "Trust Score",
         "languageID": "en"
+      },
+      {
+        "value": "Puntuación en confianza",
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
@@ -155,6 +215,10 @@
       {
         "value": "Overall Rating",
         "languageID": "en"
+      },
+      {
+        "value": "Valoración general",
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
@@ -165,6 +229,10 @@
       {
         "value": "Trading Volume",
         "languageID": "en"
+      },
+      {
+        "value": "Volumen de negocio",
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
@@ -175,6 +243,10 @@
       {
         "value": "Seller Communication",
         "languageID": "en"
+      },
+      {
+        "value": "Comunicación con el vendedor",
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
@@ -185,6 +257,10 @@
       {
         "value": "Fulfillment of terms",
         "languageID": "en"
+      },
+      {
+        "value": "Cumplimiento de los términos",
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
@@ -195,6 +271,10 @@
       {
         "value": "Delivery & Packaging",
         "languageID": "en"
+      },
+      {
+        "value": "Entrega y embalaje",
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
@@ -205,6 +285,10 @@
       {
         "value": "Company number of transactions",
         "languageID": "en"
+      },
+      {
+        "value": "Número de transacciones de la empresa",
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
@@ -215,6 +299,10 @@
       {
         "value": "Vendor Legal Name",
         "languageID": "en"
+      },
+      {
+        "value": "Nombre legal de la empresa",
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
@@ -225,6 +313,10 @@
       {
         "value": "Vendor Brand Name",
         "languageID": "en"
+      },
+      {
+        "value": "Nombre comercial de la empresa",
+        "languageID": "es"
       }
     ],
     "dataType": "http://www.w3.org/2001/XMLSchema#string"

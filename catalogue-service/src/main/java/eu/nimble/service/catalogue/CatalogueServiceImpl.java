@@ -200,16 +200,16 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public CataloguePaginationResponse getCataloguePaginationResponse(String id, String partyId, String categoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset) {
-        return getCataloguePaginationResponse(id,partyId,categoryName,Configuration.Standard.UBL,searchText,languageId,sortOption,limit,offset);
+    public CataloguePaginationResponse getCataloguePaginationResponse(String catalogueId, String partyId, String categoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset) {
+        return getCataloguePaginationResponse(catalogueId,partyId,categoryName,Configuration.Standard.UBL,searchText,languageId,sortOption,limit,offset);
     }
 
     @Override
-    public <T> T getCataloguePaginationResponse(String id, String partyId,String categoryName, Configuration.Standard standard,String searchText,String languageId,CatalogueLineSortOptions sortOption, int limit, int offset) {
+    public <T> T getCataloguePaginationResponse(String catalogueId, String partyId,String categoryName, Configuration.Standard standard,String searchText,String languageId,CatalogueLineSortOptions sortOption, int limit, int offset) {
         T catalogueResponse = null;
 
         if (standard == Configuration.Standard.UBL) {
-            catalogueResponse = (T) CataloguePersistenceUtil.getCatalogueLinesForParty(id, partyId,categoryName,searchText,languageId,sortOption,limit,offset);
+            catalogueResponse = (T) CataloguePersistenceUtil.getCatalogueLinesForParty(catalogueId, partyId,categoryName,searchText,languageId,sortOption,limit,offset);
 
         } else if (standard == Configuration.Standard.MODAML) {
             logger.warn("Getting CataloguePaginationResponse with catalogue id and party id from MODAML repository is not implemented yet");
@@ -563,6 +563,35 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
+    public CatalogueLineType updateLinesCatalogue(String newCatalogueUuid, String oldeCatalogueUuid,CatalogueLineType catalogueLine) {
+        CatalogueType oldcatalogue = getCatalogue(oldeCatalogueUuid);
+        CatalogueType newcatalogue = getCatalogue(newCatalogueUuid);
+
+        List<CatalogueLineType> lisLine = oldcatalogue.getCatalogueLine();
+
+        Long hjidLine = catalogueLine.getHjid();
+        CatalogueLineType catLine =  lisLine.stream()
+            .filter(line -> line.getHjid().equals(hjidLine))
+            .findFirst().get();
+
+        oldcatalogue.getCatalogueLine().remove(catLine);
+        catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().setID(newCatalogueUuid);
+        newcatalogue.getCatalogueLine().add(catalogueLine);
+        DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(oldcatalogue);
+        DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(newcatalogue);
+
+        EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(newcatalogue.getProviderParty().getPartyIdentification().get(0).getID());
+        oldcatalogue = repositoryWrapper.updateEntity(oldcatalogue);
+        newcatalogue = repositoryWrapper.updateEntity(newcatalogue);
+        catalogueLine = newcatalogue.getCatalogueLine().get(newcatalogue.getCatalogueLine().size() - 1);
+
+        // index the line
+        itemIndexClient.indexCatalogueLine(catalogueLine);
+
+        return catalogueLine;
+    }
+
+    @Override
     public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine) {
         CatalogueType catalogue = getCatalogue(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID());
         DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(catalogueLine, catalogue);
@@ -589,6 +618,12 @@ public class CatalogueServiceImpl implements CatalogueService {
             // delete indexed item
             itemIndexClient.deleteCatalogueLine(hjid);
         }
+    }
+
+
+    @Override
+    public List<String> getCatalogueIdsForParty(String partyId) {
+        return CataloguePersistenceUtil.getCatalogueIdListsForParty(partyId);
     }
 
     private void updateExistingCatalogueLine(CatalogueLineType existingCatalogueLine, CatalogueLineType newCatalogueLine){

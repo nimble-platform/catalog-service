@@ -158,6 +158,7 @@ public class DataIntegratorUtil {
             codeType.setListID("Default");
             codeType.setName("Transport Service");
             codeType.setValue("Transport Service");
+            codeType.setURI("nimble:category:TransportService");
             commodityClassificationType.setItemClassificationCode(codeType);
         }
         // Product

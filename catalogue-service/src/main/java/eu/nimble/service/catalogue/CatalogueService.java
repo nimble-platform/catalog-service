@@ -23,7 +23,7 @@ public interface CatalogueService {
 
     public CatalogueType getCatalogue(String id, String partyId);
 
-    public CataloguePaginationResponse getCataloguePaginationResponse(String id, String partyId, String categoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset);
+    public CataloguePaginationResponse getCataloguePaginationResponse(String catalogueId, String partyId, String categoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset);
 
     public CatalogueType updateCatalogue(CatalogueType catalogue);
 
@@ -95,7 +95,12 @@ public interface CatalogueService {
 
     CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine);
 
+    CatalogueLineType updateLinesCatalogue(String newCatalogueUuid, String oldeCatalogueUuid,CatalogueLineType catalogueLin);
+
     CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine);
 
     void deleteCatalogueLineById(String catalogueId, String lineId);
+
+    List<String> getCatalogueIdsForParty(String partyId);
+
 }

@@ -25,6 +25,9 @@ public class CataloguePersistenceUtil {
     private static final String QUERY_GET_CATALOGUE_IDS_FOR_PARTY = "SELECT catalogue.UUID FROM CatalogueType as catalogue" +
             " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification" +
             " WHERE partyIdentification.ID = :partyId";
+    private static final String QUERY_GET_CATALOGUE_IDLIST_FOR_PARTY = "SELECT catalogue.ID FROM CatalogueType as catalogue" +
+            " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification" +
+            " WHERE partyIdentification.ID = :partyId";
 
     private static final String QUERY_GET_CATALOGUE_LINES_BY_IDS = "SELECT catalogueLine FROM CatalogueLineType catalogueLine " +
             " WHERE catalogueLine.ID in :catalogueLineIds";
@@ -33,14 +36,15 @@ public class CataloguePersistenceUtil {
             " WHERE catalogue.UUID = :catalogueUuid";
     private static final String QUERY_GET_CATALOGUE_LINE_IDS_FOR_PARTY = "SELECT catalogueLine.ID FROM CatalogueType as catalogue "
             + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification JOIN catalogue.catalogueLine catalogueLine"
-            + " WHERE catalogue.ID = :catalogueId"
-            + " AND partyIdentification.ID = :partyId";
-
+            + " WHERE partyIdentification.ID = :partyId";
+    private static final String QUERY_GET_COMMODITY_CLASSIFICATION_NAMES_FOR_PARTY_CATALOGUES = "SELECT DISTINCT itemClassificationCode.name FROM CatalogueType as catalogue " +
+            " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification JOIN catalogue.catalogueLine catalogueLine " +
+            " JOIN catalogueLine.goodsItem.item.commodityClassification commodityClassification JOIN commodityClassification.itemClassificationCode itemClassificationCode " +
+            " WHERE partyIdentification.ID = :partyId";
     private static final String QUERY_GET_CATALOGUE_LINE_IDS_WITH_CATEGORY_NAME_FOR_PARTY = "SELECT catalogueLine.ID FROM CatalogueType as catalogue "
             + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification JOIN catalogue.catalogueLine catalogueLine "
             + " JOIN catalogueLine.goodsItem.item.commodityClassification commodityClassification JOIN commodityClassification.itemClassificationCode itemClassificationCode "
-            + " WHERE catalogue.ID = :catalogueId"
-            + " AND partyIdentification.ID = :partyId"
+            + " WHERE partyIdentification.ID = :partyId"
             + " AND itemClassificationCode.name in :categoryName";
     private static final String QUERY_GET_CATALOGUE_LINE_COUNT_FOR_PARTY = "SELECT COUNT(catalogueLine) FROM CatalogueType as catalogue "
             + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification JOIN catalogue.catalogueLine catalogueLine"
@@ -62,7 +66,7 @@ public class CataloguePersistenceUtil {
             " join item_location_quantity_type item_location on (catalogue_line.required_item_location_quant_1 = item_location.hjid)" +
             " join price_type price_type on (item_location.price_item_location_quantity_0 = price_type.hjid)" +
             " join amount_type amount_type on (price_type.price_amount_price_type_hjid = amount_type.hjid)" +
-            " where catalogue.id = :catalogueId and party_identification.id = :partyId and code_type.name_ = :categoryName and text_type.language_id = :languageId and text_type.value_ in (" +
+            " where party_identification.id = :partyId and code_type.name_ = :categoryName and text_type.language_id = :languageId and text_type.value_ in (" +
             " SELECT text_type.value_ FROM text_type, plainto_tsquery(:searchText) AS q WHERE (value_ @@ q)" +
             ")";
 
@@ -75,27 +79,26 @@ public class CataloguePersistenceUtil {
             " join item_location_quantity_type item_location on (catalogue_line.required_item_location_quant_1 = item_location.hjid)" +
             " join price_type price_type on (item_location.price_item_location_quantity_0 = price_type.hjid)" +
             " join amount_type amount_type on (price_type.price_amount_price_type_hjid = amount_type.hjid) " +
-            " where catalogue.id = :catalogueId and party_identification.id = :partyId and text_type.language_id = :languageId and text_type.value_ in (" +
+            " where party_identification.id = :partyId and text_type.language_id = :languageId and text_type.value_ in (" +
             " SELECT text_type.value_ FROM text_type, plainto_tsquery(:searchText) AS q WHERE (value_ @@ q)" +
             ")";
 
     public static List<CatalogueType> getAllCatalogues() {
-        return new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_ALL_CATALOGUES);
+        return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_ALL_CATALOGUES);
     }
 
     public static CataloguePaginationResponse getCatalogueLinesForParty(String catalogueId, String partyId, String selectedCategoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset) {
-        // get catalogue uuid
-        String catalogueUuid = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_CATALOGUE_UUID_FOR_PARTY,new String[]{"catalogueId","partyId"}, new Object[]{catalogueId,partyId});
+
+        String catalogueUuid = "";
         long size = 0;
         List<String> categoryNames = new ArrayList<>();
         List<CatalogueLineType> catalogueLines = new ArrayList<>();
-        if(catalogueUuid != null){
-            // get names of the categories for all catalogue lines which the catalogue contains
-            categoryNames = new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_COMMODITY_CLASSIFICATION_NAMES_OF_CATALOGUE_LINES,new String[]{"catalogueUuid"}, new Object[]{catalogueUuid});
-            // if limit is equal to 0,then no catalogue lines are returned
+
+        if(catalogueId.equals("all")){
+            categoryNames = new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_COMMODITY_CLASSIFICATION_NAMES_FOR_PARTY_CATALOGUES,new String[]{"partyId"}, new Object[]{partyId});
             if(limit != 0){
                 // get the query
-                QueryData queryData = getQuery(catalogueId,partyId,searchText,languageId,selectedCategoryName,sortOption);
+                QueryData queryData = getQuery(null,partyId,searchText,languageId,selectedCategoryName,sortOption);
                 // get all catalogue line ids
                 List<String> catalogueLineIds = new JPARepositoryFactory().forCatalogueRepository().getEntities(queryData.query,queryData.parameterNames.toArray(new String[0]), queryData.parameterValues.toArray(),null,null,queryData.isNativeQuery);
                 // set the size of catalogue lines
@@ -126,6 +129,48 @@ public class CataloguePersistenceUtil {
                 if(catalogueLineIds.size() != 0)
                     catalogueLines = new JPARepositoryFactory().forCatalogueRepository(true).getEntities(getCatalogueLinesQuery,new String[]{"catalogueLineIds"}, new Object[]{catalogueLineIds});
             }
+
+        }else{
+            // get catalogue uuid
+            catalogueUuid = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_CATALOGUE_UUID_FOR_PARTY,new String[]{"catalogueId","partyId"}, new Object[]{catalogueId,partyId});
+            if(catalogueUuid != null){
+                // get names of the categories for all catalogue lines which the catalogue contains
+                categoryNames = new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_COMMODITY_CLASSIFICATION_NAMES_OF_CATALOGUE_LINES,new String[]{"catalogueUuid"}, new Object[]{catalogueUuid});
+                // if limit is equal to 0,then no catalogue lines are returned
+                if(limit != 0){
+                    // get the query
+                    QueryData queryData = getQuery(catalogueId,partyId,searchText,languageId,selectedCategoryName,sortOption);
+                    // get all catalogue line ids
+                    List<String> catalogueLineIds = new JPARepositoryFactory().forCatalogueRepository().getEntities(queryData.query,queryData.parameterNames.toArray(new String[0]), queryData.parameterValues.toArray(),null,null,queryData.isNativeQuery);
+                    // set the size of catalogue lines
+                    size = catalogueLineIds.size();
+                    // update catalogue line ids according to the offset
+                    if(offset < catalogueLineIds.size()){
+                        catalogueLineIds = catalogueLineIds.subList(offset,catalogueLineIds.size());
+                    }
+                    // update catalogue line ids according to the limit
+                    if(catalogueLineIds.size() > limit){
+                        catalogueLineIds = catalogueLineIds.subList(0,limit);
+                    }
+
+                    // although we use the sort option to create the query in getQuery function
+                    // we also have to use this option to sort catalogue lines while getting them since the result can be something arbitrary without this option
+                    String getCatalogueLinesQuery = QUERY_GET_CATALOGUE_LINES_BY_IDS;
+                    if(sortOption != null){
+                        switch (sortOption){
+                            case PRICE_HIGH_TO_LOW:
+                                getCatalogueLinesQuery += " ORDER BY catalogueLine.requiredItemLocationQuantity.price.priceAmount.value DESC NULLS LAST";
+                                break;
+                            case PRICE_LOW_TO_HIGH:
+                                getCatalogueLinesQuery += " ORDER BY catalogueLine.requiredItemLocationQuantity.price.priceAmount.value ASC NULLS LAST";
+                                break;
+                        }
+                    }
+
+                    if(catalogueLineIds.size() != 0)
+                        catalogueLines = new JPARepositoryFactory().forCatalogueRepository(true).getEntities(getCatalogueLinesQuery,new String[]{"catalogueLineIds"}, new Object[]{catalogueLineIds});
+                }
+            }
         }
         // created CataloguePaginationResponse
         CataloguePaginationResponse cataloguePaginationResponse = new CataloguePaginationResponse();
@@ -153,19 +198,26 @@ public class CataloguePersistenceUtil {
         return new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_CATALOGUE_IDS_FOR_PARTY, new String[]{"partyId"}, new Object[]{partyId});
     }
 
+    public static List<String> getCatalogueIdListsForParty(String partyId) {
+        return new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_CATALOGUE_IDLIST_FOR_PARTY, new String[]{"partyId"}, new Object[]{partyId});
+    }
+
     private static QueryData getQuery(String catalogueId,String partyId,String searchText,String languageId,String selectedCategoryName,CatalogueLineSortOptions sortOption){
         QueryData queryData = new QueryData();
-
-        // catalogue id and party id are the common parameters for all queries
-        queryData.parameterNames.add("catalogueId");
-        queryData.parameterValues.add(catalogueId);
+        String addQuery = "";
+        if(catalogueId != null) {
+            // catalogue id and party id are the common parameters for all queries
+            queryData.parameterNames.add("catalogueId");
+            queryData.parameterValues.add(catalogueId);
+            addQuery = " AND catalogue.ID = :catalogueId";
+        }
 
         queryData.parameterNames.add("partyId");
         queryData.parameterValues.add(partyId);
 
         // no category name filtering and search text filtering
         if(selectedCategoryName == null && searchText == null){
-            queryData.query = QUERY_GET_CATALOGUE_LINE_IDS_FOR_PARTY;
+            queryData.query = QUERY_GET_CATALOGUE_LINE_IDS_FOR_PARTY + addQuery;
             queryData.isNativeQuery = false;
         }
         // category name filtering and search text filtering
@@ -179,7 +231,7 @@ public class CataloguePersistenceUtil {
             queryData.parameterNames.add("categoryName");
             queryData.parameterValues.add(selectedCategoryName);
 
-            queryData.query = QUERY_GET_CATALOGUE_LINE_IDS_WITH_CATEGORY_NAME_AND_SEARCH_TEXT_FOR_PARTY;
+            queryData.query = QUERY_GET_CATALOGUE_LINE_IDS_WITH_CATEGORY_NAME_AND_SEARCH_TEXT_FOR_PARTY + addQuery;
             queryData.isNativeQuery = true;
         }
         // category name filtering
@@ -187,7 +239,7 @@ public class CataloguePersistenceUtil {
             queryData.parameterNames.add("categoryName");
             queryData.parameterValues.add(selectedCategoryName);
 
-            queryData.query = QUERY_GET_CATALOGUE_LINE_IDS_WITH_CATEGORY_NAME_FOR_PARTY;
+            queryData.query = QUERY_GET_CATALOGUE_LINE_IDS_WITH_CATEGORY_NAME_FOR_PARTY + addQuery;
             queryData.isNativeQuery = false;
         }
         // search text filtering
@@ -198,7 +250,7 @@ public class CataloguePersistenceUtil {
             queryData.parameterNames.add("searchText");
             queryData.parameterValues.add(searchText);
 
-            queryData.query = QUERY_GET_CATALOGUE_LINE_IDS_WITH_SEARCH_TEXT_FOR_PARTY;
+            queryData.query = QUERY_GET_CATALOGUE_LINE_IDS_WITH_SEARCH_TEXT_FOR_PARTY + addQuery;
             queryData.isNativeQuery = true;
         }
 
