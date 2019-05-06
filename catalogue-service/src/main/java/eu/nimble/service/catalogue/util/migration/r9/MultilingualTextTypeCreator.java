@@ -171,6 +171,10 @@ public class MultilingualTextTypeCreator extends DBConnector {
 
                 logger.info("Handled party with id: {}",partyType.getPartyIdentification().get(0));
             }
+
+            // delete old columns
+            stmt.executeUpdate("ALTER TABLE economic_operator_role_type__0 DROP COLUMN IF EXISTS role_description_items_econo_0");
+            stmt.executeUpdate("ALTER TABLE code_type DROP COLUMN IF EXISTS industry_sector_party_type_h_0");
         }
         catch (Exception e){
             logger.error("",e);
