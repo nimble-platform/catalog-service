@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue;
 
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
+import eu.nimble.service.catalogue.model.statistics.ProductAndServiceStatistics;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
@@ -100,5 +101,8 @@ public interface CatalogueService {
     void deleteCatalogueLineById(String catalogueId, String lineId);
 
     List<String> getCatalogueIdsForParty(String partyId);
+
+    ProductAndServiceStatistics getProductAndServiceCount();
+
 
 }

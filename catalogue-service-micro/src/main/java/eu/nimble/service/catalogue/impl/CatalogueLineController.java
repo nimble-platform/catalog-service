@@ -5,6 +5,7 @@ import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
+import eu.nimble.service.catalogue.model.statistics.ProductAndServiceStatistics;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.catalogue.validation.CatalogueLineValidator;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
@@ -398,6 +399,29 @@ public class CatalogueLineController {
         }
         log.info("Completed the request to delete catalogue line: catalogue uuid: {}, lineId: {}", catalogueUuid, lineId);
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @RequestMapping(value = "/cataloguelines/statistics",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity getCatalogue(
+            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+
+        log.info("Incoming request to get catalogue line statistics no of products and services");
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return tokenCheck;
+        }
+
+       ProductAndServiceStatistics stats;
+        try {
+            stats = service.getProductAndServiceCount();
+        } catch (Exception e) {
+            return createErrorResponseEntity("Failed to get count of services and product", HttpStatus.INTERNAL_SERVER_ERROR, e);
+        }
+
+        log.info("Completed the request to get product and service count");
+        return ResponseEntity.ok(serializationUtility.serializeUBLObject(stats));
     }
 
     private ResponseEntity createErrorResponseEntity(String msg, HttpStatus status, Exception e) {

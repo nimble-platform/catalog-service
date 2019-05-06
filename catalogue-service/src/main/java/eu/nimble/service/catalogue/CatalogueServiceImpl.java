@@ -6,6 +6,7 @@ import eu.nimble.service.catalogue.exception.TemplateParseException;
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.catalogue.model.category.Category;
+import eu.nimble.service.catalogue.model.statistics.ProductAndServiceStatistics;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.index.ItemIndexClient;
@@ -618,6 +619,46 @@ public class CatalogueServiceImpl implements CatalogueService {
     @Override
     public List<String> getCatalogueIdsForParty(String partyId) {
         return CataloguePersistenceUtil.getCatalogueIdListsForParty(partyId);
+    }
+
+    @Override
+    public ProductAndServiceStatistics getProductAndServiceCount() {
+        List<ItemType> itemsTyp = CatalogueLinePersistenceUtil.getItemTypeOfAllLines();
+
+        int noOfProducts = 0;
+        int noOfServices = 0;
+
+        for (ItemType item:itemsTyp) {
+            boolean product = false;
+            boolean service = false;
+            if(item.getCommodityClassification().size() > 0){
+                for(CommodityClassificationType cltype : item.getCommodityClassification()){
+                    if(cltype != null && cltype.getItemClassificationCode().getValue() != null) {
+                        if (cltype.getItemClassificationCode().getValue().toLowerCase().indexOf("service") >= 0) {
+                            service = true;
+                        } else if (cltype.getItemClassificationCode().getValue().toLowerCase().indexOf("product") >= 0) {
+                            product = true;
+                        } else if (cltype.getItemClassificationCode().getValue().toLowerCase().indexOf("eclass") > 0) {
+                            product = true;
+                        }
+                    }
+                }
+            }
+
+            if(product){
+                noOfProducts++;
+            }
+
+            if(service){
+                noOfServices++;
+            }
+
+            if(!service && !product){
+                noOfProducts++;
+            }
+        }
+
+        return new ProductAndServiceStatistics(noOfServices,noOfProducts);
     }
 
     private void updateExistingCatalogueLine(CatalogueLineType existingCatalogueLine, CatalogueLineType newCatalogueLine){
