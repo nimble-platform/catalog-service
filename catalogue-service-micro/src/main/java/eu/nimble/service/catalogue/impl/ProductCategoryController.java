@@ -2,7 +2,6 @@ package eu.nimble.service.catalogue.impl;
 
 import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.category.TaxonomyEnum;
-import eu.nimble.service.catalogue.category.TaxonomyQueryInterface;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
 import eu.nimble.service.catalogue.index.ClassIndexClient;
@@ -18,9 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,17 +34,6 @@ public class ProductCategoryController {
     private IndexCategoryService categoryService;
     @Autowired
     private ClassIndexClient classIndexClient;
-
-    @Autowired
-    private List<TaxonomyQueryInterface> taxonomyQueries;
-    private Map<String, TaxonomyQueryInterface> taxonomyQueryMap;
-
-    @PostConstruct
-    private void initialize() {
-        taxonomyQueryMap = new HashMap<>();
-        taxonomyQueries.stream()
-                .forEach(taxonomyQueryInterface -> taxonomyQueryMap.put(taxonomyQueryInterface.getTaxonomy().getId(), taxonomyQueryInterface));
-    }
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves a list of Category instances. This operation takes a list of category ids and " +
@@ -164,18 +150,7 @@ public class ProductCategoryController {
                                                       @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         log.info("Incoming request to get the logistics related services-category map for taxonomy id: {}",taxonomyId);
 
-        Map<String,Map<String,String>> logisticServicesCategoryUriMap = new HashMap<>();
-        // check whether the given id is 'all' or not
-        boolean isTaxonomyIdSpecified = taxonomyId.compareToIgnoreCase("all") != 0;
-
-        for (TaxonomyQueryInterface taxonomyQuery : taxonomyQueryMap.values()) {
-            if(!isTaxonomyIdSpecified){
-                logisticServicesCategoryUriMap.put(taxonomyQuery.getTaxonomy().getId(),taxonomyQuery.getLogisticsServices());
-            }
-            else if(taxonomyQuery.getTaxonomy().getId().contentEquals(taxonomyId)){
-                logisticServicesCategoryUriMap.put(taxonomyQuery.getTaxonomy().getId(),taxonomyQuery.getLogisticsServices());
-            }
-        }
+        Map<String,Map<String,String>> logisticServicesCategoryUriMap = categoryService.getLogisticsRelatedServices(taxonomyId);
 
         log.info("Completed request to get the logistics related services-category uri map for taxonomy id: {}", taxonomyId);
         return ResponseEntity.ok(logisticServicesCategoryUriMap);

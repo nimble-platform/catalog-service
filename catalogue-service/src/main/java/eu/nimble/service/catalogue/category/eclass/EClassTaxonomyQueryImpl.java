@@ -1,6 +1,5 @@
 package eu.nimble.service.catalogue.category.eclass;
 
-import eu.nimble.service.catalogue.category.LogisticsServicesEnum;
 import eu.nimble.service.catalogue.category.TaxonomyEnum;
 import eu.nimble.service.catalogue.category.TaxonomyQueryInterface;
 import eu.nimble.service.model.solr.owl.IClassType;
@@ -23,11 +22,14 @@ public class EClassTaxonomyQueryImpl implements TaxonomyQueryInterface {
     @Override
     public Map<String, String> getLogisticsServices() {
         Map<String,String> logisticServiceCategoryUriMap = new HashMap<>();
-        for(LogisticsServicesEnum logisticsServicesEnum : LogisticsServicesEnum.values()){
-            if(logisticsServicesEnum.getEClassCategoryUri() != null){
-                logisticServiceCategoryUriMap.put(logisticsServicesEnum.getId(), logisticsServicesEnum.getEClassCategoryUri());
-            }
-        }
+
+        logisticServiceCategoryUriMap.put("MARITIMETRANSPORT", "http://www.nimble-project.org/resource/eclass#0173-1#01-AAB379#014");
+        logisticServiceCategoryUriMap.put("AIRTRANSPORT", "http://www.nimble-project.org/resource/eclass#0173-1#01-ADU384#007");
+        logisticServiceCategoryUriMap.put("RAILTRANSPORT", "http://www.nimble-project.org/resource/eclass#0173-1#01-AAB365#013");
+        logisticServiceCategoryUriMap.put("WAREHOUSING", "http://www.nimble-project.org/resource/eclass#0173-1#01-ADU628#007");
+        logisticServiceCategoryUriMap.put("ORDERPICKING", "http://www.nimble-project.org/resource/eclass#0173-1#01-AKG236#013");
+        logisticServiceCategoryUriMap.put("LOGISTICSCONSULTANCY", "http://www.nimble-project.org/resource/eclass#0173-1#01-BAC130#011");
+
         return logisticServiceCategoryUriMap;
     }
 

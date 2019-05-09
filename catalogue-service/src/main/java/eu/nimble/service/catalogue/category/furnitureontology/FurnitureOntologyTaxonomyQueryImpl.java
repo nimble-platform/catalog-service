@@ -1,6 +1,5 @@
 package eu.nimble.service.catalogue.category.furnitureontology;
 
-import eu.nimble.service.catalogue.category.LogisticsServicesEnum;
 import eu.nimble.service.catalogue.category.TaxonomyEnum;
 import eu.nimble.service.catalogue.category.TaxonomyQueryInterface;
 import eu.nimble.service.model.solr.owl.IClassType;
@@ -25,11 +24,18 @@ public class FurnitureOntologyTaxonomyQueryImpl implements TaxonomyQueryInterfac
     @Override
     public Map<String, String> getLogisticsServices() {
         Map<String,String> logisticServiceCategoryUriMap = new HashMap<>();
-        for(LogisticsServicesEnum logisticsServicesEnum : LogisticsServicesEnum.values()){
-            if(logisticsServicesEnum.getFurnitureOntologyCategoryUri() != null){
-                logisticServiceCategoryUriMap.put(logisticsServicesEnum.getId(), logisticsServicesEnum.getFurnitureOntologyCategoryUri());
-            }
-        }
+
+        logisticServiceCategoryUriMap.put("ROADTRANSPORT", "http://www.aidimme.es/FurnitureSectorOntology.owl#RoadTransportService");
+        logisticServiceCategoryUriMap.put("MARITIMETRANSPORT","http://www.aidimme.es/FurnitureSectorOntology.owl#MaritimeTransportService");
+        logisticServiceCategoryUriMap.put("AIRTRANSPORT","http://www.aidimme.es/FurnitureSectorOntology.owl#AirTransportService");
+        logisticServiceCategoryUriMap.put("RAILTRANSPORT","http://www.aidimme.es/FurnitureSectorOntology.owl#RailTransportService");
+        logisticServiceCategoryUriMap.put("WAREHOUSING","http://www.aidimme.es/FurnitureSectorOntology.owl#WarehousingService");
+        logisticServiceCategoryUriMap.put("ORDERPICKING","http://www.aidimme.es/FurnitureSectorOntology.owl#OrderPickingService");
+        logisticServiceCategoryUriMap.put("REVERSELOGISTICS","http://www.aidimme.es/FurnitureSectorOntology.owl#ReverseLogisticsService");
+        logisticServiceCategoryUriMap.put("INHOUSESERVICES","http://www.aidimme.es/FurnitureSectorOntology.owl#InHouseService");
+        logisticServiceCategoryUriMap.put("CUSTOMSMANAGEMENT","http://www.aidimme.es/FurnitureSectorOntology.owl#CustomsManagementService");
+        logisticServiceCategoryUriMap.put("LOGISTICSCONSULTANCY","http://www.aidimme.es/FurnitureSectorOntology.owl#LogisticsConsultancyService");
+
         return logisticServiceCategoryUriMap;
     }
 
