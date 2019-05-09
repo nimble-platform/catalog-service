@@ -163,6 +163,44 @@ public class CatalogueLineController {
     }
 
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieves the catalogue lines specified with the catalogueUuid and lineIds parameters")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved catalogue lines successfully", response = CatalogueLineType.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Failed to get catalogue lines"),
+            @ApiResponse(code = 404, message = "Specified catalogue does not exist"),
+            @ApiResponse(code = 500, message = "Unexpected error while getting catalogue lines")
+    })
+    @RequestMapping(value = "/catalogue/{catalogueUuid}/cataloguelines",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity getCatalogueLines(@ApiParam(value = "uuid of the catalogue containing the lines to be retrieved. (catalogue.uuid)", required = true) @PathVariable String catalogueUuid,
+                                           @ApiParam(value = "Identifier of the catalogue lines to be retrieved. (line.id)", required = true) @RequestParam(value = "lineIds") List<String> lineIds,
+                                           @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        log.info("Incoming request to get catalogue line with lineIds: {}, catalogue uuid: {}", lineIds, catalogueUuid);
+        // check token
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return tokenCheck;
+        }
+
+        if (service.getCatalogue(catalogueUuid) == null) {
+            log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
+        }
+
+        List<CatalogueLineType> catalogueLines;
+        try {
+            catalogueLines = service.getCatalogueLines(catalogueUuid, lineIds);
+        } catch (Exception e) {
+            String msg = String.format("Failed to get catalogue lines: %s, catalogue uuid: %s", lineIds, catalogueUuid);
+            return createErrorResponseEntity(msg, HttpStatus.INTERNAL_SERVER_ERROR, e);
+        }
+
+        log.info("Completed the request to get catalogue lines with lineIds: {}", lineIds);
+        return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLines));
+    }
+
+    @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Adds the provided catalogue line to the specified catalogue")
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Persisted the catalogue line successfully and returned the persisted entity"),

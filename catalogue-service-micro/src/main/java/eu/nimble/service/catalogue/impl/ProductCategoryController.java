@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Product category related REST services
@@ -134,6 +135,25 @@ public class ProductCategoryController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(msg);
         }
         return ResponseEntity.ok(taxonomies);
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieves the map of logistics services and corresponding category uris for the given taxonomy id")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved the logistics related services-category uri map successfully"),
+            @ApiResponse(code = 500, message = "Unexpected error while getting the logistics related services-category map")
+    })
+    @RequestMapping(value = "/taxonomies/{taxonomyId}/logistics-services",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity getLogisticsRelatedServices(@ApiParam(value = "The taxonomy id which is used to retrieve logistic related services. If 'all' value is specified for taxonomy id, then logistic related services for each available taxonomy id are returned.",required = true) @PathVariable(value = "taxonomyId",required = true) String taxonomyId,
+                                                      @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        log.info("Incoming request to get the logistics related services-category map for taxonomy id: {}",taxonomyId);
+
+        Map<String,Map<String,String>> logisticServicesCategoryUriMap = categoryService.getLogisticsRelatedServices(taxonomyId);
+
+        log.info("Completed request to get the logistics related services-category uri map for taxonomy id: {}", taxonomyId);
+        return ResponseEntity.ok(logisticServicesCategoryUriMap);
     }
 
     @CrossOrigin(origins = {"*"})
