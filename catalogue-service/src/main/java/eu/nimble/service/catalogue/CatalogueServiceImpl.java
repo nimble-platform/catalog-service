@@ -628,33 +628,19 @@ public class CatalogueServiceImpl implements CatalogueService {
         int noOfProducts = 0;
         int noOfServices = 0;
 
-        for (ItemType item:itemsTyp) {
-            boolean product = false;
-            boolean service = false;
+        for(ItemType item:itemsTyp){
             if(item.getCommodityClassification().size() > 0){
                 for(CommodityClassificationType cltype : item.getCommodityClassification()){
-                    if(cltype != null && cltype.getItemClassificationCode().getValue() != null) {
-                        if (cltype.getItemClassificationCode().getValue().toLowerCase().indexOf("service") >= 0) {
-                            service = true;
-                        } else if (cltype.getItemClassificationCode().getValue().toLowerCase().indexOf("product") >= 0) {
-                            product = true;
-                        } else if (cltype.getItemClassificationCode().getValue().toLowerCase().indexOf("eclass") > 0) {
-                            product = true;
+                    if(cltype.getItemClassificationCode().getListID().contentEquals("Default")){
+                        if(cltype.getItemClassificationCode().getValue().contentEquals("Product")){
+                            noOfProducts++;
                         }
+                        else{
+                            noOfServices++;
+                        }
+                        break;
                     }
                 }
-            }
-
-            if(product){
-                noOfProducts++;
-            }
-
-            if(service){
-                noOfServices++;
-            }
-
-            if(!service && !product){
-                noOfProducts++;
             }
         }
 
