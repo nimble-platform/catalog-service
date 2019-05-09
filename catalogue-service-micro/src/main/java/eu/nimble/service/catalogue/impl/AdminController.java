@@ -54,6 +54,12 @@ public class AdminController {
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity indexUBLProperties(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) throws Exception{
+        // check token
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return tokenCheck;
+        }
+
         String namespace = "http://www.nimble-project.org/resource/ubl#";
 
         logger.info("Reading CatalogueProperties.json ...");
@@ -131,7 +137,12 @@ public class AdminController {
     @RequestMapping(value = "/admin/index-catalogues",
             produces = {"application/json"},
             method = RequestMethod.POST)
-    public ResponseEntity indexAllCatalogues() {
+    public ResponseEntity indexAllCatalogues(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        // check token
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return tokenCheck;
+        }
         catalogueIndexLoader.indexCatalogues();
         return null;
     }
