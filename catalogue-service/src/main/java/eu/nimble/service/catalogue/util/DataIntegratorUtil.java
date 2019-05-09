@@ -12,6 +12,7 @@ import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class DataIntegratorUtil {
@@ -150,18 +151,44 @@ public class DataIntegratorUtil {
                 return null;
             }
         }
+        // get logistics category uris
+        Map<String,Map<String,String>> logisticsCategories =  SpringBridge.getInstance().getIndexCategoryService().getLogisticsRelatedServices("All");
+        List<String> logisticCategoryUris = new ArrayList<>();
+
+        logisticsCategories.forEach((taxonomyId, logisticServiceMap) -> logisticServiceMap.forEach((logisticService, categoryUri) -> logisticCategoryUris.add(categoryUri)));
 
         CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
-        // Transport Service
-        if(catalogueLine.getGoodsItem().getItem().getTransportationServiceDetails() != null){
-            CodeType codeType = new CodeType();
-            codeType.setListID("Default");
-            codeType.setName("Transport Service");
-            codeType.setValue("Transport Service");
-            codeType.setURI("nimble:category:TransportService");
-            commodityClassificationType.setItemClassificationCode(codeType);
+
+        // check whether the catalogue line belongs to a logistics service or not
+        boolean isLogisticsService = false;
+        for(CommodityClassificationType classificationType: catalogueLine.getGoodsItem().getItem().getCommodityClassification()){
+            if(logisticCategoryUris.contains(classificationType.getItemClassificationCode().getURI())){
+                isLogisticsService = true;
+                break;
+            }
         }
-        // Product
+
+        // add default category to catalogue line
+        // logistics service
+        if(isLogisticsService){
+            if(catalogueLine.getGoodsItem().getItem().getTransportationServiceDetails() != null){
+                CodeType codeType = new CodeType();
+                codeType.setListID("Default");
+                codeType.setName("Transport Service");
+                codeType.setValue("Transport Service");
+                codeType.setURI("nimble:category:TransportService");
+                commodityClassificationType.setItemClassificationCode(codeType);
+            }
+            else{
+                CodeType codeType = new CodeType();
+                codeType.setListID("Default");
+                codeType.setName("Logistics Service");
+                codeType.setValue("Logistics Service");
+                codeType.setURI("nimble:category:LogisticsService");
+                commodityClassificationType.setItemClassificationCode(codeType);
+            }
+        }
+        // product
         else{
             CodeType codeType = new CodeType();
             codeType.setListID("Default");
