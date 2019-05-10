@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue.impl;
 
 import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.category.TaxonomyEnum;
+import eu.nimble.service.catalogue.category.eclass.EClassIndexLoader;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
 import eu.nimble.service.catalogue.index.ClassIndexClient;
@@ -16,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +36,8 @@ public class ProductCategoryController {
     private IndexCategoryService categoryService;
     @Autowired
     private ClassIndexClient classIndexClient;
+    @Autowired
+    private EClassIndexLoader eClassIndexLoader;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves a list of Category instances. This operation takes a list of category ids and " +
@@ -231,6 +235,34 @@ public class ProductCategoryController {
 
         CategoryTreeResponse categories = categoryService.getCategoryTree(taxonomyId, categoryId);
         return ResponseEntity.ok(categories);
+    }
+
+    @ApiIgnore
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Indexes eClass categories.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Indexed eClass categories successfully"),
+            @ApiResponse(code = 401, message = "No user exists for the given token"),
+            @ApiResponse(code = 500, message = "Failed to index eClass resources")
+    })
+    @RequestMapping(value = "categories/eClass/index",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity indexEclassResources(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        log.info("Incoming request to index eClass resources.");
+        // check token
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return tokenCheck;
+        }
+
+        try {
+            eClassIndexLoader.indexEClassResources();
+        } catch (Exception e) {
+            log.error("Failed to index eClass Resources:",e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to index eClass Resources");
+        }
+        return ResponseEntity.ok(null);
     }
 
     private boolean taxonomyIdExists(String taxonomyId) {
