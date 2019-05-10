@@ -93,13 +93,11 @@ persistence:
         cache:
           provider_class: org.hibernate.cache.HashtableCacheProvider
         jdbc:
-          batch_size: 0
+          batch_size: 10
         use_sql_comments: true
         transaction:
           factory_class: org.hibernate.transaction.JDBCTransactionFactory
         current_session_context_class: thread
-        #TODO: below configuration is quite inefficient as it uses a db connection each time a lazy list is initialized
-        enable_lazy_load_no_trans: true
         event:
           merge:
             entity_copy_observer: allow
@@ -118,7 +116,7 @@ persistence:
         cache:
           provider_class: org.hibernate.cache.HashtableCacheProvider
         jdbc:
-          batch_size: 0
+          batch_size: 10
         c3p0:
           acquire_increment: 2
           initialPoolSize: 2
@@ -133,7 +131,6 @@ persistence:
         transaction:
           factory_class: org.hibernate.transaction.JDBCTransactionFactory
         current_session_context_class: thread
-        enable_lazy_load_no_trans: true
         event:
           merge:
             entity_copy_observer: allow
@@ -143,6 +140,8 @@ security:
       check-token-access:
 
 nimble:
+  catalog:
+    max-file-size: 5 #in MB
   binary-content:
     url: ${BINARY_CONTENT_URL}
   identity:
@@ -210,7 +209,7 @@ persistence:
         cache:
           provider_class: org.hibernate.cache.HashtableCacheProvider
         jdbc:
-          batch_size: 0
+          batch_size: 10
         c3p0:
           acquire_increment: 5
           initialPoolSize: 5
@@ -244,7 +243,7 @@ persistence:
         cache:
           provider_class: org.hibernate.cache.HashtableCacheProvider
         jdbc:
-          batch_size: 0
+          batch_size: 10
         c3p0:
           acquire_increment: 2
           initialPoolSize: 2
@@ -273,7 +272,7 @@ persistence:
 ---
 
 spring:
-  profiles: local_dev
+  profiles: test
   datasource:
     ubldb:
       url: jdbc:h2:mem:db3;AUTO_RECONNECT=TRUE;DB_CLOSE_DELAY=-1;INIT=create schema IF NOT EXISTS APPS
@@ -303,7 +302,6 @@ persistence:
 nimble:
   identity:
     url: ${IDENTITY_SERVICE_URL:localhost:9096}
-  test-token: ${NIMBLE_TEST_TOKEN}
   indexing:
     sync: false
 

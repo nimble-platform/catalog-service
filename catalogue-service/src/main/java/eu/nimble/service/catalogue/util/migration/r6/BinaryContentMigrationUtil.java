@@ -40,7 +40,7 @@ public class BinaryContentMigrationUtil {
 
     public void migrateBinaryObjects() {
 
-        List<BinaryObjectType> binaryObjects = repoFactory.forCatalogueRepository().getEntities(BinaryObjectType.class);
+        List<BinaryObjectType> binaryObjects = repoFactory.forCatalogueRepository(true).getEntities(BinaryObjectType.class);
         logger.info("Total binary documents: {}", binaryObjects.size());
 
         for(int i=0; i<binaryObjects.size(); i++) {

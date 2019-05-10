@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue;
 
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
+import eu.nimble.service.catalogue.model.statistics.ProductAndServiceStatistics;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
@@ -23,7 +24,7 @@ public interface CatalogueService {
 
     public CatalogueType getCatalogue(String id, String partyId);
 
-    public CataloguePaginationResponse getCataloguePaginationResponse(String id, String partyId, String categoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset);
+    public CataloguePaginationResponse getCataloguePaginationResponse(String catalogueId, String partyId, String categoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset);
 
     public CatalogueType updateCatalogue(CatalogueType catalogue);
 
@@ -91,9 +92,19 @@ public interface CatalogueService {
 
     <T> T getCatalogueLine(String catalogueId, String catalogueLineId);
 
+    <T> T getCatalogueLines(String catalogueId, List<String> catalogueLineIds);
+
     CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine);
+
+    CatalogueLineType updateLinesCatalogue(String newCatalogueUuid, String oldeCatalogueUuid,CatalogueLineType catalogueLin);
 
     CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine);
 
     void deleteCatalogueLineById(String catalogueId, String lineId);
+
+    List<String> getCatalogueIdsForParty(String partyId);
+
+    ProductAndServiceStatistics getProductAndServiceCount();
+
+
 }

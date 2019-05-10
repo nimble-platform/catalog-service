@@ -1,454 +1,324 @@
 [
   {
-  "id": "ubl_item_id",
-  "preferredName": [
-    {
-      "value": "Item ID",
-      "languageID": "en"
-    }
-  ],
-  "shortName": "item_id",
-  "dataType": "http://www.w3.org/2001/XMLSchema#string"
-  },
-  {
-  "id": "ubl_item_catalogue_id",
-  "preferredName": [
-    {
-      "value": "Catalogue ID",
-      "languageID": "en"
-    }
-  ],
-  "shortName": "item_catalogue_id",
-  "dataType": "http://www.w3.org/2001/XMLSchema#string"
-  },
-  {
-    "id": "ubl_item_name",
+    "id": "catalogueId",
     "preferredName": [
       {
-        "value": "Item name",
+        "value": "Catalogue ID",
         "languageID": "en"
+      },
+      {
+        "value": "ID de catálogo",
+        "languageID": "es"
       }
     ],
-    "shortName": "item_name",
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
   },
   {
-    "id": "ubl_item_description",
-    "preferredName": [
-      {
-        "value": "Item description",
-        "languageID": "en"
-      }
-    ],
-    "shortName": "item_description",
-    "dataType": "http://www.w3.org/2001/XMLSchema#string"
-  },
-  {
-    "id": "ubl_item_image",
-    "preferredName": [
-      {
-        "value": "Item image",
-        "languageID": "en"
-      }
-    ],
-    "shortName": "item_image",
-    "dataType": "http://www.w3.org/2001/XMLSchema#string"
-  },
-  {
-    "id": "ubl_item_price",
-    "preferredName": [
-      {
-        "value": "Price",
-        "languageID": "en"
-      }
-    ],
-    "shortName": "item_price",
-    "dataType": "http://www.w3.org/2001/XMLSchema#double"
-  },
-  {
-    "id": "ubl_item_price_currency",
-    "preferredName": [
-      {
-        "value": "Currency",
-        "languageID": "en"
-      }
-    ],
-    "shortName": "item_price_currency",
-    "dataType": "http://www.w3.org/2001/XMLSchema#string"
-  },
-  {
-    "id": "ubl_item_free_of_charge_indicator",
+    "id": "freeOfCharge",
     "preferredName": [
       {
         "value": "Free Sample",
         "languageID": "en"
+      },
+      {
+        "value": "Muestra gratuita",
+        "languageID": "es"
       }
     ],
-    "shortName": "item_free_of_charge_indicator",
     "dataType": "http://www.w3.org/2001/XMLSchema#boolean"
   },
   {
-    "id": "ubl_item_certificate",
+    "id": "certificateType",
     "preferredName": [
       {
         "value": "Product / Service Certificate",
         "languageID": "en"
+      },
+      {
+        "value": "Certificado de producto / servicio",
+        "languageID": "es"
       }
     ],
-    "shortName": "item_certificate",
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
   },
   {
-    "id": "ubl_item_applicable_countries",
+    "id": "applicableCountries",
     "preferredName": [
       {
         "value": "Destination Country",
         "languageID": "en"
+      },
+      {
+        "value": "País de destino",
+        "languageID": "es"
       }
     ],
-    "shortName": "item_applicable_countries",
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
   },
   {
-    "id": "ubl_item_manufacturer_name",
+    "id": "manufacturer.name",
     "preferredName": [
       {
         "value": "Vendor Name",
         "languageID": "en"
+      },
+      {
+        "value": "Nombre del fabricante",
+        "languageID": "es"
       }
     ],
-    "shortName": "item_manufacturer_name",
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
   },
   {
-    "id": "ubl_item_manufacturer_id",
+    "id": "manufacturerId",
     "preferredName": [
       {
         "value": "Item manufacturer ID",
         "languageID": "en"
+      },
+      {
+        "value": "ID del fabricante del producto",
+        "languageID": "es"
       }
     ],
-    "shortName": "item_manufacturer_id",
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
   },
   {
-    "id": "ubl_item_manufacturer_origin",
+    "id": "manufacturer.origin",
     "preferredName": [
       {
         "value": "Vendor Origin",
         "languageID": "en"
+      },
+      {
+        "value": "Origen del proveedor",
+        "languageID": "es"
       }
     ],
-    "shortName": "item_manufacturer_origin",
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
   },
   {
-    "id": "ubl_manufacturer_certificate",
+    "id": "manufacturer.certificateType",
     "preferredName": [
       {
         "value": "Vendor Certificate",
         "languageID": "en"
+      },
+      {
+        "value": "Certificado del proveedor",
+        "languageID": "es"
       }
     ],
-    "shortName": "manufacturer_certificate",
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
   },
   {
-    "id": "ubl_manufacturer_ppap_compliance_level",
+    "id": "manufacturer.ppapComplianceLevel",
     "preferredName": [
       {
         "value": "PPAP Compliance Level",
         "languageID": "en"
+      },
+      {
+        "value": "Nivel de conformidad PPAP",
+        "languageID": "es"
       }
     ],
-    "shortName": "manufacturer_ppap_compliance_level",
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
   },
   {
-    "id": "ubl_manufacturer_ppap_document",
+    "id": "manufacturer.ppapDocumentType",
     "preferredName": [
       {
         "value": "PPAP Document",
         "languageID": "en"
+      },
+      {
+        "value": "Documento PPAP",
+        "languageID": "es"
       }
     ],
-    "shortName": "manufacturer_ppap_document",
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
   },
   {
-    "id": "ubl_item_start_date",
-    "preferredName": [
-      {
-        "value": "Start date",
-        "languageID": "en"
-      }
-    ],
-    "shortName": "item_start_date",
-    "dataType": "http://www.w3.org/2001/XMLSchema#date"
-  },
-  {
-    "id": "ubl_item_start_time",
-    "preferredName": [
-      {
-        "value": "Start time",
-        "languageID": "en"
-      }
-    ],
-    "shortName": "item_start_time",
-    "dataType": "http://www.w3.org/2001/XMLSchema#time"
-  },
-  {
-    "id": "ubl_item_estimated_delivery_time",
-    "preferredName": [
-      {
-        "value": "Estimated delivery time",
-        "languageID": "en"
-      }
-    ],
-    "shortName": "item_estimated_delivery_time",
-    "dataType": "http://www.w3.org/2001/XMLSchema#double"
-  },
-  {
-    "id": "ubl_item_package_amount",
-    "preferredName": [
-      {
-        "value": "Package amount",
-        "languageID": "en"
-      }
-    ],
-    "shortName": "item_package_amount",
-    "dataType": "http://www.w3.org/2001/XMLSchema#double"
-  },
-  {
-    "id": "ubl_item_package_type",
-    "preferredName": [
-      {
-        "value": "Package type",
-        "languageID": "en"
-      }
-    ],
-    "shortName": "item_package_type",
-    "dataType": "http://www.w3.org/2001/XMLSchema#string"
-  },
-  {
-    "id": "ubl_item_commodity_classification_code",
-    "preferredName": [
-      {
-        "value": "Commodity classification code",
-        "languageID": "en"
-      }
-    ],
-    "shortName": "item_commodity_classification_code",
-    "dataType": "http://www.w3.org/2001/XMLSchema#anyURI"
-  },
-  {
-    "id": "ubl_item_commodity_classification",
-    "preferredName": [
-      {
-        "value": "Commodity classification",
-        "languageID": "en"
-      }
-    ],
-    "shortName": "item_commodity_classification",
-    "dataType": "http://www.w3.org/2001/XMLSchema#string"
-  },
-  {
-    "id": "ubl_item_commodity_classification_uri",
-    "preferredName": [
-      {
-        "value": "Commodity classification uri",
-        "languageID": "en"
-      }
-    ],
-    "shortName": "item_commodity_classification_uri",
-    "dataType": "http://www.w3.org/2001/XMLSchema#string"
-  },
-  {
-    "id": "ubl_item_commodity_classification_mix",
-    "preferredName": [
-      {
-        "value": "Commodity classification mix",
-        "languageID": "en"
-      }
-    ],
-    "shortName": "item_commodity_classification_mix",
-    "dataType": "http://www.w3.org/2001/XMLSchema#string"
-  },
-  {
-    "id": "ubl_item_properties",
-    "preferredName": [
-      {
-        "value": "Item properties",
-        "languageID": "en"
-      }
-    ],
-    "shortName": "item_properties",
-    "dataType": "http://www.w3.org/2001/XMLSchema#string"
-  },
-  {
-    "id": "ubl_service_type",
+    "id": "serviceType",
     "preferredName": [
       {
         "value": "Service type",
         "languageID": "en"
+      },
+      {
+        "value": "Tipo de servicio",
+        "languageID": "es"
       }
     ],
-    "shortName": "service_type",
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
   },
   {
-    "id": "ubl_supported_product_nature",
+    "id": "supportedProductNature",
     "preferredName": [
       {
         "value": "Supported product nature",
         "languageID": "en"
+      },
+      {
+        "value": "Naturaleza de producto admitida",
+        "languageID": "es"
       }
     ],
-    "shortName": "supported_product_nature",
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
   },
   {
-    "id": "ubl_supported_cargo_type",
+    "id": "supportedCargoType",
     "preferredName": [
       {
         "value": "Supported cargo type",
         "languageID": "en"
+      },
+      {
+        "value": "Tipo de cargamento admitido",
+        "languageID": "es"
       }
     ],
-    "shortName": "supported_cargo_type",
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
   },
   {
-    "id": "ubl_total_capacity",
-    "preferredName": [
-      {
-        "value": "Total capacity",
-        "languageID": "en"
-      }
-    ],
-    "shortName": "total_capacity",
-    "dataType": "http://www.w3.org/2001/XMLSchema#double"
-  },
-  {
-    "id": "ubl_total_capacity_unit",
-    "preferredName": [
-      {
-        "value": "Total capacity unit",
-        "languageID": "en"
-      }
-    ],
-    "shortName": "total_capacity_unit",
-    "dataType": "http://www.w3.org/2001/XMLSchema#string"
-  },
-  {
-    "id": "ubl_mode",
-    "preferredName": [
-      {
-        "value": "Mode",
-        "languageID": "en"
-      }
-    ],
-    "shortName": "mode",
-    "dataType": "http://www.w3.org/2001/XMLSchema#string"
-  },
-  {
-    "id": "ubl_emission_standard",
+    "id": "emissionStandard",
     "preferredName": [
       {
         "value": "Emission standard",
         "languageID": "en"
+      },
+      {
+        "value": "Estándar de emisión",
+        "languageID": "es"
       }
     ],
-    "shortName": "emission_standard",
     "dataType": "http://www.w3.org/2001/XMLSchema#string"
   },
   {
-    "id": "ubl_estimated_duration",
-    "preferredName": [
-      {
-        "value": "Estimated duration",
-        "languageID": "en"
-      }
-    ],
-    "shortName": "estimated_duration",
-    "dataType": "http://www.w3.org/2001/XMLSchema#double"
-  },
-  {
-    "id": "ubl_trust_company_trust_score",
+    "id": "manufacturer.trustScore",
     "preferredName": [
       {
         "value": "Trust Score",
         "languageID": "en"
+      },
+      {
+        "value": "Puntuación en confianza",
+        "languageID": "es"
       }
     ],
-    "shortName": "trust_company_trust_score",
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
   },
   {
-    "id": "ubl_trust_company_rating",
+    "id": "manufacturer.trustRating",
     "preferredName": [
       {
         "value": "Overall Rating",
         "languageID": "en"
+      },
+      {
+        "value": "Valoración general",
+        "languageID": "es"
       }
     ],
-    "shortName": "trust_company_rating",
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
   },
   {
-    "id": "ubl_trust_company_trading_volume",
+    "id": "manufacturer.trustTradingVolume",
     "preferredName": [
       {
         "value": "Trading Volume",
         "languageID": "en"
+      },
+      {
+        "value": "Volumen de negocio",
+        "languageID": "es"
       }
     ],
-    "shortName": "trust_company_trading_volume",
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
   },
   {
-    "id": "ubl_trust_company_seller_communication",
+    "id": "manufacturer.trustSellerCommunication",
     "preferredName": [
       {
         "value": "Seller Communication",
         "languageID": "en"
+      },
+      {
+        "value": "Comunicación con el vendedor",
+        "languageID": "es"
       }
     ],
-    "shortName": "trust_company_seller_communication",
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
   },
   {
-    "id": "ubl_trust_company_fulfillment_of_terms",
+    "id": "manufacturer.trustFullfillmentOfTerms",
     "preferredName": [
       {
         "value": "Fulfillment of terms",
         "languageID": "en"
+      },
+      {
+        "value": "Cumplimiento de los términos",
+        "languageID": "es"
       }
     ],
-    "shortName": "trust_company_fulfillment_of_terms",
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
   },
   {
-    "id": "ubl_trust_company_delivery_packaging",
+    "id": "manufacturer.trustDeliveryPackaging",
     "preferredName": [
       {
         "value": "Delivery & Packaging",
         "languageID": "en"
+      },
+      {
+        "value": "Entrega y embalaje",
+        "languageID": "es"
       }
     ],
-    "shortName": "trust_company_delivery_packaging",
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
   },
   {
-    "id": "ubl_trust_company_number_of_transactions",
+    "id": "manufacturer.trustNumberOfTransactions",
     "preferredName": [
       {
         "value": "Company number of transactions",
         "languageID": "en"
+      },
+      {
+        "value": "Número de transacciones de la empresa",
+        "languageID": "es"
       }
     ],
-    "shortName": "trust_company_number_of_transactions",
     "dataType": "http://www.w3.org/2001/XMLSchema#double"
+  },
+  {
+    "id": "manufacturer.legalName",
+    "preferredName": [
+      {
+        "value": "Vendor Legal Name",
+        "languageID": "en"
+      },
+      {
+        "value": "Nombre legal de la empresa",
+        "languageID": "es"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "manufacturer.brandName",
+    "preferredName": [
+      {
+        "value": "Vendor Brand Name",
+        "languageID": "en"
+      },
+      {
+        "value": "Nombre comercial de la empresa",
+        "languageID": "es"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
   }
 ]
-

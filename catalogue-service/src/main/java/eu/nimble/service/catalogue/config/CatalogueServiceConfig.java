@@ -43,6 +43,9 @@ public class CatalogueServiceConfig {
     @Value("${persistence.solr.properties-index}")
     private String solrPropertyIndex;
 
+    @Value("${nimble.catalog.max-file-size:5}")
+    private int maxFileSize;
+
     @PostConstruct
     private void setupDBConnections() {
         if (environment != null) {
@@ -125,5 +128,13 @@ public class CatalogueServiceConfig {
 
     public void setSolrPropertyIndex(String solrPropertyIndex) {
         this.solrPropertyIndex = solrPropertyIndex;
+    }
+
+    public int getMaxFileSize() {
+        return maxFileSize;
+    }
+
+    public void setMaxFileSize(int maxFileSize) {
+        this.maxFileSize = maxFileSize;
     }
 }

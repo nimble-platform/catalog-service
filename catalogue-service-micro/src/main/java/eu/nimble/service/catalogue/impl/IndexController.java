@@ -49,4 +49,31 @@ public class IndexController {
         log.info("Completed request to clear the item index");
         return ResponseEntity.ok().build();
     }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Deletes the specified catalogue from index")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Deleted the specified catalogue from the index successfully"),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 500, message = "Failed to delete the catalogue from the index")
+    })
+    @RequestMapping(value = "/catalogue/index/{catalogueUuid}",
+            produces = {"application/json"},
+            method = RequestMethod.DELETE)
+    public ResponseEntity clearItemIndex(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
+                                         @ApiParam(value = "Uuid of the catalogue to be deleted from the index") @PathVariable(value = "catalogueUuid",required = true) String catalogueUuid) {
+        log.info("Incoming request to delete catalogue uuid from the item index with uuid: {}", catalogueUuid);
+
+        // check token
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return tokenCheck;
+        }
+
+        // delete the contents
+        itemIndexClient.deleteCatalogue(catalogueUuid);
+
+        log.info("Completed request to delete catalogue from the item index with uuid: {}", catalogueUuid);
+        return ResponseEntity.ok().build();
+    }
 }

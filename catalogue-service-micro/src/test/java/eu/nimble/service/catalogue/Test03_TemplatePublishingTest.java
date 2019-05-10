@@ -18,7 +18,6 @@ import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
@@ -37,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@ActiveProfiles("local_dev")
+@ActiveProfiles("test")
 @RunWith(SpringJUnit4ClassRunner.class)
 public class Test03_TemplatePublishingTest {
 
@@ -48,7 +47,6 @@ public class Test03_TemplatePublishingTest {
     @Autowired
     private ResourceValidationUtility resourceValidationUtil;
     @Autowired
-    private Environment environment;
     private ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
 
     final private String partyName = "alpCompany";
@@ -91,7 +89,7 @@ public class Test03_TemplatePublishingTest {
                 .fileUpload("/catalogue/template/upload")
                 .file(mutipartFile)
                 .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
-                .header("Authorization", environment.getProperty("nimble.test-token"))
+                .header("Authorization", TestConfig.responderBuyerId)
                 .param("uploadMode",uploadMode)
                 .param("partyId",partyId)
                 .param("partyName",partyName))
@@ -137,7 +135,7 @@ public class Test03_TemplatePublishingTest {
         // check incoterms
         Assert.assertSame(true,catalogueLineType3.getGoodsItem().getDeliveryTerms().getIncoterms().equals(incoterms));
 
-        boolean checkEntityIds = Boolean.valueOf(environment.getProperty("nimble.check-entity-ids"));
+        boolean checkEntityIds = Boolean.valueOf(TestConfig.checkEntityIds);
         if(checkEntityIds) {
             // check that resources have been managed properly
             List<Resource> allResources = ResourcePersistenceUtility.getAllResources();
@@ -176,7 +174,7 @@ public class Test03_TemplatePublishingTest {
                 .fileUpload("/catalogue/template/upload")
                 .file(mutipartFile)
                 .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
-                .header("Authorization", environment.getProperty("nimble.test-token"))
+                .header("Authorization", TestConfig.responderBuyerId)
                 .param("uploadMode",uploadMode2)
                 .param("partyId",partyId)
                 .param("partyName",partyName))
@@ -246,7 +244,7 @@ public class Test03_TemplatePublishingTest {
                 .fileUpload("/catalogue/template/upload")
                 .file(mutipartFile)
                 .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
-                .header("Authorization", environment.getProperty("nimble.test-token"))
+                .header("Authorization", TestConfig.responderBuyerId)
                 .param("uploadMode",uploadMode)
                 .param("partyId",partyId)
                 .param("partyName",partyName))

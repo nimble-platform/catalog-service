@@ -32,7 +32,7 @@ public class CatalogueDatabaseAdapter {
             if (catalogueParty == null) {
                 PartyType identityParty;
                 try {
-                    identityParty = SpringBridge.getInstance().getIdentityClientTyped().getParty(bearerToken, partyId);
+                    identityParty = SpringBridge.getInstance().getiIdentityClientTyped().getParty(bearerToken, partyId);
                     identityParty = checkPartyIntegrity(identityParty);
 
                 } catch (IOException e) {

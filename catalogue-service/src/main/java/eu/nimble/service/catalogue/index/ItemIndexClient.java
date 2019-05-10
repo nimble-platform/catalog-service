@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue.index;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.util.CredentialsUtil;
 import eu.nimble.service.model.solr.item.ItemType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
@@ -93,6 +94,14 @@ public class ItemIndexClient {
                     catalogue.getUUID(), catalogue.getProviderParty().getPartyIdentification().get(0).getID(), serializedCatalogue, e);
             return;
         }
+    }
+
+    public void indexAllCatalogues() {
+        List<CatalogueType> catalogues = CataloguePersistenceUtil.getAllCatalogues();
+        for(CatalogueType catalogue : catalogues) {
+            indexCatalogue(catalogue);
+        }
+        logger.info("All catalogues are indexed");
     }
 
     public void indexCatalogueLine(CatalogueLineType catalogueLine) {

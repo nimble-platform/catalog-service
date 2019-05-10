@@ -23,7 +23,7 @@ public class UnitManager {
     @PostConstruct
     private void checkUnits(){
         List<UnitType> resultSet;
-        resultSet = UnitPersistenceUtil.getUnitMarker(repoFactory.forCatalogueRepository());
+        resultSet = UnitPersistenceUtil.getUnitMarker(repoFactory.forCatalogueRepository(true));
         if(resultSet.size() > 0){
             return;
         }
@@ -47,7 +47,7 @@ public class UnitManager {
 
         UnitType unitType3 = new UnitType();
         unitType3.setID("time_quantity");
-        unitType3.setUnitCode(Arrays.asList("working days","days","weeks"));
+        unitType3.setUnitCode(Arrays.asList("hour(s)", "working day(s)","day(s)","week(s)"));
         repoFactory.forCatalogueRepository().persistEntity(unitType3);
 
         UnitType unitType4 = new UnitType();
@@ -72,13 +72,18 @@ public class UnitManager {
 
         UnitType unitType8 = new UnitType();
         unitType8.setID("dimensions");
-        unitType8.setUnitCode(Arrays.asList("length","width","height","depth"));
+        unitType8.setUnitCode(Arrays.asList("length","width","height"));
         repoFactory.forCatalogueRepository().persistEntity(unitType8);
 
         UnitType unitType9 = new UnitType();
         unitType9.setID("warranty_period");
-        unitType9.setUnitCode(Arrays.asList("month","year"));
+        unitType9.setUnitCode(Arrays.asList("month(s)","year(s)"));
         repoFactory.forCatalogueRepository().persistEntity(unitType9);
+
+        UnitType unitType10 = new UnitType();
+        unitType10.setID("frame_contract_period");
+        unitType10.setUnitCode(Arrays.asList("day(s)", "week(s)", "month(s)","year(s)"));
+        repoFactory.forCatalogueRepository().persistEntity(unitType10);
     }
 
 

@@ -9,5 +9,7 @@ public interface TaxonomyQueryInterface {
 
     TaxonomyEnum getTaxonomy();
 
+    Map<String,String> getLogisticsServices();
+
     String getQuery(boolean forLogistics);
 }

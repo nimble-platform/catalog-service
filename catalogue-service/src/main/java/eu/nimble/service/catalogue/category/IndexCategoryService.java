@@ -331,6 +331,22 @@ public class IndexCategoryService {
         return null;
     }
 
+    public Map<String,Map<String,String>> getLogisticsRelatedServices(String taxonomyId){
+        Map<String,Map<String,String>> logisticServicesCategoryUriMap = new HashMap<>();
+        // check whether the given id is 'all' or not
+        boolean isTaxonomyIdSpecified = taxonomyId.compareToIgnoreCase("all") != 0;
+
+        for (TaxonomyQueryInterface taxonomyQuery : taxonomyQueryMap.values()) {
+            if(!isTaxonomyIdSpecified){
+                logisticServicesCategoryUriMap.put(taxonomyQuery.getTaxonomy().getId(),taxonomyQuery.getLogisticsServices());
+            }
+            else if(taxonomyQuery.getTaxonomy().getId().contentEquals(taxonomyId)){
+                logisticServicesCategoryUriMap.put(taxonomyQuery.getTaxonomy().getId(),taxonomyQuery.getLogisticsServices());
+            }
+        }
+        return logisticServicesCategoryUriMap;
+    }
+
     //    public List<Category> getLogisticsCategoriesForEClass(String name) {
 //        Map<String, String> facetCriteria = new HashMap<>();
 //        facetCriteria.put(IConcept.NAME_SPACE_FIELD, TaxonomyEnum.eClass.getNamespace());

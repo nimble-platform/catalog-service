@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.validation;
 
 import com.google.common.base.Strings;
+import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemPropertyType;
@@ -15,8 +16,6 @@ import java.util.List;
  * Created by suat on 08-Aug-18.
  */
 public class CatalogueLineValidator {
-
-    private static final long MAX_FILE_SIZE = 1048575;
 
     private List<String> errorMessages;
     private CatalogueType owningCatalogue;
@@ -113,9 +112,11 @@ public class CatalogueLineValidator {
 
     private void fileSizesLessThanTheMaximum() {
         // validate images
+        int maxFileSize = SpringBridge.getInstance().getCatalogueServiceConfig().getMaxFileSize() * 1024 * 1024;
+
         for (BinaryObjectType bo : catalogueLine.getGoodsItem().getItem().getProductImage()) {
-            if (bo.getValue().length > MAX_FILE_SIZE) {
-                errorMessages.add(String.format("%s is larger than the allowed size: %s", bo.getFileName(), MAX_FILE_SIZE));
+            if (bo.getValue().length > maxFileSize) {
+                errorMessages.add(String.format("%s is larger than the allowed size: %s", bo.getFileName(), maxFileSize));
             }
         }
 
@@ -123,8 +124,8 @@ public class CatalogueLineValidator {
         for (ItemPropertyType itemProperty : catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty()) {
             if (itemProperty.getValueQualifier().contentEquals("BINARY")) {
                 for (BinaryObjectType bo : itemProperty.getValueBinary()) {
-                    if (bo.getValue().length > MAX_FILE_SIZE) {
-                        errorMessages.add(String.format("%s is larger than the allowed size: %s", bo.getFileName(), MAX_FILE_SIZE));
+                    if (bo.getValue().length > maxFileSize) {
+                        errorMessages.add(String.format("%s is larger than the allowed size: %s", bo.getFileName(), maxFileSize));
                     }
                 }
             }

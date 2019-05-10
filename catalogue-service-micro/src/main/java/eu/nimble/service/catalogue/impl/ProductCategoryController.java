@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue.impl;
 
 import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.category.TaxonomyEnum;
+import eu.nimble.service.catalogue.category.eclass.EClassIndexLoader;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
 import eu.nimble.service.catalogue.index.ClassIndexClient;
@@ -16,9 +17,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Product category related REST services
@@ -33,6 +36,8 @@ public class ProductCategoryController {
     private IndexCategoryService categoryService;
     @Autowired
     private ClassIndexClient classIndexClient;
+    @Autowired
+    private EClassIndexLoader eClassIndexLoader;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves a list of Category instances. This operation takes a list of category ids and " +
@@ -137,6 +142,25 @@ public class ProductCategoryController {
     }
 
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieves the map of logistics services and corresponding category uris for the given taxonomy id")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved the logistics related services-category uri map successfully"),
+            @ApiResponse(code = 500, message = "Unexpected error while getting the logistics related services-category map")
+    })
+    @RequestMapping(value = "/taxonomies/{taxonomyId}/logistics-services",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity getLogisticsRelatedServices(@ApiParam(value = "The taxonomy id which is used to retrieve logistic related services. If 'all' value is specified for taxonomy id, then logistic related services for each available taxonomy id are returned.",required = true) @PathVariable(value = "taxonomyId",required = true) String taxonomyId,
+                                                      @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        log.info("Incoming request to get the logistics related services-category map for taxonomy id: {}",taxonomyId);
+
+        Map<String,Map<String,String>> logisticServicesCategoryUriMap = categoryService.getLogisticsRelatedServices(taxonomyId);
+
+        log.info("Completed request to get the logistics related services-category uri map for taxonomy id: {}", taxonomyId);
+        return ResponseEntity.ok(logisticServicesCategoryUriMap);
+    }
+
+    @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves root categories of the specified taxonomy")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieved the root categories successfully", response = Category.class, responseContainer = "List"),
@@ -211,6 +235,34 @@ public class ProductCategoryController {
 
         CategoryTreeResponse categories = categoryService.getCategoryTree(taxonomyId, categoryId);
         return ResponseEntity.ok(categories);
+    }
+
+    @ApiIgnore
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Indexes eClass categories.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Indexed eClass categories successfully"),
+            @ApiResponse(code = 401, message = "No user exists for the given token"),
+            @ApiResponse(code = 500, message = "Failed to index eClass resources")
+    })
+    @RequestMapping(value = "categories/eClass/index",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity indexEclassResources(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        log.info("Incoming request to index eClass resources.");
+        // check token
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return tokenCheck;
+        }
+
+        try {
+            eClassIndexLoader.indexEClassResources();
+        } catch (Exception e) {
+            log.error("Failed to index eClass Resources:",e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to index eClass Resources");
+        }
+        return ResponseEntity.ok(null);
     }
 
     private boolean taxonomyIdExists(String taxonomyId) {

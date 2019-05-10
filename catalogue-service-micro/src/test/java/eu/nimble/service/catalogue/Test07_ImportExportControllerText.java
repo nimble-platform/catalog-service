@@ -13,7 +13,6 @@ import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.env.Environment;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -31,14 +30,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@ActiveProfiles("local_dev")
+@ActiveProfiles("test")
 @RunWith(SpringJUnit4ClassRunner.class)
 public class Test07_ImportExportControllerText {
 
     @Autowired
     private MockMvc mockMvc;
-    @Autowired
-    private Environment environment;
     @Autowired
     private CatalogueServiceImpl catalogueService;
     private ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
@@ -50,7 +47,7 @@ public class Test07_ImportExportControllerText {
     public void test1_generateTemplateForCatalogue() throws Exception {
         // get the catalogue
         MockHttpServletRequestBuilder request = get("/catalogue/ubl/" + Test03_TemplatePublishingTest.catalogueUUID)
-                .header("Authorization", environment.getProperty("nimble.test-token"));
+                .header("Authorization", TestConfig.responderBuyerId);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
         Assert.assertEquals(Test03_TemplatePublishingTest.catalogueUUID, catalogue.getUUID());

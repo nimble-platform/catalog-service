@@ -1,7 +1,11 @@
 package eu.nimble.service.catalogue.persistence.util;
 
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
+import eu.nimble.service.catalogue.model.lcpa.ItemLCPAInput;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CommodityClassificationType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.LCPAInputType;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
 
 import java.util.ArrayList;
@@ -27,12 +31,23 @@ public class CatalogueLinePersistenceUtil {
             + " JOIN c.catalogueLine as clj"
             + " WHERE c.UUID = :catalogueUuid "
             + " AND clj.ID = :lineId";
+    private static final String QUERY_GET_BY_CAT_UUID_AND_IDS = "SELECT clj FROM CatalogueType as c "
+            + " JOIN c.catalogueLine as clj"
+            + " WHERE c.UUID = :catalogueUuid "
+            + " AND clj.ID in :lineIds";
     private static final String QUERY_GET_HJID_AND_PARTY_ID_BY_CAT_UUID_AND_ID = "SELECT clj.hjid,partyIdentification.ID FROM CatalogueType as c"
             + " JOIN c.catalogueLine as clj join clj.goodsItem.item.manufacturerParty.partyIdentification partyIdentification"
             + " WHERE c.UUID = :catalogueUuid "
             + " AND clj.ID = :lineId";
     private static final String QUERY_GET_BY_HJID = "SELECT cl FROM CatalogueLineType as cl WHERE cl.hjid = :hjid";
     private static final String QUERY_GET_BY_HJIDS = "SELECT cl FROM CatalogueLineType as cl WHERE cl.hjid in :hjids";
+    private static final String QUUERY_GET_LINE_IDS_WITH_LCPA_INPUT_WITHOUT_LCPA_OUTPUT = "SELECT cl.hjid, lcpa.LCPAInput FROM CatalogueLineType cl" +
+            " JOIN cl.goodsItem gi" +
+            " JOIN gi.item i" +
+            " JOIN i.lifeCyclePerformanceAssessmentDetails lcpa WHERE" +
+            " lcpa.LCPAInput is not null AND" +
+            " lcpa.LCPAOutput is null";
+    private static final String QUERY_GET_ALL_CATALOGUELINES_CLURI = "SELECT cl.goodsItem.item FROM CatalogueLineType as cl";
 
     public static Boolean checkCatalogueLineExistence(String catalogueUuid, String lineId) {
         long lineExistence = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_CHECK_EXISTENCE_BY_ID, new String[]{"catalogueUuid", "lineId"}, new Object[]{catalogueUuid, lineId});
@@ -45,7 +60,7 @@ public class CatalogueLinePersistenceUtil {
     }
 
     public static CatalogueLineType getCatalogueLine(Long hjid) {
-        return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_BY_HJID, new String[]{"hjid"}, new Object[]{hjid});
+        return new JPARepositoryFactory().forCatalogueRepository(true).getSingleEntity(QUERY_GET_BY_HJID, new String[]{"hjid"}, new Object[]{hjid});
     }
 
     public static List<CatalogueLineType> getCatalogueLines(List<Long> hjids,CatalogueLineSortOptions sortOption,int limit, int pageNo) {
@@ -63,7 +78,7 @@ public class CatalogueLinePersistenceUtil {
                         break;
                 }
             }
-            catalogueLines = new JPARepositoryFactory().forCatalogueRepository().getEntities(getCatalogueLinesQuery, new String[]{"hjids"}, new Object[]{hjids});
+            catalogueLines = new JPARepositoryFactory().forCatalogueRepository(true).getEntities(getCatalogueLinesQuery, new String[]{"hjids"}, new Object[]{hjids});
 
             if(limit != 0){
                 int startIndex = limit*pageNo;
@@ -77,7 +92,27 @@ public class CatalogueLinePersistenceUtil {
     }
 
     public static CatalogueLineType getCatalogueLine(String catalogueUuid, String lineId) {
-        return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_BY_CAT_UUID_AND_ID, new String[]{"catalogueUuid", "lineId"}, new Object[]{catalogueUuid, lineId});
+        return new JPARepositoryFactory().forCatalogueRepository(true).getSingleEntity(QUERY_GET_BY_CAT_UUID_AND_ID, new String[]{"catalogueUuid", "lineId"}, new Object[]{catalogueUuid, lineId});
+    }
+
+    public static List<CatalogueLineType> getCatalogueLines(String catalogueUuid, List<String> lineIds) {
+        return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_BY_CAT_UUID_AND_IDS, new String[]{"catalogueUuid", "lineIds"}, new Object[]{catalogueUuid, lineIds});
+    }
+
+    public static List<ItemLCPAInput> getLinesIdsWithValidLcpaInput() {
+        List<Object[]> dbResults = new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUUERY_GET_LINE_IDS_WITH_LCPA_INPUT_WITHOUT_LCPA_OUTPUT);
+        List<ItemLCPAInput> results = new ArrayList<>();
+        for (Object[] result : dbResults) {
+            ItemLCPAInput itemLcpaInput = new ItemLCPAInput();
+            itemLcpaInput.setCatalogueLineHjid((result[0]).toString());
+            itemLcpaInput.setLcpaInput((LCPAInputType) result[1]);
+            results.add(itemLcpaInput);
+        }
+        return results;
+    }
+
+    public static List<ItemType> getItemTypeOfAllLines() {
+        return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_ALL_CATALOGUELINES_CLURI);
     }
 
     // this method returns an array of objects

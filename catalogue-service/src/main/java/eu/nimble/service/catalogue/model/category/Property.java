@@ -14,7 +14,7 @@ public class Property {
     private String shortName;
     private String definition;
     private String note;
-    private String remark;
+    private List<TextType> remark;
     private String preferredSymbol;
     private Unit unit;
     private String iecCategory;
@@ -41,20 +41,7 @@ public class Property {
     }
 
     public String getPreferredName(String language) {
-        if(language == null) {
-            language = "en";
-        }
-        String nameInEnglish = null;
-
-        for(TextType pNames: preferredName) {
-            String id = pNames.getLanguageID();
-            if(id.equals("en")){
-                nameInEnglish = pNames.getValue();
-            }
-            if(id.equals(language))
-                return pNames.getValue();
-        }
-        return nameInEnglish;
+        return getLabelForLanguage(preferredName, language);
     }
 
     public List<TextType> getPreferredName() {
@@ -89,11 +76,15 @@ public class Property {
         this.note = note;
     }
 
-    public String getRemark() {
+    public List<TextType> getRemark() {
         return remark;
     }
 
-    public void setRemark(String remark) {
+    public String getRemark(String languageId) {
+        return getLabelForLanguage(remark, languageId);
+    }
+
+    public void setRemark(List<TextType> remark) {
         this.remark = remark;
     }
 
@@ -167,5 +158,22 @@ public class Property {
 
     public void setUri(String uri) {
         this.uri = uri;
+    }
+
+    private String getLabelForLanguage(List<TextType> labels, String languageId) {
+        if(languageId == null) {
+            languageId = "en";
+        }
+        String englishLabel = null;
+        for(TextType label: labels) {
+            String id = label.getLanguageID();
+            if(id.equals("en")){
+                englishLabel = label.getValue();
+            }
+            if(id.equals(languageId)) {
+                return label.getValue();
+            }
+        }
+        return englishLabel;
     }
 }

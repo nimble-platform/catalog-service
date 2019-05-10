@@ -5,6 +5,7 @@ import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
+import eu.nimble.service.catalogue.model.statistics.ProductAndServiceStatistics;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.catalogue.validation.CatalogueLineValidator;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
@@ -163,6 +164,44 @@ public class CatalogueLineController {
     }
 
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieves the catalogue lines specified with the catalogueUuid and lineIds parameters")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved catalogue lines successfully", response = CatalogueLineType.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Failed to get catalogue lines"),
+            @ApiResponse(code = 404, message = "Specified catalogue does not exist"),
+            @ApiResponse(code = 500, message = "Unexpected error while getting catalogue lines")
+    })
+    @RequestMapping(value = "/catalogue/{catalogueUuid}/cataloguelines",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity getCatalogueLines(@ApiParam(value = "uuid of the catalogue containing the lines to be retrieved. (catalogue.uuid)", required = true) @PathVariable String catalogueUuid,
+                                           @ApiParam(value = "Identifier of the catalogue lines to be retrieved. (line.id)", required = true) @RequestParam(value = "lineIds") List<String> lineIds,
+                                           @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        log.info("Incoming request to get catalogue line with lineIds: {}, catalogue uuid: {}", lineIds, catalogueUuid);
+        // check token
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return tokenCheck;
+        }
+
+        if (service.getCatalogue(catalogueUuid) == null) {
+            log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
+        }
+
+        List<CatalogueLineType> catalogueLines;
+        try {
+            catalogueLines = service.getCatalogueLines(catalogueUuid, lineIds);
+        } catch (Exception e) {
+            String msg = String.format("Failed to get catalogue lines: %s, catalogue uuid: %s", lineIds, catalogueUuid);
+            return createErrorResponseEntity(msg, HttpStatus.INTERNAL_SERVER_ERROR, e);
+        }
+
+        log.info("Completed the request to get catalogue lines with lineIds: {}", lineIds);
+        return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLines));
+    }
+
+    @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Adds the provided catalogue line to the specified catalogue")
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Persisted the catalogue line successfully and returned the persisted entity"),
@@ -299,33 +338,66 @@ public class CatalogueLineController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
             }
 
-            // validate the incoming content
             CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogue, catalogueLine);
-            List<String> errors = catalogueLineValidator.validate();
-            if (errors.size() > 0) {
-                StringBuilder sb = new StringBuilder("");
-                for (String error : errors) {
-                    sb.append(error).append(System.lineSeparator());
+
+            if(!catalogueUuid.equals(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID())){
+                String newCatalogueUuid = catalogueUuid;
+                String oldCatalogueUuid = catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID();
+
+                catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().setID(newCatalogueUuid);
+                List<String> errors = catalogueLineValidator.validate();
+                if (errors.size() > 0) {
+                    StringBuilder sb = new StringBuilder("");
+                    for (String error : errors) {
+                        sb.append(error).append(System.lineSeparator());
+                    }
+                    return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
                 }
-                return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
-            }
 
-            // validate the entity ids
-            boolean hjidsBelongToCompany = resourceValidationUtil.hjidsBelongsToParty(catalogueLine, catalogue.getProviderParty().getPartyIdentification().get(0).getID(), Configuration.Standard.UBL.toString());
-            if(!hjidsBelongToCompany) {
-                return HttpResponseUtil.createResponseEntityAndLog(String.format("Some of the identifiers (hjid fields) do not belong to the party in the passed catalogue line: %s.", catalogueLineJson), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
-            }
+                // validate the entity ids
+                boolean hjidsBelongToCompany = resourceValidationUtil.hjidsBelongsToParty(catalogueLine, catalogue.getProviderParty().getPartyIdentification().get(0).getID(), Configuration.Standard.UBL.toString());
+                if(!hjidsBelongToCompany) {
+                    return HttpResponseUtil.createResponseEntityAndLog(String.format("Some of the identifiers (hjid fields) do not belong to the party in the passed catalogue line: %s.", catalogueLineJson), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                }
 
-            // consider the case of an updated line id conflicting with the id of an existing line
-            boolean lineExists = CatalogueLinePersistenceUtil.checkCatalogueLineExistence(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid());
-            if (!lineExists) {
-                service.updateCatalogueLine(catalogueLine);
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("There already exists a product with the given id");
-            }
+                // consider the case of an updated line id conflicting with the id of an existing line
+                boolean lineExists = CatalogueLinePersistenceUtil.checkCatalogueLineExistence(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid());
+                if (!lineExists) {
+                    service.updateLinesCatalogue(newCatalogueUuid,oldCatalogueUuid,catalogueLine);
+                } else {
+                    return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("There already exists a product with the given id");
+                }
 
-            log.info("Completed the request to add catalogue line catalogue uuid, line lineId: {}", catalogueUuid, catalogueLine.getID());
-            return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLine));
+                log.info("Completed the request to add catalogue line catalogue uuid, line lineId: {}", catalogueUuid, catalogueLine.getID());
+                return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLine));
+            }else{
+                // validate the incoming content
+                List<String> errors = catalogueLineValidator.validate();
+                if (errors.size() > 0) {
+                    StringBuilder sb = new StringBuilder("");
+                    for (String error : errors) {
+                        sb.append(error).append(System.lineSeparator());
+                    }
+                    return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
+                }
+
+                // validate the entity ids
+                boolean hjidsBelongToCompany = resourceValidationUtil.hjidsBelongsToParty(catalogueLine, catalogue.getProviderParty().getPartyIdentification().get(0).getID(), Configuration.Standard.UBL.toString());
+                if(!hjidsBelongToCompany) {
+                    return HttpResponseUtil.createResponseEntityAndLog(String.format("Some of the identifiers (hjid fields) do not belong to the party in the passed catalogue line: %s.", catalogueLineJson), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                }
+
+                // consider the case of an updated line id conflicting with the id of an existing line
+                boolean lineExists = CatalogueLinePersistenceUtil.checkCatalogueLineExistence(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid());
+                if (!lineExists) {
+                    service.updateCatalogueLine(catalogueLine);
+                } else {
+                    return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("There already exists a product with the given id");
+                }
+
+                log.info("Completed the request to add catalogue line catalogue uuid, line lineId: {}", catalogueUuid, catalogueLine.getID());
+                return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLine));
+            }
 
         } catch (Exception e) {
             log.warn("The following catalogue line could not be updated: {}", catalogueLineJson);
@@ -365,6 +437,29 @@ public class CatalogueLineController {
         }
         log.info("Completed the request to delete catalogue line: catalogue uuid: {}, lineId: {}", catalogueUuid, lineId);
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @RequestMapping(value = "/cataloguelines/statistics",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity getCatalogue(
+            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+
+        log.info("Incoming request to get catalogue line statistics no of products and services");
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return tokenCheck;
+        }
+
+       ProductAndServiceStatistics stats;
+        try {
+            stats = service.getProductAndServiceCount();
+        } catch (Exception e) {
+            return createErrorResponseEntity("Failed to get count of services and product", HttpStatus.INTERNAL_SERVER_ERROR, e);
+        }
+
+        log.info("Completed the request to get product and service count");
+        return ResponseEntity.ok(serializationUtility.serializeUBLObject(stats));
     }
 
     private ResponseEntity createErrorResponseEntity(String msg, HttpStatus status, Exception e) {
