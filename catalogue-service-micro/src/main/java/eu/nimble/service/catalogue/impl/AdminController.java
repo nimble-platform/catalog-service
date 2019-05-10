@@ -11,7 +11,10 @@ import eu.nimble.service.model.solr.item.ItemType;
 import eu.nimble.service.model.solr.owl.PropertyType;
 import eu.nimble.service.model.solr.owl.ValueQualifier;
 import eu.nimble.utility.JsonSerializationUtility;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +53,10 @@ public class AdminController {
     private CatalogueIndexLoader catalogueIndexLoader;
 
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Indexes UBL properties")
+    @ApiResponses(value = {
+            @ApiResponse(code = 401, message = "No user exists for the given token")
+    })
     @RequestMapping(value = "/admin/index/ubl-properties",
             produces = {"application/json"},
             method = RequestMethod.GET)
@@ -134,6 +141,10 @@ public class AdminController {
     }
 
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Indexes all catalogues in the database")
+    @ApiResponses(value = {
+            @ApiResponse(code = 401, message = "No user exists for the given token")
+    })
     @RequestMapping(value = "/admin/index-catalogues",
             produces = {"application/json"},
             method = RequestMethod.POST)
