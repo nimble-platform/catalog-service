@@ -7,10 +7,6 @@ if [ "$1" == "java-build" ]; then
 
     mvn clean install -DskipTests
 
-elif [ "$1" == "run-tests" ]; then
-
-    mvn clean test
-
 elif [ "$1" == "docker-build" ]; then
 
     mvn -f catalogue-service-micro/pom.xml docker:build -P docker
