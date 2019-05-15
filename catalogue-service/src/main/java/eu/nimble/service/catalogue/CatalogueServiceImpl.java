@@ -575,19 +575,25 @@ public class CatalogueServiceImpl implements CatalogueService {
             .filter(line -> line.getHjid().equals(hjidLine))
             .findFirst().get();
 
+        EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(newcatalogue.getProviderParty().getPartyIdentification().get(0).getID());
+
+        // clear uris of the binary contents belonging to the catalogue line
+        repositoryWrapper.clearBinaryObjectUris(catalogueLine);
+
         oldcatalogue.getCatalogueLine().remove(catLine);
         catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().setID(newCatalogueUuid);
         newcatalogue.getCatalogueLine().add(catalogueLine);
         DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(oldcatalogue);
         DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(newcatalogue);
 
-        EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(newcatalogue.getProviderParty().getPartyIdentification().get(0).getID());
         oldcatalogue = repositoryWrapper.updateEntity(oldcatalogue);
         newcatalogue = repositoryWrapper.updateEntity(newcatalogue);
         catalogueLine = newcatalogue.getCatalogueLine().get(newcatalogue.getCatalogueLine().size() - 1);
 
         // index the line
         itemIndexClient.indexCatalogueLine(catalogueLine);
+        // delete the old catalogue line from the index
+        itemIndexClient.deleteCatalogueLine(hjidLine);
 
         return catalogueLine;
     }
