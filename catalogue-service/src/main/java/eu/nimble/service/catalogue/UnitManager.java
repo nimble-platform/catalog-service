@@ -47,7 +47,7 @@ public class UnitManager {
 
         UnitType unitType3 = new UnitType();
         unitType3.setID("time_quantity");
-        unitType3.setUnitCode(Arrays.asList("hour(s)", "working day(s)","day(s)","week(s)"));
+        unitType3.setUnitCode(Arrays.asList("hour(s)", "working day(s)","day(s)","week(s)","month(s)"));
         repoFactory.forCatalogueRepository().persistEntity(unitType3);
 
         UnitType unitType4 = new UnitType();
