@@ -109,6 +109,10 @@ public class UnitManager {
         return list;
     }
 
+    public void deleteUnitList(String unitListId) {
+        UnitType unit = UnitPersistenceUtil.getUnit(unitListId);
+        repoFactory.forCatalogueRepository().deleteEntity(unit);
+    }
 
     public List<String> addUnitToList(String unit,String unitListId){
         List<UnitTypeUnitCodeItem> resultSet;

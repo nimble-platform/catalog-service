@@ -58,6 +58,33 @@ public class UnitServiceController {
     }
 
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Deletes the specified unit list")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Deleted unit list successfully", response = String.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 404, message = "No unit list with the given id"),
+    })
+    @RequestMapping(value = "/unit-lists/{unitListId}",
+            produces = {"application/json"},
+            method = RequestMethod.DELETE)
+    public ResponseEntity addUnitToList(@ApiParam(value = "Id of the list to be deleted", required = true) @PathVariable String unitListId,
+                                        @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        logger.info("Unit list '{}' will be deleted", unitListId);
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return tokenCheck;
+        }
+
+        if (!unitManager.checkUnitListId(unitListId)) {
+            return createErrorResponseEntity("No unit list with id: " + unitListId, HttpStatus.NOT_FOUND);
+        }
+        unitManager.deleteUnitList(unitListId);
+
+        logger.info("Unit '{}' is deleted", unitListId);
+        return ResponseEntity.ok().build();
+    }
+
+    @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Adds a unit to a specified list")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Added unit successfully", response = String.class, responseContainer = "List"),
