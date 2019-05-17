@@ -17,6 +17,9 @@ import java.util.List;
  */
 public class CatalogueLinePersistenceUtil {
 
+    private static final String QUERY_CHECK_EXISTENCE_BY_HJID = "SELECT COUNT(cl) FROM CatalogueLineType as cl "
+            + " WHERE cl.hjid = :hjid ";
+
     private static final String QUERY_CHECK_EXISTENCE_BY_ID = "SELECT COUNT(cl) FROM CatalogueLineType as cl, CatalogueType as c "
             + " JOIN c.catalogueLine as clj"
             + " WHERE c.UUID = :catalogueUuid "
@@ -48,6 +51,11 @@ public class CatalogueLinePersistenceUtil {
             " lcpa.LCPAInput is not null AND" +
             " lcpa.LCPAOutput is null";
     private static final String QUERY_GET_ALL_CATALOGUELINES_CLURI = "SELECT cl.goodsItem.item FROM CatalogueLineType as cl";
+
+    public static Boolean checkCatalogueLineExistence(Long hjid) {
+        long lineExistence = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_CHECK_EXISTENCE_BY_HJID, new String[]{"hjid"}, new Object[]{hjid});
+        return lineExistence == 1;
+    }
 
     public static Boolean checkCatalogueLineExistence(String catalogueUuid, String lineId) {
         long lineExistence = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_CHECK_EXISTENCE_BY_ID, new String[]{"catalogueUuid", "lineId"}, new Object[]{catalogueUuid, lineId});
