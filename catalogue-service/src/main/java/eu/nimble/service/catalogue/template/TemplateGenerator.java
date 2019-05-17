@@ -364,9 +364,8 @@ public class TemplateGenerator {
                         cell = productPropertiesTab.getRow(rowIndex).createCell(propertyColumnIndex);
                         cell.setCellValue(getMultiValueRepresentation(itemProperty.getValueDecimal(),TemplateConfig.TEMPLATE_DATA_TYPE_NUMBER));
                     }
+                    propertyColumnIndex++;
                 }
-
-                propertyColumnIndex++;
             }
             rowIndex++;
         }
