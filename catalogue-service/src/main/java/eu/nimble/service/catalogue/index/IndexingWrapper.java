@@ -251,7 +251,7 @@ public class IndexingWrapper {
         property.setRemark(getLabelListFromMap(indexProperty.getComment()));
 
         // TODO the data type is currently keeping the value qualifier. However, it should be stored in the value qualifier field.
-        if(indexProperty.getUri().startsWith(TaxonomyEnum.eClass.getNamespace())) {
+        if(indexProperty.getValueQualifier() != null) {
             // This is so in order not to break the functionality on the front-end
             property.setDataType(indexProperty.getValueQualifier().toString());
         } else {
