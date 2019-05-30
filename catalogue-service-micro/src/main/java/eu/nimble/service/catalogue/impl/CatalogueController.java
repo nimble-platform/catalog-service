@@ -712,7 +712,7 @@ public class CatalogueController {
             @ApiResponse(code = 404, message = "No catalogue ids found for the given party"),
             @ApiResponse(code = 500, message = "Unexpected error while getting catalogue id's")
     })
-    @RequestMapping(value = "/catalogue/{partyId}",
+    @RequestMapping(value = "/catalogue/ids/{partyId}",
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity getAllCatalogueIdsForParty(@ApiParam(value = "Identifier of the party for which the catalogue to be retrieved", required = true) @PathVariable String partyId,

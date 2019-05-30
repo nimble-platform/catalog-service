@@ -3,6 +3,8 @@ package eu.nimble.service.catalogue.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PriceOptionType;
@@ -38,8 +40,9 @@ import java.util.List;
  * <p>Created by suat on 01-Aug-18.</p>
  */
 @Controller
-@RequestMapping(value = "/catalogue/{catalogueUuid}/catalogueline/{lineId}/price-options")
 public class PriceConfigurationController {
+    private static final String VAT_RATES_URL = "https://taxapi.io/api/v1/vat/rates";
+
     private static Logger log = LoggerFactory.getLogger(PriceConfigurationController.class);
 
     @Autowired
@@ -52,10 +55,13 @@ public class PriceConfigurationController {
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Added the pricing option successfully", response = PriceOptionType.class),
             @ApiResponse(code = 400, message = "Invalid price option serialization"),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
             @ApiResponse(code = 404, message = "No catalogue or catalogue line found for the specified parameters"),
             @ApiResponse(code = 500, message = "Unexpected error while adding price option")
     })
-    @RequestMapping(consumes = {MediaType.APPLICATION_JSON_VALUE},
+    @RequestMapping(
+            value = "/catalogue/{catalogueUuid}/catalogueline/{lineId}/price-options",
+            consumes = {MediaType.APPLICATION_JSON_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE},
             method = RequestMethod.POST)
     public ResponseEntity addPricingOption(@ApiParam(value = "uuid of the catalogue containing the line for which the price option to be added. (catalogue.uuid)", required = true) @PathVariable("catalogueUuid") String catalogueUuid,
@@ -125,9 +131,10 @@ public class PriceConfigurationController {
     @ApiOperation(value = "", notes = "Adds the given pricing option to the specified catalogue line (i.e. product/service)")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Deleted the pricing option successfully"),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
             @ApiResponse(code = 404, message = "No catalogue or catalogue line found for the specified parameters")
     })
-    @RequestMapping(value = "/{optionId}",
+    @RequestMapping(value = "/catalogue/{catalogueUuid}/catalogueline/{lineId}/price-options/{optionId}",
             method = RequestMethod.DELETE)
     public ResponseEntity deletePricingOption(@ApiParam(value = "uuid of the catalogue containing the line for which the price option to be deleted. (catalogue.uuid)", required = true) @PathVariable("catalogueUuid") String catalogueUuid,
                                               @ApiParam(value = "Identifier of the catalogue line from which the price option to be deleted. (lineId.id)", required = true) @PathVariable("lineId") String lineId,
@@ -191,10 +198,13 @@ public class PriceConfigurationController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Added the pricing option successfully", response = PriceOptionType.class),
             @ApiResponse(code = 400, message = "Invalid price option serialization"),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
             @ApiResponse(code = 404, message = "No catalogue or catalogue line found for the specified parameters"),
             @ApiResponse(code = 500, message = "Unexpected error while updating price option")
     })
-    @RequestMapping(consumes = {MediaType.APPLICATION_JSON_VALUE},
+    @RequestMapping(
+            value = "/catalogue/{catalogueUuid}/catalogueline/{lineId}/price-options",
+            consumes = {MediaType.APPLICATION_JSON_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE},
             method = RequestMethod.PUT)
     public ResponseEntity updatePricingOption(@ApiParam(value = "uuid of the catalogue containing the line for which the price option to be deleted. (catalogue.uuid)", required = true) @PathVariable("catalogueUuid") String catalogueUuid,
@@ -255,6 +265,39 @@ public class PriceConfigurationController {
 
         } catch (Exception e) {
             String msg = String.format("Unexpected error while deleting price option catalogueId: %s, lineId: %s, optionId: %d", catalogueUuid, lineId, priceOption.getHjid());
+            return HttpResponseUtil.createResponseEntityAndLog(msg, e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+        }
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Gets standard VAT rates")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved VAT rates successfully"),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 500, message = "Unexpected error while updating price option")
+    })
+    @RequestMapping(
+            value = "/catalogue/vat-rates",
+            produces = {MediaType.APPLICATION_JSON_VALUE},
+            method = RequestMethod.GET)
+    public ResponseEntity getStandardVatRates(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        log.info("Incoming request to get VAT rates");
+
+        try {
+            // check token
+            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+            if (tokenCheck != null) {
+                return tokenCheck;
+            }
+
+            HttpResponse<String> response = Unirest.get(VAT_RATES_URL)
+                    .asString();
+
+            log.info("Completed request to get VAT rates");
+            return ResponseEntity.ok().body(response.getBody());
+
+        } catch (Exception e) {
+            String msg = String.format("Unexpected error while getting VAT rates");
             return HttpResponseUtil.createResponseEntityAndLog(msg, e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
         }
     }
