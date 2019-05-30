@@ -364,9 +364,8 @@ public class TemplateGenerator {
                         cell = productPropertiesTab.getRow(rowIndex).createCell(propertyColumnIndex);
                         cell.setCellValue(getMultiValueRepresentation(itemProperty.getValueDecimal(),TemplateConfig.TEMPLATE_DATA_TYPE_NUMBER));
                     }
+                    propertyColumnIndex++;
                 }
-
-                propertyColumnIndex++;
             }
             rowIndex++;
         }
@@ -1886,7 +1885,7 @@ public class TemplateGenerator {
             denormalizedDatatype = TEMPLATE_DATA_TYPE_NUMBER;
 
         } else if (datatypeStr.compareToIgnoreCase(TEMPLATE_DATA_TYPE_FILE) == 0) {
-            denormalizedDatatype = TEMPLATE_DATA_TYPE_BINARY;
+            denormalizedDatatype = TEMPLATE_DATA_TYPE_FILE;
 
             // we should also accept 'QUANTITY VALUE' as QUANTITY property
         } else if (datatypeStr.compareToIgnoreCase(TEMPLATE_DATA_TYPE_QUANTITY) == 0 || datatypeStr.compareToIgnoreCase(TEMPLATE_QUANTITY_VALUE) == 0) {

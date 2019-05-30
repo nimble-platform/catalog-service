@@ -112,7 +112,6 @@ public class TemplateConfig {
     public static String TEMPLATE_DATA_TYPE_NUMBER = "NUMBER";
     public static String TEMPLATE_DATA_TYPE_FILE = "FILE";
     public static String TEMPLATE_DATA_TYPE_QUANTITY = "QUANTITY";
-    public static String TEMPLATE_DATA_TYPE_BINARY = "BINARY";
     public static String TEMPLATE_DATA_TYPE_INT = "INT";
     public static String TEMPLATE_DATA_TYPE_FLOAT = "FLOAT";
     public static String TEMPLATE_DATA_TYPE_DOUBLE = "DOUBLE";

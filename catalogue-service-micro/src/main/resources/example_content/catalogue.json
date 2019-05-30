@@ -561,7 +561,7 @@
                   "objectMetadata": ""
                 }
               ],
-              "valueQualifier": "BINARY",
+              "valueQualifier": "FILE",
               "itemClassificationCode": {
                 "value": null,
                 "name": null,

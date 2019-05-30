@@ -245,7 +245,7 @@ public class ProductCategoryController {
             @ApiResponse(code = 401, message = "No user exists for the given token"),
             @ApiResponse(code = 500, message = "Failed to index eClass resources")
     })
-    @RequestMapping(value = "categories/eClass/index",
+    @RequestMapping(value = "/categories/eClass/index",
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity indexEclassResources(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
