@@ -5,12 +5,13 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mashape.unirest.request.HttpRequest;
+import eu.nimble.service.catalogue.category.eclass.EClassTaxonomyQueryImpl;
 import eu.nimble.service.catalogue.index.ClassIndexClient;
 import eu.nimble.service.catalogue.index.IndexingWrapper;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
 import eu.nimble.service.catalogue.util.CredentialsUtil;
-import eu.nimble.service.catalogue.util.ExecutionContext;
+import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.solr.SearchResult;
 import eu.nimble.service.model.solr.owl.ClassType;
 import eu.nimble.service.model.solr.owl.IClassType;
@@ -26,7 +27,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.*;
 
@@ -50,16 +50,6 @@ public class IndexCategoryService {
     private CredentialsUtil credentialsUtil;
     @Autowired
     private ClassIndexClient classIndexClient;
-    @Autowired
-    private List<TaxonomyQueryInterface> taxonomyQueries;
-    private Map<String, TaxonomyQueryInterface> taxonomyQueryMap;
-
-    @PostConstruct
-    private void initialize() {
-        taxonomyQueryMap = new HashMap<>();
-        taxonomyQueries.stream()
-                .forEach(taxonomyQueryInterface -> taxonomyQueryMap.put(taxonomyQueryInterface.getTaxonomy().getId(), taxonomyQueryInterface));
-    }
 
     public Category getCategory(String taxonomyId, String categoryId) {
         String categoryUri = constructUri(taxonomyId, categoryId);
@@ -212,7 +202,9 @@ public class IndexCategoryService {
 
     public List<Category> getRootCategories(String taxonomyId) {
         Map<String, String> facetCriteria = new HashMap<>();
-        facetCriteria.put(IConcept.NAME_SPACE_FIELD, "\"" + TaxonomyEnum.valueOf(taxonomyId).getNamespace() + "\"");
+
+        String namespace = SpringBridge.getInstance().getTaxonomyManager().getTaxonomiesMap().get(taxonomyId).getTaxonomy().getNamespace();
+        facetCriteria.put(IConcept.NAME_SPACE_FIELD, "\"" + namespace + "\"");
         facetCriteria.put("-" + IClassType.ALL_PARENTS_FIELD, "*");
         List<Category> categories = classIndexClient.getCategories("*", facetCriteria);
         return categories;
@@ -267,11 +259,11 @@ public class IndexCategoryService {
         query += "(";
         // get criteria for a specific taxonomy
         if(taxonomyId != null) {
-            query += taxonomyQueryMap.get(taxonomyId).getQuery(forLogistics);
+            query += SpringBridge.getInstance().getTaxonomyManager().getTaxonomiesMap().get(taxonomyId).getQuery(forLogistics);
 
             // get criteria for all taxonomies
         } else {
-            for (TaxonomyQueryInterface taxonomyQuery : taxonomyQueryMap.values()) {
+            for (TaxonomyQueryInterface taxonomyQuery : SpringBridge.getInstance().getTaxonomyManager().getTaxonomiesMap().values()) {
                 query += " " + taxonomyQuery.getQuery(forLogistics) + " OR";
             }
 
@@ -320,13 +312,13 @@ public class IndexCategoryService {
     }
 
     public static String constructUri(String taxonomyId, String id) {
-        for(TaxonomyEnum taxonomyEnum : TaxonomyEnum.values()) {
-            if(id.startsWith(taxonomyEnum.getNamespace())) {
+        for(TaxonomyQueryInterface taxonomyQueryInterface: SpringBridge.getInstance().getTaxonomyManager().getTaxonomiesMap().values()){
+            if(id.startsWith(taxonomyQueryInterface.getTaxonomy().getNamespace())){
                 return id;
             }
         }
-        if (taxonomyId.contentEquals(TaxonomyEnum.eClass.getId())) {
-            return TaxonomyEnum.eClass.getNamespace() + id;
+        if (taxonomyId.contentEquals(EClassTaxonomyQueryImpl.id)) {
+            return EClassTaxonomyQueryImpl.id + id;
         }
         return null;
     }
@@ -336,7 +328,7 @@ public class IndexCategoryService {
         // check whether the given id is 'all' or not
         boolean isTaxonomyIdSpecified = taxonomyId.compareToIgnoreCase("all") != 0;
 
-        for (TaxonomyQueryInterface taxonomyQuery : taxonomyQueryMap.values()) {
+        for (TaxonomyQueryInterface taxonomyQuery : SpringBridge.getInstance().getTaxonomyManager().getTaxonomiesMap().values()) {
             if(!isTaxonomyIdSpecified){
                 logisticServicesCategoryUriMap.put(taxonomyQuery.getTaxonomy().getId(),taxonomyQuery.getLogisticsServices());
             }
@@ -349,7 +341,7 @@ public class IndexCategoryService {
 
     //    public List<Category> getLogisticsCategoriesForEClass(String name) {
 //        Map<String, String> facetCriteria = new HashMap<>();
-//        facetCriteria.put(IConcept.NAME_SPACE_FIELD, TaxonomyEnum.eClass.getNamespace());
+//        facetCriteria.put(IConcept.NAME_SPACE_FIELD, EClassTaxonomyQueryImpl.namespace);
 //        facetCriteria.put(IConcept.CODE_FIELD, "14*");
 //        facetCriteria.put(IClassType.LEVEL_FIELD, "4");
 //        String query = StringUtils.isNotEmpty(name) ? name : "*" ;

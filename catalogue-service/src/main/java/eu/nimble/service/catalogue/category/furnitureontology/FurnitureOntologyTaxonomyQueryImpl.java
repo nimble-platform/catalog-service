@@ -1,10 +1,9 @@
 package eu.nimble.service.catalogue.category.furnitureontology;
 
-import eu.nimble.service.catalogue.category.TaxonomyEnum;
+import eu.nimble.service.catalogue.category.Taxonomy;
 import eu.nimble.service.catalogue.category.TaxonomyQueryInterface;
 import eu.nimble.service.model.solr.owl.IClassType;
 import eu.nimble.service.model.solr.owl.IConcept;
-import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,13 +11,19 @@ import java.util.Map;
 /**
  * Created by suat on 08-Feb-19.
  */
-@Component
 public class FurnitureOntologyTaxonomyQueryImpl implements TaxonomyQueryInterface {
     private static final String FURNITURE_ONTOLOGY_LOGISTICS_SERVICE = "http://www.aidimme.es/FurnitureSectorOntology.owl#LogisticsService";
+    private static final String namespace = "http://www.aidimme.es/FurnitureSectorOntology.owl#";
+
+    private Taxonomy taxonomy;
+
+    public FurnitureOntologyTaxonomyQueryImpl(Taxonomy taxonomy) {
+        this.taxonomy = taxonomy;
+    }
 
     @Override
-    public TaxonomyEnum getTaxonomy() {
-        return TaxonomyEnum.FurnitureOntology;
+    public Taxonomy getTaxonomy() {
+        return taxonomy;
     }
 
     @Override
@@ -52,7 +57,7 @@ public class FurnitureOntologyTaxonomyQueryImpl implements TaxonomyQueryInterfac
 
     private StringBuilder commonQuery() {
         StringBuilder sb = new StringBuilder("");
-        sb.append(IConcept.NAME_SPACE_FIELD).append(":\"").append(TaxonomyEnum.FurnitureOntology.getNamespace()).append("\"");
+        sb.append(IConcept.NAME_SPACE_FIELD).append(":\"").append(namespace).append("\"");
         return sb;
     }
 }
