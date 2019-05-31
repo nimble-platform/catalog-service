@@ -318,7 +318,7 @@ public class IndexCategoryService {
             }
         }
         if (taxonomyId.contentEquals(EClassTaxonomyQueryImpl.id)) {
-            return EClassTaxonomyQueryImpl.id + id;
+            return EClassTaxonomyQueryImpl.namespace + id;
         }
         return null;
     }
