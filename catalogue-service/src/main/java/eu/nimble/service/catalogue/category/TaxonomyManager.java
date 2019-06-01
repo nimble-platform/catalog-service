@@ -25,7 +25,7 @@ public class TaxonomyManager {
     public TaxonomyManager() {
         InputStream inputStream = null;
         logger.info("Reading categories from Taxonomies.json file...");
-        inputStream =  ClassLoader.getSystemClassLoader().getResourceAsStream("Taxonomies.json");
+        inputStream =  TaxonomyManager.class.getResourceAsStream("/Taxonomies.json");
         String fileContent = null;
         try {
             fileContent = IOUtils.toString(inputStream);
