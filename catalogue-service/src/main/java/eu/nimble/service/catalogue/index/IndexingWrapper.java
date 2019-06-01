@@ -1,9 +1,12 @@
 package eu.nimble.service.catalogue.index;
 
-import eu.nimble.service.catalogue.category.TaxonomyEnum;
+import eu.nimble.service.catalogue.category.Taxonomy;
+import eu.nimble.service.catalogue.category.TaxonomyQueryInterface;
+import eu.nimble.service.catalogue.category.eclass.EClassTaxonomyQueryImpl;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.template.TemplateConfig;
+import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.catalogue.validation.AmountValidator;
 import eu.nimble.service.catalogue.validation.QuantityValidator;
 import eu.nimble.service.model.solr.item.ItemType;
@@ -161,11 +164,14 @@ public class IndexingWrapper {
     }
 
     private static boolean isStandardProperty(ItemPropertyType itemProperty) {
-        boolean isStandardProperty = Arrays.asList(TaxonomyEnum.values()).stream()
-                .filter(taxonomy -> itemProperty.getItemClassificationCode().getListID() != null && taxonomy.getId().contentEquals(itemProperty.getItemClassificationCode().getListID()))
-                .findFirst()
-                .isPresent();
-        return isStandardProperty;
+        if(itemProperty.getItemClassificationCode().getListID() != null){
+            for(TaxonomyQueryInterface taxonomyQueryInterface:SpringBridge.getInstance().getTaxonomyManager().getTaxonomiesMap().values()){
+                if(taxonomyQueryInterface.getTaxonomy().getId().contentEquals(itemProperty.getItemClassificationCode().getListID())){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static PropertyType createPropertyMetadataForCustomProperty(ItemPropertyType itemProperty) {
@@ -219,7 +225,7 @@ public class IndexingWrapper {
         Category category = new Category();
         // this distinction is made in order not to break the functionality in the UI. Codes of eClass concetps are
         // being used in the UI
-        if(indexCategory.getUri().startsWith(TaxonomyEnum.eClass.getNamespace())) {
+        if(indexCategory.getUri().startsWith(EClassTaxonomyQueryImpl.namespace)) {
             category.setCode(indexCategory.getCode());
         } else {
             category.setCode(indexCategory.getLocalName());
@@ -295,10 +301,10 @@ public class IndexingWrapper {
         return labelList;
     }
 
-    public static TaxonomyEnum extractTaxonomyFromUri(String uri) {
-        for(TaxonomyEnum taxonomy : TaxonomyEnum.values()) {
-            if(uri.startsWith(taxonomy.getNamespace())) {
-                return taxonomy;
+    public static Taxonomy extractTaxonomyFromUri(String uri) {
+        for(TaxonomyQueryInterface taxonomyQueryInterface:SpringBridge.getInstance().getTaxonomyManager().getTaxonomiesMap().values()){
+            if(uri.startsWith(taxonomyQueryInterface.getTaxonomy().getNamespace())){
+                return taxonomyQueryInterface.getTaxonomy();
             }
         }
         return null;
@@ -327,16 +333,16 @@ public class IndexingWrapper {
 
     public static ClassType toIndexCategory(Category category, Set<String> directParentUris, Set<String> allParentUris, Set<String> directChildrenUris, Set<String> allChildrenUris) {
         ClassType indexCategory = new ClassType();
-        TaxonomyEnum taxonomy = extractTaxonomyFromUri(category.getCategoryUri());
+        Taxonomy taxonomy = extractTaxonomyFromUri(category.getCategoryUri());
         indexCategory.setUri(category.getCategoryUri());
         indexCategory.setCode(category.getCode());
 
 
-        if(taxonomy.equals(TaxonomyEnum.eClass)) {
+        if(taxonomy.getId().contentEquals("eClass")) {
             indexCategory.setLocalName(category.getId());
             category.getPreferredName().stream().forEach(label -> indexCategory.addLabel(label.getLanguageID(), label.getValue()));
             indexCategory.setLevel(category.getLevel());
-            indexCategory.setNameSpace(TaxonomyEnum.eClass.getNamespace());
+            indexCategory.setNameSpace(EClassTaxonomyQueryImpl.namespace);
             // TODO below by default the english language is assumed
             indexCategory.addComment("en", category.getRemark());
 
@@ -361,14 +367,14 @@ public class IndexingWrapper {
 
     public static PropertyType toIndexProperty(Property property, Set<String> associatedCategoryUris) {
         PropertyType indexProperty = new PropertyType();
-        TaxonomyEnum taxonomy = extractTaxonomyFromUri(property.getUri());
+        Taxonomy taxonomy = extractTaxonomyFromUri(property.getUri());
         indexProperty.setUri(property.getUri());
         // TODO below by default the english language is assumed
         indexProperty.addDescription("en", property.getDefinition());
         property.getPreferredName().forEach(label -> indexProperty.addLabel(label.getLanguageID(), label.getValue()));
-        if(taxonomy.equals(TaxonomyEnum.eClass)) {
-            indexProperty.setLocalName(getRemainder(indexProperty.getUri(), TaxonomyEnum.eClass.getNamespace()));
-            indexProperty.setNameSpace(TaxonomyEnum.eClass.getNamespace());
+        if(taxonomy.getId().contentEquals("eClass")) {
+            indexProperty.setLocalName(getRemainder(indexProperty.getUri(), EClassTaxonomyQueryImpl.namespace));
+            indexProperty.setNameSpace(EClassTaxonomyQueryImpl.namespace);
             indexProperty.setItemFieldNames(Arrays.asList(ItemType.dynamicFieldPart(property.getUri())));
             property.getRemark().forEach(label -> indexProperty.addComment(label.getLanguageID(), label.getValue()));
 

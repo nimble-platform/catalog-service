@@ -1,6 +1,6 @@
 package eu.nimble.service.catalogue.util.migration.r8;
 
-import eu.nimble.service.catalogue.category.TaxonomyEnum;
+import eu.nimble.service.catalogue.category.eclass.EClassTaxonomyQueryImpl;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.core.env.MapPropertySource;
@@ -83,7 +83,7 @@ public class EClassNamespaceUpdater {
 
             pstmt = c.prepareStatement(QUERY_UPDATE_ITEM_PROPERTIES);
             for (String id : ids) {
-                String uri = TaxonomyEnum.eClass.getNamespace() + id;
+                String uri = EClassTaxonomyQueryImpl.namespace + id;
                 pstmt.setString(1, uri);
                 pstmt.setString(2, uri);
                 pstmt.setString(3, id);
@@ -148,7 +148,7 @@ public class EClassNamespaceUpdater {
 
             pstmt = c.prepareStatement(QUERY_UPDATE_CODES);
             for (String id : ids) {
-                String uri = TaxonomyEnum.eClass.getNamespace() + id;
+                String uri = EClassTaxonomyQueryImpl.namespace + id;
                 pstmt.setString(1, uri);
                 pstmt.setString(2, uri);
                 pstmt.setString(3, id);

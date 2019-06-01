@@ -1,13 +1,10 @@
 package eu.nimble.service.catalogue.category.eclass;
 
-import eu.nimble.service.catalogue.category.TaxonomyEnum;
 import eu.nimble.service.catalogue.category.eclass.database.EClassCategoryDatabaseAdapter;
 import eu.nimble.service.catalogue.index.ClassIndexClient;
-import eu.nimble.service.catalogue.index.IndexingWrapper;
 import eu.nimble.service.catalogue.index.PropertyIndexClient;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.Property;
-import eu.nimble.service.catalogue.model.category.Unit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +67,7 @@ public class EClassIndexLoader {
                     categoryUris = new HashSet<>();
                     propertyCategoryMap.put(property.getUri(), categoryUris);
                 }
-                categoryUris.add(TaxonomyEnum.eClass.getNamespace() + categoryId);
+                categoryUris.add(EClassTaxonomyQueryImpl.namespace + categoryId);
             }
         }
         logger.info("Constructed property category map");

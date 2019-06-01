@@ -1,11 +1,12 @@
 package eu.nimble.service.catalogue.impl;
 
 import eu.nimble.service.catalogue.category.IndexCategoryService;
-import eu.nimble.service.catalogue.category.TaxonomyEnum;
+import eu.nimble.service.catalogue.category.TaxonomyQueryInterface;
 import eu.nimble.service.catalogue.category.eclass.EClassIndexLoader;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
 import eu.nimble.service.catalogue.index.ClassIndexClient;
+import eu.nimble.service.catalogue.util.SpringBridge;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -129,10 +130,7 @@ public class ProductCategoryController {
     public ResponseEntity getAvailableTaxonomyIds(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         List<String> taxonomies = new ArrayList<>();
         try {
-            for(TaxonomyEnum taxonomyEnum : TaxonomyEnum.values()) {
-                taxonomies.add(taxonomyEnum.getId());
-            }
-
+            SpringBridge.getInstance().getTaxonomyManager().getTaxonomiesMap().keySet().forEach(id -> taxonomies.add(id));
         } catch (Exception e) {
             String msg = "Failed to get available taxonomies\n" + e.getMessage();
             log.error(msg, e);
@@ -266,8 +264,8 @@ public class ProductCategoryController {
     }
 
     private boolean taxonomyIdExists(String taxonomyId) {
-        for(TaxonomyEnum taxonomyEnum : TaxonomyEnum.values()) {
-            if(taxonomyEnum.getId().compareToIgnoreCase(taxonomyId) == 0) {
+        for(TaxonomyQueryInterface taxonomyQueryInterface: SpringBridge.getInstance().getTaxonomyManager().getTaxonomiesMap().values()){
+            if(taxonomyQueryInterface.getTaxonomy().getId().compareToIgnoreCase(taxonomyId) == 0){
                 return true;
             }
         }
