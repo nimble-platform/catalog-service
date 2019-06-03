@@ -1,6 +1,6 @@
 package eu.nimble.service.catalogue.category.eclass.database;
 
-import eu.nimble.service.catalogue.category.TaxonomyEnum;
+import eu.nimble.service.catalogue.category.eclass.EClassTaxonomyQueryImpl;
 import eu.nimble.service.catalogue.model.category.*;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
@@ -512,7 +512,7 @@ public class EClassCategoryDatabaseAdapter {
             cc.setNote(rs.getString(COLUMN_CLASSIFICATION_CLASS_NOTE));
             cc.setRemark(rs.getString(COLUMN_CLASSIFICATION_CLASS_REMARK));
             cc.setTaxonomyId("eClass");
-            cc.setCategoryUri(TaxonomyEnum.eClass.getNamespace() + cc.getId());
+            cc.setCategoryUri(EClassTaxonomyQueryImpl.namespace + cc.getId());
             results.add(cc);
         }
         return results;
@@ -530,7 +530,7 @@ public class EClassCategoryDatabaseAdapter {
             }
 
             Property prop = new Property();
-            prop.setId(TaxonomyEnum.eClass.getNamespace() + rs.getString(COLUMN_PROPERTY_IRDI_PR));
+            prop.setId(EClassTaxonomyQueryImpl.namespace + rs.getString(COLUMN_PROPERTY_IRDI_PR));
             // create a TextType for property definition
             TextType textType = new TextType();
             textType.setLanguageID(defaultLanguage);
@@ -547,7 +547,7 @@ public class EClassCategoryDatabaseAdapter {
             prop.setIecCategory(rs.getString(COLUMN_PROPERTY_CATEGORY));
             prop.setAttributeType(rs.getString(COLUMN_PROPERTY_ATTRIBUTE_TYPE));
             prop.setValueQualifier(rs.getString(COLUMN_PROPERTY_DATA_TYPE));
-            prop.setUri(TaxonomyEnum.eClass.getNamespace() + rs.getString(COLUMN_PROPERTY_IRDI_PR));
+            prop.setUri(EClassTaxonomyQueryImpl.namespace + rs.getString(COLUMN_PROPERTY_IRDI_PR));
 
             categoryProperties.add(prop);
         }
@@ -572,7 +572,7 @@ public class EClassCategoryDatabaseAdapter {
             prop.setIecCategory(rs.getString(COLUMN_PROPERTY_CATEGORY));
             prop.setAttributeType(rs.getString(COLUMN_PROPERTY_ATTRIBUTE_TYPE));
             prop.setDataType(getNormalizedDatatype(rs.getString(COLUMN_PROPERTY_DATA_TYPE)));
-            prop.setUri(TaxonomyEnum.eClass.getNamespace() + rs.getString(COLUMN_PROPERTY_IDPR));
+            prop.setUri(EClassTaxonomyQueryImpl.namespace + rs.getString(COLUMN_PROPERTY_IDPR));
             results.put(prop.getId(), prop);
         }
         return results;
@@ -623,31 +623,31 @@ public class EClassCategoryDatabaseAdapter {
     // template parsing stuff and existing data should be post-process accordingly
     private String getNormalizedDatatype(String dataType) {
 
-            String normalizedType;
-            if (dataType.compareToIgnoreCase("INTEGER_MEASURE") == 0 ||
-                    dataType.compareToIgnoreCase("INTEGER_CURRENCY") == 0 ||
-                    dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_REAL_MEASURE) == 0 ||
-                    dataType.compareToIgnoreCase("REAL_CURRENCY") == 0 ||
-                    dataType.compareToIgnoreCase("RATIONAL_MEASURE") == 0) {
-                normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY;
+        String normalizedType;
+        if (dataType.compareToIgnoreCase("INTEGER_MEASURE") == 0 ||
+                dataType.compareToIgnoreCase("INTEGER_CURRENCY") == 0 ||
+                dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_REAL_MEASURE) == 0 ||
+                dataType.compareToIgnoreCase("REAL_CURRENCY") == 0 ||
+                dataType.compareToIgnoreCase("RATIONAL_MEASURE") == 0) {
+            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY;
 
-            } else if (dataType.compareToIgnoreCase("INTEGER_COUNT") == 0 ||
-                    dataType.compareToIgnoreCase("REAL_COUNT") == 0 ||
-                    dataType.compareToIgnoreCase("RATIONAL") == 0) {
-                normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_NUMBER;
+        } else if (dataType.compareToIgnoreCase("INTEGER_COUNT") == 0 ||
+                dataType.compareToIgnoreCase("REAL_COUNT") == 0 ||
+                dataType.compareToIgnoreCase("RATIONAL") == 0) {
+            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_NUMBER;
 
-            } else if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_STRING) == 0 ||
-                    dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_STRING_TRANSLATABLE) == 0) {
-                normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_STRING;
+        } else if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_STRING) == 0 ||
+                dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_STRING_TRANSLATABLE) == 0) {
+            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_STRING;
 
-            } else if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN) == 0) {
-                normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN;
+        } else if (dataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN) == 0) {
+            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN;
 
-            } else {
-                logger.warn("Unknown data type encountered: {}", dataType);
-                normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_STRING;
-            }
-            return normalizedType;
+        } else {
+            logger.warn("Unknown data type encountered: {}", dataType);
+            normalizedType = TemplateConfig.TEMPLATE_DATA_TYPE_STRING;
+        }
+        return normalizedType;
     }
 
     public void checkTableCounts() {

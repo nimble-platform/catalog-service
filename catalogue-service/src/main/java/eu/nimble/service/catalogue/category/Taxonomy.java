@@ -1,16 +1,14 @@
 package eu.nimble.service.catalogue.category;
 
-/**
- * Created by suat on 24-Jan-19.
- */
-public enum TaxonomyEnum {
-    eClass("eClass", "http://www.nimble-project.org/resource/eclass#"),
-    FurnitureOntology("FurnitureOntology", "http://www.aidimme.es/FurnitureSectorOntology.owl#");
+public class Taxonomy {
 
     private String id;
     private String namespace;
 
-    TaxonomyEnum(String id, String namespace) {
+    public Taxonomy() {
+    }
+
+    public Taxonomy(String id, String namespace) {
         this.id = id;
         this.namespace = namespace;
     }
@@ -19,7 +17,16 @@ public enum TaxonomyEnum {
         return id;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public String getNamespace() {
         return namespace;
     }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
+    }
+
 }

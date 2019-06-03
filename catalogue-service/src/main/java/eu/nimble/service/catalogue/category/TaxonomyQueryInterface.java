@@ -7,7 +7,7 @@ import java.util.Map;
  */
 public interface TaxonomyQueryInterface {
 
-    TaxonomyEnum getTaxonomy();
+    Taxonomy getTaxonomy();
 
     Map<String,String> getLogisticsServices();
 

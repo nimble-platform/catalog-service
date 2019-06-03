@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue.util;
 import eu.nimble.common.rest.identity.IIdentityClientTyped;
 import eu.nimble.common.rest.trust.TrustClient;
 import eu.nimble.service.catalogue.category.IndexCategoryService;
+import eu.nimble.service.catalogue.category.TaxonomyManager;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.index.PartyIndexClient;
 import eu.nimble.service.catalogue.persistence.util.LockPool;
@@ -36,6 +37,8 @@ public class SpringBridge implements ApplicationContextAware {
     private PartyIndexClient partyIndexClient;
     @Autowired
     private LockPool lockPool;
+    @Autowired
+    private TaxonomyManager taxonomyManager;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext)
@@ -65,5 +68,9 @@ public class SpringBridge implements ApplicationContextAware {
 
     public LockPool getLockPool() {
         return lockPool;
+    }
+
+    public TaxonomyManager getTaxonomyManager() {
+        return taxonomyManager;
     }
 }
