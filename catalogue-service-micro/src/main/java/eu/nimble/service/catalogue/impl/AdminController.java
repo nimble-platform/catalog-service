@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.index.ItemIndexClient;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
+import eu.nimble.service.catalogue.util.migration.r10.VatMigrationUtility;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import com.mashape.unirest.http.HttpResponse;
@@ -214,6 +215,33 @@ public class AdminController {
             logger.error("Failed to delete invalid lines from index",e);
         }
 
+        return null;
+    }
+
+    @Autowired
+    private VatMigrationUtility vatMigrationUtility;
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Creates VAT rates for products that do not have it")
+    @ApiResponses(value = {
+            @ApiResponse(code = 401, message = "No user exists for the given token")
+    })
+    @RequestMapping(value = "/admin/create-vats",
+            method = RequestMethod.POST)
+    public ResponseEntity createVats(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        try {
+            logger.info("Incoming request for VAT migration");
+            // check token
+            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+            if (tokenCheck != null) {
+                return tokenCheck;
+            }
+            vatMigrationUtility.createVatsForExistingPrdocuts();
+            logger.info("Completed VAT migration request");
+
+        } catch (Exception e) {
+            logger.error("Unexpected error while creating VATs", e);
+        }
         return null;
     }
 }
