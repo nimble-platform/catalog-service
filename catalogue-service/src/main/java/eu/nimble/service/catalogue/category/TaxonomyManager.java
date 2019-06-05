@@ -57,6 +57,7 @@ public class TaxonomyManager {
                 else{
                     taxonomiesMap.put(taxonomy.getId(),new DefaultTaxonomyQueryImpl(taxonomy));
                 }
+                logger.info("Parsed {} taxonomy metadata", taxonomy.getId());
             }
             logger.info("Created taxonomies map");
         } catch (IOException e) {
