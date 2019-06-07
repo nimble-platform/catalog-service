@@ -8,7 +8,7 @@
 
     <!-- Appender to send logs to Logstash -->
     <appender name="logstash" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
-        <destination>logstash:5000</destination>
+        <destination>${logstash-uri}</destination>
 
         <!--<encoder class="net.logstash.logback.encoder.LogstashEncoder" />-->r
         <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
@@ -28,6 +28,10 @@
                         "thread": "%thread",
                         "class": "%logger{40}",
                         "message": "%message",
+                        "userId": "%X{userId}",
+                        "companyId": "%X{companyId}",
+                        "companyName": "%X{companyName}",
+                        "activity": "%X{activity}",
                         "exception": "%exception"
                         }
                     </pattern>

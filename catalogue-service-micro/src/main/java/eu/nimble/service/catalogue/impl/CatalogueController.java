@@ -9,16 +9,15 @@ import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.LockPool;
 import eu.nimble.service.catalogue.persistence.util.PartyTypePersistenceUtil;
+import eu.nimble.service.catalogue.util.CatalogueEvent;
 import eu.nimble.service.catalogue.util.SemanticTransformationUtil;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
 import eu.nimble.service.catalogue.validation.ValidationException;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyNameType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
-import eu.nimble.utility.Configuration;
-import eu.nimble.utility.HttpResponseUtil;
-import eu.nimble.utility.JAXBUtility;
-import eu.nimble.utility.JsonSerializationUtility;
+import eu.nimble.utility.*;
 import eu.nimble.utility.exception.BinaryContentException;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import eu.nimble.utility.serialization.TransactionEnabledSerializationUtility;
@@ -26,6 +25,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.apache.log4j.pattern.LogEvent;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,9 +43,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.zip.ZipInputStream;
 
 /**
@@ -181,8 +179,12 @@ public class CatalogueController {
 
     private ResponseEntity createCreatedCatalogueResponse(Object catalogue, String baseUrl) {
         String uuid;
+        String partyName="";
         if (catalogue instanceof CatalogueType) {
-            uuid = ((CatalogueType) catalogue).getUUID().toString();
+            CatalogueType catalogueObject = (CatalogueType) catalogue;
+            List<PartyNameType> partyNameTypes = catalogueObject.getProviderParty().getPartyName();
+            partyName = UblUtil.getName(partyNameTypes);
+            uuid = catalogueObject.getUUID().toString();
         } else {
             uuid = ((TEXCatalogType) catalogue).getTCheader().getMsgID();
         }
@@ -200,7 +202,10 @@ public class CatalogueController {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("WTF");
             }
         }
-        log.info("Completed request to add catalogue, uuid: {}", uuid);
+        Map<String,String> paramMap = new HashMap<String, String>();
+        paramMap.put("companyName",partyName);
+        paramMap.put("activity", CatalogueEvent.CATALOGUE_CREATION.getActivity());
+        LoggerUtils.logWithMDC(log, paramMap, LoggerUtils.LogLevel.INFO, "Completed request to add catalogue, uuid: {}", uuid);
         return ResponseEntity.created(catalogueURI).body(serializationUtility.serializeUBLObject(catalogue));
     }
 
