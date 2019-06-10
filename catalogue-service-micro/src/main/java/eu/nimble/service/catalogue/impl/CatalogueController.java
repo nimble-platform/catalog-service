@@ -1,5 +1,6 @@
 package eu.nimble.service.catalogue.impl;
 
+import com.sun.tools.doclets.formats.html.resources.standard;
 import eu.nimble.data.transformer.ontmalizer.XML2OWLMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
@@ -8,7 +9,6 @@ import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.LockPool;
-import eu.nimble.service.catalogue.persistence.util.PartyTypePersistenceUtil;
 import eu.nimble.service.catalogue.util.SemanticTransformationUtil;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
 import eu.nimble.service.catalogue.validation.ValidationException;
@@ -388,6 +388,37 @@ public class CatalogueController {
 
         log.info("Completed request to delete catalogue with uuid: {}", uuid);
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Deletes the specified catalogue")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Specified catalogue has been deleted successfully"),
+            @ApiResponse(code = 400, message = "Invalid standard"),
+            @ApiResponse(code = 500, message = "Unexpected error while deleting the catalogue")
+    })
+    @RequestMapping(value = "/catalogue",
+            method = RequestMethod.DELETE)
+    public ResponseEntity deleteCataloguesForParty(@ApiParam(value = "Identifier of the party for which the catalogues to be deleted", required = true) @RequestParam(value = "partyId", required = true) String partyId,
+                                                   @ApiParam(value = "Identifier of the catalogues to be deleted. (catalogue.id)", required = true) @RequestParam(value = "ids", required = true) List<String> ids,
+                                                   @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        try {
+            log.info("Incoming request to delete catalogues for party: {} ids: {}", partyId, ids.toString());
+            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+            if (tokenCheck != null) {
+                return tokenCheck;
+            }
+
+            for (String id : ids) {
+                service.deleteCatalogue(id, partyId);
+            }
+
+            log.info("Completed request to delete catalogues for party: {} ids: {}", partyId, ids.toString());
+            return ResponseEntity.status(HttpStatus.OK).build();
+
+        } catch(Exception e) {
+            return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while deleting catalogues for party: %s ids: %s", partyId, ids.toString()), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+        }
     }
 
     @CrossOrigin(origins = {"*"})
