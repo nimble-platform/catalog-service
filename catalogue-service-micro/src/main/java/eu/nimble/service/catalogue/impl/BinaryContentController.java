@@ -1,7 +1,6 @@
 package eu.nimble.service.catalogue.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.HttpResponseUtil;
@@ -52,11 +51,9 @@ public class BinaryContentController {
         try {
             logger.info("Request to retrieve binary content for uri: {}", uri);
             // check token
-            boolean isValid = SpringBridge.getInstance().getiIdentityClientTyped().getUserInfo(bearerToken);
-            if(!isValid){
-                String msg = String.format("No user exists for the given token : %s",bearerToken);
-                logger.error(msg);
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(msg);
+            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+            if (tokenCheck != null) {
+                return tokenCheck;
             }
             BinaryObjectType result = binaryContentService.retrieveContent(uri);
             // check whether the binary content exists or not
@@ -93,11 +90,9 @@ public class BinaryContentController {
         try {
             logger.info("Request to retrieve binary contents for uris: {}", uris.toString());
             // check token
-            boolean isValid = SpringBridge.getInstance().getiIdentityClientTyped().getUserInfo(bearerToken);
-            if(!isValid){
-                String msg = String.format("No user exists for the given token : %s",bearerToken);
-                logger.error(msg);
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(msg);
+            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+            if (tokenCheck != null) {
+                return tokenCheck;
             }
 
             // eliminate empty uris
@@ -134,13 +129,11 @@ public class BinaryContentController {
         try {
             logger.info("Request to retrieve raw binary content for uri: {}", uri);
             // check token
-            boolean isValid = SpringBridge.getInstance().getiIdentityClientTyped().getUserInfo(bearerToken);
-            if(!isValid){
-                String msg = String.format("No user exists for the given token : %s",bearerToken);
-                logger.error(msg);
-                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+            if (tokenCheck != null) {
+                response.setStatus(tokenCheck.getStatusCode().value());
                 try {
-                    response.getOutputStream().write(msg.getBytes());
+                    response.getOutputStream().write(tokenCheck.getBody().toString().getBytes());
                 } catch (IOException e1) {
                     logger.error("Failed to write the error message to the output stream", e1);
                 }
