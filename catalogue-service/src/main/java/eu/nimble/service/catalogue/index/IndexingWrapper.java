@@ -207,8 +207,10 @@ public class IndexingWrapper {
 
     private static Set<String> getImageUris(CatalogueLineType catalogueLine) {
         Set<String> imagesUris = new HashSet<>();
+        // put only the first image so that only that image will be indexed
         for(BinaryObjectType image : catalogueLine.getGoodsItem().getItem().getProductImage()) {
             imagesUris.add(image.getUri());
+            break;
         }
         return imagesUris;
     }
