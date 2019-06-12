@@ -124,7 +124,8 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     @Override
     public void deleteCatalogue(String id, String partyId) {
-        CatalogueType catalogue = getCatalogue(id, partyId);
+        // as we need only the uuid for deleting the catalgoue
+        CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueForParty(id, partyId, false);
         deleteCatalogue(catalogue.getUUID());
     }
 

@@ -1,5 +1,6 @@
 package eu.nimble.service.catalogue.impl;
 
+import com.sun.tools.doclets.formats.html.resources.standard;
 import eu.nimble.data.transformer.ontmalizer.XML2OWLMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
@@ -8,7 +9,6 @@ import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.LockPool;
-import eu.nimble.service.catalogue.persistence.util.PartyTypePersistenceUtil;
 import eu.nimble.service.catalogue.util.CatalogueEvent;
 import eu.nimble.service.catalogue.util.SemanticTransformationUtil;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
@@ -25,7 +25,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.apache.log4j.pattern.LogEvent;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -393,6 +392,44 @@ public class CatalogueController {
 
         log.info("Completed request to delete catalogue with uuid: {}", uuid);
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Deletes the specified catalogues")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Specified catalogue has been deleted successfully"),
+            @ApiResponse(code = 401, message = "Invalid token"),
+            @ApiResponse(code = 500, message = "Unexpected error while deleting the catalogues")
+    })
+    @RequestMapping(value = "/catalogue",
+            method = RequestMethod.DELETE)
+    public ResponseEntity deleteCataloguesForParty(@ApiParam(value = "Identifier of the party for which the catalogues to be deleted", required = true) @RequestParam(value = "partyId", required = true) String partyId,
+                                                   @ApiParam(value = "An indicator for selecting all the catalogues to be deleted. ", required = false) @RequestParam(value = "deleteAll", required = false, defaultValue = "false") Boolean deleteAll,
+                                                   @ApiParam(value = "Identifier of the catalogues to be deleted. (catalogue.id)", required = false) @RequestParam(value = "ids", required = false) List<String> ids,
+                                                   @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        String idsLog = ids == null ? "" : ids.toString();
+        try {
+            log.info("Incoming request to delete catalogues for party: {}, ids: {}, delete all: {}", partyId, idsLog, deleteAll);
+            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+            if (tokenCheck != null) {
+                return tokenCheck;
+            }
+
+            // if all the catalogues is requested to be deleted get the identifiers first
+            if(deleteAll) {
+                ids = CataloguePersistenceUtil.getCatalogueIdListsForParty(partyId);
+            }
+
+            for (String id : ids) {
+                service.deleteCatalogue(id, partyId);
+            }
+
+            log.info("Completed request to delete catalogues for party: {}, ids: {}, delete all: {}", partyId, idsLog, deleteAll);
+            return ResponseEntity.status(HttpStatus.OK).build();
+
+        } catch(Exception e) {
+            return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while deleting catalogues for party: %s ids: %s, delete all: %b", partyId, idsLog, deleteAll), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+        }
     }
 
     @CrossOrigin(origins = {"*"})
