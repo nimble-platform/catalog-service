@@ -179,10 +179,9 @@ public class CatalogueController {
     private ResponseEntity createCreatedCatalogueResponse(Object catalogue, String baseUrl) {
         String uuid;
         String partyName="";
-        String catalogueId = "";
         if (catalogue instanceof CatalogueType) {
             CatalogueType catalogueObject = (CatalogueType) catalogue;
-            if(catalogueObject.getProviderParty() != null){
+            if (catalogueObject.getProviderParty() != null) {
                 List<PartyNameType> partyNameTypes = catalogueObject.getProviderParty().getPartyName();
                 partyName = UblUtil.getName(partyNameTypes);
             }
@@ -251,19 +250,9 @@ public class CatalogueController {
             } catch (Exception e) {
                 return createErrorResponseEntity(String.format("Failed to deserialize catalogue: %s", serializedCatalogue), HttpStatus.BAD_REQUEST, e);
             }
-
-            String partyName = "";
-            String catalogueId = "";
             // for ubl catalogues, do the following validations
             if (std.equals(Configuration.Standard.UBL)) {
                 CatalogueType ublCatalogue = (CatalogueType) catalogue;
-
-                if(ublCatalogue.getProviderParty() !=  null){
-                    List<PartyNameType> partyNameTypes = ublCatalogue.getProviderParty().getPartyName();
-                    partyName = UblUtil.getName(partyNameTypes);
-                }
-                catalogueId = ublCatalogue.getUUID().toString();
-
                 // validate the content of the catalogue
                 CatalogueValidator catalogueValidator = new CatalogueValidator(ublCatalogue);
                 try {
@@ -286,13 +275,6 @@ public class CatalogueController {
             }
 
             catalogue = service.addCatalogue(catalogue, std);
-
-            Map<String,String> paramMap = new HashMap<String, String>();
-            paramMap.put("activity", CatalogueEvent.CATALOGUE_CREATE.getActivity());
-            paramMap.put("catalogueId", catalogueId);
-            paramMap.put("companyName", partyName);
-            LoggerUtils.logWithMDC(log, paramMap, LoggerUtils.LogLevel.INFO, "Completed request to add serialized catalogue, uuid: {}", catalogueId);
-
             return createCreatedCatalogueResponse(catalogue, HttpResponseUtil.baseUrl(request));
 
         } catch (Exception e) {
@@ -365,11 +347,13 @@ public class CatalogueController {
             String partyName = "";
             try {
                 catalogue = service.updateCatalogue(catalogue);
-                if(catalogue.getProviderParty() !=  null){
+                if (catalogue.getProviderParty() != null) {
                     List<PartyNameType> partyNameTypes = catalogue.getProviderParty().getPartyName();
                     partyName = UblUtil.getName(partyNameTypes);
                 }
-                catalogueId = catalogue.getUUID().toString();
+                if (catalogue.getUUID() != null) {
+                    catalogueId = catalogue.getUUID().toString();
+                }
                 Map<String,String> paramMap = new HashMap<String, String>();
                 paramMap.put("activity", CatalogueEvent.CATALOGUE_UPDATE.getActivity());
                 paramMap.put("catalogueId", catalogueId);
