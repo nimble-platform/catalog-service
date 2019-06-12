@@ -32,6 +32,7 @@
                         "userId": "%X{userId}",
                         "companyId": "%X{companyId}",
                         "companyName": "%X{companyName}",
+                        "catalogueId": "%X{catalogueId}",
                         "activity": "%X{activity}",
                         "exception": "%exception"
                         }
