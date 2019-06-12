@@ -33,6 +33,8 @@
                         "companyId": "%X{companyId}",
                         "companyName": "%X{companyName}",
                         "catalogueId": "%X{catalogueId}",
+                        "productName": "%X{productName}",
+                        "productId": "%X{productId}",
                         "activity": "%X{activity}",
                         "exception": "%exception"
                         }

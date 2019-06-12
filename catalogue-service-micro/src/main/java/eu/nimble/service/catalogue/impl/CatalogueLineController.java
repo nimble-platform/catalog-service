@@ -7,12 +7,13 @@ import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.statistics.ProductAndServiceStatistics;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
+import eu.nimble.service.catalogue.util.CatalogueEvent;
 import eu.nimble.service.catalogue.validation.CatalogueLineValidator;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
-import eu.nimble.utility.Configuration;
-import eu.nimble.utility.HttpResponseUtil;
-import eu.nimble.utility.JsonSerializationUtility;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
+import eu.nimble.utility.*;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import eu.nimble.utility.serialization.TransactionEnabledSerializationUtility;
 import io.swagger.annotations.ApiOperation;
@@ -31,7 +32,9 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by suat on 22-Aug-17.
@@ -273,7 +276,6 @@ public class CatalogueLineController {
             return createErrorResponseEntity("Failed to add the provided catalogue line", HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
 
-        log.info("Completed request to add catalogue line: {} to catalogue: {}", catalogueLine.getID(), catalogue.getUUID());
         return createCreatedCatalogueLineResponse(catalogueUuid, catalogueLine);
     }
 
@@ -282,6 +284,32 @@ public class CatalogueLineController {
         try {
             String applicationUrl = catalogueServiceConfig.getSpringApplicationUrl();
             lineURI = new URI(applicationUrl + "/catalogue/" + catalogueUuid + "/" + line.getID());
+
+            Map<String,String> paramMap = new HashMap<String, String>();
+            paramMap.put("activity", CatalogueEvent.PRODUCT_PUBLISH.getActivity());
+            paramMap.put("productId", line.getID());
+            if(line.getGoodsItem() != null && line.getGoodsItem().getItem() != null) {
+                ItemType item = line.getGoodsItem().getItem();
+                if(item.getName() != null) {
+                    String itemName = UblUtil.getText(item.getName());
+                    paramMap.put("productName", itemName);
+                }
+                if(item.getManufacturerParty() != null){
+                    PartyType manufacturer = item.getManufacturerParty();
+                    if(manufacturer.getPartyName() != null) {
+                        String partyName = UblUtil.getName(manufacturer);
+                        paramMap.put("companyName", partyName);
+                    }
+                    if(manufacturer.getPartyIdentification() != null) {
+                        String partyId = UblUtil.getId(manufacturer.getPartyIdentification());
+                        paramMap.put("companyId", partyId);
+                    }
+
+                }
+            }
+            LoggerUtils.logWithMDC(log, paramMap, LoggerUtils.LogLevel.INFO, "Item published with  catalogue uuid: {}, lineId: {}",
+                    catalogueUuid, line.getID());
+
         } catch (URISyntaxException e) {
             String msg = "Failed to generate a URI for the newly created item";
             log.warn(msg, e);
@@ -292,7 +320,7 @@ public class CatalogueLineController {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("WTF");
             }
         }
-        log.info("Completed request to add catalogue, catalogue uuid: {}, lineId: {}", catalogueUuid, line.getID());
+        log.info("Completed request to add catalogue line, catalogue uuid: {}, lineId: {}", catalogueUuid, line.getID());
         return ResponseEntity.created(lineURI).body(serializationUtility.serializeUBLObject(line));
     }
 
@@ -362,13 +390,35 @@ public class CatalogueLineController {
 
                 // consider the case of an updated line id conflicting with the id of an existing line
                 boolean lineExists = CatalogueLinePersistenceUtil.checkCatalogueLineExistence(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid());
+                Map<String,String> paramMap = new HashMap<String, String>();
                 if (!lineExists) {
                     service.updateLinesCatalogue(newCatalogueUuid,oldCatalogueUuid,catalogueLine);
                 } else {
                     return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("There already exists a product with the given id");
                 }
-
-                log.info("Completed the request to add catalogue line catalogue uuid, line lineId: {}", catalogueUuid, catalogueLine.getID());
+                //mdc logging
+                paramMap.put("activity", CatalogueEvent.PRODUCT_UPDATE.getActivity());
+                paramMap.put("productId", catalogueLine.getID());
+                if(catalogueLine.getGoodsItem() != null && catalogueLine.getGoodsItem().getItem() != null) {
+                    ItemType item = catalogueLine.getGoodsItem().getItem();
+                    if(item.getName() != null) {
+                        String itemName = UblUtil.getText(item.getName());
+                        paramMap.put("productName", itemName);
+                    }
+                    if(item.getManufacturerParty() != null){
+                        PartyType manufacturer = item.getManufacturerParty();
+                        if(manufacturer.getPartyName() != null) {
+                            String partyName = UblUtil.getName(manufacturer);
+                            paramMap.put("companyName", partyName);
+                        }
+                        if(manufacturer.getPartyIdentification() != null) {
+                            String partyId = UblUtil.getId(manufacturer.getPartyIdentification());
+                            paramMap.put("companyId", partyId);
+                        }
+                    }
+                }
+                LoggerUtils.logWithMDC(log, paramMap, LoggerUtils.LogLevel.INFO, "Catalogue line updated for  catalogue uuid: {}, lineId: {}",
+                        catalogueUuid, catalogueLine.getID());
                 return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLine));
             }else{
                 // validate the incoming content
@@ -395,7 +445,31 @@ public class CatalogueLineController {
                     return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("There already exists a product with the given id");
                 }
 
-                log.info("Completed the request to add catalogue line catalogue uuid, line lineId: {}", catalogueUuid, catalogueLine.getID());
+                //mdc logging
+                Map<String,String> paramMap = new HashMap<String, String>();
+                paramMap.put("activity", CatalogueEvent.PRODUCT_UPDATE.getActivity());
+                paramMap.put("productId", catalogueLine.getID());
+                if(catalogueLine.getGoodsItem() != null && catalogueLine.getGoodsItem().getItem() != null) {
+                    ItemType item = catalogueLine.getGoodsItem().getItem();
+                    if(item.getName() != null) {
+                        String itemName = UblUtil.getText(item.getName());
+                        paramMap.put("productName", itemName);
+                    }
+                    if(item.getManufacturerParty() != null){
+                        PartyType manufacturer = item.getManufacturerParty();
+                        if(manufacturer.getPartyName() != null) {
+                            String partyName = UblUtil.getName(manufacturer);
+                            paramMap.put("companyName", partyName);
+                        }
+                        if(manufacturer.getPartyIdentification() != null) {
+                            String partyId = UblUtil.getId(manufacturer.getPartyIdentification());
+                            paramMap.put("companyId", partyId);
+                        }
+
+                    }
+                }
+                LoggerUtils.logWithMDC(log, paramMap, LoggerUtils.LogLevel.INFO, "Catalogue line updated for  catalogue uuid: {}, lineId: {}",
+                        catalogueUuid, catalogueLine.getID());
                 return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLine));
             }
 
@@ -435,7 +509,12 @@ public class CatalogueLineController {
         } catch (Exception e) {
             return createErrorResponseEntity("Failed to delete the catalogue line. catalogue uuid: " + catalogueUuid + " line id: " + lineId, HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
-        log.info("Completed the request to delete catalogue line: catalogue uuid: {}, lineId: {}", catalogueUuid, lineId);
+        //mdc logging
+        Map<String,String> paramMap = new HashMap<String, String>();
+        paramMap.put("activity", CatalogueEvent.PRODUCT_DELETE.getActivity());
+        paramMap.put("productId", lineId);
+        LoggerUtils.logWithMDC(log, paramMap, LoggerUtils.LogLevel.INFO, "Completed the request to delete catalogue line: catalogue uuid: {}, lineId: {}",
+                catalogueUuid, lineId);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
