@@ -1,5 +1,6 @@
 package eu.nimble.service.catalogue.impl;
 
+import com.netflix.client.ClientException;
 import com.sun.tools.doclets.formats.html.resources.standard;
 import eu.nimble.data.transformer.ontmalizer.XML2OWLMapper;
 import eu.nimble.service.catalogue.CatalogueService;
@@ -38,6 +39,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.print.attribute.standard.Media;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -486,7 +488,8 @@ public class CatalogueController {
             "the update mode. There are two update modes: append and replace. In the former mode, if some of the products were " +
             "already published, they are replaced with the new ones; furthermore, the brand new ones are appended to the " +
             "existing product list. In the latter mode, all previously published products having the same categories specified in the template are deleted," +
-            "the new list of products is set as it is.")
+            "the new list of products is set as it is. If there is no integrated identity-service, then the party for which the catalogue will be published " +
+            "should be provided.Otherwise, the party information will be retrieved from the identity-service.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Persisted uploaded template successfully and returned the corresponding catalogue", response = CatalogueType.class),
             @ApiResponse(code = 400, message = "Invalid template content"),
@@ -497,9 +500,10 @@ public class CatalogueController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             method = RequestMethod.POST)
     public ResponseEntity uploadTemplate(
-            @ApiParam(value = "Filled in excel-based template. An example filled in template can be found in: https://github.com/nimble-platform/catalog-service/tree/staging/catalogue-service-micro/src/main/resources/example_content/product_data_template.xlsx . Check the \"Information\" tab for detailed instructions. Furthermore, example instantiations can be found in the \"Product Properties Example\" and \"Trading and Delivery Terms Example\" tabs.", required = true) @RequestParam("file") MultipartFile file,
+            @ApiParam(value = "Filled in excel-based template. An example filled in template can be found in: https://github.com/nimble-platform/catalog-service/tree/staging/catalogue-service-micro/src/main/resources/example_content/product_data_template.xlsx . Check the \"Information\" tab for detailed instructions. Furthermore, example instantiations can be found in the \"Product Properties Example\" and \"Trading and Delivery Terms Example\" tabs.", required = true)  @RequestPart("file") MultipartFile file,
             @ApiParam(value = "Upload mode for the catalogue. Possible options are: append and replace", defaultValue = "append") @RequestParam(value = "uploadMode", defaultValue = "append") String uploadMode,
             @ApiParam(value = "Identifier of the party for which the catalogue will be published", required = true) @RequestParam("partyId") String partyId,
+            @ApiParam(value = "Serialized form of party for which the catalogue will be published") @RequestPart(value = "party",required = false) String partyAsString,
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
             HttpServletRequest request) {
         try {
@@ -509,8 +513,13 @@ public class CatalogueController {
                 return tokenCheck;
             }
 
+            // deserialize the party
+            PartyType party = null;
+            if(partyAsString != null){
+                party = JsonSerializationUtility.getObjectMapper().readValue(partyAsString,PartyType.class);
+            }
             // check the existence of the specified party in the catalogue DB
-            PartyType party = CatalogueDatabaseAdapter.syncPartyInUBLDB(partyId, bearerToken);
+            party = CatalogueDatabaseAdapter.syncPartyInUBLDB(party, partyId, bearerToken);
 
             CatalogueType catalogue;
 
@@ -549,6 +558,9 @@ public class CatalogueController {
 
 
         } catch (Exception e) {
+            if(e.getCause().getCause().getClass().equals(ClientException.class)){
+                return HttpResponseUtil.createResponseEntityAndLog("There is no available server for client:identity-service.You need to provide a valid party.", e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+            }
             return HttpResponseUtil.createResponseEntityAndLog("Unexpected error while uploading the template", e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
         }
     }
@@ -747,7 +759,7 @@ public class CatalogueController {
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity getAllCatalogueIdsForParty(@ApiParam(value = "Identifier of the party for which the catalogue to be retrieved", required = true) @PathVariable String partyId,
-                                              @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+                                                     @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         log.info("Incoming request to get catalogue id list for party: {}", partyId);
         ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
         if (tokenCheck != null) {
@@ -782,9 +794,9 @@ public class CatalogueController {
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity getCatalogueFromId(@ApiParam(value = "Identifier of the party for which the catalogue to be retrieved", required = true) @PathVariable String partyId,
-                                                        @ApiParam(value = "Identifier of the catalogue", required = true) @PathVariable String id,
-                                                        @ApiParam(value = "Data model standard that the provided catalogue is compatible with.", defaultValue = "ubl", required = true) @PathVariable String standard,
-                                                     @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+                                             @ApiParam(value = "Identifier of the catalogue", required = true) @PathVariable String id,
+                                             @ApiParam(value = "Data model standard that the provided catalogue is compatible with.", defaultValue = "ubl", required = true) @PathVariable String standard,
+                                             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
 
         log.info("Incoming request to get catalogue for id: {} for party: {}",id,partyId);
         ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);

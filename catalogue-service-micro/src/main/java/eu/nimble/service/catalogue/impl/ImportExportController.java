@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue.impl;
 
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
+import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
@@ -44,9 +45,9 @@ public class ImportExportController {
     private CatalogueService service;
 
     @CrossOrigin(origins = {"*"})
-    @ApiOperation(value = "", notes = "This service imports the provided UBL catalogue. The service replaces the PartyType" +
-            " information in the given catalogue with the PartyType obtained from the currently configured identity service." +
-            " Party information is deduced from the authorization token of the user issuing the call.")
+    @ApiOperation(value = "", notes = "This service imports the provided UBL catalogue.If there is no PartyType information"+
+            " in the given catalogue,it's retrieved from the currently configured identity service using the authorization"+
+            " token of the user issuing the call.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Imported the catalogue succesfully"),
             @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
@@ -70,10 +71,7 @@ public class ImportExportController {
             JsonSerializationUtility.removeHjidFields(object);
             CatalogueType catalogue = JsonSerializationUtility.getObjectMapper().readValue(object.toString(), CatalogueType.class);
 
-            // get person using the given bearer token
-            PersonType person = SpringBridge.getInstance().getiIdentityClientTyped().getPerson(bearerToken);
-            // get party for the person
-            PartyType party = SpringBridge.getInstance().getiIdentityClientTyped().getPartyByPersonID(person.getID()).get(0);
+            PartyType party = CatalogueDatabaseAdapter.syncPartyInUBLDB(catalogue.getProviderParty(),bearerToken);
 
             // remove hjid fields of party
             JSONObject partyObject = new JSONObject(party);
