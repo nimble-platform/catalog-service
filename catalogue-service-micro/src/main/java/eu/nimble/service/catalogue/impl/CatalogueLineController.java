@@ -2,17 +2,15 @@ package eu.nimble.service.catalogue.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
-import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.statistics.ProductAndServiceStatistics;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.catalogue.util.CatalogueEvent;
+import eu.nimble.service.catalogue.util.LoggerUtil;
 import eu.nimble.service.catalogue.validation.CatalogueLineValidator;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.*;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import eu.nimble.utility.serialization.TransactionEnabledSerializationUtility;
@@ -285,28 +283,7 @@ public class CatalogueLineController {
             String applicationUrl = catalogueServiceConfig.getSpringApplicationUrl();
             lineURI = new URI(applicationUrl + "/catalogue/" + catalogueUuid + "/" + line.getID());
 
-            Map<String,String> paramMap = new HashMap<String, String>();
-            paramMap.put("activity", CatalogueEvent.PRODUCT_PUBLISH.getActivity());
-            paramMap.put("productId", line.getID());
-            if(line.getGoodsItem() != null && line.getGoodsItem().getItem() != null) {
-                ItemType item = line.getGoodsItem().getItem();
-                if(item.getName() != null) {
-                    String itemName = UblUtil.getText(item.getName());
-                    paramMap.put("productName", itemName);
-                }
-                if(item.getManufacturerParty() != null){
-                    PartyType manufacturer = item.getManufacturerParty();
-                    if(manufacturer.getPartyName() != null) {
-                        String partyName = UblUtil.getName(manufacturer);
-                        paramMap.put("companyName", partyName);
-                    }
-                    if(manufacturer.getPartyIdentification() != null) {
-                        String partyId = UblUtil.getId(manufacturer.getPartyIdentification());
-                        paramMap.put("companyId", partyId);
-                    }
-
-                }
-            }
+            Map<String,String> paramMap = LoggerUtil.getMDCParamMapForCatalogueLine(line, CatalogueEvent.PRODUCT_PUBLISH);
             LoggerUtils.logWithMDC(log, paramMap, LoggerUtils.LogLevel.INFO, "Item published with  catalogue uuid: {}, lineId: {}",
                     catalogueUuid, line.getID());
 
@@ -390,33 +367,14 @@ public class CatalogueLineController {
 
                 // consider the case of an updated line id conflicting with the id of an existing line
                 boolean lineExists = CatalogueLinePersistenceUtil.checkCatalogueLineExistence(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid());
-                Map<String,String> paramMap = new HashMap<String, String>();
+
                 if (!lineExists) {
                     service.updateLinesCatalogue(newCatalogueUuid,oldCatalogueUuid,catalogueLine);
                 } else {
                     return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("There already exists a product with the given id");
                 }
                 //mdc logging
-                paramMap.put("activity", CatalogueEvent.PRODUCT_UPDATE.getActivity());
-                paramMap.put("productId", catalogueLine.getID());
-                if(catalogueLine.getGoodsItem() != null && catalogueLine.getGoodsItem().getItem() != null) {
-                    ItemType item = catalogueLine.getGoodsItem().getItem();
-                    if(item.getName() != null) {
-                        String itemName = UblUtil.getText(item.getName());
-                        paramMap.put("productName", itemName);
-                    }
-                    if(item.getManufacturerParty() != null){
-                        PartyType manufacturer = item.getManufacturerParty();
-                        if(manufacturer.getPartyName() != null) {
-                            String partyName = UblUtil.getName(manufacturer);
-                            paramMap.put("companyName", partyName);
-                        }
-                        if(manufacturer.getPartyIdentification() != null) {
-                            String partyId = UblUtil.getId(manufacturer.getPartyIdentification());
-                            paramMap.put("companyId", partyId);
-                        }
-                    }
-                }
+                Map<String,String> paramMap = LoggerUtil.getMDCParamMapForCatalogueLine(catalogueLine, CatalogueEvent.CATALOGUE_UPDATE);
                 LoggerUtils.logWithMDC(log, paramMap, LoggerUtils.LogLevel.INFO, "Catalogue line updated for  catalogue uuid: {}, lineId: {}",
                         catalogueUuid, catalogueLine.getID());
                 return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLine));
@@ -446,28 +404,7 @@ public class CatalogueLineController {
                 }
 
                 //mdc logging
-                Map<String,String> paramMap = new HashMap<String, String>();
-                paramMap.put("activity", CatalogueEvent.PRODUCT_UPDATE.getActivity());
-                paramMap.put("productId", catalogueLine.getID());
-                if(catalogueLine.getGoodsItem() != null && catalogueLine.getGoodsItem().getItem() != null) {
-                    ItemType item = catalogueLine.getGoodsItem().getItem();
-                    if(item.getName() != null) {
-                        String itemName = UblUtil.getText(item.getName());
-                        paramMap.put("productName", itemName);
-                    }
-                    if(item.getManufacturerParty() != null){
-                        PartyType manufacturer = item.getManufacturerParty();
-                        if(manufacturer.getPartyName() != null) {
-                            String partyName = UblUtil.getName(manufacturer);
-                            paramMap.put("companyName", partyName);
-                        }
-                        if(manufacturer.getPartyIdentification() != null) {
-                            String partyId = UblUtil.getId(manufacturer.getPartyIdentification());
-                            paramMap.put("companyId", partyId);
-                        }
-
-                    }
-                }
+                Map<String,String> paramMap = LoggerUtil.getMDCParamMapForCatalogueLine(catalogueLine, CatalogueEvent.PRODUCT_UPDATE);
                 LoggerUtils.logWithMDC(log, paramMap, LoggerUtils.LogLevel.INFO, "Catalogue line updated for  catalogue uuid: {}, lineId: {}",
                         catalogueUuid, catalogueLine.getID());
                 return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLine));
