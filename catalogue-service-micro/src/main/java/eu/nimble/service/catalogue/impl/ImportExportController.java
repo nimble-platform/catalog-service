@@ -1,8 +1,10 @@
 package eu.nimble.service.catalogue.impl;
 
+import com.google.common.io.ByteStreams;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
+import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
@@ -15,12 +17,15 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.tools.ant.taskdefs.Zip;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.logging.LogLevel;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +33,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
@@ -101,15 +107,15 @@ public class ImportExportController {
             "Excel sheets according to the commodity classifications (categories). Each distinct combination of categories " +
             "of products are exported to a separate sheet. The sheets are collected into a ZIP-compressed file.")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Imported the catalogue successfully"),
+            @ApiResponse(code = 200, message = "Exported the catalogue successfully"),
             @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
             @ApiResponse(code = 500, message = "Unexpected error while exporting catalogue")
     })
-    @RequestMapping(value = "/catalogue/export",
+    @RequestMapping(value = "/catalogue/export/{uuid}",
             method = RequestMethod.GET,
             produces = {"application/zip"})
     public void exportCatalogue(
-            @ApiParam(value = "Identifier of the catalogue to be exported", required = true) @RequestParam("uuid") String catalogueUuid,
+            @ApiParam(value = "Identifier of the catalogue to be exported", required = true) @PathVariable("uuid") String catalogueUuid,
             @ApiParam(value = "language id", required = true) @RequestParam("languageId") String languageId,
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
             HttpServletResponse response) {
@@ -158,7 +164,7 @@ public class ImportExportController {
 
             // zip all workbooks
             for (Map.Entry<Workbook,String> workbook : workbooks.entrySet()) {
-                addToZip(workbook.getValue(),zos,workbook.getKey());
+                addWorkbookToZip(workbook.getValue(),zos,workbook.getKey());
             }
 
             response.flushBuffer();
@@ -177,14 +183,130 @@ public class ImportExportController {
                     zos.close();
                 }
             } catch (IOException e) {
-                log.warn("Failed to close zip output stream");
+                log.warn("Failed to close zip output stream", e);
             }
         }
 
         log.info("Exported catalogue successfully: uuid {}", catalogueUuid);
     }
 
-    private static void addToZip(String fileName, ZipOutputStream zos, Workbook workbook) throws IOException {
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Exports the specified catalogues. Concerning a single catalogue, the products are exported to separate " +
+            "Excel sheets according to the commodity classifications (categories). Each distinct combination of categories " +
+            "of products are exported to a separate sheet. The sheets are collected into a ZIP-compressed file." +
+            " A dedicated ZIP file is created for each catalogue.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Exported catalogues successfully"),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 500, message = "Unexpected error while exporting catalogue")
+    })
+    @RequestMapping(value = "/catalogue/export",
+            method = RequestMethod.GET,
+            produces = {"application/zip"})
+    public void exportCatalogues(
+            @ApiParam(value = "Identifier of the party for which the catalogues to be deleted", required = true) @RequestParam(value = "partyId", required = true) String partyId,
+            @ApiParam(value = "An indicator for selecting all the catalogues to be deleted. ", required = false) @RequestParam(value = "exportAll", required = false, defaultValue = "false") Boolean exportAll,
+            @ApiParam(value = "Identifier of the catalogues to be deleted. (catalogue.id)", required = false) @RequestParam(value = "ids", required = false) List<String> ids,
+            @ApiParam(value = "language id", required = true) @RequestParam("languageId") String languageId,
+            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
+            HttpServletResponse response) {
+
+        String idsLog = ids == null ? "" : ids.toString();
+        ByteArrayInputStream responseInputStream = null;
+        ByteArrayOutputStream responseOutputStream = new ByteArrayOutputStream();
+        ZipOutputStream zos = null;
+
+        try {
+            log.info("Incoming request to export catalogues for party: {}, ids: {}, export all: {}", partyId, idsLog, exportAll);
+            zos = new ZipOutputStream(response.getOutputStream());
+
+            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+            if (tokenCheck != null) {
+                return;
+            }
+
+            // if all the catalogues is requested to be deleted get the identifiers first
+            if(exportAll) {
+                ids = CataloguePersistenceUtil.getCatalogueIdListsForParty(partyId);
+            }
+
+            for (String id : ids) {
+                CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueForParty(id, partyId);
+                ByteArrayOutputStream catalogueBaos = new ByteArrayOutputStream();
+                getZipForCatalogue(catalogue, languageId, catalogueBaos);
+
+                try {
+                    ZipEntry zipEntry = new ZipEntry(catalogue.getID() + ".zip");
+                    zos.putNextEntry(zipEntry);
+                    catalogueBaos.writeTo(zos);
+
+                } catch (IOException e) {
+                    log.warn("Failed to write catalogue output stream to response output stream for catalogue: id{}, uuid: {}", catalogue.getID(), catalogue.getUUID(), e);
+
+                } finally {
+                    try {
+                        zos.closeEntry();
+                    } catch (IOException e) {
+                        log.warn("Failed to close zip entry for catalogue: id{}, uuid: {}", catalogue.getID(), catalogue.getUUID(), e);
+                    }
+                    try {
+                        catalogueBaos.close();
+                    } catch (IOException e) {
+                        log.warn("Failed to close catalogue output stream for catalogue: id{}, uuid: {}", catalogue.getID(), catalogue.getUUID(), e);
+                    }
+                }
+            }
+
+            response.flushBuffer();
+            log.info("Completed request to delete catalogues for party: {}, ids: {}, delete all: {}", partyId, idsLog, exportAll);
+
+        } catch(Exception e) {
+            String msg = String.format("Unexpected error while deleting catalogues for party: %s ids: %s, delete all: %b", partyId, idsLog, exportAll);
+            log.error(msg, e);
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            try {
+                response.getOutputStream().write(msg.getBytes());
+            } catch (IOException e1) {
+                log.error("Failed to write the error message to the output stream", e);
+            }
+
+        } finally {
+            if(zos != null) {
+                try {
+                    // zos also closes the underlying output stream i.e. responseOutputStream
+                    zos.close();
+                } catch (IOException e) {
+                    log.warn("Failed to close zip output stream", e);
+                }
+            }
+        }
+    }
+
+    private void getZipForCatalogue(CatalogueType catalogue, String languageId, ByteArrayOutputStream outputStream) {
+        // get workbooks
+        Map<Workbook,String> workbooks = service.generateTemplateForCatalogue(catalogue,languageId);
+
+        // export catalogue
+        ZipOutputStream zos = new ZipOutputStream(outputStream);
+        try {
+            // zip all workbooks
+            for (Map.Entry<Workbook,String> workbook : workbooks.entrySet()) {
+                addWorkbookToZip(workbook.getValue(),zos,workbook.getKey());
+            }
+
+        } catch (IOException e) {
+            log.error("Failed to write the catalogue content to the zip output stream for catalogue id: {}, uuid: {}", catalogue.getID(), catalogue.getUUID(), e);
+
+        } finally {
+            try {
+                zos.close();
+            } catch (IOException e) {
+                log.warn("Failed to close zip output stream for catalogue id:{}, uuid: {}", catalogue.getID(), catalogue.getUUID(), e);
+            }
+        }
+    }
+
+    private void addWorkbookToZip(String fileName, ZipOutputStream zos, Workbook workbook) throws IOException {
         ByteArrayOutputStream bos = null;
         try {
             ZipEntry zipEntry = new ZipEntry(fileName);
