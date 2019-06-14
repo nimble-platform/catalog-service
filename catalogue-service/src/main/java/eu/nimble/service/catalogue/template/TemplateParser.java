@@ -40,6 +40,14 @@ public class TemplateParser {
     private Workbook wb;
     private String defaultLanguage = "en";
 
+    static Map<String, Integer> defaultVats = new HashMap<>();
+    static {
+        defaultVats.put("Germany", 19);
+        defaultVats.put("Italy", 22);
+        defaultVats.put("Spain", 21);
+        defaultVats.put("Sweden", 21);
+    }
+
     public TemplateParser(PartyType party) {
         this.party = party;
     }
@@ -626,6 +634,33 @@ public class TemplateParser {
                 }
                 columnIndex++;
             }
+        }
+
+        // create vats for catalogue lines
+        createVatsForCatalogueLines(catalogueLines);
+    }
+
+    private void createVatsForCatalogueLines(List<CatalogueLineType> catalogueLines){
+        for(CatalogueLineType line : catalogueLines){
+            if(line.getRequiredItemLocationQuantity().getApplicableTaxCategory() != null &&
+                    line.getRequiredItemLocationQuantity().getApplicableTaxCategory().size() > 0) {
+                continue;
+            }
+
+            Integer vatRate = null;
+            AddressType address = line.getGoodsItem().getItem().getManufacturerParty().getPostalAddress();
+            if(address != null && address.getCountry() != null  && address.getCountry().getName() != null){
+                String country = line.getGoodsItem().getItem().getManufacturerParty().getPostalAddress().getCountry().getName().getValue();
+                vatRate = defaultVats.get(country);
+            }
+
+            if(vatRate == null) {
+                vatRate = 20;
+            }
+
+            TaxCategoryType taxCategory = new TaxCategoryType();
+            line.getRequiredItemLocationQuantity().getApplicableTaxCategory().add(taxCategory);
+            taxCategory.setPercent(new BigDecimal(vatRate));
         }
     }
 
