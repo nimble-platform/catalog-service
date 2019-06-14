@@ -52,7 +52,7 @@ public class UnitManager {
 
         UnitType unitType4 = new UnitType();
         unitType4.setID("volume_quantity");
-        unitType4.setUnitCode(Arrays.asList("L, m3"));
+        unitType4.setUnitCode(Arrays.asList("m3", "L"));
         repoFactory.forCatalogueRepository().persistEntity(unitType4);
 
         UnitType unitType5 = new UnitType();
