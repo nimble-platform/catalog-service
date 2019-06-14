@@ -647,8 +647,13 @@ public class TemplateParser {
                 continue;
             }
 
-            String country = line.getGoodsItem().getItem().getManufacturerParty().getPostalAddress().getCountry().getName().getValue();
-            Integer vatRate = defaultVats.get(country);
+            Integer vatRate = null;
+            AddressType address = line.getGoodsItem().getItem().getManufacturerParty().getPostalAddress();
+            if(address != null && address.getCountry() != null  && address.getCountry().getName() != null){
+                String country = line.getGoodsItem().getItem().getManufacturerParty().getPostalAddress().getCountry().getName().getValue();
+                vatRate = defaultVats.get(country);
+            }
+
             if(vatRate == null) {
                 vatRate = 20;
             }
