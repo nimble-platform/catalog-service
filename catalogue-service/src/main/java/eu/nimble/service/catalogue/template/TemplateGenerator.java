@@ -4,6 +4,7 @@ import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.model.category.Value;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
+import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.AddressType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DimensionType;
@@ -17,10 +18,7 @@ import org.apache.poi.xssf.usermodel.*;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static eu.nimble.service.catalogue.template.TemplateConfig.*;
 import static eu.nimble.service.catalogue.template.TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN;
@@ -372,13 +370,25 @@ public class TemplateGenerator {
     }
 
     private void fillCategoryProperties(Sheet productPropertiesTab,List<CatalogueLineType> catalogueLines,List<Category> categories){
+
+        // create category - parent category uris map
+        Map<Category,List<String>> parentCategoryUriMap = new HashMap<>();
+        for(Category category:categories){
+            if(category.getCategoryUri() != null){
+                List<Category> parentCategories = SpringBridge.getInstance().getIndexCategoryService().getParentCategories(category.getTaxonomyId(),category.getCategoryUri());
+                List<String> uriList = new ArrayList<>();
+                parentCategories.forEach(category1 -> uriList.add(category1.getCategoryUri()));
+                parentCategoryUriMap.put(category,uriList);
+            }
+        }
+        
         int rowIndex = 4;
         for(CatalogueLineType catalogueLine:catalogueLines){
             for(ItemPropertyType itemProperty:catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty()){
                 // consider category properties
                 if(!itemProperty.getItemClassificationCode().getListID().contentEquals("Custom")){
                     // get the category names
-                    List<TextType> categoryNames = getNamesOfCategory(categories,itemProperty.getItemClassificationCode().getURI());
+                    List<TextType> categoryNames = getNamesOfCategory(parentCategoryUriMap,itemProperty.getItemClassificationCode().getURI());
                     // get column index
                     int columnIndex = findCellIndexForProperty(productPropertiesTab,itemProperty.getName(),categoryNames);
                     String dataType = normalizeDataTypeForTemplate(itemProperty.getValueQualifier());
@@ -1959,12 +1969,16 @@ public class TemplateGenerator {
         return "";
     }
 
-    private List<TextType> getNamesOfCategory(List<Category> categories,String categoryUri){
-        for(Category category:categories){
-            if(category.getCategoryUri() != null && category.getCategoryUri().contentEquals(categoryUri)){
+    // the category with the given id is the parent of at least one of the leaf categories.
+    // the method finds a leaf category satisfying this condition and returns its name
+    private List<TextType> getNamesOfCategory(Map<Category,List<String>> parentCategoryUriMap,String categoryUri){
+        
+        for(Category category:parentCategoryUriMap.keySet()){
+            if(parentCategoryUriMap.get(category).contains(categoryUri)){
                 return category.getPreferredName();
             }
         }
+        
         return null;
     }
 }
