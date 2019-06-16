@@ -86,7 +86,7 @@ public class LCPAController {
                 return tokenCheck;
             }
 
-            GenericJPARepository repo = new JPARepositoryFactory().forCatalogueRepository();
+            GenericJPARepository repo = new JPARepositoryFactory().forCatalogueRepository(true);
             CatalogueLineType catalogueLine = repo.getSingleEntityByHjid(CatalogueLineType.class, catalogueLineHjid);
             if (catalogueLine == null) {
                 String msg = String.format("No CatalogueLine found for the specified hjid: %d", catalogueLineHjid);
