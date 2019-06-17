@@ -22,9 +22,6 @@ public class CataloguePersistenceUtil {
     private static final String QUERY_CHECK_EXISTENCE_BY_ID = "SELECT COUNT(catalogue) FROM CatalogueType catalogue"
             + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification"
             + " WHERE catalogue.ID = :catalogueId and partyIdentification.ID = :partyId";
-    private static final String QUERY_GET_CATALOGUE_IDS_FOR_PARTY = "SELECT catalogue.UUID FROM CatalogueType as catalogue" +
-            " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification" +
-            " WHERE partyIdentification.ID = :partyId";
     private static final String QUERY_GET_CATALOGUE_IDLIST_FOR_PARTY = "SELECT catalogue.ID FROM CatalogueType as catalogue" +
             " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification" +
             " WHERE partyIdentification.ID = :partyId";
@@ -186,16 +183,16 @@ public class CataloguePersistenceUtil {
     }
 
     public static CatalogueType getCatalogueForParty(String catalogueId, String partyId) {
-        return new JPARepositoryFactory().forCatalogueRepository(true).getSingleEntity(QUERY_GET_FOR_PARTY, new String[]{"catalogueId", "partyId"}, new Object[]{catalogueId, partyId});
+        return getCatalogueForParty(catalogueId, partyId, true);
+    }
+
+    public static CatalogueType getCatalogueForParty(String catalogueId, String partyId, boolean lazyDisabled) {
+        return new JPARepositoryFactory().forCatalogueRepository(lazyDisabled).getSingleEntity(QUERY_GET_FOR_PARTY, new String[]{"catalogueId", "partyId"}, new Object[]{catalogueId, partyId});
     }
 
     public static Boolean checkCatalogueExistenceById(String catalogueId, String partyId) {
         long catalogueExists = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_CHECK_EXISTENCE_BY_ID, new String[]{"catalogueId", "partyId"}, new Object[]{catalogueId, partyId});
         return catalogueExists == 1 ? true : false;
-    }
-
-    public static List<String> getCatalogueIdsForParty(String partyId) {
-        return new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_CATALOGUE_IDS_FOR_PARTY, new String[]{"partyId"}, new Object[]{partyId});
     }
 
     public static List<String> getCatalogueIdListsForParty(String partyId) {

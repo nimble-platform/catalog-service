@@ -47,14 +47,6 @@ spring:
     multipart:
       max-file-size: 100MB
       max-request-size: 100MB
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
-    consumer:
-      group-id: catalogue-service${KAFKA_CONSUMER_GROUP_ID_SUFFIX:}
-    properties:
-      sasl:
-        jaas:
-          config: ${KAFKA_JAAS_CONFIG}
   thymeleaf:
     cache: false
     mode: HTML
@@ -155,10 +147,6 @@ nimble:
       username: ${INDEXING_SERVICE_SOLR_USERNAME}
       password: ${INDEXING_SERVICE_SOLR_PASSWORD}
     sync: ${INDEXING_SYNC:true}
-  kafka:
-    topics:
-      companyUpdates: ${KAFKA_TOPIC_COMPANY_UPDATES:company-updates}
-      trustScoreUpdates: ${KAFKA_TOPIC_TRUST_SCORE_UPDATES:trust-score-updates}
   oauth:
     client:
       clientId: ${CATALOG_SERVICE_OAUTH_CLIENT_ID}

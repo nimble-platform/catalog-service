@@ -106,6 +106,7 @@ public class ClassIndexClient {
 
     public List<ClassType> getIndexCategories(Set<String> uris) {
         try {
+            logger.info("Incoming request to get indexed categories for uris: {}",uris);
             StringBuilder queryStr = new StringBuilder("");
             for(String uri : uris) {
                 queryStr.append("id:\"").append(uri).append("\" OR ");
@@ -131,6 +132,7 @@ public class ClassIndexClient {
 
             if (response.getStatus() == HttpStatus.OK.value()) {
                 List<ClassType> indexCategories = extractIndexCategoriesFromSearchResults(response, uris.toString());
+                logger.info("Retrieved indexed categories for uris: {},number of indexed categories: {}",uris,indexCategories.size());
                 return indexCategories;
 
             } else {

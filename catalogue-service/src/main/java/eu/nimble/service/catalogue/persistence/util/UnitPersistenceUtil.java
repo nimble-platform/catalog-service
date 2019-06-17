@@ -1,6 +1,5 @@
 package eu.nimble.service.catalogue.persistence.util;
 
-import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.UnitType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.UnitTypeUnitCodeItem;
 import eu.nimble.utility.persistence.GenericJPARepository;
@@ -13,6 +12,7 @@ import java.util.List;
  */
 public class UnitPersistenceUtil {
     private static final String QUERY_GET_UNIT_MARKER = "SELECT ut FROM UnitType ut WHERE ut.ID = 'NIMBLE_quantity'";
+    private static final String QUERY_GET_UNIT = "SELECT ut FROM UnitType ut WHERE ut.ID = :unitId";
     private static final String QUERY_GET_UNITS_IN_LIST = "SELECT ut FROM UnitType ut WHERE ut.ID = :listId";
     private static final String QUERY_GET_ALL_UNITS = "SELECT ut FROM UnitType ut WHERE ut.ID <> 'NIMBLE_quantity'";
     private static final String QUERY_GET_UNIT_CODES_IN_LIST = "SELECT ut.unitCodeItems FROM UnitType ut WHERE ut.ID = :listId";
@@ -21,6 +21,10 @@ public class UnitPersistenceUtil {
 
     public static List<UnitType> getUnitMarker(GenericJPARepository jpaRepository) {
         return jpaRepository.getEntities(QUERY_GET_UNIT_MARKER);
+    }
+
+    public static UnitType getUnit(String unitId) {
+        return new JPARepositoryFactory().forCatalogueRepository(true).getSingleEntity(QUERY_GET_UNIT, new String[]{"unitId"}, new Object[]{unitId});
     }
 
     public static List<UnitType> getUnitsInList(String listId) {

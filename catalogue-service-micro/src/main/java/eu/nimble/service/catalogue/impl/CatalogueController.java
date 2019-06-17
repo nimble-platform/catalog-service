@@ -1,5 +1,6 @@
 package eu.nimble.service.catalogue.impl;
 
+import com.sun.tools.doclets.formats.html.resources.standard;
 import eu.nimble.data.transformer.ontmalizer.XML2OWLMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
@@ -8,17 +9,15 @@ import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.LockPool;
-import eu.nimble.service.catalogue.persistence.util.PartyTypePersistenceUtil;
+import eu.nimble.service.catalogue.util.CatalogueEvent;
 import eu.nimble.service.catalogue.util.SemanticTransformationUtil;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
 import eu.nimble.service.catalogue.validation.ValidationException;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyNameType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
-import eu.nimble.utility.Configuration;
-import eu.nimble.utility.HttpResponseUtil;
-import eu.nimble.utility.JAXBUtility;
-import eu.nimble.utility.JsonSerializationUtility;
+import eu.nimble.utility.*;
 import eu.nimble.utility.exception.BinaryContentException;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import eu.nimble.utility.serialization.TransactionEnabledSerializationUtility;
@@ -43,9 +42,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.zip.ZipInputStream;
 
 /**
@@ -181,8 +178,14 @@ public class CatalogueController {
 
     private ResponseEntity createCreatedCatalogueResponse(Object catalogue, String baseUrl) {
         String uuid;
+        String partyName="";
         if (catalogue instanceof CatalogueType) {
-            uuid = ((CatalogueType) catalogue).getUUID().toString();
+            CatalogueType catalogueObject = (CatalogueType) catalogue;
+            if (catalogueObject.getProviderParty() != null) {
+                List<PartyNameType> partyNameTypes = catalogueObject.getProviderParty().getPartyName();
+                partyName = UblUtil.getName(partyNameTypes);
+            }
+            uuid = catalogueObject.getUUID().toString();
         } else {
             uuid = ((TEXCatalogType) catalogue).getTCheader().getMsgID();
         }
@@ -200,7 +203,11 @@ public class CatalogueController {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("WTF");
             }
         }
-        log.info("Completed request to add catalogue, uuid: {}", uuid);
+        Map<String,String> paramMap = new HashMap<String, String>();
+        paramMap.put("companyName",partyName);
+        paramMap.put("catalogueId",uuid);
+        paramMap.put("activity", CatalogueEvent.CATALOGUE_CREATE.getActivity());
+        LoggerUtils.logWithMDC(log, paramMap, LoggerUtils.LogLevel.INFO, "Completed request to add catalogue, uuid: {}", uuid);
         return ResponseEntity.created(catalogueURI).body(serializationUtility.serializeUBLObject(catalogue));
     }
 
@@ -243,11 +250,9 @@ public class CatalogueController {
             } catch (Exception e) {
                 return createErrorResponseEntity(String.format("Failed to deserialize catalogue: %s", serializedCatalogue), HttpStatus.BAD_REQUEST, e);
             }
-
             // for ubl catalogues, do the following validations
             if (std.equals(Configuration.Standard.UBL)) {
                 CatalogueType ublCatalogue = (CatalogueType) catalogue;
-
                 // validate the content of the catalogue
                 CatalogueValidator catalogueValidator = new CatalogueValidator(ublCatalogue);
                 try {
@@ -270,7 +275,6 @@ public class CatalogueController {
             }
 
             catalogue = service.addCatalogue(catalogue, std);
-
             return createCreatedCatalogueResponse(catalogue, HttpResponseUtil.baseUrl(request));
 
         } catch (Exception e) {
@@ -339,9 +343,22 @@ public class CatalogueController {
             if (!hjidsBelongToCompany) {
                 return HttpResponseUtil.createResponseEntityAndLog(String.format("Some of the identifiers (hjid fields) do not belong to the party in the passed catalogue: %s", catalogueJson), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
             }
-
+            String catalogueId = "";
+            String partyName = "";
             try {
                 catalogue = service.updateCatalogue(catalogue);
+                if (catalogue.getProviderParty() != null) {
+                    List<PartyNameType> partyNameTypes = catalogue.getProviderParty().getPartyName();
+                    partyName = UblUtil.getName(partyNameTypes);
+                }
+                if (catalogue.getUUID() != null) {
+                    catalogueId = catalogue.getUUID().toString();
+                }
+                Map<String,String> paramMap = new HashMap<String, String>();
+                paramMap.put("activity", CatalogueEvent.CATALOGUE_UPDATE.getActivity());
+                paramMap.put("catalogueId", catalogueId);
+                paramMap.put("companyName", partyName);
+                LoggerUtils.logWithMDC(log, paramMap, LoggerUtils.LogLevel.INFO, "Successfully updated catalogue, id: {}", catalogueId);
             } catch (Exception e) {
                 log.warn("Failed to update the following catalogue: {}", catalogueJson);
                 return createErrorResponseEntity("Failed to update the catalogue", HttpStatus.INTERNAL_SERVER_ERROR, e);
@@ -382,12 +399,59 @@ public class CatalogueController {
 
         try {
             service.deleteCatalogue(uuid, std);
+            Map<String,String> paramMap = new HashMap<String, String>();
+            paramMap.put("activity", CatalogueEvent.CATALOGUE_DELETE.getActivity());
+            paramMap.put("catalogueId", uuid);
+            LoggerUtils.logWithMDC(log, paramMap, LoggerUtils.LogLevel.INFO, "Successfully deleted catalogue, id: {}", uuid);
         } catch (Exception e) {
             return createErrorResponseEntity("Failed to delete catalogue", HttpStatus.INTERNAL_SERVER_ERROR, e);
         }
 
         log.info("Completed request to delete catalogue with uuid: {}", uuid);
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Deletes the specified catalogues")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Specified catalogue has been deleted successfully"),
+            @ApiResponse(code = 401, message = "Invalid token"),
+            @ApiResponse(code = 500, message = "Unexpected error while deleting the catalogues")
+    })
+    @RequestMapping(value = "/catalogue",
+            method = RequestMethod.DELETE)
+    public ResponseEntity deleteCataloguesForParty(@ApiParam(value = "Identifier of the party for which the catalogues to be deleted", required = true) @RequestParam(value = "partyId", required = true) String partyId,
+                                                   @ApiParam(value = "An indicator for selecting all the catalogues to be deleted. ", required = false) @RequestParam(value = "deleteAll", required = false, defaultValue = "false") Boolean deleteAll,
+                                                   @ApiParam(value = "Identifier of the catalogues to be deleted. (catalogue.id)", required = false) @RequestParam(value = "ids", required = false) List<String> ids,
+                                                   @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        String idsLog = ids == null ? "" : ids.toString();
+        try {
+            log.info("Incoming request to delete catalogues for party: {}, ids: {}, delete all: {}", partyId, idsLog, deleteAll);
+            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+            if (tokenCheck != null) {
+                return tokenCheck;
+            }
+
+            // if all the catalogues is requested to be deleted get the identifiers first
+            if(deleteAll) {
+                ids = CataloguePersistenceUtil.getCatalogueIdListsForParty(partyId);
+            }
+
+            for (String id : ids) {
+                service.deleteCatalogue(id, partyId);
+                Map<String,String> paramMap = new HashMap<String, String>();
+                paramMap.put("activity", CatalogueEvent.CATALOGUE_DELETE.getActivity());
+                paramMap.put("catalogueId", id);
+                paramMap.put("companyId", partyId);
+                LoggerUtils.logWithMDC(log, paramMap, LoggerUtils.LogLevel.INFO, "Successfully deleted catalogue, id: {} for company: {}", id, partyId);
+            }
+
+            log.info("Completed request to delete catalogues for party: {}, ids: {}, delete all: {}", partyId, idsLog, deleteAll);
+            return ResponseEntity.status(HttpStatus.OK).build();
+
+        } catch(Exception e) {
+            return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while deleting catalogues for party: %s ids: %s, delete all: %b", partyId, idsLog, deleteAll), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+        }
     }
 
     @CrossOrigin(origins = {"*"})
@@ -712,7 +776,7 @@ public class CatalogueController {
             @ApiResponse(code = 404, message = "No catalogue ids found for the given party"),
             @ApiResponse(code = 500, message = "Unexpected error while getting catalogue id's")
     })
-    @RequestMapping(value = "/catalogue/{partyId}",
+    @RequestMapping(value = "/catalogue/ids/{partyId}",
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity getAllCatalogueIdsForParty(@ApiParam(value = "Identifier of the party for which the catalogue to be retrieved", required = true) @PathVariable String partyId,

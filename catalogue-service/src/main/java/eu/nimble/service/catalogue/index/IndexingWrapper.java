@@ -207,8 +207,10 @@ public class IndexingWrapper {
 
     private static Set<String> getImageUris(CatalogueLineType catalogueLine) {
         Set<String> imagesUris = new HashSet<>();
+        // put only the first image so that only that image will be indexed
         for(BinaryObjectType image : catalogueLine.getGoodsItem().getItem().getProductImage()) {
             imagesUris.add(image.getUri());
+            break;
         }
         return imagesUris;
     }
@@ -257,7 +259,7 @@ public class IndexingWrapper {
         property.setRemark(getLabelListFromMap(indexProperty.getComment()));
 
         // TODO the data type is currently keeping the value qualifier. However, it should be stored in the value qualifier field.
-        if(indexProperty.getUri().startsWith(EClassTaxonomyQueryImpl.namespace)) {
+        if(indexProperty.getValueQualifier() != null) {
             // This is so in order not to break the functionality on the front-end
             property.setDataType(indexProperty.getValueQualifier().toString());
         } else {
