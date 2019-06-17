@@ -80,7 +80,7 @@ public class AdminController {
 
         logger.info("Reading CatalogueProperties.json ...");
         InputStream inputStream = null;
-        inputStream =  ClassLoader.getSystemClassLoader().getResourceAsStream("CatalogueProperties.json");
+        inputStream = AdminController.class.getResourceAsStream("/CatalogueProperties.json");
         String fileContent = IOUtils.toString(inputStream);
 
         logger.info("Read CatalogueProperties.json");
