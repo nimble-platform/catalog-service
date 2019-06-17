@@ -540,19 +540,32 @@ public class CatalogueController {
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
             HttpServletRequest request) {
         try {
-            log.info("Incoming request to upload template upload mode: {}, party id: {}", uploadMode, partyId);
-            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-            if (tokenCheck != null) {
-                return tokenCheck;
+            try {
+                log.info("Incoming request to upload template upload mode: {}, party id: {}", uploadMode, partyId);
+                ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+                if (tokenCheck != null) {
+                    return tokenCheck;
+                }
+            }catch (Exception e){
+                log.error("Failed to check token:",e);
+                return HttpResponseUtil.createResponseEntityAndLog("Failed to check token:", e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+
             }
 
             // deserialize the party
             PartyType party = null;
-            if(partyAsString != null){
-                party = JsonSerializationUtility.getObjectMapper().readValue(partyAsString,PartyType.class);
+            try{
+
+                if(partyAsString != null){
+                    party = JsonSerializationUtility.getObjectMapper().readValue(partyAsString,PartyType.class);
+                }
+                // check the existence of the specified party in the catalogue DB
+                party = CatalogueDatabaseAdapter.syncPartyInUBLDB(party, partyId, bearerToken);
+            } catch (Exception e){
+                log.error("Failed to deserialize party:",e);
+                return HttpResponseUtil.createResponseEntityAndLog("Failed to deserialize party:", e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+
             }
-            // check the existence of the specified party in the catalogue DB
-            party = CatalogueDatabaseAdapter.syncPartyInUBLDB(party, partyId, bearerToken);
 
             CatalogueType catalogue;
 

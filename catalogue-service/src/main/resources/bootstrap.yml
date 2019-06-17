@@ -5,18 +5,6 @@ spring:
     # the name of the application represents the global identifier of this microservice.
     name: catalogue-service-srdc
     url: http://localhost:8095
-  cloud:
-    config:
-      uri: ${CONFIG_SERVER_URI:http://localhost:8888}
-      # failFast is disabled per default, so that the service can start standalone without config server.
-      # failFast should be enabled in production environments.
-      # it can be set via an environment variable or the config server
-      failFast: ${CONFIG_SERVER_FAILFAST:false}
-    discovery:
-      # by disabling the service discovery the application/service can be started in "standalone mode".
-      # service discovery is disabled by default and should be enabled (set to true) for the "cloud mode".
-      # it can be set via an environment variable or the config server
-      enabled: ${discovery.enabled:${DISCOVERY_ENABLED:false}}
   datasource:
     ubldb:
       url: jdbc:postgresql://${UBL_DB_HOST:localhost}:${UBL_DB_HOST_PORT:5432}/${UBL_DB_NAME:ubldb}?currentSchema=public&ApplicationName=catalogue-service-ubldb${APPLICATION_NAME_SUFFIX:}

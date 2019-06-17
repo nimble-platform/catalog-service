@@ -19,6 +19,7 @@ public class HttpResponseUtil {
      * @return
      */
     public static ResponseEntity checkToken(String token) {
+        System.out.println(SpringBridge.getInstance().getCatalogueServiceConfig().getCheckToken());
         if(SpringBridge.getInstance().getCatalogueServiceConfig().getCheckToken()){
             try {
                 // check token
