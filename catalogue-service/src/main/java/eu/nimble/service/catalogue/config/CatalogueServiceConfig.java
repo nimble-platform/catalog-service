@@ -46,6 +46,9 @@ public class CatalogueServiceConfig {
     @Value("${nimble.catalog.max-file-size:5}")
     private int maxFileSize;
 
+    @Value("${nimble.binary-content.url}")
+    private String binaryContentUrl;
+
     @PostConstruct
     private void setupDBConnections() {
         if (environment != null) {
@@ -136,5 +139,13 @@ public class CatalogueServiceConfig {
 
     public void setMaxFileSize(int maxFileSize) {
         this.maxFileSize = maxFileSize;
+    }
+
+    public String getBinaryContentUrl() {
+        return binaryContentUrl;
+    }
+
+    public void setBinaryContentUrl(String binaryContentUrl) {
+        this.binaryContentUrl = binaryContentUrl;
     }
 }
