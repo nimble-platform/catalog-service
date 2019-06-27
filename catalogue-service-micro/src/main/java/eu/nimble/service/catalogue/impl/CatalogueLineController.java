@@ -123,6 +123,30 @@ public class CatalogueLineController {
     }
 
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieves the catalogue lines with the DB-scoped identifiers of line items (LineItemType)")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved catalogue lines successfully", response = CatalogueLineType.class, responseContainer = "List"),
+            @ApiResponse(code = 401, message = "No user exists for the given token")
+    })
+    @RequestMapping(value = "/cataloguelines/lineitems",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity getCatalogueLinesByLineItemHjids(@ApiParam(value = "Identifiers of the line items (lineItem.hjid) which are used to retrieve catalogue lines", required = true) @RequestParam(value = "ids") List<Long> hjids,
+                                                           @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        log.info("Incoming request to get catalogue lines with line items' hjids: {}", hjids);
+        // check token
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return tokenCheck;
+        }
+
+        List<CatalogueLineType> catalogueLines = service.getCatalogueLinesByLineItemHjids(hjids);
+
+        log.info("Completed the request to get catalogue lines with line items' hjids: {}", hjids);
+        return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLines));
+    }
+
+    @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves the catalogue line specified with the catalogueUuid and lineId parameters")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieved catalogue line successfully", response = CatalogueLineType.class),

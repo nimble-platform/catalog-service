@@ -2,14 +2,10 @@ package eu.nimble.service.catalogue.persistence.util;
 
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.lcpa.ItemLCPAInput;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.CommodityClassificationType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.LCPAInputType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -51,6 +47,11 @@ public class CatalogueLinePersistenceUtil {
             " lcpa.LCPAInput is not null AND" +
             " lcpa.LCPAOutput is null";
     private static final String QUERY_GET_ALL_CATALOGUELINES_CLURI = "SELECT cl.goodsItem.item FROM CatalogueLineType as cl";
+    private static final String QUERY_GET_BY_LINE_ITEMS_HJIDS = "SELECT DISTINCT clj FROM CatalogueType c"
+            + " JOIN c.catalogueLine clj, LineItemType lineItem"
+            + " WHERE lineItem.hjid in :hjids"
+            + " AND c.UUID = lineItem.item.catalogueDocumentReference.ID"
+            + " AND clj.ID = lineItem.item.manufacturersItemIdentification.ID";
 
     public static Boolean checkCatalogueLineExistence(Long hjid) {
         long lineExistence = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_CHECK_EXISTENCE_BY_HJID, new String[]{"hjid"}, new Object[]{hjid});
@@ -117,6 +118,10 @@ public class CatalogueLinePersistenceUtil {
             results.add(itemLcpaInput);
         }
         return results;
+    }
+
+    public static List<CatalogueLineType> getCatalogueLinesByLineItemHjids(List<Long> hjids){
+        return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_BY_LINE_ITEMS_HJIDS, new String[]{"hjids"}, new Object[]{hjids});
     }
 
     public static List<ItemType> getItemTypeOfAllLines() {
