@@ -1,5 +1,6 @@
 package eu.nimble.service.catalogue.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
@@ -11,6 +12,7 @@ import eu.nimble.service.catalogue.util.LoggerUtil;
 import eu.nimble.service.catalogue.validation.CatalogueLineValidator;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.LineItemType;
 import eu.nimble.utility.*;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import eu.nimble.utility.serialization.TransactionEnabledSerializationUtility;
@@ -30,9 +32,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by suat on 22-Aug-17.
@@ -123,26 +123,57 @@ public class CatalogueLineController {
     }
 
     @CrossOrigin(origins = {"*"})
-    @ApiOperation(value = "", notes = "Retrieves the catalogue lines with the DB-scoped identifiers of line items (LineItemType)")
+    @ApiOperation(value = "", notes = "Retrieves the catalogue lines using the given line items. It extracts catalogue uuid and catalogue line ids from the given line items and" +
+            " returns corresponding catalogue lines.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieved catalogue lines successfully", response = CatalogueLineType.class, responseContainer = "List"),
-            @ApiResponse(code = 401, message = "No user exists for the given token")
+            @ApiResponse(code = 401, message = "No user exists for the given token"),
+            @ApiResponse(code = 500, message = "Failed to deserialize line items")
     })
-    @RequestMapping(value = "/cataloguelines/lineitems",
+    @RequestMapping(value = "/cataloguelines",
+            consumes = {"application/json"},
             produces = {"application/json"},
-            method = RequestMethod.GET)
-    public ResponseEntity getCatalogueLinesByLineItemHjids(@ApiParam(value = "Identifiers of the line items (lineItem.hjid) which are used to retrieve catalogue lines", required = true) @RequestParam(value = "ids") List<Long> hjids,
-                                                           @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
-        log.info("Incoming request to get catalogue lines with line items' hjids: {}", hjids);
+            method = RequestMethod.POST)
+    public ResponseEntity getCatalogueLinesByLineItems(@ApiParam(value = "Serialized form of line items which are used to retrieve catalogue lines.Each line item has a reference to catalogue (lineItem.item.catalogueDocumentReference.ID) and " +
+                                                        "catalogue line (lineItem.item.manufacturersItemIdentification.ID). The service uses these two fields to get catalogue line details.An example line items serialization can be found in: " +
+                                                        "https://github.com/nimble-platform/catalog-service/tree/staging/catalogue-service-micro/src/main/resources/example_content/line_items.json", required = true) @RequestBody String lineItemsJson,
+                                                       @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        log.info("Incoming request to get catalogue lines with line items");
         // check token
         ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
         if (tokenCheck != null) {
             return tokenCheck;
         }
 
-        List<CatalogueLineType> catalogueLines = service.getCatalogueLinesByLineItemHjids(hjids);
+        // deserialize LineItems
+        List<LineItemType> lineItems = new ArrayList<>();
+        try {
+            lineItems = JsonSerializationUtility.getObjectMapper().readValue(lineItemsJson, new TypeReference<List<LineItemType>>() {});
+        } catch (IOException e) {
+            String msg = "Failed to deserialize line items";
+            log.error(msg,e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(msg);
+        }
 
-        log.info("Completed the request to get catalogue lines with line items' hjids: {}", hjids);
+        // create Catalogue Uuid-Catalogue Line id map
+        Map<String,List<String>> catalogueUuidLineIdMap = new HashMap<>();
+        for(LineItemType lineItem : lineItems){
+            String catalogueUuid = lineItem.getItem().getCatalogueDocumentReference().getID();
+            String id = lineItem.getItem().getManufacturersItemIdentification().getID();
+
+            List<String> lineIds = catalogueUuidLineIdMap.get(catalogueUuid);
+            if(lineIds == null) {
+                lineIds = new ArrayList<String>();
+                lineIds.add(id);
+                catalogueUuidLineIdMap.put(catalogueUuid, lineIds);
+            } else if (!lineIds.contains(id)) {
+                lineIds.add(id);
+            }
+        }
+        // get catalogue lines
+        List<CatalogueLineType> catalogueLines = service.getCatalogueLinesByMap(catalogueUuidLineIdMap);
+
+        log.info("Completed the request to get catalogue lines with line items");
         return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLines));
     }
 

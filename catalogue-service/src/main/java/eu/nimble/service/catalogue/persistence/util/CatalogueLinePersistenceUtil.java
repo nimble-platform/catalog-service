@@ -7,6 +7,7 @@ import eu.nimble.utility.persistence.JPARepositoryFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by suat on 31-Dec-18.
@@ -47,11 +48,6 @@ public class CatalogueLinePersistenceUtil {
             " lcpa.LCPAInput is not null AND" +
             " lcpa.LCPAOutput is null";
     private static final String QUERY_GET_ALL_CATALOGUELINES_CLURI = "SELECT cl.goodsItem.item FROM CatalogueLineType as cl";
-    private static final String QUERY_GET_BY_LINE_ITEMS_HJIDS = "SELECT DISTINCT clj FROM CatalogueType c"
-            + " JOIN c.catalogueLine clj, LineItemType lineItem"
-            + " WHERE lineItem.hjid in :hjids"
-            + " AND c.UUID = lineItem.item.catalogueDocumentReference.ID"
-            + " AND clj.ID = lineItem.item.manufacturersItemIdentification.ID";
 
     public static Boolean checkCatalogueLineExistence(Long hjid) {
         long lineExistence = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_CHECK_EXISTENCE_BY_HJID, new String[]{"hjid"}, new Object[]{hjid});
@@ -120,8 +116,12 @@ public class CatalogueLinePersistenceUtil {
         return results;
     }
 
-    public static List<CatalogueLineType> getCatalogueLinesByLineItemHjids(List<Long> hjids){
-        return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_BY_LINE_ITEMS_HJIDS, new String[]{"hjids"}, new Object[]{hjids});
+    public static List<CatalogueLineType> getCatalogueLinesByMap(Map<String, List<String>> catalogueUuidLineIdMap){
+        List<CatalogueLineType> catalogueLines = new ArrayList<>();
+        catalogueUuidLineIdMap.forEach((catalogueUuid, lineIds) -> {
+            catalogueLines.addAll(getCatalogueLines(catalogueUuid,lineIds));
+        });
+        return catalogueLines;
     }
 
     public static List<ItemType> getItemTypeOfAllLines() {
