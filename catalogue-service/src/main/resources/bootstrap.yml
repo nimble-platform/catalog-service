@@ -135,7 +135,7 @@ nimble:
   catalog:
     max-file-size: 5 #in MB
   binary-content:
-    url: ${BINARY_CONTENT_URL}
+    url: CatalogBinaryContentUri
   identity:
     url: ${IDENTITY_SERVICE_URL}
   trust:
