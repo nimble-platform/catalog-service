@@ -50,7 +50,7 @@ public class Test05_CatalogueLineControllerTest {
     }
 
     @Test
-    public void test1_addCatalogueLine() throws Exception{
+    public void test01_addCatalogueLine() throws Exception{
         // create a catalogue first
         String catalogueJson = IOUtils.toString(Test01_CatalogueControllerTest.class.getResourceAsStream("/example_catalogue.json"));
 
@@ -87,7 +87,7 @@ public class Test05_CatalogueLineControllerTest {
     }
 
     @Test
-    public void test2_getCatalogueLine() throws Exception{
+    public void test02_getCatalogueLine() throws Exception{
         MockHttpServletRequestBuilder request = get("/catalogue/" + defaultCatalogueId + "/catalogueline/" + defaultCatalogueLineId)
                 .header("Authorization", TestConfig.responderBuyerId);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
@@ -96,7 +96,7 @@ public class Test05_CatalogueLineControllerTest {
     }
 
     @Test
-    public void test3_updateCatalogueLine() throws Exception{
+    public void test03_updateCatalogueLine() throws Exception{
         MockHttpServletRequestBuilder request = get("/catalogue/" + defaultCatalogueId + "/catalogueline/" + defaultCatalogueLineId)
                 .header("Authorization", TestConfig.responderBuyerId);
         MvcResult result = this.mockMvc.perform(request).andReturn();
@@ -115,7 +115,7 @@ public class Test05_CatalogueLineControllerTest {
     }
 
     @Test
-    public void test4_getCatalogueLines() throws Exception{
+    public void test04_getCatalogueLines() throws Exception{
 
         MockHttpServletRequestBuilder request = get("/cataloguelines")
                 .header("Authorization", TestConfig.responderBuyerId)
@@ -131,7 +131,7 @@ public class Test05_CatalogueLineControllerTest {
 
     // since no hjids are provided, we should get an empty list of catalogue lines
     @Test
-    public void test5_getCatalogueLines() throws Exception{
+    public void test05_getCatalogueLines() throws Exception{
 
         MockHttpServletRequestBuilder request = get("/cataloguelines")
                 .header("Authorization", TestConfig.responderBuyerId)
@@ -145,7 +145,7 @@ public class Test05_CatalogueLineControllerTest {
     }
 
     @Test
-    public void test6_getCatalogueLinesByLineItems() throws Exception{
+    public void test06_getCatalogueLinesByLineItems() throws Exception{
         // get the serialized form of line items
         String lineItemsJson = IOUtils.toString(Test01_CatalogueControllerTest.class.getResourceAsStream("/example_line_items.json"));
         // set catalogue id
@@ -172,7 +172,7 @@ public class Test05_CatalogueLineControllerTest {
 
     // update catalogue line by changing its catalog
     @Test
-    public void test7_updateCatalogueLine() throws Exception{
+    public void test07_updateCatalogueLine() throws Exception{
         MockHttpServletRequestBuilder request = get("/catalogue/" + defaultCatalogueId + "/catalogueline/" + defaultCatalogueLineId)
                 .header("Authorization", TestConfig.responderBuyerId);
         MvcResult result = this.mockMvc.perform(request).andReturn();
@@ -193,15 +193,27 @@ public class Test05_CatalogueLineControllerTest {
         this.mockMvc.perform(request).andExpect(status().isOk());
     }
 
+    // there are two different catalogs: default and test
     @Test
-    public void test8_deleteCatalogueLineById() throws Exception {
+    public void test08_getAllCatalogueIdsForParty() throws Exception{
+        MockHttpServletRequestBuilder request = get("/catalogue/ids/706")
+                .header("Authorization", TestConfig.responderBuyerId);
+        MvcResult result = this.mockMvc.perform(request).andReturn();
+        List<String> catalogueIds = mapper.readValue(result.getResponse().getContentAsString(),new TypeReference<List<String>>() {});
+        Assert.assertEquals(2,catalogueIds.size());
+        Assert.assertEquals(true,catalogueIds.contains("default"));
+        Assert.assertEquals(true,catalogueIds.contains("test"));
+    }
+
+    @Test
+    public void test09_deleteCatalogueLineById() throws Exception {
         MockHttpServletRequestBuilder request = delete("/catalogue/" + testCatalogueId + "/catalogueline/" + defaultCatalogueLineId)
                 .header("Authorization", TestConfig.responderBuyerId);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
     }
 
     @Test
-    public void test9_getJsonNonExistingCatalogueLine() throws Exception {
+    public void test10_getJsonNonExistingCatalogueLine() throws Exception {
         MockHttpServletRequestBuilder request = get("/catalogue/" + testCatalogueId + "/catalogueline/" + defaultCatalogueLineId)
                 .header("Authorization", TestConfig.responderBuyerId);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isNotFound()).andReturn();
