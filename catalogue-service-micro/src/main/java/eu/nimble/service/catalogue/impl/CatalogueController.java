@@ -437,13 +437,15 @@ public class CatalogueController {
                 ids = CataloguePersistenceUtil.getCatalogueIdListsForParty(partyId);
             }
 
-            for (String id : ids) {
-                service.deleteCatalogue(id, partyId);
-                Map<String,String> paramMap = new HashMap<String, String>();
-                paramMap.put("activity", CatalogueEvent.CATALOGUE_DELETE.getActivity());
-                paramMap.put("catalogueId", id);
-                paramMap.put("companyId", partyId);
-                LoggerUtils.logWithMDC(log, paramMap, LoggerUtils.LogLevel.INFO, "Successfully deleted catalogue, id: {} for company: {}", id, partyId);
+            if(ids != null){
+                for (String id : ids) {
+                    service.deleteCatalogue(id, partyId);
+                    Map<String,String> paramMap = new HashMap<String, String>();
+                    paramMap.put("activity", CatalogueEvent.CATALOGUE_DELETE.getActivity());
+                    paramMap.put("catalogueId", id);
+                    paramMap.put("companyId", partyId);
+                    LoggerUtils.logWithMDC(log, paramMap, LoggerUtils.LogLevel.INFO, "Successfully deleted catalogue, id: {} for company: {}", id, partyId);
+                }
             }
 
             log.info("Completed request to delete catalogues for party: {}, ids: {}, delete all: {}", partyId, idsLog, deleteAll);
