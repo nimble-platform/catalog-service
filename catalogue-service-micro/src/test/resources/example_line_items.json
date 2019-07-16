@@ -1,0 +1,437 @@
+[
+  {
+    "quantity": {
+      "value": 1,
+      "unitCode": "item(s)"
+    },
+    "warrantyInformation": [],
+    "delivery": [
+      {
+        "requestedDeliveryPeriod": {
+          "startDate": null,
+          "startTime": null,
+          "endDate": null,
+          "endTime": null,
+          "durationMeasure": {
+            "value": null,
+            "unitCode": "day(s)",
+            "unitCodeListID": null
+          }
+        },
+        "deliveryAddress": {
+          "cityName": "",
+          "region": "",
+          "postalZone": "",
+          "buildingNumber": "",
+          "streetName": "",
+          "country": {
+            "name": {
+              "value": null,
+              "languageID": "en"
+            }
+          }
+        },
+        "deliveryTerms": {
+          "id": null,
+          "estimatedDeliveryPeriod": {
+            "startDate": null,
+            "startTime": null,
+            "endDate": null,
+            "endTime": null,
+            "durationMeasure": {
+              "value": null,
+              "unitCode": null
+            }
+          },
+          "specialTerms": [],
+          "incoterms": null,
+          "amount": {
+            "value": null,
+            "currencyID": null
+          },
+          "deliveryLocation": {
+            "address": {
+              "cityName": "",
+              "region": "",
+              "postalZone": "",
+              "buildingNumber": "",
+              "streetName": "",
+              "country": {
+                "name": {
+                  "value": null,
+                  "languageID": "en"
+                }
+              }
+            }
+          }
+        },
+        "shipment": {
+          "handlingInstructions": [],
+          "totalTransportHandlingUnitQuantity": {
+            "value": null,
+            "unitCode": null
+          },
+          "consignment": [
+            {
+              "grossWeightMeasure": {
+                "value": null,
+                "unitCode": null
+              },
+              "grossVolumeMeasure": {
+                "value": null,
+                "unitCode": null
+              },
+              "consolidatedShipment": []
+            }
+          ],
+          "goodsItem": [
+            {
+              "id": null,
+              "item": {
+                "name": [],
+                "description": [],
+                "itemSpecificationDocumentReference": [],
+                "productImage": [],
+                "additionalItemProperty": [],
+                "manufacturerParty": null,
+                "manufacturersItemIdentification": {
+                  "id": "$catalogueLineId"
+                },
+                "catalogueDocumentReference": null,
+                "commodityClassification": [],
+                "certificate": [],
+                "dimension": [],
+                "transportationServiceDetails": null,
+                "trackAndTraceDetails": {
+                  "eventURL": null,
+                  "masterURL": null,
+                  "productionProcessTemplate": null
+                },
+                "lifeCyclePerformanceAssessmentDetails": {
+                  "lcpainput": {
+                    "lifeCycleLength": {
+                      "value": null,
+                      "unitCode": null
+                    },
+                    "purchasingPrice": {
+                      "value": null,
+                      "currencyID": null
+                    },
+                    "assemblyCost": {
+                      "value": null,
+                      "currencyID": null
+                    },
+                    "transportCost": {
+                      "value": null,
+                      "currencyID": null
+                    },
+                    "consumableCost": {
+                      "value": null,
+                      "currencyID": null
+                    },
+                    "energyConsumptionCost": {
+                      "value": null,
+                      "currencyID": null
+                    },
+                    "maintenanceCost": {
+                      "value": null,
+                      "currencyID": null
+                    },
+                    "sparePartCost": {
+                      "value": null,
+                      "currencyID": null
+                    },
+                    "endOfLifeCost": {
+                      "value": null,
+                      "currencyID": null
+                    },
+                    "additionalLCPAInputDetail": []
+                  },
+                  "lcpaoutput": {}
+                }
+              },
+              "containingPackage": {
+                "quantity": {
+                  "value": null,
+                  "unitCode": null
+                },
+                "packagingTypeCode": {
+                  "value": "",
+                  "name": "",
+                  "uri": "",
+                  "listID": "",
+                  "listURI": ""
+                }
+              },
+              "deliveryTerms": {
+                "id": null,
+                "estimatedDeliveryPeriod": {
+                  "startDate": null,
+                  "startTime": null,
+                  "endDate": null,
+                  "endTime": null,
+                  "durationMeasure": {
+                    "value": null,
+                    "unitCode": null
+                  }
+                },
+                "specialTerms": [],
+                "incoterms": null,
+                "amount": {
+                  "value": null,
+                  "currencyID": null
+                },
+                "deliveryLocation": {
+                  "address": {
+                    "cityName": "",
+                    "region": "",
+                    "postalZone": "",
+                    "buildingNumber": "",
+                    "streetName": "",
+                    "country": {
+                      "name": {
+                        "value": null,
+                        "languageID": "en"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "shipmentStage": [],
+          "transportHandlingUnit": [
+            {
+              "transportHandlingUnitTypeCode": {
+                "value": "",
+                "name": "",
+                "uri": "",
+                "listID": "",
+                "listURI": ""
+              },
+              "measurementDimension": [
+                {
+                  "attributeID": "Handling Unit Length",
+                  "measure": {
+                    "value": null,
+                    "unitCode": null
+                  }
+                },
+                {
+                  "attributeID": "Handling Unit Width",
+                  "measure": {
+                    "value": null,
+                    "unitCode": null
+                  }
+                }
+              ]
+            }
+          ],
+          "originAddress": {
+            "cityName": "",
+            "region": "",
+            "postalZone": "",
+            "buildingNumber": "",
+            "streetName": "",
+            "country": {
+              "name": {
+                "value": null,
+                "languageID": "en"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "deliveryTerms": {
+      "id": null,
+      "estimatedDeliveryPeriod": {
+        "startDate": null,
+        "startTime": null,
+        "endDate": null,
+        "endTime": null,
+        "durationMeasure": {
+          "value": null,
+          "unitCode": null
+        }
+      },
+      "specialTerms": [],
+      "incoterms": null,
+      "amount": {
+        "value": null,
+        "currencyID": null
+      },
+      "deliveryLocation": {
+        "address": {
+          "cityName": "Sinop",
+          "postalZone": "492",
+          "buildingNumber": "16",
+          "streetName": "Silikon",
+          "country": {
+            "name": {
+              "value": "Turkey",
+              "languageID": "en"
+            }
+          }
+        }
+      }
+    },
+    "price": {
+      "priceAmount": {
+        "value": 23,
+        "currencyID": "EUR"
+      },
+      "baseQuantity": {
+        "value": 1,
+        "unitCode": "item(s)"
+      }
+    },
+    "item": {
+      "name": [
+        {
+          "value": "QDeneme",
+          "languageID": "en"
+        }
+      ],
+      "description": [],
+      "itemSpecificationDocumentReference": [],
+      "productImage": [],
+      "additionalItemProperty": [],
+      "manufacturerParty": {
+        "nace": [],
+        "description": [],
+        "brandName": [],
+        "partyName": [
+          {
+            "name": {
+              "value": "canCompany",
+              "languageID": "en"
+            }
+          }
+        ],
+        "partyIdentification": [
+          {
+            "id": "706"
+          }
+        ],
+        "websiteURI": "",
+        "industryClassificationCode": {
+          "name": "IndustryClassificationCode"
+        },
+        "ppapCompatibilityLevel": 1,
+        "preferredItemClassificationCode": [
+          {
+            "value": "0173-1#01-AEI956#006::eClass::Notebook::product"
+          }
+        ],
+        "mostRecentItemsClassificationCode": [
+          {
+            "value": "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard::FurnitureOntology::MDFBoard::product::1547034223954"
+          }
+        ],
+        "postalAddress": {
+          "streetName": "abcx",
+          "buildingNumber": "",
+          "cityName": "ankara",
+          "postalZone": "234",
+          "country": {
+            "name": {
+              "value": "turkey"
+            }
+          }
+        },
+        "partyTaxScheme": [
+          {
+            "taxScheme": {
+              "taxTypeCode": {
+                "value": "12",
+                "name": "VAT"
+              }
+            }
+          }
+        ],
+        "contact": {
+          "otherCommunication": []
+        },
+        "person": [
+          {
+            "id": "704",
+            "firstName": "ali",
+            "familyName": "can",
+            "role": [],
+            "contact": {
+              "name": {
+                "languageID": "en"
+              },
+              "telephone": "",
+              "electronicMail": "can@gmail.com",
+              "otherCommunication": []
+            },
+            "roleItems": []
+          }
+        ],
+        "certificate": [],
+        "qualityIndicator": [
+          {
+            "qualityParameter": ""
+          }
+        ],
+        "ppapDocumentReference": [],
+        "documentReference": [],
+        "industrySector": [],
+        "purchaseTerms": {
+          "tradingTerms": [],
+          "deliveryTerms": [],
+          "paymentMeans": []
+        }
+      },
+      "manufacturersItemIdentification": {
+        "id": "$catalogueLineId"
+      },
+      "catalogueDocumentReference": {
+        "id": "$catalogueDocumentReference",
+        "documentType": null,
+        "attachment": null
+      },
+      "commodityClassification": [
+        {
+          "itemClassificationCode": {
+            "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-AAC168#005",
+            "name": "Automotive technology",
+            "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-AAC168#005",
+            "listID": "eClass",
+            "listURI": null
+          },
+          "natureCode": null,
+          "cargoTypeCode": null,
+          "hjid": ""
+        }
+      ],
+      "certificate": [],
+      "dimension": [],
+      "transportationServiceDetails": null,
+      "trackAndTraceDetails": {
+        "eventURL": null,
+        "masterURL": null,
+        "productionProcessTemplate": null
+      }
+    },
+    "warrantyValidityPeriod": {
+      "startDate": null,
+      "startTime": null,
+      "endDate": null,
+      "endTime": null,
+      "durationMeasure": {
+        "value": 0,
+        "unitCode": "month(s)",
+        "hjid": null
+      },
+      "hjid": null
+    },
+    "lineReference": [
+      {
+        "lineID": "$catalogueLineId"
+      }
+    ]
+  }
+]

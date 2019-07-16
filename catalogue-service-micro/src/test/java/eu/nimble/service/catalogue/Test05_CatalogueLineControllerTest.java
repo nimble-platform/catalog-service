@@ -103,21 +103,7 @@ public class Test05_CatalogueLineControllerTest {
     }
 
     @Test
-    public void test4_deleteCatalogueLineById() throws Exception {
-        MockHttpServletRequestBuilder request = delete("/catalogue/" + catalogueId + "/catalogueline/" + catalogueLineId)
-                .header("Authorization", TestConfig.responderBuyerId);
-        this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
-    }
-
-    @Test
-    public void test5_getJsonNonExistingCatalogueLine() throws Exception {
-        MockHttpServletRequestBuilder request = get("/catalogue/" + catalogueId + "/catalogueline/" + catalogueLineId)
-                .header("Authorization", TestConfig.responderBuyerId);
-        this.mockMvc.perform(request).andDo(print()).andExpect(status().isNotFound()).andReturn();
-    }
-
-    @Test
-    public void test6_getCatalogueLines() throws Exception{
+    public void test4_getCatalogueLines() throws Exception{
 
         MockHttpServletRequestBuilder request = get("/cataloguelines")
                 .header("Authorization", TestConfig.responderBuyerId)
@@ -133,7 +119,7 @@ public class Test05_CatalogueLineControllerTest {
 
     // since no hjids are provided, we should get an empty list of catalogue lines
     @Test
-    public void test7_getCatalogueLines() throws Exception{
+    public void test5_getCatalogueLines() throws Exception{
 
         MockHttpServletRequestBuilder request = get("/cataloguelines")
                 .header("Authorization", TestConfig.responderBuyerId)
@@ -144,5 +130,45 @@ public class Test05_CatalogueLineControllerTest {
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         List<CatalogueLineType> catalogueLines = mapper.readValue(result.getResponse().getContentAsString(),new TypeReference<List<CatalogueLineType>>() {});
         Assert.assertEquals(0,catalogueLines.size());
+    }
+
+    @Test
+    public void test6_getCatalogueLinesByLineItems() throws Exception{
+        // get the serialized form of line items
+        String lineItemsJson = IOUtils.toString(Test01_CatalogueControllerTest.class.getResourceAsStream("/example_line_items.json"));
+        // set catalogue id
+        lineItemsJson = lineItemsJson.replace("$catalogueDocumentReference",catalogueId);
+        // set catalogue line id
+        lineItemsJson = lineItemsJson.replace("$catalogueLineId",catalogueLineId);
+
+        // get catalogue line via line items
+        MockHttpServletRequestBuilder request = post("/cataloguelines")
+                .header("Authorization", TestConfig.responderBuyerId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(lineItemsJson);
+        MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+        List<CatalogueLineType> catalogueLines = mapper.readValue(result.getResponse().getContentAsString(),new TypeReference<List<CatalogueLineType>>() {});
+
+        // get catalogue line directly
+        request = get("/catalogue/"+catalogueId+"/catalogueline/"+catalogueLineId)
+                .header("Authorization", TestConfig.responderBuyerId);
+        result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+        CatalogueLineType catalogueLine = mapper.readValue(result.getResponse().getContentAsString(), CatalogueLineType.class);
+        // check whether they are the same or not
+        Assert.assertEquals(catalogueLines.get(0).getHjid(), catalogueLine.getHjid());
+    }
+
+    @Test
+    public void test7_deleteCatalogueLineById() throws Exception {
+        MockHttpServletRequestBuilder request = delete("/catalogue/" + catalogueId + "/catalogueline/" + catalogueLineId)
+                .header("Authorization", TestConfig.responderBuyerId);
+        this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+    }
+
+    @Test
+    public void test8_getJsonNonExistingCatalogueLine() throws Exception {
+        MockHttpServletRequestBuilder request = get("/catalogue/" + catalogueId + "/catalogueline/" + catalogueLineId)
+                .header("Authorization", TestConfig.responderBuyerId);
+        this.mockMvc.perform(request).andDo(print()).andExpect(status().isNotFound()).andReturn();
     }
 }
