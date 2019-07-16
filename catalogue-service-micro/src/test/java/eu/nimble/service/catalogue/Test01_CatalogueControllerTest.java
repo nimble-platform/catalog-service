@@ -338,9 +338,19 @@ public class Test01_CatalogueControllerTest {
         Assert.assertEquals(8,cataloguePaginationResponse.getCategoryNames().size());
         Assert.assertEquals(90,cataloguePaginationResponse.getCatalogueLines().get(0).getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue().intValue());
 
-        // delete the catalogue
-        request = delete("/catalogue/ubl/" + createdCatalogueId)
+    }
+
+    @Test
+    public void test7_deleteCataloguesForParty() throws Exception {
+        MockHttpServletRequestBuilder request = delete("/catalogue")
+                .header("Authorization",TestConfig.responderBuyerId)
+                .param("deleteAll","true")
+                .param("partyId","706");
+        MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+
+        request = get("/catalogue/ubl/" + createdCatalogueId)
                 .header("Authorization", TestConfig.responderBuyerId);
-        this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+        this.mockMvc.perform(request).andDo(print()).andExpect(status().isNotFound()).andReturn();
+
     }
 }
