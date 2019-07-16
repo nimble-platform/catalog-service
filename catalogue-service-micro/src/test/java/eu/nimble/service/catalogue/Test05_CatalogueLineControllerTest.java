@@ -55,7 +55,7 @@ public class Test05_CatalogueLineControllerTest {
         String catalogueJson = IOUtils.toString(Test01_CatalogueControllerTest.class.getResourceAsStream("/example_catalogue.json"));
 
         MockHttpServletRequestBuilder request = post("/catalogue/ubl")
-                .header("Authorization", TestConfig.responderBuyerId)
+                .header("Authorization", TestConfig.buyerId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(catalogueJson);
         MvcResult result = this.mockMvc.perform(request).andExpect(status().isCreated()).andReturn();
@@ -65,7 +65,7 @@ public class Test05_CatalogueLineControllerTest {
         // post the other catalog of party
         catalogueJson = IOUtils.toString(Test01_CatalogueControllerTest.class.getResourceAsStream("/example_catalogue_test.json"));
         request = post("/catalogue/ubl")
-                .header("Authorization", TestConfig.responderBuyerId)
+                .header("Authorization", TestConfig.buyerId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(catalogueJson);
         result = this.mockMvc.perform(request).andExpect(status().isCreated()).andReturn();
@@ -79,7 +79,7 @@ public class Test05_CatalogueLineControllerTest {
         catalogueLineJson = mapper.writeValueAsString(catalogueLine);
 
         request = post("/catalogue/" + defaultCatalogueId + "/catalogueline")
-                .header("Authorization", TestConfig.responderBuyerId)
+                .header("Authorization", TestConfig.buyerId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(catalogueLineJson);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isCreated()).andReturn();
@@ -89,7 +89,7 @@ public class Test05_CatalogueLineControllerTest {
     @Test
     public void test02_getCatalogueLine() throws Exception{
         MockHttpServletRequestBuilder request = get("/catalogue/" + defaultCatalogueId + "/catalogueline/" + defaultCatalogueLineId)
-                .header("Authorization", TestConfig.responderBuyerId);
+                .header("Authorization", TestConfig.buyerId);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         CatalogueLineType catalogueLine = mapper.readValue(result.getResponse().getContentAsString(), CatalogueLineType.class);
         Assert.assertEquals(defaultCatalogueLineId, catalogueLine.getID());
@@ -98,7 +98,7 @@ public class Test05_CatalogueLineControllerTest {
     @Test
     public void test03_updateCatalogueLine() throws Exception{
         MockHttpServletRequestBuilder request = get("/catalogue/" + defaultCatalogueId + "/catalogueline/" + defaultCatalogueLineId)
-                .header("Authorization", TestConfig.responderBuyerId);
+                .header("Authorization", TestConfig.buyerId);
         MvcResult result = this.mockMvc.perform(request).andReturn();
         CatalogueLineType catalogueLine = mapper.readValue(result.getResponse().getContentAsString(), CatalogueLineType.class);
 
@@ -108,7 +108,7 @@ public class Test05_CatalogueLineControllerTest {
 
         String catalogueLineJson = mapper.writeValueAsString(catalogueLine);
         request = put("/catalogue/" + defaultCatalogueId + "/catalogueline")
-                .header("Authorization", TestConfig.responderBuyerId)
+                .header("Authorization", TestConfig.buyerId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(catalogueLineJson);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
@@ -118,7 +118,7 @@ public class Test05_CatalogueLineControllerTest {
     public void test04_getCatalogueLines() throws Exception{
 
         MockHttpServletRequestBuilder request = get("/cataloguelines")
-                .header("Authorization", TestConfig.responderBuyerId)
+                .header("Authorization", TestConfig.buyerId)
                 .param("limit","2")
                 .param("offset","1")
                 .param("ids" , Test03_TemplatePublishingTest.catalogueLineHjid1.toString(),Test03_TemplatePublishingTest.catalogueLineHjid2.toString(),
@@ -134,7 +134,7 @@ public class Test05_CatalogueLineControllerTest {
     public void test05_getCatalogueLines() throws Exception{
 
         MockHttpServletRequestBuilder request = get("/cataloguelines")
-                .header("Authorization", TestConfig.responderBuyerId)
+                .header("Authorization", TestConfig.buyerId)
                 .param("limit","2")
                 .param("offset","1")
                 .param("ids","")
@@ -155,7 +155,7 @@ public class Test05_CatalogueLineControllerTest {
 
         // get catalogue line via line items
         MockHttpServletRequestBuilder request = post("/cataloguelines")
-                .header("Authorization", TestConfig.responderBuyerId)
+                .header("Authorization", TestConfig.buyerId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(lineItemsJson);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
@@ -163,7 +163,7 @@ public class Test05_CatalogueLineControllerTest {
 
         // get catalogue line directly
         request = get("/catalogue/"+ defaultCatalogueId +"/catalogueline/"+ defaultCatalogueLineId)
-                .header("Authorization", TestConfig.responderBuyerId);
+                .header("Authorization", TestConfig.buyerId);
         result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         CatalogueLineType catalogueLine = mapper.readValue(result.getResponse().getContentAsString(), CatalogueLineType.class);
         // check whether they are the same or not
@@ -174,30 +174,30 @@ public class Test05_CatalogueLineControllerTest {
     @Test
     public void test07_updateCatalogueLine() throws Exception{
         MockHttpServletRequestBuilder request = get("/catalogue/" + defaultCatalogueId + "/catalogueline/" + defaultCatalogueLineId)
-                .header("Authorization", TestConfig.responderBuyerId);
+                .header("Authorization", TestConfig.buyerId);
         MvcResult result = this.mockMvc.perform(request).andReturn();
 
         request = put("/catalogue/" + testCatalogueId + "/catalogueline")
-                .header("Authorization", TestConfig.responderBuyerId)
+                .header("Authorization", TestConfig.buyerId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(result.getResponse().getContentAsString());
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
 
         // make sure that old catalogue line does not exist
         request = get("/catalogue/" + defaultCatalogueId + "/catalogueline/" + defaultCatalogueLineId)
-                .header("Authorization", TestConfig.responderBuyerId);
+                .header("Authorization", TestConfig.buyerId);
         this.mockMvc.perform(request).andExpect(status().isNotFound());
         // make sure that new catalogue line exists
         request = get("/catalogue/" + testCatalogueId + "/catalogueline/" + defaultCatalogueLineId)
-                .header("Authorization", TestConfig.responderBuyerId);
+                .header("Authorization", TestConfig.buyerId);
         this.mockMvc.perform(request).andExpect(status().isOk());
     }
 
     // there are two different catalogs: default and test
     @Test
     public void test08_getAllCatalogueIdsForParty() throws Exception{
-        MockHttpServletRequestBuilder request = get("/catalogue/ids/706")
-                .header("Authorization", TestConfig.responderBuyerId);
+        MockHttpServletRequestBuilder request = get("/catalogue/ids/"+TestConfig.sellerId)
+                .header("Authorization", TestConfig.buyerId);
         MvcResult result = this.mockMvc.perform(request).andReturn();
         List<String> catalogueIds = mapper.readValue(result.getResponse().getContentAsString(),new TypeReference<List<String>>() {});
         Assert.assertEquals(2,catalogueIds.size());
@@ -208,14 +208,14 @@ public class Test05_CatalogueLineControllerTest {
     @Test
     public void test09_deleteCatalogueLineById() throws Exception {
         MockHttpServletRequestBuilder request = delete("/catalogue/" + testCatalogueId + "/catalogueline/" + defaultCatalogueLineId)
-                .header("Authorization", TestConfig.responderBuyerId);
+                .header("Authorization", TestConfig.buyerId);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
     }
 
     @Test
     public void test10_getJsonNonExistingCatalogueLine() throws Exception {
         MockHttpServletRequestBuilder request = get("/catalogue/" + testCatalogueId + "/catalogueline/" + defaultCatalogueLineId)
-                .header("Authorization", TestConfig.responderBuyerId);
+                .header("Authorization", TestConfig.buyerId);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isNotFound()).andReturn();
     }
 }

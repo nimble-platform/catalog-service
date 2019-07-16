@@ -49,7 +49,7 @@ public class Test06_PriceOptionTest {
         catalogueLineJson = mapper.writeValueAsString(line);
 
         MockHttpServletRequestBuilder request = post("/catalogue/" + Test05_CatalogueLineControllerTest.defaultCatalogueId + "/catalogueline")
-                .header("Authorization", TestConfig.responderBuyerId)
+                .header("Authorization", TestConfig.buyerId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(catalogueLineJson);
         MvcResult result = this.mockMvc.perform(request).andReturn();
@@ -61,7 +61,7 @@ public class Test06_PriceOptionTest {
 
         // post pricing option
         request = post("/catalogue/" + Test05_CatalogueLineControllerTest.defaultCatalogueId + "/catalogueline/" + line.getID() + "/price-options")
-                .header("Authorization", TestConfig.responderBuyerId)
+                .header("Authorization", TestConfig.buyerId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(priceOptionJson);
         result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isCreated()).andReturn();
@@ -78,7 +78,7 @@ public class Test06_PriceOptionTest {
         priceOption.getAdditionalItemProperty().get(0).getValue().set(1, textType);
 
         MockHttpServletRequestBuilder request = put("/catalogue/" + Test05_CatalogueLineControllerTest.defaultCatalogueId + "/catalogueline/" + catalogueLine.getID() + "/price-options")
-                .header("Authorization", TestConfig.responderBuyerId)
+                .header("Authorization", TestConfig.buyerId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(priceOption));
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
@@ -94,12 +94,12 @@ public class Test06_PriceOptionTest {
     public void test3_deletePriceOption() throws Exception {
         // delete the option
         MockHttpServletRequestBuilder request = delete("/catalogue/" + Test05_CatalogueLineControllerTest.defaultCatalogueId + "/catalogueline/" + catalogueLine.getID() + "/price-options/" + priceOption.getHjid())
-                .header("Authorization", TestConfig.responderBuyerId);
+                .header("Authorization", TestConfig.buyerId);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
 
         // get catalogue line
         request = get("/catalogue/" + Test05_CatalogueLineControllerTest.defaultCatalogueId + "/catalogueline/" + catalogueLine.getID())
-                .header("Authorization", TestConfig.responderBuyerId);
+                .header("Authorization", TestConfig.buyerId);
         MvcResult result = this.mockMvc.perform(request).andReturn();
         CatalogueLineType catalogueLine = mapper.readValue(result.getResponse().getContentAsString(), CatalogueLineType.class);
 
