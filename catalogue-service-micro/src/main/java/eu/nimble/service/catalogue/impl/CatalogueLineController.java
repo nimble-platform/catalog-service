@@ -100,8 +100,8 @@ public class CatalogueLineController {
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity getCatalogueLinesByHjids(@ApiParam(value = "Identifiers of the catalogue lines to be retrieved. (line.hjid)", required = true) @RequestParam(value = "ids") List<Long> hjids,
-                                                   @ApiParam(value = "Number of catalogue lines to be included in CataloguePaginationResponse ") @RequestParam(value = "limit",required = true) Integer limit,
-                                                   @ApiParam(value = "Offset of the first catalogue line among all catalogue lines of the default catalogue for the party") @RequestParam(value = "offset",required = true) Integer pageNo,
+                                                   @ApiParam(value = "Number of catalogue lines to be included in CataloguePaginationResponse",required = true) @RequestParam(value = "limit",required = true) Integer limit,
+                                                   @ApiParam(value = "Offset of the first catalogue line among all catalogue lines of the default catalogue for the party",required = true) @RequestParam(value = "offset",required = true) Integer pageNo,
                                                    @ApiParam(value = "Option used to sort catalogue lines") @RequestParam(value = "sortOption",required = true) CatalogueLineSortOptions sortOption,
                                                  @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to get catalogue lines with hjids: {}", hjids);
