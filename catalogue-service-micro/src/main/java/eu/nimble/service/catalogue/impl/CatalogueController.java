@@ -81,8 +81,8 @@ public class CatalogueController {
             method = RequestMethod.GET)
     public ResponseEntity getDefaultCataloguePagination(@ApiParam(value = "Identifier of the party for which the catalogue to be retrieved", required = true) @PathVariable String partyId,
                                                         @ApiParam(value = "Identifier of the catalogue", required = true) @PathVariable String catalogueId,
-                                                        @ApiParam(value = "Number of catalogue lines to be included in CataloguePaginationResponse ") @RequestParam(value = "limit",required = true) Integer limit,
-                                                        @ApiParam(value = "Offset of the first catalogue line among all catalogue lines of the default catalogue for the party") @RequestParam(value = "offset",required = true) Integer offset,
+                                                        @ApiParam(value = "Number of catalogue lines to be included in CataloguePaginationResponse ",required = true) @RequestParam(value = "limit",required = true) Integer limit,
+                                                        @ApiParam(value = "Offset of the first catalogue line among all catalogue lines of the default catalogue for the party",required = true) @RequestParam(value = "offset",required = true) Integer offset,
                                                         @ApiParam(value = "Text to be used to filter the catalogue lines.Item name and description will be searched for the given text.") @RequestParam(value = "searchText",required = false) String searchText,
                                                         @ApiParam(value = "Identifier for the language of search text such as en and tr") @RequestParam(value = "languageId",required = false) String languageId,
                                                         @ApiParam(value = "Name of the category which is used to filter catalogue lines.Catalogue lines are added to the response if and only if they contain the given category.") @RequestParam(value = "categoryName",required = false) String categoryName,
