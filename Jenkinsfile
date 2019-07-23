@@ -62,6 +62,41 @@ node('nimble-jenkins-slave') {
     }
 
     // -----------------------------------------------
+    // --------------- K8s Branch ----------------
+    // -----------------------------------------------
+    if (env.BRANCH_NAME == 'efactory') {
+
+        stage('Clone and Update') {
+            git(url: 'https://github.com/nimble-platform/business-process-service.git', branch: env.BRANCH_NAME)
+        }
+
+        stage('Build Dependencies') {
+            sh 'rm -rf common'
+            sh 'git clone https://github.com/nimble-platform/common'
+            dir('common') {
+                sh 'git checkout master'
+                sh 'mvn clean install'
+            }
+        }
+
+        stage('Build Java') {
+            sh '/bin/bash -xe deploy.sh java-build'
+        }
+
+        stage('Build Docker') {
+            sh '/bin/bash -xe deploy.sh docker-build-efack8s'
+        }
+
+        stage('Push Docker') {
+            sh 'docker push nimbleplatform/catalogue-service-micro:efactory'
+        }
+
+        stage('Deploy') {
+            sh 'ssh efac-prod "kubectl delete pod -l  io.kompose.service=catalogue-service"'
+        }
+    }
+
+    // -----------------------------------------------
     // ---------------- Release Tags -----------------
     // -----------------------------------------------
     if( env.TAG_NAME ==~ /^\d+.\d+.\d+$/) {
