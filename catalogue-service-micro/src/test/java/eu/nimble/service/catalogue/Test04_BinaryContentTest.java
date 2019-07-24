@@ -71,8 +71,33 @@ public class Test04_BinaryContentTest {
         catalogueUuid = catalogue.getUUID();
     }
 
+    /*
+        We create a copy of the catalogue which is published previously.
+        Its id will be 'test' and it is important to set uri of product image so that there will be two references to the same binary content.
+     */
     @Test
-    public void test11_retrieveBinaryContent() throws Exception {
+    public void test11_postJsonCatalogue() throws Exception {
+        String catalogueJson = IOUtils.toString(Test01_CatalogueControllerTest.class.getResourceAsStream("/example_catalogue_binary_content.json"));
+        // update the catalogue's id and product image uri
+        CatalogueType catalogue = mapper.readValue(catalogueJson, CatalogueType.class);
+        catalogue.setID("test");
+        catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().get(0).setUri(firstProductImageUri);
+
+        catalogueJson = mapper.writeValueAsString(catalogue);
+
+        MockHttpServletRequestBuilder request = post("/catalogue/ubl")
+                .header("Authorization", TestConfig.buyerId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(catalogueJson);
+        MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isCreated()).andReturn();
+
+        catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
+        Assert.assertEquals(1, catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().size());
+        Assert.assertEquals(firstProductImageUri, catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().get(0).getUri());
+    }
+
+    @Test
+    public void test12_retrieveBinaryContent() throws Exception {
         MockHttpServletRequestBuilder request = get("/binary-content")
                 .header("Authorization", TestConfig.buyerId)
                 .param("uri", firstProductImageUri);
@@ -83,7 +108,7 @@ public class Test04_BinaryContentTest {
     }
 
     @Test
-    public void test12_updateJsonCatalogue() throws Exception {
+    public void test13_updateJsonCatalogue() throws Exception {
         // get the catalogue
         MockHttpServletRequestBuilder request = get("/catalogue/UBL/"+ catalogueUuid)
                 .header("Authorization", TestConfig.buyerId);
@@ -112,16 +137,21 @@ public class Test04_BinaryContentTest {
         secondProductImageUri = catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().get(0).getUri();
     }
 
+    /*
+        In the previous test case, we deleted the product image (whose uri is firstProductImageUri) of original catalogue.
+        However, there is still a product which has an image with this uri, we should still access this binary content,
+        in other words, deleting product image does not delete the content of binary object since it has more than one reference.
+     */
     @Test
-    public void test13_retrieveBinaryContentNotFound() throws Exception {
+    public void test14_retrieveBinaryContent() throws Exception {
         MockHttpServletRequestBuilder request = get("/binary-content")
                 .header("Authorization", TestConfig.buyerId)
                 .param("uri", firstProductImageUri);
-        MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isNotFound()).andReturn();
+        this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
     }
 
     @Test
-    public void test14_retrieveBinaryContent() throws Exception {
+    public void test15_retrieveBinaryContent() throws Exception {
         MockHttpServletRequestBuilder request = get("/binary-content")
                 .header("Authorization", TestConfig.buyerId)
                 .param("uri", secondProductImageUri);
@@ -132,7 +162,7 @@ public class Test04_BinaryContentTest {
     }
 
     @Test
-    public void test15_deleteImagesInsideCatalogue() throws Exception {
+    public void test16_deleteImagesInsideCatalogue() throws Exception {
         MockHttpServletRequestBuilder request = get("/catalogue/"+catalogueUuid+"/delete-images")
                 .header("Authorization", TestConfig.buyerId);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
@@ -153,7 +183,7 @@ public class Test04_BinaryContentTest {
         Upload a zip package consisting of two images.
      */
     @Test
-    public void test16_uploadImages() throws Exception {
+    public void test18_uploadImages() throws Exception {
         InputStream is = Test04_BinaryContentTest.class.getResourceAsStream("/images/ProductImages.zip");
         MockMultipartFile mutipartFile = new MockMultipartFile("package", imagesZipName, contentType, is);
         // upload images
@@ -187,7 +217,7 @@ public class Test04_BinaryContentTest {
         Therefore,the service should replace the old image with the new one.
      */
     @Test
-    public void test17_uploadImages() throws Exception {
+    public void test19_uploadImages() throws Exception {
         InputStream is = Test04_BinaryContentTest.class.getResourceAsStream("/images/ProductImagesNew.zip");
         MockMultipartFile mutipartFile = new MockMultipartFile("package", imagesZipName, contentType, is);
         // upload images
@@ -225,7 +255,7 @@ public class Test04_BinaryContentTest {
     }
 
     @Test
-    public void test18_deleteCatalogue() throws Exception {
+    public void test20_deleteCatalogue() throws Exception {
         MockHttpServletRequestBuilder request = delete("/catalogue/ubl/" + catalogueUuid)
                 .header("Authorization", TestConfig.buyerId);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
