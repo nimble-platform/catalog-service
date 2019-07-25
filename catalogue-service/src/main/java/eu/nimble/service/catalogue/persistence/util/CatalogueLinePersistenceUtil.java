@@ -116,14 +116,6 @@ public class CatalogueLinePersistenceUtil {
         return results;
     }
 
-    public static List<CatalogueLineType> getCatalogueLinesByMap(Map<String, List<String>> catalogueUuidLineIdMap){
-        List<CatalogueLineType> catalogueLines = new ArrayList<>();
-        catalogueUuidLineIdMap.forEach((catalogueUuid, lineIds) -> {
-            catalogueLines.addAll(getCatalogueLines(catalogueUuid,lineIds));
-        });
-        return catalogueLines;
-    }
-
     public static List<ItemType> getItemTypeOfAllLines() {
         return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_ALL_CATALOGUELINES_CLURI);
     }

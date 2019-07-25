@@ -624,11 +624,6 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public List<CatalogueLineType> getCatalogueLinesByMap(Map<String, List<String>> catalogueUuidLineIdMap) {
-        return CatalogueLinePersistenceUtil.getCatalogueLinesByMap(catalogueUuidLineIdMap);
-    }
-
-    @Override
     public List<String> getCatalogueIdsForParty(String partyId) {
         return CataloguePersistenceUtil.getCatalogueIdListsForParty(partyId);
     }

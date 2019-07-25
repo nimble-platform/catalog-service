@@ -90,8 +90,6 @@ public interface CatalogueService {
 
     List<CatalogueLineType> getCatalogueLines(List<Long> hjids,CatalogueLineSortOptions sortOption,int limit, int pageNo);
 
-    List<CatalogueLineType> getCatalogueLinesByMap(Map<String,List<String>> catalogueUuidLineIdMap);
-
     <T> T getCatalogueLine(String catalogueId, String catalogueLineId);
 
     <T> T getCatalogueLines(String catalogueId, List<String> catalogueLineIds);

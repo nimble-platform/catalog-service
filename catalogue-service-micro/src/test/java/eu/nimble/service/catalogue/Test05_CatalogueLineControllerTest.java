@@ -146,18 +146,11 @@ public class Test05_CatalogueLineControllerTest {
 
     @Test
     public void test06_getCatalogueLinesByLineItems() throws Exception{
-        // get the serialized form of line items
-        String lineItemsJson = IOUtils.toString(Test01_CatalogueControllerTest.class.getResourceAsStream("/example_line_items.json"));
-        // set catalogue id
-        lineItemsJson = lineItemsJson.replace("$catalogueDocumentReference", defaultCatalogueId);
-        // set catalogue line id
-        lineItemsJson = lineItemsJson.replace("$catalogueLineId", defaultCatalogueLineId);
-
         // get catalogue line via line items
-        MockHttpServletRequestBuilder request = post("/cataloguelines")
+        MockHttpServletRequestBuilder request = get("/catalogue/cataloguelines")
                 .header("Authorization", TestConfig.buyerId)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(lineItemsJson);
+                .param("catalogueUuids",defaultCatalogueId)
+                .param("lineIds",defaultCatalogueLineId);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         List<CatalogueLineType> catalogueLines = mapper.readValue(result.getResponse().getContentAsString(),new TypeReference<List<CatalogueLineType>>() {});
 
