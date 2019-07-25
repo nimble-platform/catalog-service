@@ -46,6 +46,9 @@ public class CatalogueServiceConfig {
     @Value("${nimble.catalog.max-file-size:5}")
     private int maxFileSize;
 
+    @Value("${nimble.identity.check-token}")
+    private Boolean checkToken;
+
     @Value("${nimble.binary-content.url}")
     private String binaryContentUrl;
 
@@ -139,6 +142,14 @@ public class CatalogueServiceConfig {
 
     public void setMaxFileSize(int maxFileSize) {
         this.maxFileSize = maxFileSize;
+    }
+
+    public Boolean getCheckToken() {
+        return checkToken;
+    }
+
+    public void setCheckToken(Boolean checkToken) {
+        this.checkToken = checkToken;
     }
 
     public String getBinaryContentUrl() {
