@@ -76,7 +76,7 @@ public class CatalogueController {
             @ApiResponse(code = 404, message = "No default catalogue for the party"),
             @ApiResponse(code = 500, message = "Failed to get CataloguePaginationResponse for the party")
     })
-    @RequestMapping(value = "/catalogue/{partyId}/pagination/{catalogueId}",
+    @RequestMapping(value = "/catalogue/{partyId}/pagination/{catalogueId:.+}",
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity getDefaultCataloguePagination(@ApiParam(value = "Identifier of the party for which the catalogue to be retrieved", required = true) @PathVariable String partyId,

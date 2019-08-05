@@ -8,14 +8,14 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        Test01_CatalogueControllerTest.class,
-        Test02_ProductCategoryControllerTest.class,
-        Test03_TemplatePublishingTest.class,
-        Test04_BinaryContentTest.class,
-        Test05_CatalogueLineControllerTest.class,
-        Test06_PriceOptionTest.class,
-        Test07_ImportExportControllerText.class,
-        Test08_LCPAControllerTest.class
+//        Test01_CatalogueControllerTest.class,
+//        Test02_ProductCategoryControllerTest.class,
+//        Test03_TemplatePublishingTest.class,
+//        Test04_BinaryContentTest.class,
+//        Test05_CatalogueLineControllerTest.class,
+//        Test06_PriceOptionTest.class,
+//        Test07_ImportExportControllerText.class,
+//        Test08_LCPAControllerTest.class
 })
 public class TestSuite {
 }
