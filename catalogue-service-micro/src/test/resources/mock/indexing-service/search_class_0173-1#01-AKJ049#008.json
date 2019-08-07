@@ -1,0 +1,57 @@
+{
+  "totalElements": 1,
+  "totalPages": 1,
+  "pageSize": 2147483647,
+  "currentPage": 0,
+  "result": [
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ049#008",
+      "code": "22292800",
+      "localName": "0173-1#01-AKJ049#008",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "Wood fiberboard (MDF, HDF, LDF)"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": null,
+      "comment": null,
+      "type": "class",
+      "properties": null,
+      "parents": [
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-AJZ801#008"
+      ],
+      "children": [
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ051#013",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-ACH237#011",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-BAB761#011",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ055#013",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-AKN387#013",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ053#013",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ052#013",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ050#013",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-ACH239#011"
+      ],
+      "allParents": [
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-AAA647#005",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-AJZ801#008"
+      ],
+      "allChildren": [
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ051#013",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-ACH237#011",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-BAB761#011",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ055#013",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-AKN387#013",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ053#013",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ052#013",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ050#013",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-ACH239#011"
+      ],
+      "level": 3
+    }
+  ],
+  "facets": null
+}

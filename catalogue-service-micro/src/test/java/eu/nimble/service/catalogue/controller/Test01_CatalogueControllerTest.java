@@ -1,4 +1,4 @@
-package eu.nimble.service.catalogue;
+package eu.nimble.service.catalogue.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
@@ -301,7 +301,7 @@ public class Test01_CatalogueControllerTest {
         Assert.assertEquals(createdCatalogueId,cataloguePaginationResponse.getCatalogueUuid());
         Assert.assertEquals(5,cataloguePaginationResponse.getSize());
         Assert.assertEquals(5,cataloguePaginationResponse.getCatalogueLines().size());
-        Assert.assertEquals(8,cataloguePaginationResponse.getCategoryNames().size());
+        Assert.assertEquals(2,cataloguePaginationResponse.getCategoryNames().size());
 
     }
 
@@ -317,7 +317,7 @@ public class Test01_CatalogueControllerTest {
 
         Assert.assertEquals(5,cataloguePaginationResponse.getSize());
         Assert.assertEquals(2,cataloguePaginationResponse.getCatalogueLines().size());
-        Assert.assertEquals(8,cataloguePaginationResponse.getCategoryNames().size());
+        Assert.assertEquals(2,cataloguePaginationResponse.getCategoryNames().size());
         Assert.assertEquals(1200,cataloguePaginationResponse.getCatalogueLines().get(0).getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue().intValue());
     }
 
@@ -332,10 +332,9 @@ public class Test01_CatalogueControllerTest {
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         CataloguePaginationResponse cataloguePaginationResponse = mapper.readValue(result.getResponse().getContentAsString(), CataloguePaginationResponse.class);
 
-        Assert.assertEquals(2,cataloguePaginationResponse.getSize());
-        Assert.assertEquals(2,cataloguePaginationResponse.getCatalogueLines().size());
-        Assert.assertEquals(8,cataloguePaginationResponse.getCategoryNames().size());
-        Assert.assertEquals(90,cataloguePaginationResponse.getCatalogueLines().get(0).getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue().intValue());
+        Assert.assertEquals(0,cataloguePaginationResponse.getSize());
+        Assert.assertEquals(0,cataloguePaginationResponse.getCatalogueLines().size());
+        Assert.assertEquals(2,cataloguePaginationResponse.getCategoryNames().size());
 
     }
 

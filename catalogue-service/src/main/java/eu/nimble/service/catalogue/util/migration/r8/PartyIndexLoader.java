@@ -16,16 +16,16 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import springfox.documentation.spring.web.json.Json;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 /**
  * Created by suat on 18-Feb-19.
  */
+@Profile("!test")
 @Component
 public class PartyIndexLoader {
     private static final Logger logger = LoggerFactory.getLogger(PartyIndexLoader.class);

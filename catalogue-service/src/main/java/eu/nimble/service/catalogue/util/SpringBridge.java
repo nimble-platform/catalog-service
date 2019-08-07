@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.util;
 
 import eu.nimble.common.rest.identity.IIdentityClientTyped;
+import eu.nimble.common.rest.indexing.IIndexingServiceClient;
 import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.category.TaxonomyManager;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
@@ -27,6 +28,8 @@ public class SpringBridge implements ApplicationContextAware {
     private CatalogueServiceConfig catalogueServiceConfig;
     @Autowired
     private IIdentityClientTyped iIdentityClientTyped;
+    @Autowired
+    private IIndexingServiceClient iIndexingServiceClient;
     @Autowired
     private IndexCategoryService indexCategoryService;
     @Autowired
@@ -59,4 +62,9 @@ public class SpringBridge implements ApplicationContextAware {
     public TaxonomyManager getTaxonomyManager() {
         return taxonomyManager;
     }
+
+    public IIndexingServiceClient getiIndexingServiceClient() {
+        return iIndexingServiceClient;
+    }
+
 }

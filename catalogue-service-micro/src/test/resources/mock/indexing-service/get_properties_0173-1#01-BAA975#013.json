@@ -1,0 +1,619 @@
+{
+  "totalElements": 20,
+  "totalPages": 1,
+  "pageSize": 20,
+  "currentPage": 0,
+  "result": [
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO742#002",
+      "code": null,
+      "localName": "0173-1#02-AAO742#002",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "Brand"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": {
+        "en": "Part of the naming for the support and the recognition of the brand position of products and services consisting of words, numbers, letters or other characters. Registered brands and trademarks are indicated with the appropriate protective signs (® or TM)"
+      },
+      "comment": null,
+      "type": "property",
+      "range": "http://www.w3.org/2001/XMLSchema#string",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "httpwwwnimbleprojectorgresourceeclass0173102AAO742002"
+      ],
+      "visible": true,
+      "propertyType": "DatatypeProperty",
+      "codeList": [],
+      "codeListId": null
+    },
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#02-AAW337#001",
+      "code": null,
+      "localName": "0173-1#02-AAW337#001",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "Supplier product order suffix"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": {
+        "en": "By the supplier awarded string for the identification of additional attributes, not by a structured supplier item number may be expressed"
+      },
+      "comment": null,
+      "type": "property",
+      "range": "http://www.w3.org/2001/XMLSchema#string",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "httpwwwnimbleprojectorgresourceeclass0173102AAW337001"
+      ],
+      "visible": true,
+      "propertyType": "DatatypeProperty",
+      "codeList": [],
+      "codeListId": null
+    },
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#02-AAW336#001",
+      "code": null,
+      "localName": "0173-1#02-AAW336#001",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "Supplier product type"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": {
+        "en": "Characteristic to differentiate between different products of a product family or special variants"
+      },
+      "comment": null,
+      "type": "property",
+      "range": "http://www.w3.org/2001/XMLSchema#string",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "httpwwwnimbleprojectorgresourceeclass0173102AAW336001"
+      ],
+      "visible": true,
+      "propertyType": "DatatypeProperty",
+      "codeList": [],
+      "codeListId": null
+    },
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO057#002",
+      "code": null,
+      "localName": "0173-1#02-AAO057#002",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "Product type"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": {
+        "en": "Characteristic to differentiate between different products of a product family or special variants"
+      },
+      "comment": null,
+      "type": "property",
+      "range": "http://www.w3.org/2001/XMLSchema#string",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "httpwwwnimbleprojectorgresourceeclass0173102AAO057002"
+      ],
+      "visible": true,
+      "propertyType": "DatatypeProperty",
+      "codeList": [],
+      "codeListId": null
+    },
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#02-AAW338#001",
+      "code": null,
+      "localName": "0173-1#02-AAW338#001",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "Manufacturer product designation"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": {
+        "en": "Short description of the product (short text)"
+      },
+      "comment": null,
+      "type": "property",
+      "range": "http://www.w3.org/2001/XMLSchema#string",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "httpwwwnimbleprojectorgresourceeclass0173102AAW338001"
+      ],
+      "visible": true,
+      "propertyType": "DatatypeProperty",
+      "codeList": [],
+      "codeListId": null
+    },
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO677#002",
+      "code": null,
+      "localName": "0173-1#02-AAO677#002",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "Manufacturer name"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": {
+        "en": "legally valid designation of the natural or judicial person which is directly responsible for the design, production, packaging and labeling of a product in respect to its being brought into circulation"
+      },
+      "comment": {
+        "en": "Preliminary establishment of the designation of the manufacturer subject to changes by future EU directives and/or European standards."
+      },
+      "type": "property",
+      "range": "http://www.w3.org/2001/XMLSchema#string",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "httpwwwnimbleprojectorgresourceeclass0173102AAO677002"
+      ],
+      "visible": true,
+      "propertyType": "DatatypeProperty",
+      "codeList": [],
+      "codeListId": null
+    },
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO663#003",
+      "code": null,
+      "localName": "0173-1#02-AAO663#003",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "GTIN"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": {
+        "en": "internationally unique and unambiguous article number for products and services (Global Trade Item Number)"
+      },
+      "comment": {
+        "en": "The most common EAN-number is a 13 digit number. The first two or three digits represent the national institute responsible for assigning numbers and thus indicate the country of manufacture. The following five or four places are used for the manufacturer's characterization. Five additional digits are provided for the manufacturer's article number. The 13th and last digit is a check digit."
+      },
+      "type": "property",
+      "range": "http://www.w3.org/2001/XMLSchema#string",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "httpwwwnimbleprojectorgresourceeclass0173102AAO663003"
+      ],
+      "visible": true,
+      "propertyType": "DatatypeProperty",
+      "codeList": [],
+      "codeListId": null
+    },
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO676#003",
+      "code": null,
+      "localName": "0173-1#02-AAO676#003",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "product article number of manufacturer"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": {
+        "en": "unique product identifier of the manufacturer"
+      },
+      "comment": {
+        "en": "With this article number the customer is able to order an article or service from the manufacturer or a supplier."
+      },
+      "type": "property",
+      "range": "http://www.w3.org/2001/XMLSchema#string",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "httpwwwnimbleprojectorgresourceeclass0173102AAO676003"
+      ],
+      "visible": true,
+      "propertyType": "DatatypeProperty",
+      "codeList": [],
+      "codeListId": null
+    },
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO735#003",
+      "code": null,
+      "localName": "0173-1#02-AAO735#003",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "name of supplier"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": {
+        "en": "name of supplier which provides the customer with a product or a service"
+      },
+      "comment": {
+        "en": "The supplier as contractor in a contractual relationship can, for example, be a manufacturer, a distributor, an importer, a retail dealer or chain, an assembly company or service organization. The supplier can be any legal entity which is responsible for the quality of the product before it is taken by the customer. In the context of transport services the supplier can also be the person or organization which delivers an article or a service to the buyer."
+      },
+      "type": "property",
+      "range": "http://www.w3.org/2001/XMLSchema#string",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "httpwwwnimbleprojectorgresourceeclass0173102AAO735003"
+      ],
+      "visible": true,
+      "propertyType": "DatatypeProperty",
+      "codeList": [],
+      "codeListId": null
+    },
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO736#004",
+      "code": null,
+      "localName": "0173-1#02-AAO736#004",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "product article number of supplier"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": {
+        "en": "unique product order identifier of the supplier"
+      },
+      "comment": {
+        "en": "The customer can use this number to order the article (or service) from the manufacturer or supplier."
+      },
+      "type": "property",
+      "range": "http://www.w3.org/2001/XMLSchema#string",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "httpwwwnimbleprojectorgresourceeclass0173102AAO736004"
+      ],
+      "visible": true,
+      "propertyType": "DatatypeProperty",
+      "codeList": [],
+      "codeListId": null
+    },
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU733#001",
+      "code": null,
+      "localName": "0173-1#02-AAU733#001",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "Manufacturer product order suffix"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": {
+        "en": "By the manufacturer awarded string for the identification of additional attributes, not by a structured manufacturer item number may be expressed"
+      },
+      "comment": null,
+      "type": "property",
+      "range": "http://www.w3.org/2001/XMLSchema#string",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "httpwwwnimbleprojectorgresourceeclass0173102AAU733001"
+      ],
+      "visible": true,
+      "propertyType": "DatatypeProperty",
+      "codeList": [],
+      "codeListId": null
+    },
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU734#001",
+      "code": null,
+      "localName": "0173-1#02-AAU734#001",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "Manufacturer product description"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": {
+        "en": "Description of the product, it's technical features and implementation if needed (long text)"
+      },
+      "comment": null,
+      "type": "property",
+      "range": "http://www.w3.org/2001/XMLSchema#string",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "httpwwwnimbleprojectorgresourceeclass0173102AAU734001"
+      ],
+      "visible": true,
+      "propertyType": "DatatypeProperty",
+      "codeList": [],
+      "codeListId": null
+    },
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU730#001",
+      "code": null,
+      "localName": "0173-1#02-AAU730#001",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "Supplier product description"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": {
+        "en": "Description of the product, it's technical features and implementation if needed (long text)"
+      },
+      "comment": null,
+      "type": "property",
+      "range": "http://www.w3.org/2001/XMLSchema#string",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "httpwwwnimbleprojectorgresourceeclass0173102AAU730001"
+      ],
+      "visible": true,
+      "propertyType": "DatatypeProperty",
+      "codeList": [],
+      "codeListId": null
+    },
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU731#001",
+      "code": null,
+      "localName": "0173-1#02-AAU731#001",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "Manufacturer product family"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": {
+        "en": "2nd level of a 3 level manufacturer specific product hierarchy"
+      },
+      "comment": null,
+      "type": "property",
+      "range": "http://www.w3.org/2001/XMLSchema#string",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "httpwwwnimbleprojectorgresourceeclass0173102AAU731001"
+      ],
+      "visible": true,
+      "propertyType": "DatatypeProperty",
+      "codeList": [],
+      "codeListId": null
+    },
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU732#001",
+      "code": null,
+      "localName": "0173-1#02-AAU732#001",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "Manufacturer product root"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": {
+        "en": "Top level of a 3 level manufacturer specific product hierarchy"
+      },
+      "comment": null,
+      "type": "property",
+      "range": "http://www.w3.org/2001/XMLSchema#string",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "httpwwwnimbleprojectorgresourceeclass0173102AAU732001"
+      ],
+      "visible": true,
+      "propertyType": "DatatypeProperty",
+      "codeList": [],
+      "codeListId": null
+    },
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU728#001",
+      "code": null,
+      "localName": "0173-1#02-AAU728#001",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "Supplier product family"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": {
+        "en": "2nd level of a 3 level supplier specific product hierarchy"
+      },
+      "comment": null,
+      "type": "property",
+      "range": "http://www.w3.org/2001/XMLSchema#string",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "httpwwwnimbleprojectorgresourceeclass0173102AAU728001"
+      ],
+      "visible": true,
+      "propertyType": "DatatypeProperty",
+      "codeList": [],
+      "codeListId": null
+    },
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU729#001",
+      "code": null,
+      "localName": "0173-1#02-AAU729#001",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "Supplier product root"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": {
+        "en": "Top level of a 3 level supplier specific product hierarchy"
+      },
+      "comment": null,
+      "type": "property",
+      "range": "http://www.w3.org/2001/XMLSchema#string",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "httpwwwnimbleprojectorgresourceeclass0173102AAU729001"
+      ],
+      "visible": true,
+      "propertyType": "DatatypeProperty",
+      "codeList": [],
+      "codeListId": null
+    },
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#02-AAM551#002",
+      "code": null,
+      "localName": "0173-1#02-AAM551#002",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "Supplier product designation"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": {
+        "en": "Short description of the product (short text)"
+      },
+      "comment": null,
+      "type": "property",
+      "range": "http://www.w3.org/2001/XMLSchema#string",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "httpwwwnimbleprojectorgresourceeclass0173102AAM551002"
+      ],
+      "visible": true,
+      "propertyType": "DatatypeProperty",
+      "codeList": [],
+      "codeListId": null
+    },
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#02-AAQ326#002",
+      "code": null,
+      "localName": "0173-1#02-AAQ326#002",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "address of additional link"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": {
+        "en": "web site address where information about the product or contact is given"
+      },
+      "comment": null,
+      "type": "property",
+      "range": "http://www.w3.org/2001/XMLSchema#string",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "httpwwwnimbleprojectorgresourceeclass0173102AAQ326002"
+      ],
+      "visible": true,
+      "propertyType": "DatatypeProperty",
+      "codeList": [],
+      "codeListId": null
+    },
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#02-AAD931#005",
+      "code": null,
+      "localName": "0173-1#02-AAD931#005",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "customs tariff number (TARIC)"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": {
+        "en": "Nomenclature of goods according to the current regulation inkluding the tariff and statistical nomenclature and the Common Customs Tariff"
+      },
+      "comment": null,
+      "type": "property",
+      "range": "http://www.w3.org/2001/XMLSchema#int",
+      "valueQualifier": "NUMBER",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "httpwwwnimbleprojectorgresourceeclass0173102AAD931005"
+      ],
+      "visible": true,
+      "propertyType": "DatatypeProperty",
+      "codeList": [],
+      "codeListId": null
+    }
+  ],
+  "facets": null
+}

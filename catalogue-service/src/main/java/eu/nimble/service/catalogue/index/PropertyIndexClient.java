@@ -2,25 +2,21 @@ package eu.nimble.service.catalogue.index;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
-import com.mashape.unirest.request.HttpRequest;
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.util.CredentialsUtil;
+import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.solr.SearchResult;
 import eu.nimble.service.model.solr.owl.ClassType;
 import eu.nimble.service.model.solr.owl.PropertyType;
 import eu.nimble.utility.JsonSerializationUtility;
-import jena.query;
+import feign.Response;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -60,23 +56,19 @@ public class PropertyIndexClient {
                 return;
             }
 
-            HttpResponse<String> response = Unirest.post(indexingUrl + "/property")
-                    .header(HttpHeaders.AUTHORIZATION, credentialsUtil.getBearerToken())
-                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .body(propertyJson)
-                    .asString();
+            Response response = SpringBridge.getInstance().getiIndexingServiceClient().setProperty(credentialsUtil.getBearerToken(),propertyJson);
 
-            if (response.getStatus() == HttpStatus.OK.value()) {
+            if (response.status() == HttpStatus.OK.value()) {
                 logger.info("Indexed property successfully. property uri: {}", property.getUri());
                 return;
 
             } else {
-                String msg = String.format("Failed to index property. uri: %s, indexing call status: %d, message: %s", property.getUri(), response.getStatus(), response.getBody());
+                String msg = String.format("Failed to index property. uri: %s, indexing call status: %d, message: %s", property.getUri(), response.status(), IOUtils.toString(response.body().asInputStream()));
                 logger.error(msg);
                 return;
             }
 
-        } catch (UnirestException e) {
+        } catch (Exception e) {
             String msg = String.format("Failed to index property. uri: %s", property.getUri());
             logger.error(msg, e);
             return;
@@ -84,25 +76,22 @@ public class PropertyIndexClient {
     }
 
     public List<PropertyType> getProperties(Set<String> uris) {
-        HttpResponse<String> response;
+        Response response;
         try {
-            response = Unirest.get(indexingUrl + "/properties")
-                    .queryString("uri", uris)
-                    .header(HttpHeaders.AUTHORIZATION, credentialsUtil.getBearerToken())
-                    .asString();
+            response = SpringBridge.getInstance().getiIndexingServiceClient().getProperties(credentialsUtil.getBearerToken(),uris,null);
 
-            if (response.getStatus() == HttpStatus.OK.value()) {
+            if (response.status() == HttpStatus.OK.value()) {
                 List<PropertyType> properties = extractIndexPropertiesFromSearchResults(response, uris.toString());
                 logger.info("Retrieved properties for uris: {}", uris);
                 return properties;
 
             } else {
-                String msg = String.format("Failed to retrieve properties. uris: %s, indexing call status: %d, message: %s", uris, response.getStatus(), response.getBody());
+                String msg = String.format("Failed to retrieve properties. uris: %s, indexing call status: %d, message: %s", uris, response.status(), IOUtils.toString(response.body().asInputStream()));
                 logger.error(msg);
                 throw new RuntimeException(msg);
             }
 
-        } catch (UnirestException e) {
+        } catch (Exception e) {
             String msg = String.format("Failed to retrieve properties for uris. uris: %s", uris);
             logger.error(msg, e);
             throw new RuntimeException(msg, e);
@@ -115,25 +104,21 @@ public class PropertyIndexClient {
 
     public List<PropertyType> getIndexPropertiesForCategories(List<String> categoryUris) {
         try {
-            HttpRequest request = Unirest.get(indexingUrl + "/properties")
-                    .header(HttpHeaders.AUTHORIZATION, credentialsUtil.getBearerToken());
-            for(String categoryUri : categoryUris) {
-                request = request.queryString("class", categoryUri);
-            }
-            HttpResponse<String> response = request.asString();
+            Set<String> urisSet = new HashSet<>(categoryUris);
+            Response response = SpringBridge.getInstance().getiIndexingServiceClient().getProperties(credentialsUtil.getBearerToken(),null,urisSet);
 
-            if (response.getStatus() == HttpStatus.OK.value()) {
+            if (response.status() == HttpStatus.OK.value()) {
                 List<PropertyType> properties = extractIndexPropertiesFromSearchResults(response, categoryUris.toString());
                 logger.info("Retrieved properties for categories: {}", categoryUris);
                 return properties;
 
             } else {
-                String msg = String.format("Failed to retrieve properties for categories: %s, indexing call status: %d, message: %s", categoryUris, response.getStatus(), response.getBody());
+                String msg = String.format("Failed to retrieve properties for categories: %s, indexing call status: %d, message: %s", categoryUris, response.status(), IOUtils.toString(response.body().asInputStream()));
                 logger.error(msg);
                 throw new RuntimeException(msg);
             }
 
-        } catch (UnirestException e) {
+        } catch (Exception e) {
             String msg = String.format("Failed to retrieve properties for categories: %s", categoryUris);
             logger.error(msg, e);
             throw new RuntimeException(msg, e);
@@ -203,12 +188,23 @@ public class PropertyIndexClient {
         return remainingCategories;
     }
 
-    private List<PropertyType> extractIndexPropertiesFromSearchResults(HttpResponse<String> response, String query) {
+    private List<PropertyType> extractIndexPropertiesFromSearchResults(Response response, String query) {
         ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
         SearchResult<PropertyType> searchResult;
         List<PropertyType> indexProperties;
+
+        String responseBody;
         try {
-            searchResult = mapper.readValue(response.getBody(), new TypeReference<SearchResult<PropertyType>>() {});
+            responseBody = IOUtils.toString(response.body().asInputStream());
+        }
+        catch (IOException e){
+            String msg = String.format("Failed to get response body for query: %s", query);
+            logger.error(msg, e);
+            throw new RuntimeException(msg, e);
+        }
+
+        try {
+            searchResult = mapper.readValue(responseBody, new TypeReference<SearchResult<PropertyType>>() {});
             indexProperties = searchResult.getResult();
 
             // filter properties so that only datatype properties and properties that are visible (PropertyType.isVisible) on the UI are included
@@ -219,7 +215,7 @@ public class PropertyIndexClient {
             return indexProperties;
 
         } catch (IOException e) {
-            String msg = String.format("Failed to parse SearchResult while getting properties. query: %s, serialized results: %s", query, response.getBody());
+            String msg = String.format("Failed to parse SearchResult while getting properties. query: %s, serialized results: %s", query, responseBody);
             logger.error(msg, e);
             throw new RuntimeException(msg, e);
         }

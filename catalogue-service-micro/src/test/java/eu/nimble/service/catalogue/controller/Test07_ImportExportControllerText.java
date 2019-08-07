@@ -1,6 +1,7 @@
-package eu.nimble.service.catalogue;
+package eu.nimble.service.catalogue.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.utility.JsonSerializationUtility;
 import org.apache.poi.ss.usermodel.Workbook;
