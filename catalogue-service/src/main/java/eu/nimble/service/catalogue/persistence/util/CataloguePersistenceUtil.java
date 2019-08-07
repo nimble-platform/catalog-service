@@ -25,6 +25,9 @@ public class CataloguePersistenceUtil {
     private static final String QUERY_GET_CATALOGUE_IDLIST_FOR_PARTY = "SELECT catalogue.ID FROM CatalogueType as catalogue" +
             " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification" +
             " WHERE partyIdentification.ID = :partyId";
+    private static final String QUERY_GET_CATALOGUE_ID_AND_NAME_LIST_FOR_PARTY = "SELECT catalogue.ID,catalogue.UUID FROM CatalogueType as catalogue" +
+            " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification" +
+            " WHERE partyIdentification.ID = :partyId";
 
     private static final String QUERY_GET_CATALOGUE_LINES_BY_IDS = "SELECT catalogueLine FROM CatalogueLineType catalogueLine " +
             " WHERE catalogueLine.ID in :catalogueLineIds";
@@ -84,7 +87,7 @@ public class CataloguePersistenceUtil {
         return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_ALL_CATALOGUES);
     }
 
-    public static CataloguePaginationResponse getCatalogueLinesForParty(String catalogueId, String partyId, String selectedCategoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset) {
+    public static CataloguePaginationResponse getCatalogueLinesForParty(String catalogueId, String partyId, String selectedCategoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset,String catalogueUUID) {
 
         String catalogueUuid = "";
         long size = 0;
@@ -95,7 +98,7 @@ public class CataloguePersistenceUtil {
             categoryNames = new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_COMMODITY_CLASSIFICATION_NAMES_FOR_PARTY_CATALOGUES,new String[]{"partyId"}, new Object[]{partyId});
             if(limit != 0){
                 // get the query
-                QueryData queryData = getQuery(null,partyId,searchText,languageId,selectedCategoryName,sortOption);
+                QueryData queryData = getQuery(null,partyId,searchText,languageId,selectedCategoryName,sortOption,catalogueUUID);
                 // get all catalogue line ids
                 List<String> catalogueLineIds = new JPARepositoryFactory().forCatalogueRepository().getEntities(queryData.query,queryData.parameterNames.toArray(new String[0]), queryData.parameterValues.toArray(),null,null,queryData.isNativeQuery);
                 // set the size of catalogue lines
@@ -128,15 +131,21 @@ public class CataloguePersistenceUtil {
             }
 
         }else{
-            // get catalogue uuid
-            catalogueUuid = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_CATALOGUE_UUID_FOR_PARTY,new String[]{"catalogueId","partyId"}, new Object[]{catalogueId,partyId});
+
+            if(catalogueUUID == null){
+                // get catalogue uuid
+                catalogueUuid = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_CATALOGUE_UUID_FOR_PARTY,new String[]{"catalogueId","partyId"}, new Object[]{catalogueId,partyId});
+            }else{
+                catalogueUuid = catalogueUUID;
+            }
+
             if(catalogueUuid != null){
                 // get names of the categories for all catalogue lines which the catalogue contains
                 categoryNames = new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_COMMODITY_CLASSIFICATION_NAMES_OF_CATALOGUE_LINES,new String[]{"catalogueUuid"}, new Object[]{catalogueUuid});
                 // if limit is equal to 0,then no catalogue lines are returned
                 if(limit != 0){
                     // get the query
-                    QueryData queryData = getQuery(catalogueId,partyId,searchText,languageId,selectedCategoryName,sortOption);
+                    QueryData queryData = getQuery(catalogueId,partyId,searchText,languageId,selectedCategoryName,sortOption,catalogueUuid);
                     // get all catalogue line ids
                     List<String> catalogueLineIds = new JPARepositoryFactory().forCatalogueRepository().getEntities(queryData.query,queryData.parameterNames.toArray(new String[0]), queryData.parameterValues.toArray(),null,null,queryData.isNativeQuery);
                     // set the size of catalogue lines
@@ -199,14 +208,26 @@ public class CataloguePersistenceUtil {
         return new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_CATALOGUE_IDLIST_FOR_PARTY, new String[]{"partyId"}, new Object[]{partyId});
     }
 
-    private static QueryData getQuery(String catalogueId,String partyId,String searchText,String languageId,String selectedCategoryName,CatalogueLineSortOptions sortOption){
+    public static List<Object[]> getCatalogueIdAndNameListsForParty(String partyId) {
+        return new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_CATALOGUE_ID_AND_NAME_LIST_FOR_PARTY, new String[]{"partyId"}, new Object[]{partyId});
+    }
+
+    private static QueryData getQuery(String catalogueId,String partyId,String searchText,String languageId,String selectedCategoryName,CatalogueLineSortOptions sortOption,String catalogueUUID){
         QueryData queryData = new QueryData();
         String addQuery = "";
-        if(catalogueId != null) {
+        if(catalogueId != null && catalogueUUID == null) {
             // catalogue id and party id are the common parameters for all queries
             queryData.parameterNames.add("catalogueId");
             queryData.parameterValues.add(catalogueId);
             addQuery = " AND catalogue.ID = :catalogueId";
+        }
+
+        if(catalogueUUID != null){
+            // catalogue id and party id are the common parameters for all queries
+            queryData.parameterNames.add("catalogueUUId");
+            queryData.parameterValues.add(catalogueUUID);
+            addQuery = " AND catalogue.UUID = :catalogueUUId";
+
         }
 
         queryData.parameterNames.add("partyId");
