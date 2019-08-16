@@ -18,17 +18,13 @@ import eu.nimble.service.catalogue.validation.CatalogueValidator;
 import eu.nimble.service.catalogue.validation.ValidationException;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.CommodityClassificationType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
 import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
 import org.apache.commons.io.IOUtils;
-import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +33,6 @@ import org.springframework.stereotype.Component;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.activation.MimetypesFileTypeMap;
-import javax.xml.crypto.Data;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -202,16 +197,16 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public CataloguePaginationResponse getCataloguePaginationResponse(String catalogueId, String partyId, String categoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset) {
-        return getCataloguePaginationResponse(catalogueId,partyId,categoryName,Configuration.Standard.UBL,searchText,languageId,sortOption,limit,offset);
+    public CataloguePaginationResponse getCataloguePaginationResponse(String catalogueId, String partyId, String categoryName,String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset,String catalogueUUID) {
+        return getCataloguePaginationResponse(catalogueId,partyId,categoryName,Configuration.Standard.UBL,searchText,languageId,sortOption,limit,offset,catalogueUUID);
     }
 
     @Override
-    public <T> T getCataloguePaginationResponse(String catalogueId, String partyId,String categoryName, Configuration.Standard standard,String searchText,String languageId,CatalogueLineSortOptions sortOption, int limit, int offset) {
+    public <T> T getCataloguePaginationResponse(String catalogueId, String partyId,String categoryName, Configuration.Standard standard,String searchText,String languageId,CatalogueLineSortOptions sortOption, int limit, int offset,String catalogueUUID) {
         T catalogueResponse = null;
 
         if (standard == Configuration.Standard.UBL) {
-            catalogueResponse = (T) CataloguePersistenceUtil.getCatalogueLinesForParty(catalogueId, partyId,categoryName,searchText,languageId,sortOption,limit,offset);
+            catalogueResponse = (T) CataloguePersistenceUtil.getCatalogueLinesForParty(catalogueId, partyId,categoryName,searchText,languageId,sortOption,limit,offset,catalogueUUID);
 
         } else if (standard == Configuration.Standard.MODAML) {
             logger.warn("Getting CataloguePaginationResponse with catalogue id and party id from MODAML repository is not implemented yet");
@@ -628,6 +623,10 @@ public class CatalogueServiceImpl implements CatalogueService {
         }
     }
 
+    @Override
+    public List<Object[]> getCatalogueIdAndNameForParty(String partyId) {
+        return CataloguePersistenceUtil.getCatalogueIdAndNameListsForParty(partyId);
+    }
 
     @Override
     public List<String> getCatalogueIdsForParty(String partyId) {

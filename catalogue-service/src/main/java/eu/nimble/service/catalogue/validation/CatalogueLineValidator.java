@@ -124,6 +124,12 @@ public class CatalogueLineValidator {
         for (ItemPropertyType itemProperty : catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty()) {
             if (itemProperty.getValueQualifier().contentEquals("FILE")) {
                 for (BinaryObjectType bo : itemProperty.getValueBinary()) {
+                    if(bo.getValue() == null) {
+                        if(!bo.getUri().startsWith(SpringBridge.getInstance().getCatalogueServiceConfig().getBinaryContentUrl())) {
+                            errorMessages.add(String.format("%s does not have any content", bo.getFileName()));
+                        }
+                        continue;
+                    }
                     if (bo.getValue().length > maxFileSize) {
                         errorMessages.add(String.format("%s is larger than the allowed size: %s", bo.getFileName(), maxFileSize));
                     }

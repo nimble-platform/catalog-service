@@ -138,6 +138,7 @@ nimble:
     url: CatalogBinaryContentUri
   identity:
     url: ${IDENTITY_SERVICE_URL}
+    check-token: ${IDENTITY_SERVICE_CHECK_TOKEN:true}
   trust:
     url: ${TRUST_SERVICE_URL:http://nimble-staging.salzburgresearch.at/trust}
   indexing:
@@ -290,6 +291,7 @@ persistence:
 nimble:
   identity:
     url: ${IDENTITY_SERVICE_URL:localhost:9096}
+    check-token: ${IDENTITY_SERVICE_CHECK_TOKEN:true}
   indexing:
     sync: false
 

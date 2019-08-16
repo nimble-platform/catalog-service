@@ -1,4 +1,4 @@
-package eu.nimble.service.catalogue;
+package eu.nimble.service.catalogue.controller;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -14,7 +14,8 @@ import org.junit.runners.Suite;
         Test04_BinaryContentTest.class,
         Test05_CatalogueLineControllerTest.class,
         Test06_PriceOptionTest.class,
-        Test07_ImportExportControllerText.class
+        Test07_ImportExportControllerText.class,
+        Test08_LCPAControllerTest.class
 })
 public class TestSuite {
 }

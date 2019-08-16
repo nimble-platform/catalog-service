@@ -205,9 +205,9 @@ public class ImportExportController {
             method = RequestMethod.GET,
             produces = {"application/zip"})
     public void exportCatalogues(
-            @ApiParam(value = "Identifier of the party for which the catalogues to be deleted", required = true) @RequestParam(value = "partyId", required = true) String partyId,
-            @ApiParam(value = "An indicator for selecting all the catalogues to be deleted. ", required = false) @RequestParam(value = "exportAll", required = false, defaultValue = "false") Boolean exportAll,
-            @ApiParam(value = "Identifier of the catalogues to be deleted. (catalogue.id)", required = false) @RequestParam(value = "ids", required = false) List<String> ids,
+            @ApiParam(value = "Identifier of the party for which the catalogues to be exported", required = true) @RequestParam(value = "partyId", required = true) String partyId,
+            @ApiParam(value = "An indicator for selecting all the catalogues to be exported. ", required = false) @RequestParam(value = "exportAll", required = false, defaultValue = "false") Boolean exportAll,
+            @ApiParam(value = "Identifier of the catalogues to be exported. (catalogue.id)", required = false) @RequestParam(value = "ids", required = false) List<String> ids,
             @ApiParam(value = "language id", required = true) @RequestParam("languageId") String languageId,
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
             HttpServletResponse response) {

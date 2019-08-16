@@ -26,6 +26,11 @@ public class CredentialsUtil {
     private ExecutionContext executionContext;
 
     public String getBearerToken(){
+        // if there is no need for the token check, simply return null
+        if(!SpringBridge.getInstance().getCatalogueServiceConfig().getCheckToken()){
+            return null;
+        }
+
         // Firstly, try to get bearer token from the execution context
         // if it fails, then get the token from the authorization server
         try {

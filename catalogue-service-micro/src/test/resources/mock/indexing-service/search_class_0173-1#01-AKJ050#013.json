@@ -1,0 +1,72 @@
+{
+  "totalElements": 1,
+  "totalPages": 1,
+  "pageSize": 2147483647,
+  "currentPage": 0,
+  "result": [
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ050#013",
+      "code": "22292801",
+      "localName": "0173-1#01-AKJ050#013",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "MDF raw"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": null,
+      "comment": null,
+      "type": "class",
+      "properties": [
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAF507#004",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAD931#005",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO188#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO676#003",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU734#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO189#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO057#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAW336#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAF529#003",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO222#003",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO677#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU730#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO663#003",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAF016#005",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO735#003",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO190#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAW337#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU731#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAA524#003",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAW338#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO736#004",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAM551#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO187#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU732#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU729#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAF508#005",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO742#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAE721#003",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAG239#005",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU728#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAA018#006",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU733#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAQ326#002"
+      ],
+      "parents": [
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ049#008"
+      ],
+      "children": null,
+      "allParents": [
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-AAA647#005",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ049#008",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-AJZ801#008"
+      ],
+      "allChildren": null,
+      "level": 4
+    }
+  ],
+  "facets": null
+}

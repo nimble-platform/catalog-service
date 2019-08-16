@@ -611,16 +611,11 @@ public class TemplateGenerator {
         // create the titles for categories
         int columnOffset = TemplateConfig.getFixedPropertiesForProductPropertyTab().size() + 4;
         for (int i = 0; i < categories.size(); i++) {
-            if(categories.get(i).getProperties() != null && categories.get(i).getProperties().size() > 0) {
+            List<Property> properties = getPropertiesToBeIncludedInTemplate(categories.get(i));
+            if(properties.size() > 0) {
                 // get the number of properties the category have
                 // for each quantity, we need to increment it by two since we need a column for the quantity unit
-                int propertiesSize = 0;
-                for(Property property : categories.get(i).getProperties()){
-                    propertiesSize++;
-                    if(property.getDataType().contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)){
-                        propertiesSize++;
-                    }
-                }
+                int propertiesSize = getColumnCountForCategory(categories.get(i));
                 int colFrom = columnOffset;
                 int colTo = columnOffset + propertiesSize - 1;
                 cell = getCellWithMissingCellPolicy(topRow, colFrom);
@@ -721,65 +716,64 @@ public class TemplateGenerator {
 
         // columns for the properties obtained from the categories
         for (Category category : categories) {
-            if(category.getProperties() != null){
-                for (Property property : category.getProperties()) {
-                    cell = secondRow.createCell(columnOffset);
-                    cell.setCellValue(property.getPreferredName(defaultLanguage));
-                    cell.setCellStyle(boldCellStyle);
-                    Cell thirdRowCell = thirdRow.createCell(columnOffset);
-                    // get data type of the property
-                    // if its data type is Quantity or Amount, we should add Value to its data type to have a consistent template view
-                    String dataType = normalizeDataTypeForTemplate(property);
-                    thirdRowCell.setCellValue(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY) ? TemplateConfig.TEMPLATE_QUANTITY_VALUE
-                            : dataType.contentEquals("AMOUNT") ? "AMOUNT VALUE"
-                            : dataType);
-                    // make thirdRow read only
-                    thirdRowCell.setCellStyle(readOnlyStyle);
+            List<Property> categoryProperties = getPropertiesToBeIncludedInTemplate(category);
+            for (Property property : categoryProperties) {
+                cell = secondRow.createCell(columnOffset);
+                cell.setCellValue(property.getPreferredName(defaultLanguage));
+                cell.setCellStyle(boldCellStyle);
+                Cell thirdRowCell = thirdRow.createCell(columnOffset);
+                // get data type of the property
+                // if its data type is Quantity or Amount, we should add Value to its data type to have a consistent template view
+                String dataType = normalizeDataTypeForTemplate(property);
+                thirdRowCell.setCellValue(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY) ? TemplateConfig.TEMPLATE_QUANTITY_VALUE
+                        : dataType.contentEquals("AMOUNT") ? "AMOUNT VALUE"
+                        : dataType);
+                // make thirdRow read only
+                thirdRowCell.setCellStyle(readOnlyStyle);
 
-                    productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
-                    fourthRow.createCell(columnOffset).setCellStyle(readOnlyStyle);
-                    if (property.getDataType().equals("BOOLEAN")){
-                        CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnOffset,columnOffset);
-                        DataValidationHelper dataValidationHelper = productPropertiesTab.getDataValidationHelper();
-                        DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_BOOLEAN_LIST);
-                        DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
-                        dataValidation.setSuppressDropDownArrow(true);
-                        // error box
-                        dataValidation.setShowErrorBox(true);
-                        dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
-                        // empty cell
-                        dataValidation.setEmptyCellAllowed(true);
-                        productPropertiesTab.addValidationData(dataValidation);
-                    }
-
-                    // check whether the property needs a unit
-                    if(property.getDataType().equals("AMOUNT")){
-                        // quantity unit
-                        productPropertiesTab.getRow(0).createCell(++columnOffset).setCellStyle(readOnlyStyle);
-                        cell = secondRow.createCell(columnOffset);
-                        cell.setCellStyle(readOnlyStyle);
-                        cell = thirdRow.createCell(columnOffset);
-                        cell.setCellValue("CURRENCY");
-                        cell.setCellStyle(readOnlyStyle);
-                        cell = fourthRow.createCell(columnOffset);
-                        cell.setCellStyle(readOnlyStyle);
-                        productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
-                    }
-                    else if(property.getDataType().equals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)){
-                        // quantity unit
-                        productPropertiesTab.getRow(0).createCell(++columnOffset).setCellStyle(readOnlyStyle);
-                        cell = secondRow.createCell(columnOffset);
-                        cell.setCellStyle(readOnlyStyle);
-                        cell = thirdRow.createCell(columnOffset);
-                        cell.setCellValue(TemplateConfig.TEMPLATE_QUANTITY_UNIT);
-                        cell.setCellStyle(readOnlyStyle);
-                        cell = fourthRow.createCell(columnOffset);
-                        cell.setCellStyle(readOnlyStyle);
-                        productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
-                    }
-                    fourthRow.getCell(columnOffset).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
-                    columnOffset++;
+                productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
+                fourthRow.createCell(columnOffset).setCellStyle(readOnlyStyle);
+                if (property.getDataType().equals("BOOLEAN")){
+                    CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnOffset,columnOffset);
+                    DataValidationHelper dataValidationHelper = productPropertiesTab.getDataValidationHelper();
+                    DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_BOOLEAN_LIST);
+                    DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
+                    dataValidation.setSuppressDropDownArrow(true);
+                    // error box
+                    dataValidation.setShowErrorBox(true);
+                    dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
+                    // empty cell
+                    dataValidation.setEmptyCellAllowed(true);
+                    productPropertiesTab.addValidationData(dataValidation);
                 }
+
+                // check whether the property needs a unit
+                if(property.getDataType().equals("AMOUNT")){
+                    // quantity unit
+                    productPropertiesTab.getRow(0).createCell(++columnOffset).setCellStyle(readOnlyStyle);
+                    cell = secondRow.createCell(columnOffset);
+                    cell.setCellStyle(readOnlyStyle);
+                    cell = thirdRow.createCell(columnOffset);
+                    cell.setCellValue("CURRENCY");
+                    cell.setCellStyle(readOnlyStyle);
+                    cell = fourthRow.createCell(columnOffset);
+                    cell.setCellStyle(readOnlyStyle);
+                    productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
+                }
+                else if(property.getDataType().equals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)){
+                    // quantity unit
+                    productPropertiesTab.getRow(0).createCell(++columnOffset).setCellStyle(readOnlyStyle);
+                    cell = secondRow.createCell(columnOffset);
+                    cell.setCellStyle(readOnlyStyle);
+                    cell = thirdRow.createCell(columnOffset);
+                    cell.setCellValue(TemplateConfig.TEMPLATE_QUANTITY_UNIT);
+                    cell.setCellStyle(readOnlyStyle);
+                    cell = fourthRow.createCell(columnOffset);
+                    cell.setCellStyle(readOnlyStyle);
+                    productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
+                }
+                fourthRow.getCell(columnOffset).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
+                columnOffset++;
             }
         }
 
@@ -808,16 +802,11 @@ public class TemplateGenerator {
         // create the titles for categories
         int columnOffset = TemplateConfig.getFixedPropertiesForProductPropertyTab().size() + 4;
         for (int i = 0; i < categories.size(); i++) {
-            if(categories.get(i).getProperties() != null && categories.get(i).getProperties().size() > 0){
+            List<Property> properties = getPropertiesToBeIncludedInTemplate(categories.get(i));
+            if(properties.size() > 0) {
                 // get the number of properties the category have
                 // for each quantity, we need to increment it by two since we need a column for the quantity unit
-                int propertiesSize = 0;
-                for(Property property : categories.get(i).getProperties()){
-                    propertiesSize++;
-                    if(property.getDataType().contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)){
-                        propertiesSize++;
-                    }
-                }
+                int propertiesSize = getColumnCountForCategory(categories.get(i));
                 int colFrom = columnOffset;
                 int colTo = columnOffset + propertiesSize - 1;
                 cell = getCellWithMissingCellPolicy(topRow, colFrom);
@@ -944,64 +933,63 @@ public class TemplateGenerator {
 
         // columns for the properties obtained from the categories
         for (Category category : categories) {
-            if(category.getProperties() != null){
-                for (Property property : category.getProperties()) {
-                    cell = secondRow.createCell(columnOffset);
-                    cell.setCellValue(property.getPreferredName(defaultLanguage));
-                    cell.setCellStyle(boldCellStyle);
-                    Cell thirdRowCell = thirdRow.createCell(columnOffset);
-                    // get data type of the property
-                    // if its data type is Quantity or Amount, we should add Value to its data type to have a consistent template view
-                    String dataType = normalizeDataTypeForTemplate(property);
-                    thirdRowCell.setCellValue(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY) ? TemplateConfig.TEMPLATE_QUANTITY_VALUE
-                            : dataType.contentEquals("AMOUNT") ? "AMOUNT VALUE"
-                            : dataType);
-                    // make thirdRow read only
-                    thirdRowCell.setCellStyle(readOnlyStyle);
-                    productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
-                    fourthRow.createCell(columnOffset).setCellStyle(readOnlyStyle);
-                    if (property.getDataType().equals("BOOLEAN")){
-                        CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnOffset,columnOffset);
-                        DataValidationHelper dataValidationHelper = productPropertiesExampleTab.getDataValidationHelper();
-                        DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_BOOLEAN_LIST);
-                        DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
-                        dataValidation.setSuppressDropDownArrow(true);
-                        // error box
-                        dataValidation.setShowErrorBox(true);
-                        dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
-                        // empty cell
-                        dataValidation.setEmptyCellAllowed(true);
-                        productPropertiesExampleTab.addValidationData(dataValidation);
-                    }
-
-                    // check whether the property needs a unit
-                    if(property.getDataType().equals("AMOUNT")){
-                        // quantity unit
-                        productPropertiesExampleTab.getRow(0).createCell(++columnOffset).setCellStyle(readOnlyStyle);
-                        cell = secondRow.createCell(columnOffset);
-                        cell.setCellStyle(readOnlyStyle);
-                        cell = thirdRow.createCell(columnOffset);
-                        cell.setCellValue("CURRENCY");
-                        cell.setCellStyle(readOnlyStyle);
-                        cell = fourthRow.createCell(columnOffset);
-                        cell.setCellStyle(readOnlyStyle);
-                        productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
-                    }
-                    else if(property.getDataType().equals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)){
-                        // quantity unit
-                        productPropertiesExampleTab.getRow(0).createCell(++columnOffset).setCellStyle(readOnlyStyle);
-                        cell = secondRow.createCell(columnOffset);
-                        cell.setCellStyle(readOnlyStyle);
-                        cell = thirdRow.createCell(columnOffset);
-                        cell.setCellValue(TemplateConfig.TEMPLATE_QUANTITY_UNIT);
-                        cell.setCellStyle(readOnlyStyle);
-                        cell = fourthRow.createCell(columnOffset);
-                        cell.setCellStyle(readOnlyStyle);
-                        productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
-                    }
-                    fourthRow.getCell(columnOffset).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
-                    columnOffset++;
+            List<Property> categoryProperties = getPropertiesToBeIncludedInTemplate(category);
+            for (Property property : categoryProperties) {
+                cell = secondRow.createCell(columnOffset);
+                cell.setCellValue(property.getPreferredName(defaultLanguage));
+                cell.setCellStyle(boldCellStyle);
+                Cell thirdRowCell = thirdRow.createCell(columnOffset);
+                // get data type of the property
+                // if its data type is Quantity or Amount, we should add Value to its data type to have a consistent template view
+                String dataType = normalizeDataTypeForTemplate(property);
+                thirdRowCell.setCellValue(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY) ? TemplateConfig.TEMPLATE_QUANTITY_VALUE
+                        : dataType.contentEquals("AMOUNT") ? "AMOUNT VALUE"
+                        : dataType);
+                // make thirdRow read only
+                thirdRowCell.setCellStyle(readOnlyStyle);
+                productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
+                fourthRow.createCell(columnOffset).setCellStyle(readOnlyStyle);
+                if (property.getDataType().equals("BOOLEAN")){
+                    CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnOffset,columnOffset);
+                    DataValidationHelper dataValidationHelper = productPropertiesExampleTab.getDataValidationHelper();
+                    DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(TemplateConfig.TEMPLATE_BOOLEAN_LIST);
+                    DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
+                    dataValidation.setSuppressDropDownArrow(true);
+                    // error box
+                    dataValidation.setShowErrorBox(true);
+                    dataValidation.createErrorBox("Invalid input !","Please, select one of the available options");
+                    // empty cell
+                    dataValidation.setEmptyCellAllowed(true);
+                    productPropertiesExampleTab.addValidationData(dataValidation);
                 }
+
+                // check whether the property needs a unit
+                if(property.getDataType().equals("AMOUNT")){
+                    // quantity unit
+                    productPropertiesExampleTab.getRow(0).createCell(++columnOffset).setCellStyle(readOnlyStyle);
+                    cell = secondRow.createCell(columnOffset);
+                    cell.setCellStyle(readOnlyStyle);
+                    cell = thirdRow.createCell(columnOffset);
+                    cell.setCellValue("CURRENCY");
+                    cell.setCellStyle(readOnlyStyle);
+                    cell = fourthRow.createCell(columnOffset);
+                    cell.setCellStyle(readOnlyStyle);
+                    productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
+                }
+                else if(property.getDataType().equals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)){
+                    // quantity unit
+                    productPropertiesExampleTab.getRow(0).createCell(++columnOffset).setCellStyle(readOnlyStyle);
+                    cell = secondRow.createCell(columnOffset);
+                    cell.setCellStyle(readOnlyStyle);
+                    cell = thirdRow.createCell(columnOffset);
+                    cell.setCellValue(TemplateConfig.TEMPLATE_QUANTITY_UNIT);
+                    cell.setCellStyle(readOnlyStyle);
+                    cell = fourthRow.createCell(columnOffset);
+                    cell.setCellStyle(readOnlyStyle);
+                    productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
+                }
+                fourthRow.getCell(columnOffset).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
+                columnOffset++;
             }
         }
 
@@ -1980,5 +1968,29 @@ public class TemplateGenerator {
         }
         
         return null;
+    }
+
+    private int getColumnCountForCategory(Category category) {
+        int propertiesSize = 0;
+        List<Property> properties = getPropertiesToBeIncludedInTemplate(category);
+        for(Property property : properties){
+            propertiesSize++;
+            if(property.getDataType().contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)){
+                propertiesSize++;
+            }
+        }
+        return propertiesSize;
+    }
+
+    private List<Property> getPropertiesToBeIncludedInTemplate(Category category) {
+        List<Property> properties = new ArrayList<>();
+        if(category.getProperties() != null) {
+            for(Property property : category.getProperties()) {
+                if(!property.getDataType().contentEquals(TEMPLATE_DATA_TYPE_FILE)) {
+                    properties.add(property);
+                }
+            }
+        }
+        return properties;
     }
 }

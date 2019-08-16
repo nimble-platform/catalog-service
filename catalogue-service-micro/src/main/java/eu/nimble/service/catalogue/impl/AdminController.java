@@ -4,13 +4,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.index.ItemIndexClient;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
+import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.catalogue.util.migration.r10.VatMigrationUtility;
+import feign.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import eu.nimble.service.catalogue.index.PartyIndexClient;
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.util.migration.r8.CatalogueIndexLoader;
@@ -27,9 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -120,17 +116,13 @@ public class AdminController {
 
             String propertyJson = JsonSerializationUtility.getObjectMapper().writeValueAsString(indexProperty);
 
-            HttpResponse<String> response = Unirest.post(indexingUrl + "/property")
-                    .header(HttpHeaders.AUTHORIZATION, bearerToken)
-                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .body(propertyJson)
-                    .asString();
+            Response response = SpringBridge.getInstance().getiIndexingServiceClient().setItem(bearerToken,propertyJson);
 
-            if (response.getStatus() == HttpStatus.OK.value()) {
+            if (response.status() == HttpStatus.OK.value()) {
                 logger.info("Indexed property successfully. property uri: " + indexProperty.getUri());
 
             } else {
-                String msg = String.format("Failed to index property. uri: %s, indexing call status: %d, message: %s", indexProperty.getUri(), response.getStatus(), response.getBody());
+                String msg = String.format("Failed to index property. uri: %s, indexing call status: %d, message: %s", indexProperty.getUri(), response.status(), IOUtils.toString(response.body().asInputStream()));
                 logger.error(msg);
             }
         }
@@ -185,15 +177,13 @@ public class AdminController {
         // query to retrieve hjids of indexed catalogue lines
         String query = "{\"facet\": {\"field\": [ \"uri\"],\"limit\": -1,\"minCount\": 1},\"q\": \"*\",\"rows\": 0,\"sort\": [],\"start\": 0}";
 
-        HttpResponse<JsonNode> response;
+        Response response;
         try {
-            response = Unirest.post(indexingUrl + "/item/search")
-                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .body(query)
-                    .asJson();
+            response = SpringBridge.getInstance().getiIndexingServiceClient().searchItem(query);
 
-            if(response.getStatus() == 200){
-                JSONObject facets = (JSONObject) response.getBody().getObject().get("facets");
+            if(response.status() == 200){
+                JSONObject object = new JSONObject(IOUtils.toString(response.body().asInputStream()));
+                JSONObject facets = (JSONObject) object.get("facets");
                 JSONArray array = (JSONArray) ((org.json.JSONObject) facets.get("id")).get("entry");
 
                 int size = array.length();
@@ -209,9 +199,9 @@ public class AdminController {
                 logger.info("Deleted invalid lines from index successfully");
             }
             else{
-                logger.error("Failed to delete invalid lines from index. indexing call status: {}, message: {}", response.getStatus(), response.getBody());
+                logger.error("Failed to delete invalid lines from index. indexing call status: {}, message: {}", response.status(), IOUtils.toString(response.body().asInputStream()));
             }
-        } catch (UnirestException e) {
+        } catch (Exception e) {
             logger.error("Failed to delete invalid lines from index",e);
         }
 

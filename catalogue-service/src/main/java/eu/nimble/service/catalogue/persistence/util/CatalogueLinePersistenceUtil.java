@@ -2,15 +2,12 @@ package eu.nimble.service.catalogue.persistence.util;
 
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.lcpa.ItemLCPAInput;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.CommodityClassificationType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.LCPAInputType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by suat on 31-Dec-18.

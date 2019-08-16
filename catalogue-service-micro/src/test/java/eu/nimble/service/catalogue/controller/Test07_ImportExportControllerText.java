@@ -1,8 +1,8 @@
-package eu.nimble.service.catalogue;
+package eu.nimble.service.catalogue.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.JsonSerializationUtility;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.junit.Assert;
@@ -20,7 +20,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.Map;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -47,7 +46,7 @@ public class Test07_ImportExportControllerText {
     public void test1_generateTemplateForCatalogue() throws Exception {
         // get the catalogue
         MockHttpServletRequestBuilder request = get("/catalogue/ubl/" + Test03_TemplatePublishingTest.catalogueUUID)
-                .header("Authorization", TestConfig.responderBuyerId);
+                .header("Authorization", TestConfig.buyerId);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
         Assert.assertEquals(Test03_TemplatePublishingTest.catalogueUUID, catalogue.getUUID());

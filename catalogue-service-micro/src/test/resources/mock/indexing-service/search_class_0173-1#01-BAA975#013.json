@@ -1,0 +1,59 @@
+{
+  "totalElements": 1,
+  "totalPages": 1,
+  "pageSize": 2147483647,
+  "currentPage": 0,
+  "result": [
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-BAA975#013",
+      "code": "17120104",
+      "localName": "0173-1#01-BAA975#013",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "Die-cutter and stamping machines (post press)"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": null,
+      "comment": null,
+      "type": "class",
+      "properties": [
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAW337#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAD931#005",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU731#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO676#003",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU734#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO057#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAW338#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO736#004",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAM551#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU732#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAW336#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO677#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU730#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU729#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO742#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO663#003",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO735#003",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU728#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU733#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAQ326#002"
+      ],
+      "parents": [
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-BAA971#007"
+      ],
+      "children": null,
+      "allParents": [
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ644#006",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-BAA971#007",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-BAA250#007"
+      ],
+      "allChildren": null,
+      "level": 4
+    }
+  ],
+  "facets": null
+}

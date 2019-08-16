@@ -1,0 +1,127 @@
+{
+  "totalElements": 2,
+  "totalPages": 1,
+  "pageSize": 2147483647,
+  "currentPage": 0,
+  "result": [
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-AKG765#013",
+      "code": "14080904",
+      "localName": "0173-1#01-AKG765#013",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "Warehouse planning (logistics)"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": null,
+      "comment": null,
+      "type": "class",
+      "properties": [
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAB392#012",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAF577#004",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAF865#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAP794#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAF152#003",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAF576#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU734#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO057#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAF153#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAW336#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU730#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO663#003",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAW337#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU731#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAP002#003",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAP796#004",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAF162#003",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAW338#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAM551#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAF831#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU732#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU729#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAF578#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO742#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU728#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAQ203#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU733#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAG185#003"
+      ],
+      "parents": [
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-ADT353#003"
+      ],
+      "children": null,
+      "allParents": [
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-ADR746#003",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-ADT353#003",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-ADG629#002"
+      ],
+      "allChildren": null,
+      "level": 4
+    },
+    {
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-AKG131#014",
+      "code": "14080205",
+      "localName": "0173-1#01-AKG131#014",
+      "nameSpace": "http://www.nimble-project.org/resource/eclass#",
+      "languages": [
+        "en"
+      ],
+      "label": {
+        "en": "Warehouse management (logistics)"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": {
+        "en": "All activities, which ensure delivery of freight and cargo as well as the shipment of these goods. This includes: goods receipt, managing delivery documents, creating delivery documents, goods receipt inspection, packaging of outbound freight, ordering shipping companies, goods shipment"
+      },
+      "comment": null,
+      "type": "class",
+      "properties": [
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAB392#012",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAF577#004",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAF865#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAP794#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAF152#003",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAF576#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU734#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO057#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAF153#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAW336#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU730#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO663#003",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAW337#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU731#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAP002#003",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAP796#004",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAF162#003",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAW338#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAM551#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAF831#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU732#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU729#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAF578#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAO742#002",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU728#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAQ203#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-AAU733#001",
+        "http://www.nimble-project.org/resource/eclass#0173-1#02-BAG185#003"
+      ],
+      "parents": [
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-ADT346#003"
+      ],
+      "children": null,
+      "allParents": [
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-ADT346#003",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-ADR746#003",
+        "http://www.nimble-project.org/resource/eclass#0173-1#01-ADG629#002"
+      ],
+      "allChildren": null,
+      "level": 4
+    }
+  ],
+  "facets": null
+}

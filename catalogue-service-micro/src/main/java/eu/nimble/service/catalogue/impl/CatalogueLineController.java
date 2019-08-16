@@ -1,5 +1,6 @@
 package eu.nimble.service.catalogue.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
@@ -11,6 +12,7 @@ import eu.nimble.service.catalogue.util.LoggerUtil;
 import eu.nimble.service.catalogue.validation.CatalogueLineValidator;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.LineItemType;
 import eu.nimble.utility.*;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import eu.nimble.utility.serialization.TransactionEnabledSerializationUtility;
@@ -30,9 +32,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by suat on 22-Aug-17.
@@ -100,8 +100,8 @@ public class CatalogueLineController {
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity getCatalogueLinesByHjids(@ApiParam(value = "Identifiers of the catalogue lines to be retrieved. (line.hjid)", required = true) @RequestParam(value = "ids") List<Long> hjids,
-                                                   @ApiParam(value = "Number of catalogue lines to be included in CataloguePaginationResponse ") @RequestParam(value = "limit",required = true) Integer limit,
-                                                   @ApiParam(value = "Offset of the first catalogue line among all catalogue lines of the default catalogue for the party") @RequestParam(value = "offset",required = true) Integer pageNo,
+                                                   @ApiParam(value = "Number of catalogue lines to be included in CataloguePaginationResponse",required = true) @RequestParam(value = "limit",required = true) Integer limit,
+                                                   @ApiParam(value = "Offset of the first catalogue line among all catalogue lines of the default catalogue for the party",required = true) @RequestParam(value = "offset",required = true) Integer pageNo,
                                                    @ApiParam(value = "Option used to sort catalogue lines") @RequestParam(value = "sortOption",required = true) CatalogueLineSortOptions sortOption,
                                                  @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to get catalogue lines with hjids: {}", hjids);
@@ -119,6 +119,48 @@ public class CatalogueLineController {
         }
 
         log.info("Completed the request to get catalogue lines with hjids: {}", hjids);
+        return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLines));
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieves a list of catalogue lines. The service takes a list of catalogue uuids and "+
+    "another list containing corresponding catalogue line ids.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved catalogue lines successfully", response = CatalogueLineType.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Number of elements in catalogue uuids list and line ids list does not match"),
+            @ApiResponse(code = 401, message = "No user exists for the given token")
+    })
+    @RequestMapping(value = "/catalogue/cataloguelines",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity getCatalogueLines(@ApiParam(value = "Comma-separated catalogue uuids to be retrieved e.g. 5e910673-8232-4ec1-adb3-9188377309bf,34rwe231-34ds-5dw2-hgd2-462tdr64wfgs", required = true) @RequestParam(value = "catalogueUuids",required = true) List<String> catalogueUuids,
+                                            @ApiParam(value = "Comma-separated line ids to be retrieved e.g. e86e6558-b95c-4c3d-ac17-ac84830d7527,80f50752-e147-4063-8573-be78cde0d3a6",required = true) @RequestParam(value = "lineIds",required = true) List<String> lineIds,
+                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        log.info("Incoming request to get catalogue lines, catalogue uuids: {}, line ids: {}",catalogueUuids,lineIds);
+        // check token
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return tokenCheck;
+        }
+
+        // ensure that catalogue uuids and catalogue line ids lists have the same size
+        if (catalogueUuids.size() != lineIds.size()) {
+            String msg = "Number of elements in catalogue uuids list and line ids list does not match";
+            log.info(msg);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(msg);
+        }
+
+        List<CatalogueLineType> catalogueLines = new ArrayList<>();
+
+        int numberOfCatalog = catalogueUuids.size();
+        for(int i = 0; i < numberOfCatalog; i++){
+            CatalogueLineType catalogueLine = service.getCatalogueLine(catalogueUuids.get(i),lineIds.get(i));
+            if(catalogueLine != null){
+                catalogueLines.add(catalogueLine);
+            }
+        }
+
+        log.info("Completed the request to get catalogue lines, catalogue uuids: {}, line ids: {}",catalogueUuids,lineIds);
         return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLines));
     }
 

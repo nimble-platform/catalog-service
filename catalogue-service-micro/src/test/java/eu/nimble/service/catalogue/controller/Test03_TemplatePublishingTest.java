@@ -1,4 +1,4 @@
-package eu.nimble.service.catalogue;
+package eu.nimble.service.catalogue.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
@@ -89,7 +89,7 @@ public class Test03_TemplatePublishingTest {
                 .fileUpload("/catalogue/template/upload")
                 .file(mutipartFile)
                 .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
-                .header("Authorization", TestConfig.responderBuyerId)
+                .header("Authorization", TestConfig.buyerId)
                 .param("uploadMode",uploadMode)
                 .param("partyId",partyId)
                 .param("partyName",partyName))
@@ -174,7 +174,7 @@ public class Test03_TemplatePublishingTest {
                 .fileUpload("/catalogue/template/upload")
                 .file(mutipartFile)
                 .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
-                .header("Authorization", TestConfig.responderBuyerId)
+                .header("Authorization", TestConfig.buyerId)
                 .param("uploadMode",uploadMode2)
                 .param("partyId",partyId)
                 .param("partyName",partyName))
@@ -244,7 +244,7 @@ public class Test03_TemplatePublishingTest {
                 .fileUpload("/catalogue/template/upload")
                 .file(mutipartFile)
                 .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
-                .header("Authorization", TestConfig.responderBuyerId)
+                .header("Authorization", TestConfig.buyerId)
                 .param("uploadMode",uploadMode)
                 .param("partyId",partyId)
                 .param("partyName",partyName))

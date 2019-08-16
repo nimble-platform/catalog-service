@@ -1,37 +1,30 @@
 package eu.nimble.service.catalogue.index;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
-import com.mashape.unirest.request.HttpRequest;
 import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.util.CredentialsUtil;
+import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.solr.Search;
 import eu.nimble.service.model.solr.SearchResult;
 import eu.nimble.service.model.solr.owl.ClassType;
 import eu.nimble.service.model.solr.owl.PropertyType;
 import eu.nimble.utility.JsonSerializationUtility;
-import io.swagger.models.auth.In;
-import jena.query;
+import feign.Response;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Created by suat on 28-Jan-19.
@@ -68,23 +61,19 @@ public class ClassIndexClient {
                 return;
             }
 
-            HttpResponse<String> response = Unirest.post(indexingUrl + "/class")
-                    .header(HttpHeaders.AUTHORIZATION, credentialsUtil.getBearerToken())
-                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .body(categoryJson)
-                    .asString();
+            Response response = SpringBridge.getInstance().getiIndexingServiceClient().setClass(credentialsUtil.getBearerToken(), categoryJson);
 
-            if (response.getStatus() == HttpStatus.OK.value()) {
+            if (response.status() == HttpStatus.OK.value()) {
                 logger.info("Indexed category successfully. category uri: {}", category.getCategoryUri());
                 return;
 
             } else {
-                String msg = String.format("Failed to index category. uri: %s, indexing call status: %d, message: %s", category.getCategoryUri(), response.getStatus(), response.getBody());
+                String msg = String.format("Failed to index category. uri: %s, indexing call status: %d, message: %s", category.getCategoryUri(), response.status(), IOUtils.toString(response.body().asInputStream()));
                 logger.error(msg);
                 return;
             }
 
-        } catch (UnirestException e) {
+        } catch (Exception e) {
             String msg = String.format("Failed to index category. uri: %s", category.getCategoryUri());
             logger.error(msg, e);
             return;
@@ -116,32 +105,20 @@ public class ClassIndexClient {
             search.setStart(0);
             search.setQuery(queryStr.substring(0, queryStr.length()-3));
 
-            HttpRequest request;
-            try {
-                request = Unirest.post(indexingUrl + "/class/search")
-                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                        .header(HttpHeaders.AUTHORIZATION, credentialsUtil.getBearerToken())
-                        .body(JsonSerializationUtility.getObjectMapper().writeValueAsString(search))
-                        .getHttpRequest();
-            } catch (JsonProcessingException e) {
-                String msg = String.format("Failed to get categories for uris: %s. ", uris);
-                logger.error(msg);
-                throw new RuntimeException(msg, e);
-            }
-            HttpResponse<String> response = request.asString();
+            Response response = SpringBridge.getInstance().getiIndexingServiceClient().searchClass(credentialsUtil.getBearerToken(),JsonSerializationUtility.getObjectMapper().writeValueAsString(search));
 
-            if (response.getStatus() == HttpStatus.OK.value()) {
+            if (response.status() == HttpStatus.OK.value()) {
                 List<ClassType> indexCategories = extractIndexCategoriesFromSearchResults(response, uris.toString());
                 logger.info("Retrieved indexed categories for uris: {},number of indexed categories: {}",uris,indexCategories.size());
                 return indexCategories;
 
             } else {
-                String msg = String.format("Failed to get categories for uris: %s, indexing call status: %d, message: %s", uris, response.getStatus(), response.getBody());
+                String msg = String.format("Failed to get categories for uris: %s, indexing call status: %d, message: %s", uris, response.status(), IOUtils.toString(response.body().asInputStream()));
                 logger.error(msg);
                 throw new RuntimeException(msg);
             }
 
-        } catch (UnirestException e) {
+        } catch (Exception e) {
             String msg = String.format("Failed to retrieve categories for uris: %s", uris);
             logger.error(msg, e);
             throw new RuntimeException(msg, e);
@@ -180,56 +157,58 @@ public class ClassIndexClient {
         return categories;
     }
 
-    public List<Category> getCategories(String query) {
-        return getCategories(query, null);
-    }
-
     public List<Category> getCategories(String query, Map<String, String> facetCriteria) {
         try {
-            HttpRequest request = Unirest.get(indexingUrl + "/class/select")
-                    .queryString("rows", Integer.MAX_VALUE)
-                    .header(HttpHeaders.AUTHORIZATION, credentialsUtil.getBearerToken());
-            if(query != null) {
-                request = request.queryString("q", query);
-            }
-
+            Response response;
+            Set<String> params = new HashSet<>();
             if(MapUtils.isNotEmpty(facetCriteria)) {
                 for(Map.Entry e : facetCriteria.entrySet()) {
-                    request = request.queryString("fq", e.getKey() + ":" + e.getValue());
+                    params.add(e.getKey() + ":" + e.getValue());
                 }
             }
 
-            HttpResponse<String> response = request.asString();
+            response = SpringBridge.getInstance().getiIndexingServiceClient().selectClass(credentialsUtil.getBearerToken(),Integer.toString(Integer.MAX_VALUE),query,params);
 
-            if (response.getStatus() == HttpStatus.OK.value()) {
+            if (response.status() == HttpStatus.OK.value()) {
                 List<ClassType> indexCategories = extractIndexCategoriesFromSearchResults(response, query);
                 List<Category> categories = IndexingWrapper.toCategories(indexCategories);
                 return categories;
 
             } else {
-                String msg = String.format("Failed to retrieve categories. query: %s, fq: %s, call status: %d, message: %s", query, (MapUtils.isNotEmpty(facetCriteria) ? facetCriteria.toString() : ""), response.getStatus(), response.getBody());
+                String msg = String.format("Failed to retrieve categories. query: %s, fq: %s, call status: %d, message: %s", query, (MapUtils.isNotEmpty(facetCriteria) ? facetCriteria.toString() : ""), response.status(), IOUtils.toString(response.body().asInputStream()));
                 logger.error(msg);
                 throw new RuntimeException(msg);
             }
 
-        } catch (UnirestException e) {
+        } catch (Exception e) {
             String msg = String.format("Failed to retrieve categories. query: %s, fq: %s", query, (MapUtils.isNotEmpty(facetCriteria) ? facetCriteria.toString() : ""));
             logger.error(msg, e);
             throw new RuntimeException(msg, e);
         }
     }
 
-    private List<ClassType> extractIndexCategoriesFromSearchResults(HttpResponse<String> response, String query) {
+    private List<ClassType> extractIndexCategoriesFromSearchResults(Response response, String query) {
         ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
         SearchResult<ClassType> searchResult;
         List<ClassType> indexCategories;
+
+        String responseBody;
         try {
-            searchResult = mapper.readValue(response.getBody(), new TypeReference<SearchResult<ClassType>>() {});
+            responseBody = IOUtils.toString(response.body().asInputStream());
+        }
+        catch (IOException e){
+            String msg = String.format("Failed to retrieve response body for query %s",query);
+            logger.error(msg,e);
+            throw new RuntimeException(msg,e);
+        }
+
+        try {
+            searchResult = mapper.readValue(responseBody, new TypeReference<SearchResult<ClassType>>() {});
             indexCategories = searchResult.getResult();
             return indexCategories;
 
         } catch (IOException e) {
-            String msg = String.format("Failed to parse SearchResult while getting categories. query: %s, serialized results: %s", query, response.getBody());
+            String msg = String.format("Failed to parse SearchResult while getting categories. query: %s, serialized results: %s", query, responseBody);
             logger.error(msg, e);
             throw new RuntimeException(msg, e);
         }

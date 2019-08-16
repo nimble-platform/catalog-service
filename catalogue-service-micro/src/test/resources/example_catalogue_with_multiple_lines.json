@@ -777,11 +777,11 @@
               "natureCode": null,
               "cargoTypeCode": null,
               "itemClassificationCode": {
-                "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-AAB315#006",
-                "name": "General service",
+                "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-AAC168#005",
+                "name": "Automotive technology",
+                "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-AAC168#005",
                 "listID": "eClass",
-                "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-AAB315#006",
-                "hjid": null
+                "listURI": null
               },
               "hjid": null
             },
@@ -1215,11 +1215,11 @@
               "natureCode": null,
               "cargoTypeCode": null,
               "itemClassificationCode": {
-                "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-AEI956#006",
-                "name": "Notebook",
+                "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-AAC168#005",
+                "name": "Automotive technology",
+                "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-AAC168#005",
                 "listID": "eClass",
-                "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-AEI956#006",
-                "hjid": null
+                "listURI": null
               },
               "hjid": null
             },
@@ -1231,42 +1231,6 @@
                 "name": "Product",
                 "listID": "Default",
                 "uri": null,
-                "hjid": null
-              },
-              "hjid": null
-            },
-            {
-              "natureCode": null,
-              "cargoTypeCode": null,
-              "itemClassificationCode": {
-                "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ313#005",
-                "name": "Information, communication and media technology",
-                "listID": "eClass",
-                "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ313#005",
-                "hjid": null
-              },
-              "hjid": null
-            },
-            {
-              "natureCode": null,
-              "cargoTypeCode": null,
-              "itemClassificationCode": {
-                "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ317#008",
-                "name": "Computer system",
-                "listID": "eClass",
-                "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ317#008",
-                "hjid": null
-              },
-              "hjid": null
-            },
-            {
-              "natureCode": null,
-              "cargoTypeCode": null,
-              "itemClassificationCode": {
-                "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-ACL245#007",
-                "name": "Mobile PC",
-                "listID": "eClass",
-                "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-ACL245#007",
                 "hjid": null
               },
               "hjid": null
@@ -1689,11 +1653,11 @@
               "natureCode": null,
               "cargoTypeCode": null,
               "itemClassificationCode": {
-                "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-AAB572#005",
-                "name": "Electric engineering, automation, process control engineering",
+                "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-AAC168#005",
+                "name": "Automotive technology",
+                "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-AAC168#005",
                 "listID": "eClass",
-                "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-AAB572#005",
-                "hjid": null
+                "listURI": null
               },
               "hjid": null
             },
@@ -2127,11 +2091,11 @@
               "natureCode": null,
               "cargoTypeCode": null,
               "itemClassificationCode": {
-                "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-AEI956#006",
-                "name": "Notebook",
+                "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-AAC168#005",
+                "name": "Automotive technology",
+                "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-AAC168#005",
                 "listID": "eClass",
-                "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-AEI956#006",
-                "hjid": null
+                "listURI": null
               },
               "hjid": null
             },
@@ -2143,42 +2107,6 @@
                 "name": "Product",
                 "listID": "Default",
                 "uri": null,
-                "hjid": null
-              },
-              "hjid": null
-            },
-            {
-              "natureCode": null,
-              "cargoTypeCode": null,
-              "itemClassificationCode": {
-                "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ313#005",
-                "name": "Information, communication and media technology",
-                "listID": "eClass",
-                "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ313#005",
-                "hjid": null
-              },
-              "hjid": null
-            },
-            {
-              "natureCode": null,
-              "cargoTypeCode": null,
-              "itemClassificationCode": {
-                "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ317#008",
-                "name": "Computer system",
-                "listID": "eClass",
-                "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ317#008",
-                "hjid": null
-              },
-              "hjid": null
-            },
-            {
-              "natureCode": null,
-              "cargoTypeCode": null,
-              "itemClassificationCode": {
-                "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-ACL245#007",
-                "name": "Mobile PC",
-                "listID": "eClass",
-                "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-ACL245#007",
                 "hjid": null
               },
               "hjid": null

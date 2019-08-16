@@ -1,10 +1,6 @@
 package eu.nimble.service.catalogue.category;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
-import com.mashape.unirest.request.HttpRequest;
 import eu.nimble.service.catalogue.category.eclass.EClassTaxonomyQueryImpl;
 import eu.nimble.service.catalogue.index.ClassIndexClient;
 import eu.nimble.service.catalogue.index.IndexingWrapper;
@@ -17,13 +13,14 @@ import eu.nimble.service.model.solr.owl.ClassType;
 import eu.nimble.service.model.solr.owl.IClassType;
 import eu.nimble.service.model.solr.owl.IConcept;
 import eu.nimble.utility.JsonSerializationUtility;
+import feign.Response;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
@@ -231,12 +228,6 @@ public class IndexCategoryService {
 //        return new ArrayList<>();
     }
 
-    public List<Category> getProductCategories(String categoryName) {
-        List<Category> categories = classIndexClient.getCategories(categoryName);
-        getProductCategories(categoryName, null, false);
-        return categories;
-    }
-
     public List<Category> getProductCategories(String categoryName, String taxonomyId, boolean forLogistics) {
         List<Category> results;
         String query = constructQuery(categoryName, taxonomyId, forLogistics);
@@ -275,18 +266,11 @@ public class IndexCategoryService {
 
     private List<Category> getProductCategoriesWithConstructedQuery(String query) {
         try {
-            HttpRequest request = Unirest.get(indexingUrl + "/class/select");
-            request = request
-                    .queryString("q", query)
-                    .queryString("rows", Integer.MAX_VALUE)
-
-                    .header(HttpHeaders.AUTHORIZATION, credentialsUtil.getBearerToken());
-
-            HttpResponse<String> response = request.asString();
-            if (response.getStatus() == HttpStatus.OK.value()) {
+            Response response = SpringBridge.getInstance().getiIndexingServiceClient().selectClass(credentialsUtil.getBearerToken(),Integer.toString(Integer.MAX_VALUE),query,null);
+            if (response.status() == HttpStatus.OK.value()) {
                 try {
                     List<Category> results = new ArrayList<>();
-                    SearchResult<ClassType> categories = JsonSerializationUtility.getObjectMapper().readValue(response.getBody(), new TypeReference<SearchResult<ClassType>>() {
+                    SearchResult<ClassType> categories = JsonSerializationUtility.getObjectMapper().readValue(response.body().asInputStream(), new TypeReference<SearchResult<ClassType>>() {
                     });
                     for (ClassType indexCategory : categories.getResult()) {
                         results.add(IndexingWrapper.toCategory(indexCategory));
@@ -296,15 +280,15 @@ public class IndexCategoryService {
                     return results;
 
                 } catch (IOException e) {
-                    logger.error("Failed to parse SearchResults with query: {}, serialized result: {}", query, response.getBody(), e);
+                    logger.error("Failed to parse SearchResults with query: {}, serialized result: {}", query, IOUtils.toString(response.body().asInputStream()), e);
                 }
 
             } else {
                 logger.error("Failed to retrieve categories. query: {}, indexing call status: {}, message: {}",
-                        query, response.getStatus(), response.getBody());
+                        query, response.status(), IOUtils.toString(response.body().asInputStream()));
             }
 
-        } catch (UnirestException e) {
+        } catch (Exception e) {
             logger.error("Failed to retrieve categories. query: {}", query, e);
         }
 

@@ -1,18 +1,16 @@
 package eu.nimble.service.catalogue.index;
 
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import eu.nimble.service.catalogue.util.CredentialsUtil;
+import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.solr.party.PartyType;
 import eu.nimble.utility.JsonSerializationUtility;
+import feign.Response;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 /**
@@ -48,23 +46,19 @@ public class PartyIndexClient {
                 return;
             }
 
-            HttpResponse<String> response = Unirest.put(indexingUrl + "/party")
-                    .header(HttpHeaders.AUTHORIZATION, credentialsUtil.getBearerToken())
-                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .body(partyJson)
-                    .asString();
+            Response response = SpringBridge.getInstance().getiIndexingServiceClient().setParty(credentialsUtil.getBearerToken(),partyJson);
 
-            if (response.getStatus() == HttpStatus.OK.value()) {
+            if (response.status() == HttpStatus.OK.value()) {
                 logger.info("Indexed party successfully. party name: {}, id: {}", party.getPartyName().get(0).getName().getValue(), party.getPartyIdentification().get(0).getID());
                 return;
 
             } else {
-                String msg = String.format("Failed to index party. id: %s, indexing call status: %d, message: %s", party.getPartyIdentification().get(0).getID(), response.getStatus(), response.getBody());
+                String msg = String.format("Failed to index party. id: %s, indexing call status: %d, message: %s", party.getPartyIdentification().get(0).getID(), response.status(), IOUtils.toString(response.body().asInputStream()));
                 logger.error(msg);
                 return;
             }
 
-        } catch (UnirestException e) {
+        } catch (Exception e) {
             String msg = String.format("Failed to index party. uri: %s", party.getPartyIdentification().get(0).getID());
             logger.error(msg, e);
             return;
@@ -73,21 +67,17 @@ public class PartyIndexClient {
 
     public void removeParty(String partyId) {
         try {
-            HttpResponse<String> response;
-            response = Unirest.delete(indexingUrl + "/party")
-                    .header(HttpHeaders.AUTHORIZATION, credentialsUtil.getBearerToken())
-                    .queryString("uri", partyId)
-                    .asString();
+            Response response = SpringBridge.getInstance().getiIndexingServiceClient().removeParty(credentialsUtil.getBearerToken(),partyId);
 
-            if (response.getStatus() == HttpStatus.OK.value()) {
+            if (response.status() == HttpStatus.OK.value()) {
                 logger.info("Deleted indexed Party. partyId: {}", partyId);
 
             } else {
                 logger.error("Failed to delete indexed Party. partyId: {}, indexing call status: {}, message: {}",
-                        partyId, response.getStatus(), response.getBody());
+                        partyId, response.status(), IOUtils.toString(response.body().asInputStream()));
             }
 
-        } catch (UnirestException e) {
+        } catch (Exception e) {
             logger.error("Failed to delete indexed Catalogue. uuid: {}", partyId, e);
         }
     }
