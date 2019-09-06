@@ -73,7 +73,7 @@ public class CatalogueController {
     @Autowired
     private IValidationUtil validationUtil;
 
-    public static final NimbleRole[] REQUIRED_ROLES_CATALOGUE = {NimbleRole.Company_Admin, NimbleRole.External_Representative, NimbleRole.External_Representative, NimbleRole.Publisher};
+    public static final NimbleRole[] REQUIRED_ROLES_CATALOGUE = {NimbleRole.COMPANY_ADMIN, NimbleRole.EXTERNAL_REPRESENTATIVE, NimbleRole.LEGAL_REPRESENTATIVE, NimbleRole.PUBLISHER};
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves the default CataloguePaginationResponse for the specified party.")
     @ApiResponses(value = {
