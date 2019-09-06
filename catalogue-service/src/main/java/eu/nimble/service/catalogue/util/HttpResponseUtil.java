@@ -1,5 +1,9 @@
 package eu.nimble.service.catalogue.util;
 
+import eu.nimble.utility.JsonSerializationUtility;
+import eu.nimble.utility.exception.AuthenticationException;
+import eu.nimble.utility.validation.NimbleRole;
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.boot.logging.LogLevel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,5 +37,18 @@ public class HttpResponseUtil {
             }
         }
         return null;
+    }
+
+    public static void validateToken(String token) throws AuthenticationException {
+        try {
+            // check token
+            boolean isValid = SpringBridge.getInstance().getiIdentityClientTyped().getUserInfo(token);
+            if (!isValid) {
+                String msg = String.format("No user exists for the given token : %s", token);
+                throw new AuthenticationException(msg);
+            }
+        } catch (IOException e) {
+            throw new AuthenticationException(String.format("Failed to check user authorization for token: %s", token), e);
+        }
     }
 }

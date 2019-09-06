@@ -11,6 +11,7 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.PersonType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HttpResponseUtil;
 import eu.nimble.utility.JsonSerializationUtility;
+import eu.nimble.utility.validation.IValidationUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -29,6 +30,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import sun.rmi.runtime.Log;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
@@ -47,6 +49,8 @@ public class ImportExportController {
 
     @Autowired
     private CatalogueService service;
+    @Autowired
+    private IValidationUtil validationUtil;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "This service imports the provided UBL catalogue. The service replaces the PartyType" +
@@ -64,10 +68,9 @@ public class ImportExportController {
                                           @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         try {
             log.info("Importing catalogue ...");
-            // check token
-            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-            if (tokenCheck != null) {
-                return tokenCheck;
+            // validate role
+            if(!validationUtil.validateRole(bearerToken, CatalogueController.REQUIRED_ROLES_CATALOGUE)) {
+                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
             }
 
             // remove hjid fields of catalogue
@@ -122,37 +125,26 @@ public class ImportExportController {
             HttpServletResponse response) {
 
         log.info("Incoming request to export catalogue with uuid {}", catalogueUuid);
-        // token check
-        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-        if (tokenCheck != null) {
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, CatalogueController.REQUIRED_ROLES_CATALOGUE)) {
+            HttpResponseUtil.writeMessageServletResponseAndLog(response, "Invalid role", HttpStatus.UNAUTHORIZED);
             return;
         }
+
         // check whether the catalogue with the given uuid exists or not
         CatalogueType catalogue;
         try {
             catalogue = service.getCatalogue(catalogueUuid);
         } catch (Exception e) {
             String msg = "Failed to get catalogue for uuid: "+catalogueUuid + "\n" + e.getMessage();
-            log.error(msg);
-            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            try {
-                response.getOutputStream().write(msg.getBytes());
-            } catch (IOException e1) {
-                log.error("Failed to write the error message to the output stream", e1);
-            }
+            HttpResponseUtil.writeMessageServletResponseAndLog(response, msg, e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
             return;
         }
 
         // no catalogue for the given uuid
         if (catalogue == null) {
             String msg = "No catalogue for uuid: " + catalogueUuid;
-            log.info(msg);
-            response.setStatus(HttpStatus.NOT_FOUND.value());
-            try {
-                response.getOutputStream().write(msg.getBytes());
-            } catch (IOException e) {
-                log.error("Failed to write the error message to the output stream", e);
-            }
+            HttpResponseUtil.writeMessageServletResponseAndLog(response, msg, null, HttpStatus.NOT_FOUND, LogLevel.INFO);
             return;
         }
         // get workbooks
@@ -170,14 +162,9 @@ public class ImportExportController {
 
             response.flushBuffer();
         } catch (IOException e) {
-            String msg = "Failed to write the catalogue content to the response output stream\n" + e.getMessage();
-            log.error(msg, e);
-            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            try {
-                response.getOutputStream().write(msg.getBytes());
-            } catch (IOException e1) {
-                log.error("Failed to write the error message to the output stream", e);
-            }
+            String msg = String.format("Failed to write the catalogue content to the response output stream: %s", e.getMessage());
+            HttpResponseUtil.writeMessageServletResponseAndLog(response, msg, e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+
         } finally {
             try {
                 if(zos != null){
@@ -221,10 +208,12 @@ public class ImportExportController {
             log.info("Incoming request to export catalogues for party: {}, ids: {}, export all: {}", partyId, idsLog, exportAll);
             zos = new ZipOutputStream(response.getOutputStream());
 
-            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-            if (tokenCheck != null) {
+            // validate role
+            if(!validationUtil.validateRole(bearerToken, CatalogueController.REQUIRED_ROLES_CATALOGUE)) {
+                HttpResponseUtil.writeMessageServletResponseAndLog(response, "Invalid role", HttpStatus.UNAUTHORIZED);
                 return;
             }
+
 
             // if all the catalogues is requested to be deleted get the identifiers first
             if(exportAll) {

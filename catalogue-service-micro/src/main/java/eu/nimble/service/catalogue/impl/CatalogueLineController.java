@@ -16,6 +16,7 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.LineItemType;
 import eu.nimble.utility.*;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import eu.nimble.utility.serialization.TransactionEnabledSerializationUtility;
+import eu.nimble.utility.validation.IValidationUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -53,6 +54,8 @@ public class CatalogueLineController {
     private ResourceValidationUtility resourceValidationUtil;
     @Autowired
     private CatalogueService service;
+    @Autowired
+    private IValidationUtil validationUtil;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves the catalogue line with the DB-scoped identifier")
@@ -68,10 +71,9 @@ public class CatalogueLineController {
     public ResponseEntity getCatalogueLineByHjid(@ApiParam(value = "Identifier of the catalogue line to be retrieved. (line.hjid)", required = true) @PathVariable Long hjid,
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to get catalogue line with hjid: {}", hjid);
-        // check token
-        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-        if (tokenCheck != null) {
-            return tokenCheck;
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, CatalogueController.REQUIRED_ROLES_CATALOGUE)) {
+            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
         }
 
         CatalogueLineType catalogueLine;
@@ -105,10 +107,9 @@ public class CatalogueLineController {
                                                    @ApiParam(value = "Option used to sort catalogue lines") @RequestParam(value = "sortOption",required = true) CatalogueLineSortOptions sortOption,
                                                  @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to get catalogue lines with hjids: {}", hjids);
-        // check token
-        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-        if (tokenCheck != null) {
-            return tokenCheck;
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, CatalogueController.REQUIRED_ROLES_CATALOGUE)) {
+            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
         }
 
         List<CatalogueLineType> catalogueLines;
@@ -137,10 +138,9 @@ public class CatalogueLineController {
                                             @ApiParam(value = "Comma-separated line ids to be retrieved e.g. e86e6558-b95c-4c3d-ac17-ac84830d7527,80f50752-e147-4063-8573-be78cde0d3a6",required = true) @RequestParam(value = "lineIds",required = true) List<String> lineIds,
                                             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to get catalogue lines, catalogue uuids: {}, line ids: {}",catalogueUuids,lineIds);
-        // check token
-        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-        if (tokenCheck != null) {
-            return tokenCheck;
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, CatalogueController.REQUIRED_ROLES_CATALOGUE)) {
+            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
         }
 
         // ensure that catalogue uuids and catalogue line ids lists have the same size
@@ -179,10 +179,9 @@ public class CatalogueLineController {
                                            @ApiParam(value = "Identifier of the catalogue line to be retrieved. (line.id)", required = true) @PathVariable String lineId,
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to get catalogue line with lineId: {}, catalogue uuid: {}", lineId, catalogueUuid);
-        // check token
-        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-        if (tokenCheck != null) {
-            return tokenCheck;
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, CatalogueController.REQUIRED_ROLES_CATALOGUE)) {
+            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
         }
 
         if (service.getCatalogue(catalogueUuid) == null) {
@@ -221,10 +220,9 @@ public class CatalogueLineController {
                                            @ApiParam(value = "Identifier of the catalogue lines to be retrieved. (line.id)", required = true) @RequestParam(value = "lineIds") List<String> lineIds,
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to get catalogue line with lineIds: {}, catalogue uuid: {}", lineIds, catalogueUuid);
-        // check token
-        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-        if (tokenCheck != null) {
-            return tokenCheck;
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, CatalogueController.REQUIRED_ROLES_CATALOGUE)) {
+            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
         }
 
         if (service.getCatalogue(catalogueUuid) == null) {
@@ -265,10 +263,9 @@ public class CatalogueLineController {
         CatalogueLineType catalogueLine;
 
         try {
-            // check token
-            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-            if (tokenCheck != null) {
-                return tokenCheck;
+            // validate role
+            if(!validationUtil.validateRole(bearerToken, CatalogueController.REQUIRED_ROLES_CATALOGUE)) {
+                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
             }
 
             // get owning catalogue
@@ -360,10 +357,9 @@ public class CatalogueLineController {
                                               @ApiParam(value = "Serialized form of the catalogue line. Valid serializations can be achieved via JsonSerializationUtility.getObjectMapper method located in the utility module. An example catalogue line serialization can be found in: https://github.com/nimble-platform/catalog-service/tree/staging/catalogue-service-micro/src/main/resources/example_content/catalogue_line.json.", required = true) @RequestBody String catalogueLineJson,
                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         try {
-            // check token
-            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-            if (tokenCheck != null) {
-                return tokenCheck;
+            // validate role
+            if(!validationUtil.validateRole(bearerToken, CatalogueController.REQUIRED_ROLES_CATALOGUE)) {
+                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
             }
 
             CatalogueLineType catalogueLine;
@@ -472,10 +468,9 @@ public class CatalogueLineController {
                                               @ApiParam(value = "Identifier of the catalogue line to be retrieved. (line.id)", required = true) @PathVariable String lineId,
                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to delete catalogue line. catalogue uuid: {}: line lineId {}", catalogueUuid, lineId);
-        // check token
-        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-        if (tokenCheck != null) {
-            return tokenCheck;
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, CatalogueController.REQUIRED_ROLES_CATALOGUE)) {
+            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
         }
 
         if (service.getCatalogue(catalogueUuid) == null) {
@@ -504,9 +499,9 @@ public class CatalogueLineController {
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
 
         log.info("Incoming request to get catalogue line statistics no of products and services");
-        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-        if (tokenCheck != null) {
-            return tokenCheck;
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, CatalogueController.REQUIRED_ROLES_CATALOGUE)) {
+            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
         }
 
        ProductAndServiceStatistics stats;

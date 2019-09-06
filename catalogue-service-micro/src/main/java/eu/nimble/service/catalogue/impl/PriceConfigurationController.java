@@ -13,6 +13,7 @@ import eu.nimble.utility.HttpResponseUtil;
 import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
+import eu.nimble.utility.validation.IValidationUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -49,6 +50,8 @@ public class PriceConfigurationController {
     private ResourceValidationUtility resourceValidationUtil;
     @Autowired
     private CatalogueService service;
+    @Autowired
+    private IValidationUtil validationUtil;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Adds the provided price option to the specified catalogue line (i.e. product/service)")
@@ -70,10 +73,9 @@ public class PriceConfigurationController {
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to add pricing option. catalogueId: {}, lineId: {}", catalogueUuid, lineId);
         try {
-            // check token
-            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-            if (tokenCheck != null) {
-                return tokenCheck;
+            // validate role
+            if(!validationUtil.validateRole(bearerToken, CatalogueController.REQUIRED_ROLES_CATALOGUE)) {
+                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
             }
 
             // check catalogue
@@ -142,10 +144,9 @@ public class PriceConfigurationController {
                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to delete pricing option. catalogueId: {}, lineId: {}, optionId: {}", catalogueUuid, lineId, optionId);
         try {
-            // check token
-            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-            if (tokenCheck != null) {
-                return tokenCheck;
+            // validate role
+            if(!validationUtil.validateRole(bearerToken, CatalogueController.REQUIRED_ROLES_CATALOGUE)) {
+                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
             }
 
             // check catalogue
@@ -214,10 +215,9 @@ public class PriceConfigurationController {
         log.info("Incoming request to delete pricing option. catalogueId: {}, lineId: {}, optionId: {}", catalogueUuid, lineId, priceOption.getHjid());
 
         try {
-            // check token
-            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-            if (tokenCheck != null) {
-                return tokenCheck;
+            // validate role
+            if(!validationUtil.validateRole(bearerToken, CatalogueController.REQUIRED_ROLES_CATALOGUE)) {
+                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
             }
 
             // check catalogue
@@ -284,10 +284,9 @@ public class PriceConfigurationController {
         log.info("Incoming request to get VAT rates");
 
         try {
-            // check token
-            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-            if (tokenCheck != null) {
-                return tokenCheck;
+            // validate role
+            if(!validationUtil.validateRole(bearerToken, CatalogueController.REQUIRED_ROLES_CATALOGUE)) {
+                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
             }
 
             HttpResponse<String> response = Unirest.get(VAT_RATES_URL)
