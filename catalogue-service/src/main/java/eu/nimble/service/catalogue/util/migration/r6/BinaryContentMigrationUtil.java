@@ -30,9 +30,6 @@ public class BinaryContentMigrationUtil {
     private static final Logger logger = LoggerFactory.getLogger(BinaryContentMigrationUtil.class);
 
     @Autowired
-    private BinaryContentService binaryContentService;
-
-    @Autowired
     private JPARepositoryFactory repoFactory;
 
     @Autowired
@@ -115,7 +112,7 @@ public class BinaryContentMigrationUtil {
             originalBinaryObject.setValue(originalContentBytes);
             originalBinaryObject.setMimeCode(binaryObject.getMimeCode());
             originalBinaryObject.setFileName(binaryObject.getFileName());
-            originalBinaryObject = binaryContentService.createContent(originalBinaryObject);
+            originalBinaryObject = new BinaryContentService().createContent(originalBinaryObject);
 
             // refer to the original content from the initial binary object
             binaryObject.setUri(originalBinaryObject.getUri());
