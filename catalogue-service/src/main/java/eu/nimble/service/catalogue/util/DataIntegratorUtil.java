@@ -119,7 +119,7 @@ public class DataIntegratorUtil {
         }
 
         for(CommodityClassificationType commodityClassificationType:commodityClassifications){
-            if (commodityClassificationType.getItemClassificationCode().getURI() != null) {
+            if (commodityClassificationType.getItemClassificationCode().getURI() != null && !commodityClassificationType.getItemClassificationCode().getListID().contentEquals("Default")) {
                 // find parent categories uris
                 List<Category> parentCategories = SpringBridge.getInstance().getIndexCategoryService().getParentCategories(commodityClassificationType.getItemClassificationCode().getListID(),commodityClassificationType.getItemClassificationCode().getValue());
                 List<String> parentCategoriesUris = new ArrayList<>();
