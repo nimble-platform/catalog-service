@@ -1,0 +1,750 @@
+{
+  "id": "default",
+  "uuid": null,
+  "providerParty": {
+    "nace": [],
+    "description": [],
+    "brandName": [],
+    "partyName": [
+      {
+        "name": {
+          "value": "Logistics Service Provider",
+          "languageID": "en"
+        }
+      }
+    ],
+    "partyIdentification": [
+      {
+        "id": "747"
+      }
+    ],
+    "websiteURI": "",
+    "industryClassificationCode": {
+      "name": "IndustryClassificationCode"
+    },
+    "ppapCompatibilityLevel": 3,
+    "preferredItemClassificationCode": [],
+    "mostRecentItemsClassificationCode": [
+      {
+        "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-AFY509#003::eClass::Aeroacoustics (calculation, simulation, unspecified)::product::1561461779890"
+      },
+      {
+        "value": "http://www.aidimme.es/FurnitureSectorOntology.owl#LogisticsService::FurnitureOntology::Servicios logísticos::transportation::1550834844983"
+      },
+      {
+        "value": "0173-1#01-ADR740#003::eClass::Transport service::transportation::1547644412202"
+      },
+      {
+        "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-ADR740#003::eClass::Transport service::transportation::1554752905122"
+      },
+      {
+        "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-AAC168#005::eClass::Automotive technology::product::1569234813958"
+      },
+      {
+        "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-AAC350#007::eClass::Auxiliary supply, additive, cleaning agent::product::1561538352662"
+      },
+      {
+        "value": "0173-1#01-AFY509#003::eClass::Aeroacoustics (calculation, simulation, unspecified)::product::1538036678605"
+      },
+      {
+        "value": "0173-1#01-AGE763#001::eClass::Clothing and textile::product::1537797498431"
+      },
+      {
+        "value": "0173-1#01-ADG629#002::eClass::Logistics (Service)::transportation::1547468895353"
+      },
+      {
+        "value": "0173-1#01-AAC168#005::eClass::Automotive technology::product::1542381196403"
+      }
+    ],
+    "processID": [
+      "Item_Information_Request",
+      "Ppap"
+    ],
+    "deleted": false,
+    "postalAddress": {
+      "streetName": "Develi",
+      "buildingNumber": "",
+      "cityName": "Ankara",
+      "postalZone": "123",
+      "country": {
+        "name": {
+          "value": "Turkey"
+        }
+      }
+    },
+    "partyTaxScheme": [
+      {
+        "taxScheme": {
+          "taxTypeCode": {
+            "value": "1",
+            "name": "VAT"
+          }
+        }
+      }
+    ],
+    "contact": {
+      "otherCommunication": []
+    },
+    "person": [
+      {
+        "id": "745",
+        "firstName": "veli",
+        "familyName": "cav",
+        "role": [],
+        "favouriteProductID": [],
+        "deleted": false,
+        "contact": {
+          "name": {
+            "languageID": "en"
+          },
+          "telephone": "",
+          "electronicMail": "cav@gmail.com",
+          "otherCommunication": []
+        },
+        "roleItems": [],
+        "favouriteProductIDItems": []
+      }
+    ],
+    "certificate": [],
+    "qualityIndicator": [
+      {
+        "qualityParameter": ""
+      }
+    ],
+    "ppapDocumentReference": [],
+    "documentReference": [],
+    "industrySector": [],
+    "salesTerms": {
+      "tradingTerms": [],
+      "deliveryTerms": [],
+      "paymentMeans": [],
+      "termOrCondition": []
+    },
+    "purchaseTerms": {
+      "tradingTerms": [],
+      "deliveryTerms": [],
+      "paymentMeans": [],
+      "termOrCondition": []
+    },
+    "processIDItems": [
+      {
+        "item": "Item_Information_Request"
+      },
+      {
+        "item": "Ppap"
+      }
+    ]
+  },
+  "issueDate": "",
+  "issueTime": "",
+  "catalogueLine": [
+    {
+      "id": "56e040f1-c301-44e4-94b1-3ca6c0c06174",
+      "hjid": null,
+      "orderableUnit": null,
+      "freeOfChargeIndicator": false,
+      "warrantyValidityPeriod": {
+        "startDate": null,
+        "startTime": null,
+        "endDate": null,
+        "endTime": null,
+        "durationMeasure": {
+          "value": 0,
+          "unitCode": "month(s)",
+          "hjid": null
+        },
+        "hjid": null
+      },
+      "warrantyInformation": [],
+      "requiredItemLocationQuantity": {
+        "minimumQuantity": null,
+        "applicableTerritoryAddress": [],
+        "price": {
+          "priceAmount": {
+            "value": null,
+            "currencyID": "EUR"
+          },
+          "baseQuantity": {
+            "value": 1,
+            "unitCode": "item(s)",
+            "hjid": null
+          }
+        },
+        "allowanceCharge": [],
+        "applicableTaxCategory": [
+          {
+            "percent": null
+          }
+        ]
+      },
+      "priceOption": [],
+      "goodsItem": {
+        "id": "56e040f1-c301-44e4-94b1-3ca6c0c06174",
+        "item": {
+          "name": [
+            {
+              "value": "Road Transport local",
+              "languageID": "en"
+            }
+          ],
+          "description": [
+            {
+              "value": "",
+              "languageID": "en"
+            }
+          ],
+          "itemSpecificationDocumentReference": [],
+          "productImage": [],
+          "additionalItemProperty": [
+            {
+              "id": "http://www.aidimme.es/FurnitureSectorOntology.owl#industrySpecialization",
+              "name": [
+                {
+                  "value": "Industry specialization",
+                  "languageID": "en",
+                  "hjid": null
+                },
+                {
+                  "value": "Especialización industrial",
+                  "languageID": "es",
+                  "hjid": null
+                }
+              ],
+              "value": [
+                {
+                  "value": "Food",
+                  "languageID": "en"
+                },
+                {
+                  "value": "Retail",
+                  "languageID": "en"
+                },
+                {
+                  "value": "Automotive",
+                  "languageID": "en"
+                }
+              ],
+              "valueDecimal": [],
+              "valueQuantity": [],
+              "valueBinary": [],
+              "valueQualifier": "STRING",
+              "itemClassificationCode": {
+                "value": "http://www.aidimme.es/FurnitureSectorOntology.owl#RoadTransportService",
+                "name": "Road transport",
+                "uri": "http://www.aidimme.es/FurnitureSectorOntology.owl#RoadTransportService",
+                "listID": "FurnitureOntology",
+                "listURI": null
+              },
+              "uri": "http://www.aidimme.es/FurnitureSectorOntology.owl#industrySpecialization"
+            },
+            {
+              "id": "http://www.aidimme.es/FurnitureSectorOntology.owl#managedProductType",
+              "name": [
+                {
+                  "value": "Managed product type",
+                  "languageID": "en",
+                  "hjid": null
+                },
+                {
+                  "value": "Tipo de producto",
+                  "languageID": "es",
+                  "hjid": null
+                }
+              ],
+              "value": [
+                {
+                  "value": "Pallets",
+                  "languageID": "en"
+                },
+                {
+                  "value": "Stackable products",
+                  "languageID": "en"
+                }
+              ],
+              "valueDecimal": [],
+              "valueQuantity": [],
+              "valueBinary": [],
+              "valueQualifier": "STRING",
+              "itemClassificationCode": {
+                "value": "http://www.aidimme.es/FurnitureSectorOntology.owl#RoadTransportService",
+                "name": "Road transport",
+                "uri": "http://www.aidimme.es/FurnitureSectorOntology.owl#RoadTransportService",
+                "listID": "FurnitureOntology",
+                "listURI": null
+              },
+              "uri": "http://www.aidimme.es/FurnitureSectorOntology.owl#managedProductType"
+            },
+            {
+              "id": "http://www.aidimme.es/FurnitureSectorOntology.owl#destinationTransport",
+              "name": [
+                {
+                  "value": "Destination",
+                  "languageID": "en",
+                  "hjid": null
+                },
+                {
+                  "value": "Destino",
+                  "languageID": "es",
+                  "hjid": null
+                }
+              ],
+              "value": [
+                {
+                  "value": "Armenia",
+                  "languageID": "en"
+                }
+              ],
+              "valueDecimal": [],
+              "valueQuantity": [],
+              "valueBinary": [],
+              "valueQualifier": "STRING",
+              "itemClassificationCode": {
+                "value": "http://www.aidimme.es/FurnitureSectorOntology.owl#RoadTransportService",
+                "name": "Road transport",
+                "uri": "http://www.aidimme.es/FurnitureSectorOntology.owl#RoadTransportService",
+                "listID": "FurnitureOntology",
+                "listURI": null
+              },
+              "uri": "http://www.aidimme.es/FurnitureSectorOntology.owl#destinationTransport"
+            },
+            {
+              "id": "http://www.aidimme.es/FurnitureSectorOntology.owl#shipmentType",
+              "name": [
+                {
+                  "value": "Shipment type",
+                  "languageID": "en",
+                  "hjid": null
+                },
+                {
+                  "value": "Tipo de envío",
+                  "languageID": "es",
+                  "hjid": null
+                }
+              ],
+              "value": [
+                {
+                  "value": "Cross docking",
+                  "languageID": "en"
+                },
+                {
+                  "value": "Door to door",
+                  "languageID": "en"
+                }
+              ],
+              "valueDecimal": [],
+              "valueQuantity": [],
+              "valueBinary": [],
+              "valueQualifier": "STRING",
+              "itemClassificationCode": {
+                "value": "http://www.aidimme.es/FurnitureSectorOntology.owl#RoadTransportService",
+                "name": "Road transport",
+                "uri": "http://www.aidimme.es/FurnitureSectorOntology.owl#RoadTransportService",
+                "listID": "FurnitureOntology",
+                "listURI": null
+              },
+              "uri": "http://www.aidimme.es/FurnitureSectorOntology.owl#shipmentType"
+            },
+            {
+              "id": "http://www.aidimme.es/FurnitureSectorOntology.owl#originTransport",
+              "name": [
+                {
+                  "value": "Origin",
+                  "languageID": "en",
+                  "hjid": null
+                },
+                {
+                  "value": "Origen",
+                  "languageID": "es",
+                  "hjid": null
+                }
+              ],
+              "value": [
+                {
+                  "value": "Africa",
+                  "languageID": "en"
+                }
+              ],
+              "valueDecimal": [],
+              "valueQuantity": [],
+              "valueBinary": [],
+              "valueQualifier": "STRING",
+              "itemClassificationCode": {
+                "value": "http://www.aidimme.es/FurnitureSectorOntology.owl#RoadTransportService",
+                "name": "Road transport",
+                "uri": "http://www.aidimme.es/FurnitureSectorOntology.owl#RoadTransportService",
+                "listID": "FurnitureOntology",
+                "listURI": null
+              },
+              "uri": "http://www.aidimme.es/FurnitureSectorOntology.owl#originTransport"
+            }
+          ],
+          "manufacturerParty": {
+            "nace": [],
+            "description": [],
+            "brandName": [],
+            "partyName": [
+              {
+                "name": {
+                  "value": "Logistics Service Provider",
+                  "languageID": "en"
+                }
+              }
+            ],
+            "partyIdentification": [
+              {
+                "id": "747"
+              }
+            ],
+            "websiteURI": "",
+            "industryClassificationCode": {
+              "name": "IndustryClassificationCode"
+            },
+            "ppapCompatibilityLevel": 3,
+            "preferredItemClassificationCode": [],
+            "mostRecentItemsClassificationCode": [
+              {
+                "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-AFY509#003::eClass::Aeroacoustics (calculation, simulation, unspecified)::product::1561461779890"
+              },
+              {
+                "value": "http://www.aidimme.es/FurnitureSectorOntology.owl#LogisticsService::FurnitureOntology::Servicios logísticos::transportation::1550834844983"
+              },
+              {
+                "value": "0173-1#01-ADR740#003::eClass::Transport service::transportation::1547644412202"
+              },
+              {
+                "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-ADR740#003::eClass::Transport service::transportation::1554752905122"
+              },
+              {
+                "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-AAC168#005::eClass::Automotive technology::product::1569234813958"
+              },
+              {
+                "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-AAC350#007::eClass::Auxiliary supply, additive, cleaning agent::product::1561538352662"
+              },
+              {
+                "value": "0173-1#01-AFY509#003::eClass::Aeroacoustics (calculation, simulation, unspecified)::product::1538036678605"
+              },
+              {
+                "value": "0173-1#01-AGE763#001::eClass::Clothing and textile::product::1537797498431"
+              },
+              {
+                "value": "0173-1#01-ADG629#002::eClass::Logistics (Service)::transportation::1547468895353"
+              },
+              {
+                "value": "0173-1#01-AAC168#005::eClass::Automotive technology::product::1542381196403"
+              }
+            ],
+            "processID": [
+              "Item_Information_Request",
+              "Ppap"
+            ],
+            "deleted": false,
+            "postalAddress": {
+              "streetName": "Develi",
+              "buildingNumber": "",
+              "cityName": "Ankara",
+              "postalZone": "123",
+              "country": {
+                "name": {
+                  "value": "Turkey"
+                }
+              }
+            },
+            "partyTaxScheme": [
+              {
+                "taxScheme": {
+                  "taxTypeCode": {
+                    "value": "1",
+                    "name": "VAT"
+                  }
+                }
+              }
+            ],
+            "contact": {
+              "otherCommunication": []
+            },
+            "person": [
+              {
+                "id": "745",
+                "firstName": "veli",
+                "familyName": "cav",
+                "role": [],
+                "favouriteProductID": [],
+                "deleted": false,
+                "contact": {
+                  "name": {
+                    "languageID": "en"
+                  },
+                  "telephone": "",
+                  "electronicMail": "cav@gmail.com",
+                  "otherCommunication": []
+                },
+                "roleItems": [],
+                "favouriteProductIDItems": []
+              }
+            ],
+            "certificate": [],
+            "qualityIndicator": [
+              {
+                "qualityParameter": ""
+              }
+            ],
+            "ppapDocumentReference": [],
+            "documentReference": [],
+            "industrySector": [],
+            "salesTerms": {
+              "tradingTerms": [],
+              "deliveryTerms": [],
+              "paymentMeans": [],
+              "termOrCondition": []
+            },
+            "purchaseTerms": {
+              "tradingTerms": [],
+              "deliveryTerms": [],
+              "paymentMeans": [],
+              "termOrCondition": []
+            },
+            "processIDItems": [
+              {
+                "item": "Item_Information_Request"
+              },
+              {
+                "item": "Ppap"
+              }
+            ]
+          },
+          "manufacturersItemIdentification": {
+            "id": "56e040f1-c301-44e4-94b1-3ca6c0c06174"
+          },
+          "catalogueDocumentReference": {
+            "id": null,
+            "documentType": null,
+            "attachment": null
+          },
+          "commodityClassification": [
+            {
+              "itemClassificationCode": {
+                "value": "http://www.aidimme.es/FurnitureSectorOntology.owl#RoadTransportService",
+                "name": "Road transport",
+                "uri": "http://www.aidimme.es/FurnitureSectorOntology.owl#RoadTransportService",
+                "listID": "FurnitureOntology",
+                "listURI": null
+              },
+              "natureCode": null,
+              "cargoTypeCode": null,
+              "hjid": ""
+            }
+          ],
+          "certificate": [],
+          "dimension": [],
+          "transportationServiceDetails": {
+            "transportServiceCode": {
+              "value": "",
+              "name": "",
+              "uri": "",
+              "listID": "",
+              "listURI": ""
+            },
+            "name": null,
+            "supportedCommodityClassification": [
+              {
+                "itemClassificationCode": {
+                  "value": "",
+                  "name": "",
+                  "uri": "",
+                  "listID": "",
+                  "listURI": ""
+                },
+                "natureCode": {
+                  "value": "",
+                  "name": "",
+                  "uri": "",
+                  "listID": "",
+                  "listURI": ""
+                },
+                "cargoTypeCode": {
+                  "value": "",
+                  "name": "",
+                  "uri": "",
+                  "listID": "",
+                  "listURI": ""
+                },
+                "hjid": null
+              }
+            ],
+            "totalCapacityDimension": {
+              "attributeID": null,
+              "measure": {
+                "value": null,
+                "unitCode": null,
+                "hjid": null
+              }
+            },
+            "shipmentStage": [
+              {
+                "transportModeCode": {
+                  "value": "",
+                  "name": "",
+                  "uri": "",
+                  "listID": "",
+                  "listURI": ""
+                },
+                "carrierParty": {
+                  "hjid": null,
+                  "ppapCompatibilityLevel": 0,
+                  "contact": {
+                    "telephone": null,
+                    "electronicMail": null
+                  },
+                  "postalAddress": null,
+                  "person": [
+                    {
+                      "id": null,
+                      "firstName": null,
+                      "familyName": null,
+                      "contact": {
+                        "telephone": null,
+                        "electronicMail": null
+                      },
+                      "favouriteProductID": [
+                        ""
+                      ]
+                    }
+                  ],
+                  "certificate": null,
+                  "partyIdentification": null,
+                  "partyName": null,
+                  "salesTerms": null,
+                  "processID": []
+                },
+                "transportMeans": {
+                  "transportMeansTypeCode": {
+                    "value": "",
+                    "name": "",
+                    "uri": "",
+                    "listID": "",
+                    "listURI": ""
+                  },
+                  "transportEquipment": [
+                    {
+                      "transportEquipmentTypeCode": {
+                        "value": "",
+                        "name": "",
+                        "uri": "",
+                        "listID": "",
+                        "listURI": ""
+                      },
+                      "humidityPercent": null,
+                      "refrigeratedIndicator": false,
+                      "characteristics": null
+                    }
+                  ]
+                },
+                "estimatedDeliveryDate": null
+              }
+            ],
+            "environmentalEmission": [
+              {
+                "environmentalEmissionTypeCode": {
+                  "value": "",
+                  "name": "",
+                  "uri": "",
+                  "listID": "",
+                  "listURI": ""
+                },
+                "valueMeasure": {
+                  "value": null,
+                  "unitCode": null,
+                  "hjid": null
+                }
+              }
+            ],
+            "estimatedDurationPeriod": {
+              "startDate": null,
+              "startTime": null,
+              "endDate": null,
+              "endTime": null,
+              "durationMeasure": {
+                "value": null,
+                "unitCode": null,
+                "hjid": null
+              },
+              "hjid": null
+            },
+            "scheduledServiceFrequency": [
+              {
+                "weekDayCode": {
+                  "value": "",
+                  "name": "",
+                  "uri": "",
+                  "listID": "",
+                  "listURI": ""
+                }
+              }
+            ]
+          },
+          "trackAndTraceDetails": {
+            "eventURL": null,
+            "masterURL": null,
+            "productionProcessTemplate": null
+          },
+          "lifeCyclePerformanceAssessmentDetails": {
+            "lcpainput": null,
+            "lcpaoutput": null
+          }
+        },
+        "containingPackage": {
+          "quantity": {
+            "value": 1,
+            "unitCode": "item(s)",
+            "hjid": null
+          },
+          "packagingTypeCode": {
+            "value": "",
+            "name": "",
+            "uri": "",
+            "listID": "",
+            "listURI": ""
+          },
+          "hjid": null
+        },
+        "deliveryTerms": {
+          "id": null,
+          "estimatedDeliveryPeriod": {
+            "startDate": null,
+            "startTime": null,
+            "endDate": null,
+            "endTime": null,
+            "durationMeasure": {
+              "value": null,
+              "unitCode": "day(s)",
+              "hjid": null
+            },
+            "hjid": null
+          },
+          "specialTerms": null,
+          "incoterms": null,
+          "amount": {
+            "value": null,
+            "currencyID": null
+          },
+          "deliveryLocation": {
+            "address": {
+              "cityName": "",
+              "region": "",
+              "postalZone": "",
+              "buildingNumber": "",
+              "streetName": "",
+              "country": {
+                "name": {
+                  "value": null,
+                  "languageID": "en"
+                }
+              }
+            }
+          },
+          "hjid": null
+        }
+      }
+    }
+  ]
+}

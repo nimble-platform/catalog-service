@@ -1,0 +1,109 @@
+{
+  "totalElements": 2,
+  "totalPages": 1,
+  "pageSize": 2147483647,
+  "currentPage": 0,
+  "result": [
+    {
+      "uri": "http://www.aidimme.es/FurnitureSectorOntology.owl#LogisticsService",
+      "code": null,
+      "localName": "LogisticsService",
+      "nameSpace": "http://www.aidimme.es/FurnitureSectorOntology.owl#",
+      "languages": [
+        "en",
+        "es"
+      ],
+      "label": {
+        "en": "Logistics services",
+        "es": "Servicios logísticos"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": null,
+      "comment": null,
+      "type": "class",
+      "properties": [
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#industrySpecialization",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#hasPrice",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#managedProductType",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#hasDescription"
+      ],
+      "parents": null,
+      "children": [
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#TransportService",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#InHouseService",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#ReverseLogisticsService",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#OrderPickingService",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#LogisticsConsultancyService",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#CustomsManagementService",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#WarehousingService"
+      ],
+      "allParents": null,
+      "allChildren": [
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#TransportService",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#MaritimeTransportService",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#AirTransportService",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#InHouseService",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#ReverseLogisticsService",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#RoadTransportService",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#OrderPickingService",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#LogisticsConsultancyService",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#CustomsManagementService",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#WarehousingService",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#RailTransportService"
+      ],
+      "level": null
+    },
+    {
+      "uri": "http://www.aidimme.es/FurnitureSectorOntology.owl#TransportService",
+      "code": null,
+      "localName": "TransportService",
+      "nameSpace": "http://www.aidimme.es/FurnitureSectorOntology.owl#",
+      "languages": [
+        "en",
+        "es"
+      ],
+      "label": {
+        "en": "Servicio de transporte",
+        "es": "Transporte"
+      },
+      "alternateLabel": {
+        "en": [
+          "Transportation"
+        ]
+      },
+      "hiddenLabel": null,
+      "description": null,
+      "comment": null,
+      "type": "class",
+      "properties": [
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#industrySpecialization",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#hasPrice",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#managedProductType",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#destinationTransport",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#hasDescription",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#originTransport"
+      ],
+      "parents": [
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#LogisticsService"
+      ],
+      "children": [
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#MaritimeTransportService",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#AirTransportService",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#RoadTransportService",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#RailTransportService"
+      ],
+      "allParents": [
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#LogisticsService"
+      ],
+      "allChildren": [
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#MaritimeTransportService",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#AirTransportService",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#RoadTransportService",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#RailTransportService"
+      ],
+      "level": null
+    }
+  ],
+  "facets": null
+}

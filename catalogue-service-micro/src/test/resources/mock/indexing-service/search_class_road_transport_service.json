@@ -1,0 +1,48 @@
+{
+  "totalElements": 1,
+  "totalPages": 1,
+  "pageSize": 2147483647,
+  "currentPage": 0,
+  "result": [
+    {
+      "uri": "http://www.aidimme.es/FurnitureSectorOntology.owl#RoadTransportService",
+      "code": null,
+      "localName": "RoadTransportService",
+      "nameSpace": "http://www.aidimme.es/FurnitureSectorOntology.owl#",
+      "languages": [
+        "en",
+        "es"
+      ],
+      "label": {
+        "en": "Road transport",
+        "es": "Transporte por carretera"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": null,
+      "comment": null,
+      "type": "class",
+      "properties": [
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#truckLoad",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#industrySpecialization",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#hasPrice",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#managedProductType",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#destinationTransport",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#hasDescription",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#shipmentType",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#originTransport"
+      ],
+      "parents": [
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#TransportService"
+      ],
+      "children": null,
+      "allParents": [
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#TransportService",
+        "http://www.aidimme.es/FurnitureSectorOntology.owl#LogisticsService"
+      ],
+      "allChildren": null,
+      "level": null
+    }
+  ],
+  "facets": null
+}

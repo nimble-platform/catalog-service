@@ -122,6 +122,18 @@ public class IndexingServiceClientMock implements IIndexingServiceClient {
         else if(query.contentEquals("{\"rows\":2147483647,\"start\":0,\"q\":\"id:\\\"http://www.nimble-project.org/resource/eclass#0173-1#01-AAA647#005\\\" OR id:\\\"http://www.nimble-project.org/resource/eclass#0173-1#01-AJZ801#008\\\" \"}")){
             return IOUtils.toString(IndexingServiceClientMock.class.getResourceAsStream("/mock/indexing-service/search_class_two_uris.json"));
         }
+        else if(query.contentEquals("{\"rows\":2147483647,\"start\":0,\"q\":\"id:\\\"http://www.aidimme.es/FurnitureSectorOntology.owl#RoadTransportService\\\" \"}")){
+            return IOUtils.toString(IndexingServiceClientMock.class.getResourceAsStream("/mock/indexing-service/search_class_road_transport_service.json"));
+        }
+        else if(query.contentEquals("{\"rows\":2147483647,\"start\":0,\"q\":\"id:\\\"http://www.aidimme.es/FurnitureSectorOntology.owl#TransportService\\\" OR id:\\\"http://www.aidimme.es/FurnitureSectorOntology.owl#LogisticsService\\\" \"}")){
+            return IOUtils.toString(IndexingServiceClientMock.class.getResourceAsStream("/mock/indexing-service/search_class_transport_logistics_service.json"));
+        }
+        else if(query.contentEquals("{\"rows\":2147483647,\"start\":0,\"q\":\"id:\\\"http://www.aidimme.es/FurnitureSectorOntology.owl#LogisticsService\\\" \"}")){
+            return IOUtils.toString(IndexingServiceClientMock.class.getResourceAsStream("/mock/indexing-service/search_class_logistics_service.json"));
+        }
+        else if(query.contentEquals("{\"rows\":2147483647,\"start\":0,\"q\":\"id:\\\"http://www.aidimme.es/FurnitureSectorOntology.owl#TransportService\\\" \"}")){
+            return IOUtils.toString(IndexingServiceClientMock.class.getResourceAsStream("/mock/indexing-service/search_class_transport_service.json"));
+        }
         return null;
     }
 
@@ -147,6 +159,9 @@ public class IndexingServiceClientMock implements IIndexingServiceClient {
         }
         else if(uri.contentEquals("http://www.nimble-project.org/resource/eclass#0173-1#01-ACH237#011")){
             return IOUtils.toString(IndexingServiceClientMock.class.getResourceAsStream("/mock/indexing-service/get_properties_0173-1#01-ACH237#011.json"));
+        }
+        else if(uri.contentEquals("http://www.aidimme.es/FurnitureSectorOntology.owl#RoadTransportService")){
+            return IOUtils.toString(IndexingServiceClientMock.class.getResourceAsStream("/mock/indexing-service/get_properties_road_tranport_service.json"));
         }
         return null;
     }

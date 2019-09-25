@@ -41,6 +41,7 @@ public class Test07_ImportExportControllerText {
 
     private final String workbookName1 = "MDF raw.xlsx";
     private final String workbookName2 = "MDF raw_MDF, painted.xlsx";
+    private final String workbookName3 = "Road transport.xlsx";
 
     @Test
     public void test1_generateTemplateForCatalogue() throws Exception {
@@ -58,5 +59,22 @@ public class Test07_ImportExportControllerText {
         Assert.assertEquals(2,workbookStringMap.size());
         Assert.assertEquals(true,workbookStringMap.values().contains(workbookName1));
         Assert.assertEquals(true,workbookStringMap.values().contains(workbookName2));
+    }
+
+    @Test
+    public void test2_generateTemplateForCatalogueWithTransportService() throws Exception {
+        // get the catalogue
+        MockHttpServletRequestBuilder request = get("/catalogue/ubl/" + Test01_CatalogueControllerTest.createdCatalogueWithTransportServiceId)
+                .header("Authorization", TestConfig.buyerId);
+        MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+        CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
+        Assert.assertEquals(Test01_CatalogueControllerTest.createdCatalogueWithTransportServiceId, catalogue.getUUID());
+        // get workbook - workbook name pairs
+        Method method = CatalogueServiceImpl.class.getDeclaredMethod("generateTemplateForCatalogue", CatalogueType.class,String.class);
+        method.setAccessible(true);
+        Map<Workbook,String> workbookStringMap = (Map<Workbook,String>) method.invoke(catalogueService,catalogue,"en");
+        // check the response
+        Assert.assertEquals(1,workbookStringMap.size());
+        Assert.assertTrue(workbookStringMap.containsValue(workbookName3));
     }
 }
