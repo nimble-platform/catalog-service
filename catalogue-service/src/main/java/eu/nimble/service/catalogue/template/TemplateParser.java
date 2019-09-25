@@ -52,7 +52,7 @@ public class TemplateParser {
         this.party = party;
     }
 
-    public List<CatalogueLineType> getCatalogueLines(InputStream catalogueTemplate) throws TemplateParseException {
+    public List<CatalogueLineType> getCatalogueLines(InputStream catalogueTemplate, Boolean includeVat) throws TemplateParseException {
         OPCPackage pkg = null;
         try {
             pkg = OPCPackage.open(catalogueTemplate);
@@ -72,7 +72,7 @@ public class TemplateParser {
         }
 
         List<CatalogueLineType> results = parseProductPropertiesTab();
-        parseTermsTab(results);
+        parseTermsTab(results, includeVat);
 
         return results;
     }
@@ -448,7 +448,7 @@ public class TemplateParser {
         }
     }
 
-    private void parseTermsTab(List<CatalogueLineType> catalogueLines) throws TemplateParseException {
+    private void parseTermsTab(List<CatalogueLineType> catalogueLines, Boolean includeVat) throws TemplateParseException {
         Sheet termsTab = wb.getSheet(TemplateConfig.TEMPLATE_TAB_TRADING_DELIVERY_TERMS);
         for (CatalogueLineType catalogueLine : catalogueLines) {
             ItemType item = catalogueLine.getGoodsItem().getItem();
@@ -637,10 +637,10 @@ public class TemplateParser {
         }
 
         // create vats for catalogue lines
-        createVatsForCatalogueLines(catalogueLines);
+        createVatsForCatalogueLines(catalogueLines, includeVat);
     }
 
-    private void createVatsForCatalogueLines(List<CatalogueLineType> catalogueLines){
+    private void createVatsForCatalogueLines(List<CatalogueLineType> catalogueLines, Boolean includeVat){
         for(CatalogueLineType line : catalogueLines){
             if(line.getRequiredItemLocationQuantity().getApplicableTaxCategory() != null &&
                     line.getRequiredItemLocationQuantity().getApplicableTaxCategory().size() > 0) {
@@ -648,14 +648,19 @@ public class TemplateParser {
             }
 
             Integer vatRate = null;
-            AddressType address = line.getGoodsItem().getItem().getManufacturerParty().getPostalAddress();
-            if(address != null && address.getCountry() != null  && address.getCountry().getName() != null){
-                String country = line.getGoodsItem().getItem().getManufacturerParty().getPostalAddress().getCountry().getName().getValue();
-                vatRate = defaultVats.get(country);
-            }
+            if(includeVat){
+                AddressType address = line.getGoodsItem().getItem().getManufacturerParty().getPostalAddress();
+                    if(address != null && address.getCountry() != null  && address.getCountry().getName() != null){
+                        String country = line.getGoodsItem().getItem().getManufacturerParty().getPostalAddress().getCountry().getName().getValue();
+                        vatRate = defaultVats.get(country);
+                    }
 
-            if(vatRate == null) {
-                vatRate = 20;
+                    if(vatRate == null) {
+                    vatRate = 20;
+                }
+            }
+            else {
+                vatRate = 0;
             }
 
             TaxCategoryType taxCategory = new TaxCategoryType();
