@@ -69,7 +69,7 @@ public interface CatalogueService {
      * @param catalogueTemplate
      * @param party
      */
-    public CatalogueType parseCatalogue(InputStream catalogueTemplate, String uploadMode, PartyType party);
+    public CatalogueType parseCatalogue(InputStream catalogueTemplate, String uploadMode, PartyType party, Boolean includeVat);
 
     /**
      * Adds the provided images to the relevant products in the catalogue.

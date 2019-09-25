@@ -313,7 +313,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
 
     @Override
-    public CatalogueType parseCatalogue(InputStream catalogueTemplate, String uploadMode, PartyType party) {
+    public CatalogueType parseCatalogue(InputStream catalogueTemplate, String uploadMode, PartyType party, Boolean includeVat) {
         CatalogueType catalogue = getCatalogue("default", party.getPartyIdentification().get(0).getID());
         boolean newCatalogue = false;
         if (catalogue == null) {
@@ -323,7 +323,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         TemplateParser templateParser = new TemplateParser(party);
         List<CatalogueLineType> catalogueLines = null;
         try {
-            catalogueLines = templateParser.getCatalogueLines(catalogueTemplate);
+            catalogueLines = templateParser.getCatalogueLines(catalogueTemplate, includeVat);
 
         } catch (TemplateParseException e) {
             String msg = e.getMessage();
