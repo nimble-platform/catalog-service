@@ -44,6 +44,13 @@ public class TemplateGenerator {
     }
 
     public Workbook generateTemplateForCategory(List<Category> categories,String templateLanguage) {
+        return generateTemplateForCategory(categories,templateLanguage,false);
+    }
+
+    /**
+     * @param usePropertyId whether we should use property name or id while generating the excel
+     * */
+    public Workbook generateTemplateForCategory(List<Category> categories,String templateLanguage, Boolean usePropertyId) {
         // set defaultLanguage
         defaultLanguage = templateLanguage;
         Sheet infoTab = template.createSheet(TemplateConfig.TEMPLATE_TAB_INFORMATION);
@@ -58,7 +65,7 @@ public class TemplateGenerator {
 
         populateSourceList(sourceList);
         populateInfoTab(infoTab);
-        populateProductPropertiesTab(categories, propertiesTab);
+        populateProductPropertiesTab(categories, propertiesTab, usePropertyId);
         populateProductPropertiesExampleTab(categories,propertiesExampleTab);
         populateTradingDeliveryTermsTab(tradingDeliveryTermsTab);
         populateTradingDeliveryTermsExampleTab(tradingDeliveryTermsTabExample);
@@ -70,11 +77,14 @@ public class TemplateGenerator {
     }
 
     public Workbook generateTemplateForCatalogueLines(List<CatalogueLineType> catalogueLines, List<Category> categories, String languageId){
-        Workbook template = generateTemplateForCategory(categories,languageId);
+        // use property id while generating the excel
+        Workbook template = generateTemplateForCategory(categories,languageId, true);
         fillProductPropertiesTab(template.getSheet(TemplateConfig.TEMPLATE_TAB_PRODUCT_PROPERTIES),catalogueLines);
         fillTradingDeliveryTermsTab(template.getSheet(TemplateConfig.TEMPLATE_TAB_TRADING_DELIVERY_TERMS),catalogueLines);
         fillCustomProperties(template.getSheet(TemplateConfig.TEMPLATE_TAB_PRODUCT_PROPERTIES),catalogueLines,categories);
         fillCategoryProperties(template.getSheet(TemplateConfig.TEMPLATE_TAB_PRODUCT_PROPERTIES),catalogueLines,categories);
+        // we need to replace property ids with preferred names
+        replaceCategoryPropertyIdsWithNames(template.getSheet(TemplateConfig.TEMPLATE_TAB_PRODUCT_PROPERTIES),categories);
         return template;
     }
 
@@ -390,7 +400,10 @@ public class TemplateGenerator {
                     // get the category names
                     List<TextType> categoryNames = getNamesOfCategory(parentCategoryUriMap,itemProperty.getItemClassificationCode().getURI());
                     // get column index
-                    int columnIndex = findCellIndexForProperty(productPropertiesTab,itemProperty.getName(),categoryNames);
+                    Integer columnIndex = findCellIndexForProperty(productPropertiesTab,itemProperty.getID(),categoryNames);
+                    if(columnIndex == null){
+                        continue;
+                    }
                     String dataType = normalizeDataTypeForTemplate(itemProperty.getValueQualifier());
                     // set the value of property
                     if(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)){
@@ -589,7 +602,7 @@ public class TemplateGenerator {
         infoTab.autoSizeColumn(0);
     }
 
-    private void populateProductPropertiesTab(List<Category> categories, Sheet productPropertiesTab) {
+    private void populateProductPropertiesTab(List<Category> categories, Sheet productPropertiesTab, Boolean usePropertyId) {
         // make first column read only
         productPropertiesTab.setDefaultColumnStyle(0,readOnlyStyle);
 
@@ -719,7 +732,8 @@ public class TemplateGenerator {
             List<Property> categoryProperties = getPropertiesToBeIncludedInTemplate(category);
             for (Property property : categoryProperties) {
                 cell = secondRow.createCell(columnOffset);
-                cell.setCellValue(property.getPreferredName(defaultLanguage));
+                // set the value of cell according to the usePropertyId parameter
+                cell.setCellValue(usePropertyId ? property.getId(): property.getPreferredName(defaultLanguage));
                 cell.setCellStyle(boldCellStyle);
                 Cell thirdRowCell = thirdRow.createCell(columnOffset);
                 // get data type of the property
@@ -1737,15 +1751,59 @@ public class TemplateGenerator {
         return row.getCell(cellNum, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
     }
 
-    public static Integer findCellIndexForProperty(Sheet sheet,List<TextType> propertyNames, List<TextType> categoryNames){
-        // get values of property and category names
-        List<String> propertyNamesString = new ArrayList<>();
-        for(TextType text: propertyNames){
-            propertyNamesString.add(text.getValue());
+    private void replaceCategoryPropertyIdsWithNames(Sheet sheet,List<Category> categories) {
+        // get property id-preferred name map
+        Map<String, String> propertyIdPreferredNameMap = getPropertyIdPreferredNameMap(categories);
+        // get the row where property names are specified
+        Row row = sheet.getRow(1);
+        for(int i = 10; i<row.getLastCellNum(); i++) {
+            Cell cell = getCellWithMissingCellPolicy(row, i);
+            // null cell means we reach to the end of the template
+            if(cell == null) {
+                break;
+            }
+            // the identifier of the property
+            String propertyId = getCellStringValue(cell);
+            // get the name of property
+            String propertyName = propertyIdPreferredNameMap.get(propertyId);
+            // replace property id with property name
+            cell.setCellValue(propertyName);
         }
+    }
+
+    private Map<String, String> getPropertyIdPreferredNameMap(List<Category> categories){
+        Map<String, String> propertyIdPreferredNameMap = new HashMap<>();
+        for (Category category : categories) {
+            for (Property property : category.getProperties()) {
+                propertyIdPreferredNameMap.put(property.getId(), property.getPreferredName(defaultLanguage));
+            }
+        }
+        return propertyIdPreferredNameMap;
+    }
+
+    public static Integer findCellIndexForProperty(Sheet sheet,String propertyId, List<TextType> categoryNames){
+        return findCellIndexForProperty(sheet, propertyId, null, categoryNames);
+    }
+
+    public static Integer findCellIndexForProperty(Sheet sheet, List<TextType> propertyNames ,List<TextType> categoryNames){
+        return findCellIndexForProperty(sheet,null,propertyNames,categoryNames);
+    }
+
+    public static Integer findCellIndexForProperty(Sheet sheet,String propertyId, List<TextType> propertyNames ,List<TextType> categoryNames){
+        // get category names
         List<String> categoryNamesString = new ArrayList<>();
         for(TextType text: categoryNames){
             categoryNamesString.add(text.getValue());
+        }
+
+        // get property names
+        List<String> propertyNamesString = null;
+        if(propertyNames != null){
+            // get property names
+            propertyNamesString = new ArrayList<>();
+            for(TextType text: propertyNames){
+                propertyNamesString.add(text.getValue());
+            }
         }
 
         Integer categoryIndex = null;
@@ -1768,17 +1826,23 @@ public class TemplateGenerator {
             // get the row where property names are specified
             row = sheet.getRow(1);
             for(int i = categoryIndex; i<row.getLastCellNum(); i++) {
-                Cell cell = getCellWithMissingCellPolicy(row, i);
+                Cell cell = TemplateGenerator.getCellWithMissingCellPolicy(row, i);
                 // null cell means we reach to the end of the template
                 if(cell == null) {
                     break;
                 }
                 String value = getCellStringValue(cell);
-                if(propertyNamesString.contains(value)) {
+                // if we have property name, search for it in the excel,
+                // otherwise, search for property id
+                if(propertyNames != null && propertyNamesString.contains(value)) {
+                    return i;
+                }
+                else if(propertyId != null && value.contentEquals(propertyId)){
                     return i;
                 }
             }
         }
+
         return null;
     }
 
