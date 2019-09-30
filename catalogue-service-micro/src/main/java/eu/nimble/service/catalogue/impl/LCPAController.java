@@ -13,6 +13,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,9 +97,12 @@ public class LCPAController {
                 return HttpResponseUtil.createResponseEntityAndLog(msg, HttpStatus.NOT_FOUND);
             }
 
+            // remove hjid fields of LCPAOutput
+            JSONObject object = new JSONObject(lcpaOutputJson);
+            JsonSerializationUtility.removeHjidFields(object);
             LCPAOutputType lcpaOutput;
             try {
-                lcpaOutput = JsonSerializationUtility.getObjectMapper().readValue(lcpaOutputJson, LCPAOutputType.class);
+                lcpaOutput = JsonSerializationUtility.getObjectMapper().readValue(object.toString(), LCPAOutputType.class);
             } catch (IOException e) {
                 String msg = String.format("Could not parse LCPAOutput for catalogue line with hjid: %d. LCPAOutput: %s", catalogueLineHjid, lcpaOutputJson);
                 return HttpResponseUtil.createResponseEntityAndLog(msg, e, HttpStatus.BAD_REQUEST);
