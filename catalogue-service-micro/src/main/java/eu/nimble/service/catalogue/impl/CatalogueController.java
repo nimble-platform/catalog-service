@@ -689,35 +689,37 @@ public class CatalogueController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Deleted the images successfully",response = CatalogueType.class),
             @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
-            @ApiResponse(code = 404, message = "No catalogue for the given uuid"),
             @ApiResponse(code = 500, message = "Unexpected error while getting catalogue")
     })
-    @RequestMapping(value = "/catalogue/{uuid}/delete-images",
+    @RequestMapping(value = "/catalogue/delete-images",
             method = RequestMethod.GET)
-    public ResponseEntity deleteImagesInsideCatalogue(@ApiParam(value = "uuid of the catalogue to be retrieved.", required = true) @PathVariable String uuid,
+    public ResponseEntity deleteImagesInsideCatalogue(@ApiParam(value = "Identifier of the catalogues whose images to be deleted. (catalogue.id)", required = false) @RequestParam(value = "ids", required = false) List<String> ids,
+                                                      @ApiParam(value = "Identifier of the party for which the product images to be deleted ", required = true) @RequestParam(value = "partyId", required = true) String partyId,
                                                       @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         try {
-            log.info("Incoming request to delete images for catalogue: {}", uuid);
+            log.info("Incoming request to delete images for catalogues: {}", ids);
             // validate role
             if(!validationUtil.validateRole(bearerToken, REQUIRED_ROLES_CATALOGUE)) {
                 return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
             }
 
-            // catalogue check
-            CatalogueType catalogue = service.getCatalogue(uuid);
-            if (catalogue == null) {
-                log.error("Catalogue with uuid : {} does not exist", uuid);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", uuid));
+            for (String id : ids) {
+                // catalogue check
+                CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueForParty(id, partyId);
+                if (catalogue == null) {
+                    log.warn("Catalogue with uuid : {} does not exist", id);
+                    continue;
+                }
+
+                // remove the images
+                service.removeAllImagesFromCatalogue(catalogue);
             }
 
-            // remove the images
-            catalogue = service.removeAllImagesFromCatalogue(catalogue);
-
-            log.info("Deleted images for catalogue: {}",uuid);
-            return ResponseEntity.ok().body(serializationUtility.serializeUBLObject(catalogue));
+            log.info("Deleted images for catalogues: {}",ids);
+            return ResponseEntity.ok().body(serializationUtility.serializeUBLObject(null));
 
         } catch (Exception e) {
-            return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while uploading images. uuid: %s", uuid), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+            return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while uploading images. uuid: %s", ids), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
         }
     }
 
