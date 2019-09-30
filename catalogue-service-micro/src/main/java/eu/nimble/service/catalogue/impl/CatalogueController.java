@@ -689,7 +689,7 @@ public class CatalogueController {
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Deletes all the images of CatalogueLines of the specified catalogue")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Deleted the images successfully",response = CatalogueType.class),
+            @ApiResponse(code = 200, message = "Deleted the images successfully"),
             @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
             @ApiResponse(code = 500, message = "Unexpected error while getting catalogue")
     })

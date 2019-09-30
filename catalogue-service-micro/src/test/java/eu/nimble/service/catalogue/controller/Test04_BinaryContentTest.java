@@ -48,9 +48,10 @@ public class Test04_BinaryContentTest {
     final private String contentType = "application/octet-stream";
     final private String imagesZipName = "ProductImages.zip";
 
-    private static String firstProductImageUri;
-    private static String secondProductImageUri;
+    private static String firstProductImageUri; // id default id test
+    private static String secondProductImageUri; // id default
     private static String catalogueUuid;
+    private static String catalogueId;
     private static byte[] contentOfProductImage;
 
     @Test
@@ -69,6 +70,7 @@ public class Test04_BinaryContentTest {
 
         firstProductImageUri = catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().get(0).getUri();
         catalogueUuid = catalogue.getUUID();
+        catalogueId = catalogue.getID();
     }
 
     /*
@@ -163,15 +165,12 @@ public class Test04_BinaryContentTest {
 
     @Test
     public void test16_deleteImagesInsideCatalogue() throws Exception {
-        MockHttpServletRequestBuilder request = get("/catalogue/"+catalogueUuid+"/delete-images")
+        MockHttpServletRequestBuilder request = get("/catalogue/delete-images")
+                .param("partyId",TestConfig.buyerId)
+                .param("ids",catalogueId)
                 .header("Authorization", TestConfig.buyerId);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
 
-        // check the number of product images
-        CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
-        for(CatalogueLineType catalogueLineType: catalogue.getCatalogueLine()){
-            Assert.assertEquals(0,catalogueLineType.getGoodsItem().getItem().getProductImage().size());
-        }
         // try to get product image
         request = get("/binary-content")
                 .header("Authorization", TestConfig.buyerId)
@@ -188,8 +187,9 @@ public class Test04_BinaryContentTest {
         MockMultipartFile mutipartFile = new MockMultipartFile("package", imagesZipName, contentType, is);
         // upload images
         MvcResult result = this.mockMvc.perform(MockMvcRequestBuilders
-                .fileUpload("/catalogue/"+catalogueUuid+"/image/upload")
+                .fileUpload("/catalogue/"+catalogueId+"/image/upload")
                 .file(mutipartFile)
+                .param("partyId",TestConfig.buyerId)
                 .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
                 .header("Authorization", TestConfig.buyerId)).andExpect(status().isOk()).andReturn();
 
@@ -222,8 +222,9 @@ public class Test04_BinaryContentTest {
         MockMultipartFile mutipartFile = new MockMultipartFile("package", imagesZipName, contentType, is);
         // upload images
         MvcResult result = this.mockMvc.perform(MockMvcRequestBuilders
-                .fileUpload("/catalogue/"+catalogueUuid+"/image/upload")
+                .fileUpload("/catalogue/"+catalogueId+"/image/upload")
                 .file(mutipartFile)
+                .param("partyId",TestConfig.buyerId)
                 .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
                 .header("Authorization", TestConfig.buyerId)).andExpect(status().isOk()).andReturn();
 
