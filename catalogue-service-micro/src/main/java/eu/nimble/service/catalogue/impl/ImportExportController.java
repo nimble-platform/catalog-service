@@ -1,6 +1,5 @@
 package eu.nimble.service.catalogue.impl;
 
-import com.google.common.io.ByteStreams;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
@@ -8,6 +7,7 @@ import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PersonType;
+import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HttpResponseUtil;
 import eu.nimble.utility.JsonSerializationUtility;
@@ -16,21 +16,17 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.tools.ant.taskdefs.Zip;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.logging.LogLevel;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import sun.rmi.runtime.Log;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
@@ -157,7 +153,7 @@ public class ImportExportController {
 
             // zip all workbooks
             for (Map.Entry<Workbook,String> workbook : workbooks.entrySet()) {
-                addWorkbookToZip(workbook.getValue(),zos,workbook.getKey());
+                addWorkbookImageToZip(workbook.getValue(),zos,workbook.getKey(),null);
             }
 
             response.flushBuffer();
@@ -275,14 +271,27 @@ public class ImportExportController {
     private void getZipForCatalogue(CatalogueType catalogue, String languageId, ByteArrayOutputStream outputStream) {
         // get workbooks
         Map<Workbook,String> workbooks = service.generateTemplateForCatalogue(catalogue,languageId);
+        // get product images
+        Map<String,List<BinaryObjectType>> catalogImages = service.getAllImagesFromCatalogue(catalogue);
 
         // export catalogue
         ZipOutputStream zos = new ZipOutputStream(outputStream);
         try {
             // zip all workbooks
             for (Map.Entry<Workbook,String> workbook : workbooks.entrySet()) {
-                addWorkbookToZip(workbook.getValue(),zos,workbook.getKey());
+                addWorkbookImageToZip(workbook.getValue(),zos,workbook.getKey(),null);
             }
+
+            // zip all images
+            for (String lineId : catalogImages.keySet()) {
+                List<BinaryObjectType> images = catalogImages.get(lineId);
+                for (BinaryObjectType catalogImage : images) {
+                    String fileName = catalogImage.getFileName();
+                    fileName = fileName.startsWith(lineId+".") ? fileName : lineId + "." + fileName;
+                    addWorkbookImageToZip(fileName, zos, null,catalogImage.getValue());
+                }
+            }
+
 
         } catch (IOException e) {
             log.error("Failed to write the catalogue content to the zip output stream for catalogue id: {}, uuid: {}", catalogue.getID(), catalogue.getUUID(), e);
@@ -296,14 +305,20 @@ public class ImportExportController {
         }
     }
 
-    private void addWorkbookToZip(String fileName, ZipOutputStream zos, Workbook workbook) throws IOException {
+    private void addWorkbookImageToZip(String fileName, ZipOutputStream zos, Workbook workbook, byte[] value) throws IOException {
         ByteArrayOutputStream bos = null;
         try {
             ZipEntry zipEntry = new ZipEntry(fileName);
             zos.putNextEntry(zipEntry);
 
-            bos = new ByteArrayOutputStream();
-            workbook.write(bos);
+            if(workbook == null){
+                bos = new ByteArrayOutputStream(value.length);
+                bos.write(value);
+            }
+            else{
+                bos = new ByteArrayOutputStream();
+                workbook.write(bos);
+            }
             bos.writeTo(zos);
         }finally {
             zos.closeEntry();

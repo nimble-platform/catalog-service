@@ -414,9 +414,8 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public CatalogueType addImagesToProducts(ZipInputStream imagePackage, String catalogueUuid) {
+    public CatalogueType addImagesToProducts(ZipInputStream imagePackage, CatalogueType catalogue) {
         try {
-            CatalogueType catalogue = getCatalogue(catalogueUuid);
             ZipEntry ze = imagePackage.getNextEntry();
 
             while (ze != null) {
@@ -512,6 +511,19 @@ public class CatalogueServiceImpl implements CatalogueService {
         // update the catalogue
         catalogueType = updateCatalogue(catalogueType);
         return catalogueType;
+    }
+
+    @Override
+    public Map<String,List<BinaryObjectType>> getAllImagesFromCatalogue(CatalogueType catalogue) {
+        Map<String,List<BinaryObjectType>> productImages = new HashMap<>();
+        List<BinaryObjectType> binaryObjects = new ArrayList<>();
+        for(CatalogueLineType catalogueLine: catalogue.getCatalogueLine()){
+            List<BinaryObjectType> lineImages = catalogueLine.getGoodsItem().getItem().getProductImage();
+            if(lineImages != null && lineImages.size() > 0){
+                productImages.put(catalogueLine.getID(), lineImages);
+            }
+        }
+        return productImages;
     }
 
     @Override

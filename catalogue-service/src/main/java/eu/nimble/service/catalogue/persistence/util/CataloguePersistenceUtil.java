@@ -184,6 +184,7 @@ public class CataloguePersistenceUtil {
         cataloguePaginationResponse.setCatalogueLines(catalogueLines);
         cataloguePaginationResponse.setCatalogueUuid(catalogueUuid);
         cataloguePaginationResponse.setCategoryNames(categoryNames);
+        cataloguePaginationResponse.setCatalogueId(catalogueId);
         return cataloguePaginationResponse;
     }
 

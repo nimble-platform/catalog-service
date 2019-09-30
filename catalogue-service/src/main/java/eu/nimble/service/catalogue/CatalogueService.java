@@ -6,6 +6,7 @@ import eu.nimble.service.catalogue.model.statistics.ProductAndServiceStatistics;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
+import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.Configuration;
 import org.apache.poi.ss.usermodel.Workbook;
 
@@ -75,12 +76,14 @@ public interface CatalogueService {
      * Adds the provided images to the relevant products in the catalogue.
      *
      * @param imagePackage
-     * @param catalogueUuid
+     * @param catalogueType
      * @return
      */
-    CatalogueType addImagesToProducts(ZipInputStream imagePackage, String catalogueUuid);
+    CatalogueType addImagesToProducts(ZipInputStream imagePackage, CatalogueType catalogueType);
 
     CatalogueType removeAllImagesFromCatalogue(CatalogueType catalogueType);
+
+    Map<String,List<BinaryObjectType>> getAllImagesFromCatalogue(CatalogueType catalogue);
 
     /*
      * Catalogue-line level endpoints

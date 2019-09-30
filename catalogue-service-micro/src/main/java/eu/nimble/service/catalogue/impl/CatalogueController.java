@@ -635,30 +635,32 @@ public class CatalogueController {
             @ApiResponse(code = 404, message = "Catalogue with the given uuid does not exist"),
             @ApiResponse(code = 500, message = "Unexpected error while uploading images")
     })
-    @RequestMapping(value = "/catalogue/{uuid}/image/upload",
+    @RequestMapping(value = "/catalogue/{id}/image/upload",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             method = RequestMethod.POST)
     public ResponseEntity uploadImages(
             @ApiParam(value = "The package compressed as a Zip file, including the images. An example image package can be found in: https://github.com/nimble-platform/catalog-service/tree/staging/catalogue-service-micro/src/main/resources/example_content/images.zip", required = true) @RequestParam("package") MultipartFile pack,
-            @ApiParam(value = "uuid of the catalogue to be retrieved.", required = true) @PathVariable("uuid") String uuid,
+            @ApiParam(value = "uuid of the catalogue to be retrieved.", required = true) @PathVariable("id") String id,
+            @ApiParam(value = "Identifier of the party for which the catalogue will be updated", required = true) @RequestParam("partyId") String partyId,
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         try {
-            log.info("Incoming request to upload images for catalogue: {}", uuid);
+            log.info("Incoming request to upload images for catalogue: {}", id);
             // validate role
             if(!validationUtil.validateRole(bearerToken, REQUIRED_ROLES_CATALOGUE)) {
                 return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
             }
 
-            if (service.getCatalogue(uuid) == null) {
-                log.error("Catalogue with uuid : {} does not exist", uuid);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", uuid));
+            CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueForParty(id, partyId);
+
+            if (catalogue == null) {
+                log.error("Catalogue with uuid : {} does not exist", id);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", id));
             }
 
-            CatalogueType catalogue;
             ZipInputStream zis = null;
             try {
                 zis = new ZipInputStream(pack.getInputStream());
-                catalogue = service.addImagesToProducts(zis, uuid);
+                catalogue = service.addImagesToProducts(zis, catalogue);
 
             } catch (IOException e) {
                 return createErrorResponseEntity("Failed obtain a Zip package from the provided data", HttpStatus.BAD_REQUEST, e);
@@ -676,11 +678,11 @@ public class CatalogueController {
                 }
             }
 
-            log.info("Completed the request to upload images for catalogue: {}", uuid);
+            log.info("Completed the request to upload images for catalogue: {}", id);
             return ResponseEntity.ok().body(serializationUtility.serializeUBLObject(catalogue));
 
         } catch (Exception e) {
-            return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while uploading images. uuid: %s", uuid), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+            return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while uploading images. uuid: %s", id), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
         }
     }
 
