@@ -1,0 +1,307 @@
+{
+  "totalElements": 8,
+  "totalPages": 1,
+  "pageSize": 8,
+  "currentPage": 0,
+  "result": [
+    {
+      "uri": "http://www.aidimme.es/FurnitureSectorOntology.owl#destinationTransport",
+      "code": null,
+      "localName": "destinationTransport",
+      "nameSpace": "http://www.aidimme.es/FurnitureSectorOntology.owl#",
+      "languages": [
+        "en",
+        "es"
+      ],
+      "label": {
+        "en": "Destination",
+        "es": "Destino"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": null,
+      "comment": null,
+      "type": "property",
+      "range": "http://www.nimble-project.org/catalogue#CodeType",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "httpwwwaidimmeesFurnitureSectorOntologyowldestinationTransport",
+        "destinationTransport",
+        "destination",
+        "destino"
+      ],
+      "visible": true,
+      "propertyType": "FunctionalProperty",
+      "codeList": [],
+      "codeListId": "TransportPlaceListId"
+    },
+    {
+      "uri": "http://www.aidimme.es/FurnitureSectorOntology.owl#industrySpecialization",
+      "code": null,
+      "localName": "industrySpecialization",
+      "nameSpace": "http://www.aidimme.es/FurnitureSectorOntology.owl#",
+      "languages": [
+        "en",
+        "es"
+      ],
+      "label": {
+        "en": "Industry specialization",
+        "es": "Especialización industrial"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": null,
+      "comment": null,
+      "type": "property",
+      "range": "http://www.nimble-project.org/catalogue#CodeType",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "especializacinIndustrial",
+        "httpwwwaidimmeesFurnitureSectorOntologyowlindustrySpecialization",
+        "industrySpecialization"
+      ],
+      "visible": true,
+      "propertyType": "FunctionalProperty",
+      "codeList": [
+        "RetailIndustrySpecialization",
+        "ConstructionIndustrySpecialization",
+        "CeramicIndustrySpecialization",
+        "WoodAndFurnitureIndustrySpecialization",
+        "TextileIndustrySpecialization",
+        "FoodIndustrySpecialization",
+        "FootwearIndustrySpecialization",
+        "ToyIndustrySpecialization",
+        "AutomotiveIndustrySpecialization",
+        "RetailIndustrySpecializationOption",
+        "AutomotiveIndustrySpecializationOption",
+        "CeramicIndustrySpecializationOption",
+        "ConstructionIndustrySpecializationOption",
+        "TextileIndustrySpecializationOption",
+        "WoodAndFurnitureIndustrySpecializationOption",
+        "FoodIndustrySpecializationOption",
+        "FootwearIndustrySpecializationOption",
+        "ToyIndustrySpecializationOption"
+      ],
+      "codeListId": "IndustrySpecializationListId"
+    },
+    {
+      "uri": "http://www.aidimme.es/FurnitureSectorOntology.owl#managedProductType",
+      "code": null,
+      "localName": "managedProductType",
+      "nameSpace": "http://www.aidimme.es/FurnitureSectorOntology.owl#",
+      "languages": [
+        "en",
+        "es"
+      ],
+      "label": {
+        "en": "Managed product type",
+        "es": "Tipo de producto"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": null,
+      "comment": null,
+      "type": "property",
+      "range": "http://www.nimble-project.org/catalogue#CodeType",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "tipoDeProducto",
+        "managedProductType",
+        "httpwwwaidimmeesFurnitureSectorOntologyowlmanagedProductType"
+      ],
+      "visible": true,
+      "propertyType": "FunctionalProperty",
+      "codeList": [
+        "CoilProductType",
+        "StackableProductType",
+        "MediumBigPackagesProductType",
+        "HazardousGoodsProductType",
+        "LiquidsProductType",
+        "BulkCargoProductType",
+        "PalletsProductType",
+        "PerishableProductType",
+        "BoxSmallPackagesProductType"
+      ],
+      "codeListId": "ManagedProductTypeListId"
+    },
+    {
+      "uri": "http://www.aidimme.es/FurnitureSectorOntology.owl#truckLoad",
+      "code": null,
+      "localName": "truckLoad",
+      "nameSpace": "http://www.aidimme.es/FurnitureSectorOntology.owl#",
+      "languages": [
+        "en",
+        "es"
+      ],
+      "label": {
+        "en": "Truck load",
+        "es": "Carga del camión"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": null,
+      "comment": null,
+      "type": "property",
+      "range": "http://www.nimble-project.org/catalogue#CodeType",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "httpwwwaidimmeesFurnitureSectorOntologyowltruckLoad",
+        "truckLoad",
+        "cargaDelCamin"
+      ],
+      "visible": true,
+      "propertyType": "FunctionalProperty",
+      "codeList": [
+        "FullTruckLoad",
+        "PartialTruckLoad",
+        "GroupageTruckLoad"
+      ],
+      "codeListId": "TruckLoadListId"
+    },
+    {
+      "uri": "http://www.aidimme.es/FurnitureSectorOntology.owl#originTransport",
+      "code": null,
+      "localName": "originTransport",
+      "nameSpace": "http://www.aidimme.es/FurnitureSectorOntology.owl#",
+      "languages": [
+        "en",
+        "es"
+      ],
+      "label": {
+        "en": "Origin",
+        "es": "Origen"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": null,
+      "comment": null,
+      "type": "property",
+      "range": "http://www.nimble-project.org/catalogue#CodeType",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "origin",
+        "origen",
+        "httpwwwaidimmeesFurnitureSectorOntologyowloriginTransport",
+        "originTransport"
+      ],
+      "visible": true,
+      "propertyType": "FunctionalProperty",
+      "codeList": [],
+      "codeListId": "TransportPlaceListId"
+    },
+    {
+      "uri": "http://www.aidimme.es/FurnitureSectorOntology.owl#shipmentType",
+      "code": null,
+      "localName": "shipmentType",
+      "nameSpace": "http://www.aidimme.es/FurnitureSectorOntology.owl#",
+      "languages": [
+        "en",
+        "es"
+      ],
+      "label": {
+        "en": "Shipment type",
+        "es": "Tipo de envío"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": null,
+      "comment": null,
+      "type": "property",
+      "range": "http://www.nimble-project.org/catalogue#CodeType",
+      "valueQualifier": "TEXT",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "httpwwwaidimmeesFurnitureSectorOntologyowlshipmentType",
+        "tipoDeEnvo",
+        "shipmentType"
+      ],
+      "visible": true,
+      "propertyType": "FunctionalProperty",
+      "codeList": [
+        "CrossDocking",
+        "DropShipping",
+        "DirectShipment",
+        "DoorToDoor"
+      ],
+      "codeListId": "ShipmentTypeListId"
+    },
+    {
+      "uri": "http://www.aidimme.es/FurnitureSectorOntology.owl#hasDescription",
+      "code": null,
+      "localName": "hasDescription",
+      "nameSpace": "http://www.aidimme.es/FurnitureSectorOntology.owl#",
+      "languages": [
+        "en",
+        "es"
+      ],
+      "label": {
+        "en": "Description",
+        "es": "Descripción"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": null,
+      "comment": null,
+      "type": "property",
+      "range": "http://www.w3.org/2001/XMLSchema#string",
+      "valueQualifier": "STRING",
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "descripcin",
+        "description",
+        "hasDescription",
+        "httpwwwaidimmeesFurnitureSectorOntologyowlhasDescription"
+      ],
+      "visible": false,
+      "propertyType": "FunctionalProperty",
+      "codeList": [],
+      "codeListId": null
+    },
+    {
+      "uri": "http://www.aidimme.es/FurnitureSectorOntology.owl#hasPrice",
+      "code": null,
+      "localName": "hasPrice",
+      "nameSpace": "http://www.aidimme.es/FurnitureSectorOntology.owl#",
+      "languages": [
+        "en",
+        "es"
+      ],
+      "label": {
+        "en": "Price",
+        "es": "Precio"
+      },
+      "alternateLabel": null,
+      "hiddenLabel": null,
+      "description": null,
+      "comment": null,
+      "type": "property",
+      "range": "http://www.aidimme.es/FurnitureSectorOntology.owl#Price",
+      "valueQualifier": null,
+      "product": [],
+      "items": null,
+      "itemFieldNames": [
+        "precio",
+        "price",
+        "httpwwwaidimmeesFurnitureSectorOntologyowlhasPrice",
+        "hasPrice"
+      ],
+      "visible": false,
+      "propertyType": "FunctionalProperty",
+      "codeList": [],
+      "codeListId": null
+    }
+  ],
+  "facets": null
+}

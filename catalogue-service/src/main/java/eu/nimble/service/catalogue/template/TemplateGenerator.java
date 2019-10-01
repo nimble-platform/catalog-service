@@ -1774,8 +1774,11 @@ public class TemplateGenerator {
     private Map<String, String> getPropertyIdPreferredNameMap(List<Category> categories){
         Map<String, String> propertyIdPreferredNameMap = new HashMap<>();
         for (Category category : categories) {
-            for (Property property : category.getProperties()) {
-                propertyIdPreferredNameMap.put(property.getId(), property.getPreferredName(defaultLanguage));
+            List<Property> properties = category.getProperties();
+            if(properties != null){
+                for (Property property : properties) {
+                    propertyIdPreferredNameMap.put(property.getId(), property.getPreferredName(defaultLanguage));
+                }
             }
         }
         return propertyIdPreferredNameMap;

@@ -32,9 +32,6 @@ public class BinaryContentController {
 
     private static Logger logger = LoggerFactory.getLogger(BinaryContentController.class);
 
-    @Autowired
-    private BinaryContentService binaryContentService;
-
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves a specified binary content wrapped inside a BinaryCbjectType instance.")
     @ApiResponses(value = {
@@ -55,7 +52,7 @@ public class BinaryContentController {
             if (tokenCheck != null) {
                 return tokenCheck;
             }
-            BinaryObjectType result = binaryContentService.retrieveContent(uri);
+            BinaryObjectType result = new BinaryContentService().retrieveContent(uri);
             // check whether the binary content exists or not
             if(result == null){
                 String msg = String.format("There does not exist a binary content for uri: %s", uri);
@@ -100,7 +97,7 @@ public class BinaryContentController {
                     .filter(uri -> StringUtils.isNotEmpty(uri))
                     .collect(Collectors.toList());
 
-            List<BinaryObjectType> results = binaryContentService.retrieveContents(uris);
+            List<BinaryObjectType> results = new BinaryContentService().retrieveContents(uris);
             ObjectMapper objectMapper = JsonSerializationUtility.getObjectMapper();
             String response = objectMapper.writeValueAsString(results);
 
@@ -138,7 +135,7 @@ public class BinaryContentController {
                     logger.error("Failed to write the error message to the output stream", e1);
                 }
             }
-            BinaryObjectType result = binaryContentService.retrieveContent(uri);
+            BinaryObjectType result = new BinaryContentService().retrieveContent(uri);
             // check whether the binary content exists or not
             if(result == null){
                 String msg = String.format("There does not exist a binary content for uri: %s", uri);

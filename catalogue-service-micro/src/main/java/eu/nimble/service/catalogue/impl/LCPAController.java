@@ -8,12 +8,15 @@ import eu.nimble.utility.HttpResponseUtil;
 import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.persistence.GenericJPARepository;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
+import eu.nimble.utility.validation.IValidationUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +34,9 @@ import java.util.List;
 public class LCPAController {
     private static Logger logger = LoggerFactory.getLogger(PriceConfigurationController.class);
 
+    @Autowired
+    private IValidationUtil validationUtil;
+
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Returns the catalogue uuid/catalogue line information along with the corresponding " +
             "LCPA Details")
@@ -45,10 +51,9 @@ public class LCPAController {
     public ResponseEntity getProductsWithoutLCPAProcessing(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         try {
             logger.info("Incoming request to get product with LCPA input but not output");
-            // check token
-            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-            if (tokenCheck != null) {
-                return tokenCheck;
+            // validate role
+            if(!validationUtil.validateRole(bearerToken, CatalogueController.REQUIRED_ROLES_CATALOGUE)) {
+                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
             }
 
             List<ItemLCPAInput> results = CatalogueLinePersistenceUtil.getLinesIdsWithValidLcpaInput();
@@ -80,10 +85,9 @@ public class LCPAController {
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         try {
             logger.info("Incoming request to update LCPAOutput for catalogue line with hjid: {}", catalogueLineHjid);
-            // check token
-            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-            if (tokenCheck != null) {
-                return tokenCheck;
+            // validate role
+            if(!validationUtil.validateRole(bearerToken, CatalogueController.REQUIRED_ROLES_CATALOGUE)) {
+                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
             }
 
             GenericJPARepository repo = new JPARepositoryFactory().forCatalogueRepository(true);
@@ -93,9 +97,12 @@ public class LCPAController {
                 return HttpResponseUtil.createResponseEntityAndLog(msg, HttpStatus.NOT_FOUND);
             }
 
+            // remove hjid fields of LCPAOutput
+            JSONObject object = new JSONObject(lcpaOutputJson);
+            JsonSerializationUtility.removeHjidFields(object);
             LCPAOutputType lcpaOutput;
             try {
-                lcpaOutput = JsonSerializationUtility.getObjectMapper().readValue(lcpaOutputJson, LCPAOutputType.class);
+                lcpaOutput = JsonSerializationUtility.getObjectMapper().readValue(object.toString(), LCPAOutputType.class);
             } catch (IOException e) {
                 String msg = String.format("Could not parse LCPAOutput for catalogue line with hjid: %d. LCPAOutput: %s", catalogueLineHjid, lcpaOutputJson);
                 return HttpResponseUtil.createResponseEntityAndLog(msg, e, HttpStatus.BAD_REQUEST);

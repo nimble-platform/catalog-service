@@ -52,6 +52,7 @@ public class Test01_CatalogueControllerTest {
 
     private ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
     private static String createdCatalogueId;
+    public static String createdCatalogueWithTransportServiceId;
 
     @Test
     public void test10_postJsonCatalogue() throws Exception {
@@ -350,5 +351,19 @@ public class Test01_CatalogueControllerTest {
                 .header("Authorization", TestConfig.buyerId);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isNotFound()).andReturn();
 
+    }
+
+    @Test
+    public void test8_postJsonCatalogueWithTransportService() throws Exception {
+        String catalogueJson = IOUtils.toString(Test01_CatalogueControllerTest.class.getResourceAsStream("/example_catalogue_transport_service.json"));
+
+        MockHttpServletRequestBuilder request = post("/catalogue/ubl")
+                .header("Authorization", TestConfig.buyerId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(catalogueJson);
+        MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isCreated()).andReturn();
+
+        CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
+        createdCatalogueWithTransportServiceId = catalogue.getUUID();
     }
 }

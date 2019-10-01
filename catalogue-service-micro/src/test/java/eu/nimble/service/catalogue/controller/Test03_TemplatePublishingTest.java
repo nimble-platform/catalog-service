@@ -27,6 +27,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -148,6 +149,9 @@ public class Test03_TemplatePublishingTest {
             Assert.assertTrue("Managed ids do not contain the catalogue ids", managedIds.containsAll(catalogueIds));
         }
 
+        // check whether VAT is set for the products
+        Assert.assertEquals(1, catalogueLineType1.getRequiredItemLocationQuantity().getApplicableTaxCategory().size());
+        Assert.assertNotEquals(0, catalogueLineType1.getRequiredItemLocationQuantity().getApplicableTaxCategory().get(0).getPercent());
         // get hjids of the catalogue lines
         Test03_TemplatePublishingTest.catalogueLineHjid1 = catalogueLineType1.getHjid();
         Test03_TemplatePublishingTest.catalogueLineHjid2 = catalogueLineType2.getHjid();
@@ -247,12 +251,17 @@ public class Test03_TemplatePublishingTest {
                 .header("Authorization", TestConfig.buyerId)
                 .param("uploadMode",uploadMode)
                 .param("partyId",partyId)
-                .param("partyName",partyName))
+                .param("partyName",partyName)
+                .param("includeVat","false"))
                 .andExpect(status().isCreated()).andReturn();
         CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
         // check catalogue line size
         Assert.assertSame(catalogue.getCatalogueLine().size(),5);
         // set catalogue uuid
         Test03_TemplatePublishingTest.catalogueUUID = catalogue.getUUID();
+
+        // check whether VAT is set for the products
+        Assert.assertEquals(1, catalogue.getCatalogueLine().get(catalogue.getCatalogueLine().size()-1).getRequiredItemLocationQuantity().getApplicableTaxCategory().size());
+        Assert.assertEquals(BigDecimal.ZERO, catalogue.getCatalogueLine().get(catalogue.getCatalogueLine().size()-1).getRequiredItemLocationQuantity().getApplicableTaxCategory().get(0).getPercent());
     }
 }

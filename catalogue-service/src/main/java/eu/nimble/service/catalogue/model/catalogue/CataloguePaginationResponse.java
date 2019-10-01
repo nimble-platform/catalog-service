@@ -7,6 +7,7 @@ import java.util.List;
 public class CataloguePaginationResponse {
 
     private String catalogueUuid;
+    private String catalogueId;
     private long size;
     private List<CatalogueLineType> catalogueLines;
     private List<String> categoryNames;
@@ -44,5 +45,13 @@ public class CataloguePaginationResponse {
 
     public void setCategoryNames(List<String> categoryNames) {
         this.categoryNames = categoryNames;
+    }
+
+    public String getCatalogueId() {
+        return catalogueId;
+    }
+
+    public void setCatalogueId(String catalogueId) {
+        this.catalogueId = catalogueId;
     }
 }
