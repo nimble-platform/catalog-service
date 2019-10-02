@@ -1,6 +1,5 @@
 package eu.nimble.service.catalogue.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
@@ -12,7 +11,6 @@ import eu.nimble.service.catalogue.util.LoggerUtil;
 import eu.nimble.service.catalogue.validation.CatalogueLineValidator;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.LineItemType;
 import eu.nimble.utility.*;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import eu.nimble.utility.serialization.TransactionEnabledSerializationUtility;
@@ -38,9 +36,7 @@ import java.util.*;
 /**
  * Created by suat on 22-Aug-17.
  * <p>
- * Catalogue line-level REST services. All services defined in this class are prefixed with the
- * "/catalogue/{catalogueUuid}" path where the {@catalogueId} is the unique identifier of the specified
- * catalogue. All services in this class work only on the UBL based catalogues.
+ * Catalogue line-level REST services. All services in this class work only on the UBL based catalogues.
  */
 @Controller
 public class CatalogueLineController {
@@ -104,8 +100,8 @@ public class CatalogueLineController {
     public ResponseEntity getCatalogueLinesByHjids(@ApiParam(value = "Identifiers of the catalogue lines to be retrieved. (line.hjid)", required = true) @RequestParam(value = "ids") List<Long> hjids,
                                                    @ApiParam(value = "Number of catalogue lines to be included in CataloguePaginationResponse",required = true) @RequestParam(value = "limit",required = true) Integer limit,
                                                    @ApiParam(value = "Offset of the first catalogue line among all catalogue lines of the default catalogue for the party",required = true) @RequestParam(value = "offset",required = true) Integer pageNo,
-                                                   @ApiParam(value = "Option used to sort catalogue lines") @RequestParam(value = "sortOption",required = true) CatalogueLineSortOptions sortOption,
-                                                 @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+                                                   @ApiParam(value = "Option used to sort catalogue lines", required = false) @RequestParam(value = "sortOption", required = false) CatalogueLineSortOptions sortOption,
+                                                   @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         log.info("Incoming request to get catalogue lines with hjids: {}", hjids);
         // validate role
         if(!validationUtil.validateRole(bearerToken, CatalogueController.REQUIRED_ROLES_CATALOGUE)) {
