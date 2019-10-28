@@ -29,8 +29,12 @@ public class CataloguePersistenceUtil {
             " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification" +
             " WHERE partyIdentification.ID = :partyId";
 
-    private static final String QUERY_GET_CATALOGUE_LINES_BY_IDS = "SELECT catalogueLine FROM CatalogueLineType catalogueLine " +
-            " WHERE catalogueLine.ID in :catalogueLineIds";
+    private static final String QUERY_GET_CATALOGUE_LINES_BY_IDS =
+            "SELECT catalogueLine FROM CatalogueType cat" +
+                    " JOIN cat.catalogueLine catalogueLine" +
+                    " JOIN cat.providerParty party" +
+                    " JOIN party.partyIdentification partyId" +
+            " WHERE partyId.ID = :partyId AND catalogueLine.ID in :catalogueLineIds";
     private static final String QUERY_GET_COMMODITY_CLASSIFICATION_NAMES_OF_CATALOGUE_LINES = "SELECT DISTINCT itemClassificationCode.name FROM CatalogueType as catalogue " +
             " JOIN catalogue.catalogueLine catalogueLine JOIN catalogueLine.goodsItem.item.commodityClassification commodityClassification JOIN commodityClassification.itemClassificationCode itemClassificationCode " +
             " WHERE catalogue.UUID = :catalogueUuid";
@@ -93,45 +97,17 @@ public class CataloguePersistenceUtil {
         long size = 0;
         List<String> categoryNames = new ArrayList<>();
         List<CatalogueLineType> catalogueLines = new ArrayList<>();
-
+        List<String> catalogueLineIds;
+        String getCatalogueLinesQuery = null;
+        QueryData queryData = null;
         if(catalogueId.equals("all")){
             categoryNames = new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_COMMODITY_CLASSIFICATION_NAMES_FOR_PARTY_CATALOGUES,new String[]{"partyId"}, new Object[]{partyId});
             if(limit != 0){
                 // get the query
-                QueryData queryData = getQuery(null,partyId,searchText,languageId,selectedCategoryName,sortOption,catalogueUUID);
-                // get all catalogue line ids
-                List<String> catalogueLineIds = new JPARepositoryFactory().forCatalogueRepository().getEntities(queryData.query,queryData.parameterNames.toArray(new String[0]), queryData.parameterValues.toArray(),null,null,queryData.isNativeQuery);
-                // set the size of catalogue lines
-                size = catalogueLineIds.size();
-                // update catalogue line ids according to the offset
-                if(offset < catalogueLineIds.size()){
-                    catalogueLineIds = catalogueLineIds.subList(offset,catalogueLineIds.size());
-                }
-                // update catalogue line ids according to the limit
-                if(catalogueLineIds.size() > limit){
-                    catalogueLineIds = catalogueLineIds.subList(0,limit);
-                }
-
-                // although we use the sort option to create the query in getQuery function
-                // we also have to use this option to sort catalogue lines while getting them since the result can be something arbitrary without this option
-                String getCatalogueLinesQuery = QUERY_GET_CATALOGUE_LINES_BY_IDS;
-                if(sortOption != null){
-                    switch (sortOption){
-                        case PRICE_HIGH_TO_LOW:
-                            getCatalogueLinesQuery += " ORDER BY catalogueLine.requiredItemLocationQuantity.price.priceAmount.value DESC NULLS LAST";
-                            break;
-                        case PRICE_LOW_TO_HIGH:
-                            getCatalogueLinesQuery += " ORDER BY catalogueLine.requiredItemLocationQuantity.price.priceAmount.value ASC NULLS LAST";
-                            break;
-                    }
-                }
-
-                if(catalogueLineIds.size() != 0)
-                    catalogueLines = new JPARepositoryFactory().forCatalogueRepository(true).getEntities(getCatalogueLinesQuery,new String[]{"catalogueLineIds"}, new Object[]{catalogueLineIds});
+                queryData = getQuery(null,partyId,searchText,languageId,selectedCategoryName,sortOption,catalogueUUID);
             }
 
         }else{
-
             if(catalogueUUID == null){
                 // get catalogue uuid
                 catalogueUuid = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_CATALOGUE_UUID_FOR_PARTY,new String[]{"catalogueId","partyId"}, new Object[]{catalogueId,partyId});
@@ -145,39 +121,45 @@ public class CataloguePersistenceUtil {
                 // if limit is equal to 0,then no catalogue lines are returned
                 if(limit != 0){
                     // get the query
-                    QueryData queryData = getQuery(catalogueId,partyId,searchText,languageId,selectedCategoryName,sortOption,catalogueUuid);
-                    // get all catalogue line ids
-                    List<String> catalogueLineIds = new JPARepositoryFactory().forCatalogueRepository().getEntities(queryData.query,queryData.parameterNames.toArray(new String[0]), queryData.parameterValues.toArray(),null,null,queryData.isNativeQuery);
-                    // set the size of catalogue lines
-                    size = catalogueLineIds.size();
-                    // update catalogue line ids according to the offset
-                    if(offset < catalogueLineIds.size()){
-                        catalogueLineIds = catalogueLineIds.subList(offset,catalogueLineIds.size());
-                    }
-                    // update catalogue line ids according to the limit
-                    if(catalogueLineIds.size() > limit){
-                        catalogueLineIds = catalogueLineIds.subList(0,limit);
-                    }
-
-                    // although we use the sort option to create the query in getQuery function
-                    // we also have to use this option to sort catalogue lines while getting them since the result can be something arbitrary without this option
-                    String getCatalogueLinesQuery = QUERY_GET_CATALOGUE_LINES_BY_IDS;
-                    if(sortOption != null){
-                        switch (sortOption){
-                            case PRICE_HIGH_TO_LOW:
-                                getCatalogueLinesQuery += " ORDER BY catalogueLine.requiredItemLocationQuantity.price.priceAmount.value DESC NULLS LAST";
-                                break;
-                            case PRICE_LOW_TO_HIGH:
-                                getCatalogueLinesQuery += " ORDER BY catalogueLine.requiredItemLocationQuantity.price.priceAmount.value ASC NULLS LAST";
-                                break;
-                        }
-                    }
-
-                    if(catalogueLineIds.size() != 0)
-                        catalogueLines = new JPARepositoryFactory().forCatalogueRepository(true).getEntities(getCatalogueLinesQuery,new String[]{"catalogueLineIds"}, new Object[]{catalogueLineIds});
+                    queryData = getQuery(catalogueId,partyId,searchText,languageId,selectedCategoryName,sortOption,catalogueUuid);
                 }
             }
         }
+
+        if(limit != 0) {
+            // get all catalogue line ids
+            catalogueLineIds = new JPARepositoryFactory().forCatalogueRepository().getEntities(queryData.query,queryData.parameterNames.toArray(new String[0]), queryData.parameterValues.toArray(),null,null,queryData.isNativeQuery);
+            // set the size of catalogue lines
+            size = catalogueLineIds.size();
+            // update catalogue line ids according to the offset
+            if(offset < catalogueLineIds.size()){
+                catalogueLineIds = catalogueLineIds.subList(offset,catalogueLineIds.size());
+            }
+            // update catalogue line ids according to the limit
+            if(catalogueLineIds.size() > limit){
+                catalogueLineIds = catalogueLineIds.subList(0,limit);
+            }
+
+            // although we use the sort option to create the query in getQuery function
+            // we also have to use this option to sort catalogue lines while getting them since the result can be something arbitrary without this option
+            getCatalogueLinesQuery = QUERY_GET_CATALOGUE_LINES_BY_IDS;
+            if(sortOption != null){
+                switch (sortOption){
+                    case PRICE_HIGH_TO_LOW:
+                        getCatalogueLinesQuery += " ORDER BY catalogueLine.requiredItemLocationQuantity.price.priceAmount.value DESC NULLS LAST";
+                        break;
+                    case PRICE_LOW_TO_HIGH:
+                        getCatalogueLinesQuery += " ORDER BY catalogueLine.requiredItemLocationQuantity.price.priceAmount.value ASC NULLS LAST";
+                        break;
+                }
+            }
+
+            if (catalogueLineIds.size() != 0) {
+                catalogueLines = new JPARepositoryFactory().forCatalogueRepository(true)
+                        .getEntities(getCatalogueLinesQuery, new String[]{"partyId", "catalogueLineIds"}, new Object[]{partyId, catalogueLineIds});
+            }
+        }
+
         // created CataloguePaginationResponse
         CataloguePaginationResponse cataloguePaginationResponse = new CataloguePaginationResponse();
         cataloguePaginationResponse.setSize(size);
