@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue.impl;
 
 import eu.nimble.data.transformer.ontmalizer.XML2OWLMapper;
 import eu.nimble.service.catalogue.CatalogueService;
+import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
@@ -21,7 +22,6 @@ import eu.nimble.utility.exception.BinaryContentException;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import eu.nimble.utility.serialization.TransactionEnabledSerializationUtility;
 import eu.nimble.utility.validation.IValidationUtil;
-import eu.nimble.utility.validation.NimbleRole;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -73,7 +73,6 @@ public class CatalogueController {
     @Autowired
     private IValidationUtil validationUtil;
 
-    public static final NimbleRole[] REQUIRED_ROLES_CATALOGUE = {NimbleRole.COMPANY_ADMIN, NimbleRole.EXTERNAL_REPRESENTATIVE, NimbleRole.LEGAL_REPRESENTATIVE, NimbleRole.PUBLISHER};
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves the default CataloguePaginationResponse for the specified party.")
     @ApiResponses(value = {
@@ -98,7 +97,7 @@ public class CatalogueController {
                                                         @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         log.info("Incoming request to get CataloguePaginationResponse for party: {}, catalogue id: {} with limit: {}, offset: {}", partyId, catalogueId, limit, offset);
         // validate role
-        if(!validationUtil.validateRole(bearerToken, REQUIRED_ROLES_CATALOGUE)) {
+        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
             return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
         }
 
@@ -141,7 +140,7 @@ public class CatalogueController {
                                        @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         log.info("Incoming request to get catalogue for standard: {}, uuid: {}", standard, uuid);
         // validate role
-        if(!validationUtil.validateRole(bearerToken, REQUIRED_ROLES_CATALOGUE)) {
+        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
             return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
         }
 
@@ -238,7 +237,7 @@ public class CatalogueController {
         try {
             log.info("Incoming request to post catalogue with standard: {} standard", standard);
             // validate role
-            if(!validationUtil.validateRole(bearerToken, REQUIRED_ROLES_CATALOGUE)) {
+            if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
                 return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
             }
 
@@ -313,7 +312,7 @@ public class CatalogueController {
         try {
             log.info("Incoming request to update catalogue");
             // validate role
-            if(!validationUtil.validateRole(bearerToken, REQUIRED_ROLES_CATALOGUE)) {
+            if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
                 return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
             }
 
@@ -394,7 +393,7 @@ public class CatalogueController {
                                           @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         log.info("Incoming request to delete catalogue with uuid: {}", uuid);
         // validate role
-        if(!validationUtil.validateRole(bearerToken, REQUIRED_ROLES_CATALOGUE)) {
+        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
             return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
         }
 
@@ -436,7 +435,7 @@ public class CatalogueController {
         try {
             log.info("Incoming request to delete catalogues for party: {}, ids: {}, delete all: {}", partyId, idsLog, deleteAll);
             // validate role
-            if(!validationUtil.validateRole(bearerToken, REQUIRED_ROLES_CATALOGUE)) {
+            if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
                 return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
             }
 
@@ -485,7 +484,7 @@ public class CatalogueController {
             HttpServletResponse response) {
         log.info("Incoming request to generate a template. Category ids: {}, taxonomy ids: {}", categoryIds, taxonomyIds);
         // validate role
-        if(!validationUtil.validateRole(bearerToken, REQUIRED_ROLES_CATALOGUE)) {
+        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
             HttpResponseUtil.writeMessageServletResponseAndLog(response, "Invalid role", HttpStatus.UNAUTHORIZED);
             return;
         }
@@ -550,7 +549,7 @@ public class CatalogueController {
         try {
             log.info("Incoming request to upload template upload mode: {}, party id: {}", uploadMode, partyId);
             // validate role
-            if(!validationUtil.validateRole(bearerToken, REQUIRED_ROLES_CATALOGUE)) {
+            if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
                 return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
             }
 
@@ -646,7 +645,7 @@ public class CatalogueController {
         try {
             log.info("Incoming request to upload images for catalogue: {}", id);
             // validate role
-            if(!validationUtil.validateRole(bearerToken, REQUIRED_ROLES_CATALOGUE)) {
+            if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
                 return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
             }
 
@@ -701,7 +700,7 @@ public class CatalogueController {
         try {
             log.info("Incoming request to delete images for catalogues: {}", ids);
             // validate role
-            if(!validationUtil.validateRole(bearerToken, REQUIRED_ROLES_CATALOGUE)) {
+            if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
                 return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
             }
 
@@ -742,7 +741,7 @@ public class CatalogueController {
         try {
             log.info("Incoming request to get catalogue in semantic format, uuid: {}, content type: {}", uuid, semanticContentType);
             // validate role
-            if(!validationUtil.validateRole(bearerToken, REQUIRED_ROLES_CATALOGUE)) {
+            if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
                 return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
             }
 
@@ -795,7 +794,7 @@ public class CatalogueController {
                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         log.info("Incoming request to get catalogue id list for party: {}", partyId);
         // validate role
-        if(!validationUtil.validateRole(bearerToken, REQUIRED_ROLES_CATALOGUE)) {
+        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
             return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
         }
 
@@ -830,7 +829,7 @@ public class CatalogueController {
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         log.info("Incoming request to get catalogue uuidid list for party: {}", partyId);
         // validate role
-        if(!validationUtil.validateRole(bearerToken, REQUIRED_ROLES_CATALOGUE)) {
+        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
             return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
         }
 

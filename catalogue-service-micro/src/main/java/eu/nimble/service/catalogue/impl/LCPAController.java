@@ -1,5 +1,6 @@
 package eu.nimble.service.catalogue.impl;
 
+import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.model.lcpa.ItemLCPAInput;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
@@ -52,7 +53,7 @@ public class LCPAController {
         try {
             logger.info("Incoming request to get product with LCPA input but not output");
             // validate role
-            if(!validationUtil.validateRole(bearerToken, CatalogueController.REQUIRED_ROLES_CATALOGUE)) {
+            if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
                 return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
             }
 
@@ -86,7 +87,7 @@ public class LCPAController {
         try {
             logger.info("Incoming request to update LCPAOutput for catalogue line with hjid: {}", catalogueLineHjid);
             // validate role
-            if(!validationUtil.validateRole(bearerToken, CatalogueController.REQUIRED_ROLES_CATALOGUE)) {
+            if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
                 return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
             }
 
