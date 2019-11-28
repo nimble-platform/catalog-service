@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.impl;
 
 import eu.nimble.service.catalogue.CatalogueService;
+import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
@@ -65,7 +66,7 @@ public class ImportExportController {
         try {
             log.info("Importing catalogue ...");
             // validate role
-            if(!validationUtil.validateRole(bearerToken, CatalogueController.REQUIRED_ROLES_CATALOGUE)) {
+            if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
                 return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
             }
 
@@ -122,7 +123,7 @@ public class ImportExportController {
 
         log.info("Incoming request to export catalogue with uuid {}", catalogueUuid);
         // validate role
-        if(!validationUtil.validateRole(bearerToken, CatalogueController.REQUIRED_ROLES_CATALOGUE)) {
+        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_TO_EXPORT_CATALOGUE)) {
             HttpResponseUtil.writeMessageServletResponseAndLog(response, "Invalid role", HttpStatus.UNAUTHORIZED);
             return;
         }
@@ -205,7 +206,7 @@ public class ImportExportController {
             zos = new ZipOutputStream(response.getOutputStream());
 
             // validate role
-            if(!validationUtil.validateRole(bearerToken, CatalogueController.REQUIRED_ROLES_CATALOGUE)) {
+            if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_TO_EXPORT_CATALOGUE)) {
                 HttpResponseUtil.writeMessageServletResponseAndLog(response, "Invalid role", HttpStatus.UNAUTHORIZED);
                 return;
             }
