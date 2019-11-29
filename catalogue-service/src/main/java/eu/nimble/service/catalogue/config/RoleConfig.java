@@ -8,12 +8,14 @@ public class RoleConfig {
                     NimbleRole.EXTERNAL_REPRESENTATIVE,
                     NimbleRole.LEGAL_REPRESENTATIVE,
                     NimbleRole.INITIAL_REPRESENTATIVE,
-                    NimbleRole.PUBLISHER};
+                    NimbleRole.PUBLISHER,
+                    NimbleRole.EFACTORY_USER};
     public static final NimbleRole[] REQUIRED_ROLES_TO_EXPORT_CATALOGUE =
             {NimbleRole.COMPANY_ADMIN,
                     NimbleRole.EXTERNAL_REPRESENTATIVE,
                     NimbleRole.LEGAL_REPRESENTATIVE,
                     NimbleRole.INITIAL_REPRESENTATIVE,
                     NimbleRole.PUBLISHER,
-                    NimbleRole.NIMBLE_DELETED_USER};
+                    NimbleRole.NIMBLE_DELETED_USER,
+                    NimbleRole.EFACTORY_USER};
 }
