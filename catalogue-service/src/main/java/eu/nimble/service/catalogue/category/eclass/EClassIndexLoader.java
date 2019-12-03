@@ -26,9 +26,40 @@ public class EClassIndexLoader {
     @Autowired
     private PropertyIndexClient propertyIndexClient;
 
-    public void indexEClassResources() throws Exception {
-        List<Category> allCategories = dbAdapter.getAllCategories();
-        logger.info("Retrieved categories");
+    // indexes the given eClass categories
+    // if no eClass categories are specified, indexes all eClass categories
+    public void indexEClassCategories(List<String> categoryIds) throws Exception {
+        // categories failed to be indexed
+        List<String> categoriesFailedToIndex = new ArrayList<>();
+        // categories to be indexed
+        List<Category> allCategories;
+        // properties of the categories to be indexed
+        Map<String, List<Property>> allProperties;
+        // get categories and their properties
+        if(categoryIds == null || categoryIds.size() == 0){
+            allCategories = dbAdapter.getAllCategories();
+            logger.info("Retrieved categories");
+
+            allProperties = dbAdapter.getAllProperties();
+            logger.info("Retrieved properties");
+
+        } else{
+            // get the given categories
+            allCategories = dbAdapter.getCategories(categoryIds);
+            // we need to retrieve the parent categories of the given ones
+            List<Category> parentCategories = new ArrayList<>();
+            for (Category category : allCategories) {
+                parentCategories.addAll(dbAdapter.getParentCategories(category.getId()));
+            }
+            allCategories.addAll(parentCategories);
+            logger.info("Retrieved categories");
+            // retrieve properties
+            for (Category parentCategory : parentCategories) {
+                categoryIds.add(parentCategory.getId());
+            }
+            allProperties = dbAdapter.getPropertiesForCategories(categoryIds);
+            logger.info("Retrieved properties");
+        }
 
         // create a category map for easy access
         // map keys are category codes
@@ -41,9 +72,6 @@ public class EClassIndexLoader {
         }
         logger.info("Constructed maps");
 
-        Map<String, List<Property>> allProperties = dbAdapter.getAllProperties();
-        logger.info("Retrieved properties");
-
         // set properties of categories
         for(Category category : allCategories) {
             List<Property> properties = allProperties.get(category.getId());
@@ -51,9 +79,46 @@ public class EClassIndexLoader {
         }
         logger.info("Populated category properties");
 
-        // get unit property mappings
-        // in the meantime, contruct also the property->categories associations
-        logger.info("Get properties with units");
+        // construct category parent mapping
+        ChildrenParentMaps categoryParentMapping = createCategoryParentMap(allCategories, allCategoriesMapWithCode);
+        logger.info("Constructed parent category maps");
+
+        // construct category children mapping
+        ChildrenParentMaps categoryChildrenMapping = createCategoryChildrenMap(allCategories, categoryParentMapping.direct, categoryParentMapping.all);
+        logger.info("Constructed children category maps");
+
+        // index categories
+        for(Category category : allCategories) {
+            boolean isIndexed = classIndexClient.indexCategory(category,
+                    categoryParentMapping.direct.get(category.getCategoryUri()),
+                    categoryParentMapping.all.get(category.getCategoryUri()),
+                    categoryChildrenMapping.direct.get(category.getCategoryUri()),
+                    categoryChildrenMapping.all.get(category.getCategoryUri()));
+            if(!isIndexed){
+                categoriesFailedToIndex.add(category.getCategoryUri());
+            }
+        }
+        logger.info("Completed category indexing");
+        // log the ones failed to be indexed
+        if(categoriesFailedToIndex.size() > 0){
+            logger.error("Failed to index following categories: {}",categoriesFailedToIndex);
+        }
+    }
+
+    // indexes the given eClass properties
+    // if no eClass properties are specified, indexes all eClass properties
+    public void indexEClassProperties(List<String> propertyIds) throws Exception {
+        // the ones failed to be indexed
+        List<String> propertiesFailedToIndex = new ArrayList<>();
+        // properties to be indexed
+        Map<String, List<Property>> allProperties;
+        // retrieve the properties
+        if(propertyIds == null || propertyIds.size() == 0){
+            allProperties = dbAdapter.getAllProperties();
+        } else{
+            allProperties = dbAdapter.getProperties(propertyIds);
+        }
+        logger.info("Retrieved properties");
 
         // property -> category list
         Map<String, Set<String>> propertyCategoryMap = new HashMap<>();
@@ -72,35 +137,33 @@ public class EClassIndexLoader {
         }
         logger.info("Constructed property category map");
 
-        // construct category parent mapping
-        ChildrenParentMaps categoryParentMapping = createCategoryParentMap(allCategories, allCategoriesMapWithCode);
-        logger.info("Constructed parent category maps");
-
-        // construct category children mapping
-        ChildrenParentMaps categoryChildrenMapping = createCategoryChildrenMap(allCategories, categoryParentMapping.direct, categoryParentMapping.all);
-        logger.info("Constructed children category maps");
-
-        // index categories
-        for(Category category : allCategories) {
-            classIndexClient.indexCategory(category,
-                    categoryParentMapping.direct.get(category.getCategoryUri()),
-                    categoryParentMapping.all.get(category.getCategoryUri()),
-                    categoryChildrenMapping.direct.get(category.getCategoryUri()),
-                    categoryChildrenMapping.all.get(category.getCategoryUri()));
-        }
-        logger.info("Completed category indexing");
-
         // index properties
         List<String> indexedProperties = new ArrayList<>();
         for(List<Property> properties : allProperties.values()) {
             for(Property property : properties) {
                 if(!indexedProperties.contains(property.getUri())) {
-                    propertyIndexClient.indexProperty(property, propertyCategoryMap.get(property.getUri()));
+                    boolean isIndexed = propertyIndexClient.indexProperty(property, propertyCategoryMap.get(property.getUri()));
                     indexedProperties.add(property.getUri());
+
+                    if(!isIndexed){
+                        propertiesFailedToIndex.add(property.getUri());
+                    }
                 }
             }
         }
         logger.info("Completed property indexing");
+        // log the ones failed to be indexed
+        if(propertiesFailedToIndex.size() > 0){
+            logger.error("Failed to index following properties: {}",propertiesFailedToIndex);
+        }
+    }
+
+    public void indexEClassResources() throws Exception {
+        // index categories
+        indexEClassCategories(null);
+
+        // index properties
+        indexEClassProperties(null);
     }
 
     private static ChildrenParentMaps createCategoryParentMap(List<Category> allCategories, Map<String, Category> allCategoriesMap) {

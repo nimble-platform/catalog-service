@@ -237,9 +237,9 @@ public class ProductCategoryController {
 
     @ApiIgnore
     @CrossOrigin(origins = {"*"})
-    @ApiOperation(value = "", notes = "Indexes eClass categories.")
+    @ApiOperation(value = "", notes = "Indexes eClass resources,i.e. eClass categories and properties.")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Indexed eClass categories successfully"),
+            @ApiResponse(code = 200, message = "Indexed eClass resources successfully"),
             @ApiResponse(code = 401, message = "No user exists for the given token"),
             @ApiResponse(code = 500, message = "Failed to index eClass resources")
     })
@@ -259,6 +259,64 @@ public class ProductCategoryController {
         } catch (Exception e) {
             log.error("Failed to index eClass Resources:",e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to index eClass Resources");
+        }
+        return ResponseEntity.ok(null);
+    }
+
+    @ApiIgnore
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Indexes the given eClass properties.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Indexed eClass properties successfully"),
+            @ApiResponse(code = 401, message = "No user exists for the given token"),
+            @ApiResponse(code = 500, message = "Failed to index eClass properties")
+    })
+    @RequestMapping(value = "/categories/eClass/index/properties",
+            produces = {"application/json"},
+            method = RequestMethod.POST)
+    public ResponseEntity indexEclassProperties(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
+                                                @ApiParam(value = "Identifiers of eClass properties to be indexed") @RequestBody List<String> propertyIds) {
+        log.info("Incoming request to index eClass properties.");
+        // check token
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return tokenCheck;
+        }
+
+        try {
+            eClassIndexLoader.indexEClassProperties(propertyIds);
+        } catch (Exception e) {
+            log.error("Failed to index eClass properties:",e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to index eClass properties");
+        }
+        return ResponseEntity.ok(null);
+    }
+
+    @ApiIgnore
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Indexes the given eClass categories.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Indexed eClass categories successfully"),
+            @ApiResponse(code = 401, message = "No user exists for the given token"),
+            @ApiResponse(code = 500, message = "Failed to index eClass categories")
+    })
+    @RequestMapping(value = "/categories/eClass/index/categories",
+            produces = {"application/json"},
+            method = RequestMethod.POST)
+    public ResponseEntity indexEclassCategories(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
+                                                @ApiParam(value = "Identifiers of eClass categories to be indexed") @RequestBody List<String> categoryIds) {
+        log.info("Incoming request to index eClass categories.");
+        // check token
+        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        if (tokenCheck != null) {
+            return tokenCheck;
+        }
+
+        try {
+            eClassIndexLoader.indexEClassCategories(categoryIds);
+        } catch (Exception e) {
+            log.error("Failed to index eClass categories:",e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to index eClass categories");
         }
         return ResponseEntity.ok(null);
     }
