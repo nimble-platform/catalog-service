@@ -14,6 +14,9 @@ import java.util.List;
  */
 public class CataloguePersistenceUtil {
     private static final String QUERY_GET_ALL_CATALOGUES = "SELECT catalogue FROM CatalogueType catalogue";
+    private static final String QUERY_GET_ALL_CATALOGUES_FOR_PARTY = "SELECT catalogue FROM CatalogueType as catalogue "
+            + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification"
+            + " WHERE partyIdentification.ID = :partyId";
     private static final String QUERY_GET_BY_UUID = "SELECT catalogue FROM CatalogueType catalogue WHERE catalogue.UUID = :uuid";
     private static final String QUERY_GET_FOR_PARTY = "SELECT catalogue FROM CatalogueType as catalogue "
             + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification"
@@ -89,6 +92,10 @@ public class CataloguePersistenceUtil {
 
     public static List<CatalogueType> getAllCatalogues() {
         return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_ALL_CATALOGUES);
+    }
+
+    public static List<CatalogueType> getAllCataloguesForParty(String partyId) {
+        return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_ALL_CATALOGUES_FOR_PARTY, new String[]{"partyId"}, new Object[]{partyId});
     }
 
     public static CataloguePaginationResponse getCatalogueLinesForParty(String catalogueId, String partyId, String selectedCategoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset,String catalogueUUID) {

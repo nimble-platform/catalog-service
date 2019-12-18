@@ -28,10 +28,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import java.io.InputStream;
@@ -142,20 +139,21 @@ public class AdminController {
     }
 
     @CrossOrigin(origins = {"*"})
-    @ApiOperation(value = "", notes = "Indexes all catalogues in the database")
+    @ApiOperation(value = "", notes = "Indexes all catalogues in the database. If partyId is specified, only catalogues belonging to that party are indexed")
     @ApiResponses(value = {
             @ApiResponse(code = 401, message = "No user exists for the given token")
     })
     @RequestMapping(value = "/admin/index-catalogues",
             produces = {"application/json"},
             method = RequestMethod.POST)
-    public ResponseEntity indexAllCatalogues(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+    public ResponseEntity indexAllCatalogues(@ApiParam(value = "Identifier of the party", required = true) @RequestParam(value = "partyId", required = true) String partyId,
+                                             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         // check token
         ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
         if (tokenCheck != null) {
             return tokenCheck;
         }
-        catalogueIndexLoader.indexCatalogues();
+        catalogueIndexLoader.indexCatalogues(partyId);
         return null;
     }
 

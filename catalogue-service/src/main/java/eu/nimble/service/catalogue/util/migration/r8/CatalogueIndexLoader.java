@@ -22,9 +22,15 @@ public class CatalogueIndexLoader {
     @Autowired
     private ItemIndexClient itemIndexClient;
 
-    public void indexCatalogues() {
-        // get all catalogues
-        List<CatalogueType> catalogues = CataloguePersistenceUtil.getAllCatalogues();
+    public void indexCatalogues(String partyId) {
+        // get catalogues
+        List<CatalogueType> catalogues;
+        if(partyId == null){
+            catalogues = CataloguePersistenceUtil.getAllCatalogues();
+        }
+        else {
+            catalogues = CataloguePersistenceUtil.getAllCataloguesForParty(partyId);
+        }
         for(CatalogueType catalogue : catalogues) {
             try {
                 itemIndexClient.indexCatalogue(catalogue);
