@@ -98,22 +98,28 @@ public class Test08_LCPAControllerTest {
     private LCPAOutputType getLCPAOutputType(){
         LCPAOutputType lcpaOutput = new LCPAOutputType();
 
-        AmountType lifeCycleCost = new AmountType();
-        lifeCycleCost.setCurrencyID("EUR");
-        lifeCycleCost.setValue(BigDecimal.valueOf(20));
-
-        AmountType operationCostsPerYear = new AmountType();
-        operationCostsPerYear.setCurrencyID("EUR");
-        operationCostsPerYear.setValue(BigDecimal.valueOf(55));
-
-        QuantityType capexOpexRelation = new QuantityType();
-        capexOpexRelation.setValue(BigDecimal.valueOf(223));
-        capexOpexRelation.setUnitCode("EUR");
-
-        lcpaOutput.setCapexOpexRelation(capexOpexRelation);
-        lcpaOutput.setLifeCycleCost(lifeCycleCost);
-        lcpaOutput.setOperationCostsPerYear(operationCostsPerYear);
-
+        lcpaOutput.setOpex(getAmount(BigDecimal.valueOf(12)));
+        lcpaOutput.setLifeCycleCost(getAmount(BigDecimal.valueOf(65)));
+        lcpaOutput.setGlobalWarmingPotential(getQuantity(BigDecimal.valueOf(54)));
+        lcpaOutput.setEutrophicationPotential(getQuantity(BigDecimal.valueOf(14)));
+        lcpaOutput.setCumulativeEnergyDemand(getQuantity(BigDecimal.valueOf(23)));
+        lcpaOutput.setCapex(getAmount(BigDecimal.valueOf(54)));
+        lcpaOutput.setAerosolFormationPotential(getQuantity(BigDecimal.valueOf(43)));
+        lcpaOutput.setAcidificationPotential(getQuantity(BigDecimal.valueOf(23)));
         return lcpaOutput;
+    }
+
+    private QuantityType getQuantity(BigDecimal value){
+        QuantityType quantityType = new QuantityType();
+        quantityType.setValue(value);
+        quantityType.setUnitCode("EUR");
+        return quantityType;
+    }
+
+    private AmountType getAmount(BigDecimal value){
+        AmountType amountType = new AmountType();
+        amountType.setValue(value);
+        amountType.setCurrencyID("EUR");
+        return amountType;
     }
 }
