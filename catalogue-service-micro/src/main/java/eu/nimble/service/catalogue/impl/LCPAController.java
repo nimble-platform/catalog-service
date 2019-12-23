@@ -24,7 +24,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 
 /**
@@ -117,6 +120,53 @@ public class LCPAController {
         } catch (Exception e) {
             String msg = String.format("Unexpected error while updating LCPAOutput for catalogue line with hjid: %d. LCPAOutput: %s", catalogueLineHjid, lcpaOutputJson);
             return HttpResponseUtil.createResponseEntityAndLog(msg, e, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Downloads Bill of Material template")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Downloaded BOM template successfully"),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 500, message = "Unexpected error while downloading BOM template"),
+    })
+    @RequestMapping(value = "/bom-template",
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public void downloadBOMTemplate(
+            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
+            HttpServletResponse response) {
+        logger.info("Incoming request to download BOM template");
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
+            HttpResponseUtil.writeMessageServletResponseAndLog(response, "Invalid role", HttpStatus.UNAUTHORIZED);
+            return;
+        }
+
+        try {
+            InputStream file = LCPAController.class.getResourceAsStream("/LCA-BOM-Template.xlsx");
+            String fileName = "BillOfMaterialTemplate.xlsx";
+            response.setHeader("Content-disposition", "attachment; filename=" + fileName);
+            response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
+
+            byte[] buffer = new byte[10240];
+
+            OutputStream output = response.getOutputStream();
+            for (int length = 0; (length = file.read(buffer)) > 0;) {
+                output.write(buffer, 0, length);
+            }
+
+            response.flushBuffer();
+            logger.info("Completed the request to download BOM template");
+        } catch (Exception e) {
+            String msg = "Failed to download BOM template\n" + e.getMessage();
+            logger.error(msg, e);
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            try {
+                response.getOutputStream().write(msg.getBytes());
+            } catch (IOException e1) {
+                logger.error("Failed to write the error message to the output stream", e);
+            }
         }
     }
 }
