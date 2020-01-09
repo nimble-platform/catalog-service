@@ -2,6 +2,7 @@
   "id": "default",
   "uuid": null,
   "providerParty": {
+    "federationInstanceID": "TEST_INSTANCE",
     "nace": [],
     "description": [],
     "brandName": [],
@@ -1465,6 +1466,7 @@
             }
           ],
           "manufacturerParty": {
+            "federationInstanceID": "TEST_INSTANCE",
             "nace": [],
             "description": [],
             "brandName": [],
