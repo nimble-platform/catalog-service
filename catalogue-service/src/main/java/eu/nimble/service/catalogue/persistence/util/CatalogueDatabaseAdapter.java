@@ -21,7 +21,7 @@ public class CatalogueDatabaseAdapter {
         try {
             SpringBridge.getInstance().getLockPool().getLockForParty(partyId).writeLock().lock();
 
-            PartyType catalogueParty = PartyTypePersistenceUtil.getPartyById(partyId);
+            PartyType catalogueParty = PartyTypePersistenceUtil.getPartyById(partyId,SpringBridge.getInstance().getCatalogueServiceConfig().getFederationId());
             if (catalogueParty == null) {
                 PartyType identityParty;
                 try {
@@ -48,7 +48,7 @@ public class CatalogueDatabaseAdapter {
         if (party == null) {
             return null;
         }
-        PartyType catalogueParty = PartyTypePersistenceUtil.getPartyById(party.getPartyIdentification().get(0).getID());
+        PartyType catalogueParty = PartyTypePersistenceUtil.getPartyById(party.getPartyIdentification().get(0).getID(),party.getFederationInstanceID());
         if(catalogueParty != null) {
             return catalogueParty;
         } else {
