@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue.impl;
 import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.category.TaxonomyQueryInterface;
 import eu.nimble.service.catalogue.category.eclass.EClassIndexLoader;
+import eu.nimble.service.catalogue.exception.InvalidCategoryException;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
 import eu.nimble.service.catalogue.index.ClassIndexClient;
@@ -195,12 +196,13 @@ public class ProductCategoryController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("The given taxonomy id %s is not valid", taxonomyId));
         }
 
-        if (!categoryExists(taxonomyId, categoryId)) {
+        List<Category> categories = null;
+        try {
+            categories = categoryService.getChildrenCategories(taxonomyId, categoryId);
+        } catch (InvalidCategoryException e) {
             log.error("There does not exist a category with the id : {}", categoryId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("There does not exist a category with the id %s", categoryId));
         }
-
-        List<Category> categories = categoryService.getChildrenCategories(taxonomyId, categoryId);
         return ResponseEntity.ok(categories);
     }
 
@@ -226,12 +228,13 @@ public class ProductCategoryController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("The given taxonomy id %s is not valid", taxonomyId));
         }
 
-        if (!categoryExists(taxonomyId, categoryId)) {
+        CategoryTreeResponse categories = null;
+        try {
+            categories = categoryService.getCategoryTree(taxonomyId, categoryId);
+        } catch (InvalidCategoryException e) {
             log.error("There does not exist a category with the id : {}", categoryId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("There does not exist a category with the id %s", categoryId));
         }
-
-        CategoryTreeResponse categories = categoryService.getCategoryTree(taxonomyId, categoryId);
         return ResponseEntity.ok(categories);
     }
 
@@ -328,15 +331,5 @@ public class ProductCategoryController {
             }
         }
         return false;
-    }
-
-    private boolean categoryExists(String taxonomyId, String categoryId) {
-        try {
-            classIndexClient.getIndexCategory(taxonomyId, categoryId);
-        } catch (IndexOutOfBoundsException e) {
-            log.error("There does not exist a category with the id : {}", categoryId);
-            return false;
-        }
-        return true;
     }
 }

@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.util;
 
 import eu.nimble.service.catalogue.category.IndexCategoryService;
+import eu.nimble.service.catalogue.exception.InvalidCategoryException;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
@@ -19,7 +20,7 @@ public class DataIntegratorUtil {
 
     private static String defaultLanguage = "en";
 
-    public static void ensureCatalogueDataIntegrityAndEnhancement(CatalogueType catalogue){
+    public static void ensureCatalogueDataIntegrityAndEnhancement(CatalogueType catalogue) throws InvalidCategoryException {
         PartyType partyType = CatalogueDatabaseAdapter.syncPartyInUBLDB(catalogue.getProviderParty());
         catalogue.setProviderParty(partyType);
 
@@ -28,7 +29,7 @@ public class DataIntegratorUtil {
         }
     }
 
-    public static void ensureCatalogueLineDataIntegrityAndEnhancement(CatalogueLineType catalogueLine, CatalogueType catalogue){
+    public static void ensureCatalogueLineDataIntegrityAndEnhancement(CatalogueLineType catalogueLine, CatalogueType catalogue) throws InvalidCategoryException {
         catalogueLine.getGoodsItem().getItem().setManufacturerParty(catalogue.getProviderParty());
         setDefaultCategories(catalogueLine);
         setParentCategories(catalogueLine.getGoodsItem().getItem().getCommodityClassification());
@@ -36,7 +37,7 @@ public class DataIntegratorUtil {
         setCatalogueDocumentReference(catalogue.getUUID(),catalogueLine);
     }
 
-    public static void setParentCategories(List<CommodityClassificationType> commodityClassifications){
+    public static void setParentCategories(List<CommodityClassificationType> commodityClassifications) throws InvalidCategoryException {
         // add parents of the selected category to commodity classifications of the item
         for(CommodityClassificationType cct : getParentCategories(commodityClassifications)){
             commodityClassifications.add(cct);
@@ -73,7 +74,7 @@ public class DataIntegratorUtil {
         }
     }
 
-    private static List<CommodityClassificationType> getParentCategories(List<CommodityClassificationType> commodityClassifications){
+    private static List<CommodityClassificationType> getParentCategories(List<CommodityClassificationType> commodityClassifications) throws InvalidCategoryException {
         // get uris of the given categories
         List<String> uris = new ArrayList<>();
         for(CommodityClassificationType commodityClassificationType:commodityClassifications){
@@ -109,7 +110,7 @@ public class DataIntegratorUtil {
         return commodityClassificationTypeList;
     }
 
-    public static List<CommodityClassificationType> getLeafCategories(List<CommodityClassificationType> commodityClassifications){
+    public static List<CommodityClassificationType> getLeafCategories(List<CommodityClassificationType> commodityClassifications) throws InvalidCategoryException {
         // get uris of the given categories
         List<String> categoryUris = new ArrayList<>();
         for(CommodityClassificationType commodityClassificationType:commodityClassifications){
@@ -201,7 +202,7 @@ public class DataIntegratorUtil {
     }
 
     // this method returns uris of categories ( and their parents) which are included in the given catalogue line
-    public static List<String> getCategoryUris(CatalogueLineType catalogueLine){
+    public static List<String> getCategoryUris(CatalogueLineType catalogueLine) throws InvalidCategoryException {
         List<String> uris = new ArrayList<>();
         // get uri of categories
         for(CommodityClassificationType classificationType: catalogueLine.getGoodsItem().getItem().getCommodityClassification()){

@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue.index;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.category.IndexCategoryService;
+import eu.nimble.service.catalogue.exception.InvalidCategoryException;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.util.CredentialsUtil;
@@ -80,16 +81,19 @@ public class ClassIndexClient {
         }
     }
 
-    public ClassType getIndexCategory(String taxonomyId, String categoryId) {
+    public ClassType getIndexCategory(String taxonomyId, String categoryId) throws InvalidCategoryException {
         String uri = IndexCategoryService.constructUri(taxonomyId, categoryId);
         return getIndexCategory(uri);
     }
 
-    public ClassType getIndexCategory(String uri) {
+    public ClassType getIndexCategory(String uri) throws InvalidCategoryException {
         Set<String> paramWrap = new HashSet<>();
         paramWrap.add(uri);
         List<ClassType> categories = getIndexCategories(paramWrap);
         ClassType indexCategory = categories.size() > 0 ? categories.get(0) : null;
+        if(indexCategory == null){
+            throw new InvalidCategoryException(String.format("There is no indexed category for the uri: %s",uri));
+        }
         return indexCategory;
     }
 
@@ -125,7 +129,7 @@ public class ClassIndexClient {
         }
     }
 
-    public Category getCategory(String uri) {
+    public Category getCategory(String uri) throws InvalidCategoryException {
         ClassType indexCategory = getIndexCategory(uri);
         Category category = IndexingWrapper.toCategory(indexCategory);
 

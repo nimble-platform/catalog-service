@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue.category;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import eu.nimble.service.catalogue.category.eclass.EClassTaxonomyQueryImpl;
+import eu.nimble.service.catalogue.exception.InvalidCategoryException;
 import eu.nimble.service.catalogue.index.ClassIndexClient;
 import eu.nimble.service.catalogue.index.IndexingWrapper;
 import eu.nimble.service.catalogue.model.category.Category;
@@ -48,7 +49,7 @@ public class IndexCategoryService {
     @Autowired
     private ClassIndexClient classIndexClient;
 
-    public Category getCategory(String taxonomyId, String categoryId) {
+    public Category getCategory(String taxonomyId, String categoryId) throws InvalidCategoryException {
         String categoryUri = constructUri(taxonomyId, categoryId);
         return getCategory(categoryUri);
     }
@@ -62,17 +63,17 @@ public class IndexCategoryService {
         return categories;
     }
 
-    public Category getCategory(String categoryUri) {
+    public Category getCategory(String categoryUri) throws InvalidCategoryException {
         Category category = classIndexClient.getCategory(categoryUri);
         return category;
     }
 
-    public CategoryTreeResponse getCategoryTree(String taxonomyId, String categoryId) {
+    public CategoryTreeResponse getCategoryTree(String taxonomyId, String categoryId) throws InvalidCategoryException {
         String categoryUri = constructUri(taxonomyId, categoryId);
         return getCategoryTree(categoryUri);
     }
 
-    public CategoryTreeResponse getCategoryTree(String categoryUri) {
+    public CategoryTreeResponse getCategoryTree(String categoryUri) throws InvalidCategoryException {
         // get parent categories including the category specifried by the identifier
         List<ClassType> parentIndexCategories = getParentIndexCategories(categoryUri);
         // get children of parents categories
@@ -126,7 +127,7 @@ public class IndexCategoryService {
         return categoryTreeResponse;
     }
 
-    public List<Category> getParentCategories(String taxonomyId, String categoryId) {
+    public List<Category> getParentCategories(String taxonomyId, String categoryId) throws InvalidCategoryException {
         String categoryUri = constructUri(taxonomyId, categoryId);
         List<ClassType> parentIndexCategories = getParentIndexCategories(categoryUri);
 
@@ -139,7 +140,7 @@ public class IndexCategoryService {
         return categories;
     }
 
-    private List<ClassType> getParentIndexCategories(String categoryUri) {
+    private List<ClassType> getParentIndexCategories(String categoryUri) throws InvalidCategoryException {
         // get the category itself
         ClassType indexCategory = classIndexClient.getIndexCategory(categoryUri);
 
@@ -183,7 +184,7 @@ public class IndexCategoryService {
         return sortedCategories;
     }
 
-    public List<Category> getChildrenCategories(String uri) {
+    public List<Category> getChildrenCategories(String uri) throws InvalidCategoryException {
         ClassType indexCategory = classIndexClient.getIndexCategory(uri);
         if(indexCategory.getChildren() != null) {
             List<Category> categories = classIndexClient.getCategories(new HashSet<>(indexCategory.getChildren()));
@@ -192,7 +193,7 @@ public class IndexCategoryService {
         return new ArrayList<>();
     }
 
-    public List<Category> getChildrenCategories(String taxonomyId, String categoryId) {
+    public List<Category> getChildrenCategories(String taxonomyId, String categoryId) throws InvalidCategoryException {
         String categoryUri = constructUri(taxonomyId, categoryId);
         return getChildrenCategories(categoryUri);
     }
