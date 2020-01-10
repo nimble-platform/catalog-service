@@ -560,7 +560,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     @Override
     public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine) {
         catalogue.getCatalogueLine().add(catalogueLine);
-        DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(catalogue);
+        DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(catalogueLine,catalogue);
         EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogue.getProviderParty().getPartyIdentification().get(0).getID());
         catalogue = repositoryWrapper.updateEntity(catalogue);
         catalogueLine = catalogue.getCatalogueLine().get(catalogue.getCatalogueLine().size() - 1);
@@ -591,8 +591,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         oldcatalogue.getCatalogueLine().remove(catLine);
         catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().setID(newCatalogueUuid);
         newcatalogue.getCatalogueLine().add(catalogueLine);
-        DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(oldcatalogue);
-        DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(newcatalogue);
+        DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(catalogueLine,newcatalogue);
 
         oldcatalogue = repositoryWrapper.updateEntity(oldcatalogue);
         newcatalogue = repositoryWrapper.updateEntity(newcatalogue);
