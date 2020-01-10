@@ -155,8 +155,8 @@ nimble:
       accessTokenUri: ${OAUTH_CLIENT_ACCESSTOKEN_URI}
   check-entity-ids: ${CHECK_ENTITY_IDS:false}
   platformHost: ${CATALOGUE_SERVICE_URL:http://localhost:8095}
-  federation:
-    id: ${FEDERATION_ID:}
+  delegate-service:
+    url: ${DELEGATE_SERVICE_URL:}
 
 hystrix:
   command:
@@ -295,8 +295,6 @@ nimble:
     check-token: ${IDENTITY_SERVICE_CHECK_TOKEN:true}
   indexing:
     sync: false
-  federation:
-    id: TEST_INSTANCE
 
 
 hystrix:

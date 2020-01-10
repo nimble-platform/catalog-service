@@ -21,7 +21,7 @@ public class CatalogueDatabaseAdapter {
         try {
             SpringBridge.getInstance().getLockPool().getLockForParty(partyId).writeLock().lock();
 
-            PartyType catalogueParty = PartyTypePersistenceUtil.getPartyById(partyId,SpringBridge.getInstance().getCatalogueServiceConfig().getFederationId());
+            PartyType catalogueParty = PartyTypePersistenceUtil.getPartyById(partyId,SpringBridge.getInstance().getFederationId());
             if (catalogueParty == null) {
                 PartyType identityParty;
                 try {

@@ -79,7 +79,7 @@ public class R15MigrationController {
         }
 
         // federation id
-        String federationId = SpringBridge.getInstance().getCatalogueServiceConfig().getFederationId();
+        String federationId = SpringBridge.getInstance().getFederationId();
         if(federationId == null){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("This instance does not have a federation id");
         }
