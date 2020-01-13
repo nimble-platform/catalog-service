@@ -155,7 +155,8 @@ nimble:
       accessTokenUri: ${OAUTH_CLIENT_ACCESSTOKEN_URI}
   check-entity-ids: ${CHECK_ENTITY_IDS:false}
   platformHost: ${CATALOGUE_SERVICE_URL:http://localhost:8095}
-
+  delegate-service:
+    url: ${DELEGATE_SERVICE_URL:}
 
 hystrix:
   command:
