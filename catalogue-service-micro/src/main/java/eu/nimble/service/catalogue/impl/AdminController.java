@@ -64,10 +64,7 @@ public class AdminController {
             method = RequestMethod.GET)
     public ResponseEntity indexUBLProperties(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) throws Exception{
         // check token
-        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-        if (tokenCheck != null) {
-            return tokenCheck;
-        }
+        eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
 
         String namespace = "http://www.nimble-project.org/resource/ubl#";
 
@@ -149,10 +146,8 @@ public class AdminController {
     public ResponseEntity indexAllCatalogues(@ApiParam(value = "Identifier of the party", required = true) @RequestParam(value = "partyId", required = true) String partyId,
                                              @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         // check token
-        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-        if (tokenCheck != null) {
-            return tokenCheck;
-        }
+        eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+
         catalogueIndexLoader.indexCatalogues(partyId);
         return null;
     }
@@ -168,10 +163,8 @@ public class AdminController {
     public ResponseEntity deleteInvalidLinesFromIndex(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         logger.info("Incoming request to delete invalid lines from index");
         // check token
-        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-        if (tokenCheck != null) {
-            return tokenCheck;
-        }
+        eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+
         // query to retrieve hjids of indexed catalogue lines
         String query = "{\"facet\": {\"field\": [ \"uri\"],\"limit\": -1,\"minCount\": 1},\"q\": \"*\",\"rows\": 0,\"sort\": [],\"start\": 0}";
 
@@ -220,10 +213,8 @@ public class AdminController {
         try {
             logger.info("Incoming request for VAT migration");
             // check token
-            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-            if (tokenCheck != null) {
-                return tokenCheck;
-            }
+            eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+
             vatMigrationUtility.createVatsForExistingPrdocuts();
             logger.info("Completed VAT migration request");
 

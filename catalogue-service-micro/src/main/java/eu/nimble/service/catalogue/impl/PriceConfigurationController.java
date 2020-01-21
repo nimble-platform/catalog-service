@@ -10,8 +10,9 @@ import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PriceOptionType;
 import eu.nimble.utility.Configuration;
-import eu.nimble.utility.HttpResponseUtil;
 import eu.nimble.utility.JsonSerializationUtility;
+import eu.nimble.utility.exception.NimbleException;
+import eu.nimble.utility.exception.NimbleExceptionMessageCode;
 import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import eu.nimble.utility.validation.IValidationUtil;
@@ -22,7 +23,6 @@ import io.swagger.annotations.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.logging.LogLevel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +30,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -76,28 +77,24 @@ public class PriceConfigurationController {
         try {
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
 
             // check catalogue
             if (service.getCatalogue(catalogueUuid) == null) {
-                String msg = String.format("Catalogue with uuid : {} does not exist", catalogueUuid);
-                log.info(msg);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
+                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(), Arrays.asList(catalogueUuid));
             }
 
             // check the entity ids
             boolean hjidsExists = resourceValidationUtil.hjidsExit(priceOption);
             if(hjidsExists) {
-                return HttpResponseUtil.createResponseEntityAndLog(String.format("Entity IDs (hjid fields) found in the passed price option: %s. Make sure they are null", JsonSerializationUtility.serializeEntitySilently(priceOption)), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_HJIDS_IN_PRICE_OPTION.toString(),Arrays.asList(JsonSerializationUtility.serializeEntitySilently(priceOption)));
             }
 
             // check catalogue line
             CatalogueLineType catalogueLine = service.getCatalogueLine(catalogueUuid, lineId);
             if (catalogueLine == null) {
-                String msg = String.format("Catalogue line does not exist. catalogueId: %s, lineId: %s", catalogueUuid, lineId);
-                log.info(msg);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE_LINE.toString(),Arrays.asList(catalogueUuid, lineId));
             }
 
             // first persist the price options
@@ -119,13 +116,10 @@ public class PriceConfigurationController {
             String serializedOption;
             try {
                 serializedOption = JsonSerializationUtility.getObjectMapper().writeValueAsString(priceOption);
-                String msg = String.format("Failed to add pricing option for catalogueId: %s, lineId: %s, pricingOption: %s", catalogueUuid, lineId, serializedOption);
-                return HttpResponseUtil.createResponseEntityAndLog(msg, e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+                throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_ADD_PRICE_OPTION.toString(),Arrays.asList(catalogueUuid, lineId, serializedOption));
             } catch (JsonProcessingException e1) {
-                String msg = String.format("Failed to add pricing option for catalogueId: %s, lineId: %s", catalogueUuid, lineId);
-                ResponseEntity response = HttpResponseUtil.createResponseEntityAndLog(msg, e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
                 log.error("Failed to deserialize pricing option: catalogueId: {}, lineId: {}", catalogueUuid, lineId, e1);
-                return response;
+                throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_ADD_PRICE_OPTION.toString(),Arrays.asList(catalogueUuid, lineId, ""),e1);
             }
         }
     }
@@ -147,22 +141,18 @@ public class PriceConfigurationController {
         try {
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
 
             // check catalogue
             if (service.getCatalogue(catalogueUuid) == null) {
-                String msg = String.format("Catalogue with uuid : {} does not exist", catalogueUuid);
-                log.info(msg);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
+                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(catalogueUuid));
             }
 
             // check catalogue line
             CatalogueLineType catalogueLine = service.getCatalogueLine(catalogueUuid, lineId);
             if (catalogueLine == null) {
-                String msg = String.format("Catalogue line does not exist. catalogueId: %s, lineId: %s", catalogueUuid, lineId);
-                log.info(msg);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE_LINE.toString(),Arrays.asList(catalogueUuid, lineId));
             }
 
             // check option
@@ -175,9 +165,7 @@ public class PriceConfigurationController {
                 }
             }
             if (optionIndex == null) {
-                String msg = String.format("No option exists. catalogueId: %s, lineId: %s, optionId: %d", catalogueUuid, lineId, optionId);
-                log.info(msg);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_PRICE_OPTION.toString(),Arrays.asList(catalogueUuid, lineId, optionId.toString()));
             }
 
             // remove the option and update the line
@@ -190,8 +178,7 @@ public class PriceConfigurationController {
             return ResponseEntity.ok().build();
 
         } catch (Exception e) {
-            String msg = String.format("Unexpected error while deleting price option catalogueId: %s, lineId: %s, pricingOptionId: %s", catalogueUuid, lineId, optionId);
-            return HttpResponseUtil.createResponseEntityAndLog(msg, e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_DELETE_PRICE_OPTION.toString(),Arrays.asList(catalogueUuid, lineId, optionId.toString()));
         }
     }
 
@@ -218,28 +205,24 @@ public class PriceConfigurationController {
         try {
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
 
             // check catalogue
             if (service.getCatalogue(catalogueUuid) == null) {
-                String msg = String.format("Catalogue with uuid : {} does not exist", catalogueUuid);
-                log.info(msg);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
+                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(catalogueUuid));
             }
 
             // check catalogue line
             CatalogueLineType catalogueLine = service.getCatalogueLine(catalogueUuid, lineId);
             if (catalogueLine == null) {
-                String msg = String.format("Catalogue line does not exist. catalogueId: %s, lineId: %s", catalogueUuid, lineId);
-                log.info(msg);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE_LINE.toString(),Arrays.asList(catalogueUuid, lineId));
             }
 
             // validate the entity ids
             boolean hjidsBelongToCompany = resourceValidationUtil.hjidsBelongsToParty(priceOption, catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID(), Configuration.Standard.UBL.toString());
             if(!hjidsBelongToCompany) {
-                return HttpResponseUtil.createResponseEntityAndLog(String.format("Some of the identifiers (hjid fields) do not belong to the party in the passed catalogue: %s", JsonSerializationUtility.serializeEntitySilently(priceOption)), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_HJIDS.toString(),Arrays.asList(JsonSerializationUtility.serializeEntitySilently(priceOption)));
             }
 
             // check option
@@ -252,9 +235,7 @@ public class PriceConfigurationController {
                 }
             }
             if (oldOption == null) {
-                String msg = String.format("No option exists. catalogueId: %s, lineId: %s, optionId: %d", catalogueUuid, lineId, oldOption.getHjid());
-                log.info(msg);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_PRICE_OPTION.toString(),Arrays.asList(catalogueUuid, lineId, priceOption.getHjid().toString()));
             }
 
             // remove the option and update the line
@@ -265,8 +246,7 @@ public class PriceConfigurationController {
             return ResponseEntity.ok().body(JsonSerializationUtility.getMapperForTransientFields().writeValueAsString(priceOption));
 
         } catch (Exception e) {
-            String msg = String.format("Unexpected error while deleting price option catalogueId: %s, lineId: %s, optionId: %d", catalogueUuid, lineId, priceOption.getHjid());
-            return HttpResponseUtil.createResponseEntityAndLog(msg, e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_UPDATE_PRICE_OPTION.toString(),Arrays.asList(catalogueUuid, lineId, priceOption.getHjid().toString()));
         }
     }
 
@@ -287,7 +267,7 @@ public class PriceConfigurationController {
         try {
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
 
             HttpResponse<String> response = Unirest.get(VAT_RATES_URL)
@@ -297,8 +277,7 @@ public class PriceConfigurationController {
             return ResponseEntity.ok().body(response.getBody());
 
         } catch (Exception e) {
-            String msg = String.format("Unexpected error while getting VAT rates");
-            return HttpResponseUtil.createResponseEntityAndLog(msg, e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GET_VAT_RATES.toString());
         }
     }
 }

@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by suat on 11-Mar-19.
  */
-public class AmountValidator extends Validator{
+public class AmountValidator{
     private static Logger logger = LoggerFactory.getLogger(AmountValidator.class);
 
     private AmountType amountType;

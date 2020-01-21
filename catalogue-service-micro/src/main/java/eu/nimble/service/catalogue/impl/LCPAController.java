@@ -5,8 +5,9 @@ import eu.nimble.service.catalogue.model.lcpa.ItemLCPAInput;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.LCPAOutputType;
-import eu.nimble.utility.HttpResponseUtil;
 import eu.nimble.utility.JsonSerializationUtility;
+import eu.nimble.utility.exception.NimbleException;
+import eu.nimble.utility.exception.NimbleExceptionMessageCode;
 import eu.nimble.utility.persistence.GenericJPARepository;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.validation.IValidationUtil;
@@ -28,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -57,7 +59,7 @@ public class LCPAController {
             logger.info("Incoming request to get product with LCPA input but not output");
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
 
             List<ItemLCPAInput> results = CatalogueLinePersistenceUtil.getLinesIdsWithValidLcpaInput();
@@ -66,7 +68,7 @@ public class LCPAController {
             return ResponseEntity.ok(results);
 
         } catch (Exception e) {
-            return HttpResponseUtil.createResponseEntityAndLog("Unexpecteed error while getting product with LCPA input but not output", e, HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GET_PRODUCTS_WITHOUT_LCPA_PROCESSING.toString(),e);
         }
     }
 
@@ -91,14 +93,13 @@ public class LCPAController {
             logger.info("Incoming request to update LCPAOutput for catalogue line with hjid: {}", catalogueLineHjid);
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
 
             GenericJPARepository repo = new JPARepositoryFactory().forCatalogueRepository(true);
             CatalogueLineType catalogueLine = repo.getSingleEntityByHjid(CatalogueLineType.class, catalogueLineHjid);
             if (catalogueLine == null) {
-                String msg = String.format("No CatalogueLine found for the specified hjid: %d", catalogueLineHjid);
-                return HttpResponseUtil.createResponseEntityAndLog(msg, HttpStatus.NOT_FOUND);
+                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE_LINE_FOR_HJID.toString(), Arrays.asList(catalogueLineHjid.toString()));
             }
 
             // remove hjid fields of LCPAOutput
@@ -108,8 +109,7 @@ public class LCPAController {
             try {
                 lcpaOutput = JsonSerializationUtility.getObjectMapper().readValue(object.toString(), LCPAOutputType.class);
             } catch (IOException e) {
-                String msg = String.format("Could not parse LCPAOutput for catalogue line with hjid: %d. LCPAOutput: %s", catalogueLineHjid, lcpaOutputJson);
-                return HttpResponseUtil.createResponseEntityAndLog(msg, e, HttpStatus.BAD_REQUEST);
+                throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_PARSE_LCPA_OUTPUT.toString(),Arrays.asList(catalogueLineHjid.toString(), lcpaOutputJson),e);
             }
             catalogueLine.getGoodsItem().getItem().getLifeCyclePerformanceAssessmentDetails().setLCPAOutput(lcpaOutput);
             catalogueLine = repo.updateEntity(catalogueLine);
@@ -118,8 +118,7 @@ public class LCPAController {
             return ResponseEntity.ok(catalogueLine);
 
         } catch (Exception e) {
-            String msg = String.format("Unexpected error while updating LCPAOutput for catalogue line with hjid: %d. LCPAOutput: %s", catalogueLineHjid, lcpaOutputJson);
-            return HttpResponseUtil.createResponseEntityAndLog(msg, e, HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_ADD_LCPA_OUTPUT.toString(),Arrays.asList(catalogueLineHjid.toString(), lcpaOutputJson),e);
         }
     }
 
@@ -139,8 +138,7 @@ public class LCPAController {
         logger.info("Incoming request to download BOM template");
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-            HttpResponseUtil.writeMessageServletResponseAndLog(response, "Invalid role", HttpStatus.UNAUTHORIZED);
-            return;
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
         }
 
         try {
@@ -159,14 +157,7 @@ public class LCPAController {
             response.flushBuffer();
             logger.info("Completed the request to download BOM template");
         } catch (Exception e) {
-            String msg = "Failed to download BOM template\n" + e.getMessage();
-            logger.error(msg, e);
-            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            try {
-                response.getOutputStream().write(msg.getBytes());
-            } catch (IOException e1) {
-                logger.error("Failed to write the error message to the output stream", e);
-            }
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_DOWNLOAD_BOM_TEMPLATE.toString(),true);
         }
     }
 }

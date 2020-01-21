@@ -3,8 +3,9 @@ package eu.nimble.service.catalogue.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
-import eu.nimble.utility.HttpResponseUtil;
 import eu.nimble.utility.JsonSerializationUtility;
+import eu.nimble.utility.exception.NimbleException;
+import eu.nimble.utility.exception.NimbleExceptionMessageCode;
 import eu.nimble.utility.persistence.binary.BinaryContentService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -14,8 +15,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.logging.LogLevel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,16 +48,12 @@ public class BinaryContentController {
         try {
             logger.info("Request to retrieve binary content for uri: {}", uri);
             // check token
-            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-            if (tokenCheck != null) {
-                return tokenCheck;
-            }
+            eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+
             BinaryObjectType result = new BinaryContentService().retrieveContent(uri);
             // check whether the binary content exists or not
             if(result == null){
-                String msg = String.format("There does not exist a binary content for uri: %s", uri);
-                logger.error(msg);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(msg);
+                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_BINARY_CONTENT.toString(), Arrays.asList(uri));
             }
 
             ObjectMapper objectMapper = JsonSerializationUtility.getObjectMapper();
@@ -67,7 +63,7 @@ public class BinaryContentController {
             return ResponseEntity.ok().body(response);
 
         } catch (Exception e) {
-            return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while getting the binary content for uri: %s", uri), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GET_BINARY_CONTENT.toString(),Arrays.asList(uri),e);
         }
     }
 
@@ -87,10 +83,7 @@ public class BinaryContentController {
         try {
             logger.info("Request to retrieve binary contents for uris: {}", uris.toString());
             // check token
-            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-            if (tokenCheck != null) {
-                return tokenCheck;
-            }
+            eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
 
             // eliminate empty uris
             uris = uris.stream()
@@ -105,7 +98,7 @@ public class BinaryContentController {
             return ResponseEntity.ok().body(response);
 
         } catch (Exception e) {
-            return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while getting the binary content for uris: %s", uris.toString()), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GET_BINARY_CONTENTS.toString(),Arrays.asList(uris.toString()),e);
         }
     }
 
@@ -125,27 +118,10 @@ public class BinaryContentController {
                                        HttpServletResponse response) {
         try {
             logger.info("Request to retrieve raw binary content for uri: {}", uri);
-            // check token
-            ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-            if (tokenCheck != null) {
-                response.setStatus(tokenCheck.getStatusCode().value());
-                try {
-                    response.getOutputStream().write(tokenCheck.getBody().toString().getBytes());
-                } catch (IOException e1) {
-                    logger.error("Failed to write the error message to the output stream", e1);
-                }
-            }
             BinaryObjectType result = new BinaryContentService().retrieveContent(uri);
             // check whether the binary content exists or not
             if(result == null){
-                String msg = String.format("There does not exist a binary content for uri: %s", uri);
-                logger.error(msg);
-                response.setStatus(HttpStatus.NOT_FOUND.value());
-                try {
-                    response.getOutputStream().write(msg.getBytes());
-                } catch (IOException e1) {
-                    logger.error("Failed to write the error message to the output stream", e1);
-                }
+                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_BINARY_CONTENT.toString(),Arrays.asList(uri),true);
             }
             try {
                 response.setHeader("Content-disposition", "attachment; filename=" + result.getFileName());
@@ -156,25 +132,11 @@ public class BinaryContentController {
                 logger.info("Completed the request to retrieve raw binary content for uri: {}", uri);
 
             } catch (IOException e) {
-                String msg = String.format("Failed to write the raw binary content to the response output stream for uri: %s\n%s", uri, e.getMessage());
-                logger.error(msg, e);
-                response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-                try {
-                    response.getOutputStream().write(msg.getBytes());
-                } catch (IOException e1) {
-                    logger.error("Failed to write the error message to the output stream", e);
-                }
+                throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_WRITE_BINARY_CONTENT_TO_OUTPUT_STREAM.toString(),Arrays.asList(uri),e,true);
             }
 
         } catch (Exception e) {
-            String msg = String.format("Unexpected error while retrieving the raw content for uri: %s\n%s", uri, e.getMessage());
-            logger.error(msg, e);
-            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            try {
-                response.getOutputStream().write(msg.getBytes());
-            } catch (IOException e1) {
-                logger.error("Failed to write the error message to the output stream", e);
-            }
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GET_BASE_64_BINARY_CONTENT.toString(),Arrays.asList(uri),e,true);
         }
     }
 }

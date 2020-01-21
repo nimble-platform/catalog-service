@@ -17,6 +17,7 @@ import eu.nimble.service.catalogue.util.DataIntegratorUtil;
 import eu.nimble.service.catalogue.util.LanguageUtil;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
 import eu.nimble.service.catalogue.validation.ValidationException;
+import eu.nimble.service.catalogue.validation.ValidationMessages;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
@@ -24,6 +25,8 @@ import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
+import eu.nimble.utility.exception.NimbleException;
+import eu.nimble.utility.exception.NimbleExceptionMessageCode;
 import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -524,12 +527,9 @@ public class CatalogueServiceImpl implements CatalogueService {
             }
 
             CatalogueValidator catalogueValidator = new CatalogueValidator(catalogue);
-            try {
-                catalogueValidator.validate();
-            } catch (ValidationException e) {
-                String msg = e.getMessage();
-                logger.error(msg, e);
-                throw new CatalogueServiceException(msg, e);
+            ValidationMessages validationMessages = catalogueValidator.validate();
+            if(validationMessages.getErrorMessages().size() > 0){
+                throw new NimbleException(validationMessages.getErrorMessages(),validationMessages.getErrorParameters());
             }
 
             catalogue = updateCatalogue(catalogue);

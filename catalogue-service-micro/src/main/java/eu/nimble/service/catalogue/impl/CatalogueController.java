@@ -12,13 +12,15 @@ import eu.nimble.service.catalogue.persistence.util.LockPool;
 import eu.nimble.service.catalogue.util.CatalogueEvent;
 import eu.nimble.service.catalogue.util.SemanticTransformationUtil;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
-import eu.nimble.service.catalogue.validation.ValidationException;
+import eu.nimble.service.catalogue.validation.ValidationMessages;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyNameType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.*;
 import eu.nimble.utility.exception.BinaryContentException;
+import eu.nimble.utility.exception.NimbleException;
+import eu.nimble.utility.exception.NimbleExceptionMessageCode;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import eu.nimble.utility.serialization.TransactionEnabledSerializationUtility;
 import eu.nimble.utility.validation.IValidationUtil;
@@ -43,10 +45,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipInputStream;
 
 /**
@@ -98,12 +97,12 @@ public class CatalogueController {
         log.info("Incoming request to get CataloguePaginationResponse for party: {}, catalogue id: {} with limit: {}, offset: {}", partyId, catalogueId, limit, offset);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
         }
 
         // check the validity of the request params
         if(searchText != null && languageId == null){
-            return createErrorResponseEntity("Both language id and search text should be provided", HttpStatus.BAD_REQUEST, null);
+            throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_MISSING_PARAMETERS.toString());
         }
 
         CataloguePaginationResponse cataloguePaginationResponse;
@@ -111,11 +110,10 @@ public class CatalogueController {
         try {
             cataloguePaginationResponse = service.getCataloguePaginationResponse(catalogueId, partyId,categoryName,searchText,languageId,sortOption,limit,offset,catalogueUUId);
         } catch (Exception e) {
-            return createErrorResponseEntity(String.format("Failed to get CataloguePaginationResponse for party id: %s catalogue id: %s", partyId, catalogueId), HttpStatus.INTERNAL_SERVER_ERROR, e);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_CATALOGUE_PAGINATION_RESPONSE.toString(), Arrays.asList(partyId, catalogueId),e);
         }
         if (cataloguePaginationResponse.getCatalogueUuid() == null) {
-            log.info("No catalogue for party: {}, catalogue: {}", partyId, catalogueId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("No catalogue for party: %s, catalogue id: %s", partyId, catalogueId));
+            throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE_FOR_PARTY.toString(),Arrays.asList(partyId, catalogueId));
         }
 
         log.info("Completed request to get CataloguePaginationResponse for party: {}, catalogue id: {} with limit: {}, offset: {}", partyId, catalogueId, limit, offset);
@@ -141,25 +139,24 @@ public class CatalogueController {
         log.info("Incoming request to get catalogue for standard: {}, uuid: {}", standard, uuid);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
         }
 
         Configuration.Standard std;
         try {
             std = getStandardEnum(standard);
         } catch (Exception e) {
-            return createErrorResponseEntity("Invalid standard: " + standard, HttpStatus.BAD_REQUEST, e);
+            throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_STANDARD.toString(),e);
         }
         Object catalogue;
         try {
             catalogue = service.getCatalogue(uuid, std);
         } catch (Exception e) {
-            return createErrorResponseEntity("Failed to get catalogue for standard: " + standard + " uuid: " + uuid, HttpStatus.INTERNAL_SERVER_ERROR, e);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_GET_CATALOGUE_FOR_STANDARD.toString(),Arrays.asList(standard,uuid),e);
         }
 
         if (catalogue == null) {
-            log.info("No catalogue for uuid: {}", uuid);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("No catalogue for uuid: %s", uuid));
+            throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(uuid));
         }
 
         log.info("Completed request to get catalogue for standard: {}, uuid: {}", standard, uuid);
@@ -238,7 +235,7 @@ public class CatalogueController {
             log.info("Incoming request to post catalogue with standard: {} standard", standard);
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
 
             // get standard
@@ -246,7 +243,7 @@ public class CatalogueController {
             try {
                 std = getStandardEnum(standard);
             } catch (Exception e) {
-                return createErrorResponseEntity("Invalid standard: " + standard, HttpStatus.BAD_REQUEST, e);
+                throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_STANDARD.toString(),Arrays.asList(standard),e);
             }
 
             String contentType = request.getContentType();
@@ -255,29 +252,28 @@ public class CatalogueController {
             try {
                 catalogue = parseCatalogue(contentType, serializedCatalogue, std);
             } catch (Exception e) {
-                return createErrorResponseEntity(String.format("Failed to deserialize catalogue: %s", serializedCatalogue), HttpStatus.BAD_REQUEST, e);
+                throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_DESERIALIZE_CATALOGUE.toString(),Arrays.asList(serializedCatalogue),e);
             }
             // for ubl catalogues, do the following validations
             if (std.equals(Configuration.Standard.UBL)) {
                 CatalogueType ublCatalogue = (CatalogueType) catalogue;
                 // validate the content of the catalogue
                 CatalogueValidator catalogueValidator = new CatalogueValidator(ublCatalogue);
-                try {
-                    catalogueValidator.validate();
-                } catch (ValidationException e) {
-                    return HttpResponseUtil.createResponseEntityAndLog(e.getMessage(), e, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                ValidationMessages validationMessages = catalogueValidator.validate();
+                if(validationMessages.getErrorMessages().size() > 0){
+                    throw new NimbleException(validationMessages.getErrorMessages(),validationMessages.getErrorParameters());
                 }
 
                 // check catalogue with the same id exists
                 boolean catalogueExists = CataloguePersistenceUtil.checkCatalogueExistenceById(ublCatalogue.getID(), ublCatalogue.getProviderParty().getPartyIdentification().get(0).getID());
                 if (catalogueExists) {
-                    return HttpResponseUtil.createResponseEntityAndLog(String.format("Catalogue with ID: '%s' already exists for the publishing party", ublCatalogue.getID()), null, HttpStatus.CONFLICT, LogLevel.INFO);
+                    throw new NimbleException(NimbleExceptionMessageCode.CONFLICT_CATALOGUE_ID_ALREADY_EXISTS.toString(),Arrays.asList(ublCatalogue.getID()));
                 }
 
                 // check the entity ids
                 boolean hjidsExists = resourceValidationUtil.hjidsExit(catalogue);
                 if (hjidsExists) {
-                    return HttpResponseUtil.createResponseEntityAndLog(String.format("Entity IDs (hjid fields) found in the passed catalogue: %s. Make sure they are null", serializedCatalogue), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                    throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_HJIDS.toString(),Arrays.asList(serializedCatalogue));
                 }
             }
 
@@ -285,7 +281,7 @@ public class CatalogueController {
             return createCreatedCatalogueResponse(catalogue, HttpResponseUtil.baseUrl(request));
 
         } catch (Exception e) {
-            return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while adding the catalogue: %s", serializedCatalogue), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_ADD_CATALOGUE.toString(),Arrays.asList(serializedCatalogue),e);
         }
     }
 
@@ -313,7 +309,7 @@ public class CatalogueController {
             log.info("Incoming request to update catalogue");
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
 
             // check standard
@@ -321,12 +317,10 @@ public class CatalogueController {
             try {
                 std = getStandardEnum(standard);
                 if (std != Configuration.Standard.UBL) {
-                    String msg = "Update operation is not support for " + standard;
-                    log.info(msg);
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(msg);
+                    throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_NO_UPDATE_OPERATION_FOR_STANDARD.toString(),Arrays.asList(standard));
                 }
             } catch (Exception e) {
-                return createErrorResponseEntity("Invalid standard: " + standard, HttpStatus.BAD_REQUEST, e);
+                throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_STANDARD.toString(),Arrays.asList(standard),e);
             }
 
             // parse catalogue
@@ -334,21 +328,20 @@ public class CatalogueController {
             try {
                 catalogue = JsonSerializationUtility.getObjectMapper().readValue(catalogueJson, CatalogueType.class);
             } catch (IOException e) {
-                return createErrorResponseEntity(String.format("Failed to deserialize catalogue: %s", catalogueJson), HttpStatus.INTERNAL_SERVER_ERROR, e);
+                throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_DESERIALIZE_CATALOGUE.toString(),Arrays.asList(catalogueJson),e);
             }
 
             // validate the catalogue content
             CatalogueValidator catalogueValidator = new CatalogueValidator(catalogue);
-            try {
-                catalogueValidator.validate();
-            } catch (ValidationException e) {
-                return HttpResponseUtil.createResponseEntityAndLog(e.getMessage(), e, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+            ValidationMessages validationMessages = catalogueValidator.validate();
+            if(validationMessages.getErrorMessages().size() > 0){
+                throw new NimbleException(validationMessages.getErrorMessages(),validationMessages.getErrorParameters());
             }
 
             // validate the entity ids
             boolean hjidsBelongToCompany = resourceValidationUtil.hjidsBelongsToParty(catalogue, catalogue.getProviderParty().getPartyIdentification().get(0).getID(), Configuration.Standard.UBL.toString());
             if (!hjidsBelongToCompany) {
-                return HttpResponseUtil.createResponseEntityAndLog(String.format("Some of the identifiers (hjid fields) do not belong to the party in the passed catalogue: %s", catalogueJson), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_HJIDS.toString(),Arrays.asList(catalogueJson));
             }
             String catalogueId = "";
             String partyName = "";
@@ -368,14 +361,14 @@ public class CatalogueController {
                 LoggerUtils.logWithMDC(log, paramMap, LoggerUtils.LogLevel.INFO, "Successfully updated catalogue, id: {}", catalogueId);
             } catch (Exception e) {
                 log.warn("Failed to update the following catalogue: {}", catalogueJson);
-                return createErrorResponseEntity("Failed to update the catalogue", HttpStatus.INTERNAL_SERVER_ERROR, e);
+                throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_UPDATE_CATALOGUE.toString(),e);
             }
 
             log.info("Completed request to update the catalogue. uuid: {}", catalogue.getUUID());
             return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogue));
 
         } catch (Exception e) {
-            return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while adding the catalogue: %s", catalogueJson), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_UNEXPECTED_ERROR_WHILE_UPDATING_CATALOGUE.toString(),Arrays.asList(catalogueJson),e);
         }
     }
 
@@ -394,14 +387,14 @@ public class CatalogueController {
         log.info("Incoming request to delete catalogue with uuid: {}", uuid);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
         }
 
         Configuration.Standard std;
         try {
             std = getStandardEnum(standard);
         } catch (Exception e) {
-            return createErrorResponseEntity("Invalid standard: " + standard, HttpStatus.BAD_REQUEST, e);
+            throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_STANDARD.toString(),Arrays.asList(standard),e);
         }
 
         try {
@@ -411,7 +404,7 @@ public class CatalogueController {
             paramMap.put("catalogueId", uuid);
             LoggerUtils.logWithMDC(log, paramMap, LoggerUtils.LogLevel.INFO, "Successfully deleted catalogue, id: {}", uuid);
         } catch (Exception e) {
-            return createErrorResponseEntity("Failed to delete catalogue", HttpStatus.INTERNAL_SERVER_ERROR, e);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_DELETE_CATALOGUE.toString(),e);
         }
 
         log.info("Completed request to delete catalogue with uuid: {}", uuid);
@@ -436,7 +429,7 @@ public class CatalogueController {
             log.info("Incoming request to delete catalogues for party: {}, ids: {}, delete all: {}", partyId, idsLog, deleteAll);
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
 
             // if all the catalogues is requested to be deleted get the identifiers first
@@ -459,7 +452,7 @@ public class CatalogueController {
             return ResponseEntity.status(HttpStatus.OK).build();
 
         } catch(Exception e) {
-            return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while deleting catalogues for party: %s ids: %s, delete all: %b", partyId, idsLog, deleteAll), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_DELETE_CATALOGUES.toString(),Arrays.asList(partyId, idsLog, deleteAll.toString()));
         }
     }
 
@@ -485,23 +478,14 @@ public class CatalogueController {
         log.info("Incoming request to generate a template. Category ids: {}, taxonomy ids: {}", categoryIds, taxonomyIds);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-            HttpResponseUtil.writeMessageServletResponseAndLog(response, "Invalid role", HttpStatus.UNAUTHORIZED);
-            return;
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
         }
 
         Workbook template;
         try {
             template = service.generateTemplateForCategory(categoryIds, taxonomyIds,templateLanguage);
         } catch (Exception e) {
-            String msg = "Failed to generate template\n" + e.getMessage();
-            log.error(msg, e);
-            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            try {
-                response.getOutputStream().write(msg.getBytes());
-            } catch (IOException e1) {
-                log.error("Failed to write the error message to the output stream", e);
-            }
-            return;
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GENERATE_TEMPLATE.toString(),e,true);
         }
 
         try {
@@ -512,14 +496,7 @@ public class CatalogueController {
             response.flushBuffer();
             log.info("Completed the request to generate template");
         } catch (IOException e) {
-            String msg = "Failed to write the template content to the response output stream\n" + e.getMessage();
-            log.error(msg, e);
-            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            try {
-                response.getOutputStream().write(msg.getBytes());
-            } catch (IOException e1) {
-                log.error("Failed to write the error message to the output stream", e);
-            }
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_WRITE_TEMPLATE_CONTENT_TO_OUTPUT_STREAM.toString(),e,true);
         }
     }
 
@@ -550,7 +527,7 @@ public class CatalogueController {
             log.info("Incoming request to upload template upload mode: {}, party id: {}", uploadMode, partyId);
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
 
             // check the existence of the specified party in the catalogue DB
@@ -566,8 +543,7 @@ public class CatalogueController {
                 try {
                     catalogue = service.parseCatalogue(file.getInputStream(), uploadMode, party, includeVat);
                 } catch (Exception e) {
-                    String msg = e.getMessage() != null ? e.getMessage() : "Failed to retrieve the template";
-                    return HttpResponseUtil.createResponseEntityAndLog(msg, e, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                    throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_PARSE_CATALOGUE.toString(),e);
                 }
 
                 // save catalogue
@@ -588,12 +564,12 @@ public class CatalogueController {
                 return ResponseEntity.created(catalogueURI).body(serializationUtility.serializeUBLObject(catalogue));
 
             } catch (URISyntaxException e) {
-                return createErrorResponseEntity("Failed to generate a URI for the newly created item", HttpStatus.INTERNAL_SERVER_ERROR, e);
+                throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GENERATE_URI_FOR_ITEM.toString(),e);
             }
 
 
         } catch (Exception e) {
-            return HttpResponseUtil.createResponseEntityAndLog("Unexpected error while uploading the template", e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_UPLOAD_TEMPLATE.toString(),e);
         }
     }
 
@@ -616,7 +592,7 @@ public class CatalogueController {
 //            standards = Arrays.asList(Configuration.Standard.values());
             standards.add(Configuration.Standard.UBL);
         } catch (Exception e) {
-            return createErrorResponseEntity("Failed to get supported standards", HttpStatus.INTERNAL_SERVER_ERROR, e);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GET_STANDARDS.toString(),e);
         }
 
         log.info("Completed request to retrieve the supported standards");
@@ -646,14 +622,13 @@ public class CatalogueController {
             log.info("Incoming request to upload images for catalogue: {}", id);
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
 
             CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueForParty(id, partyId);
 
             if (catalogue == null) {
-                log.error("Catalogue with uuid : {} does not exist", id);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", id));
+                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(id));
             }
 
             ZipInputStream zis = null;
@@ -662,13 +637,11 @@ public class CatalogueController {
                 catalogue = service.addImagesToProducts(zis, catalogue);
 
             } catch (IOException e) {
-                return createErrorResponseEntity("Failed obtain a Zip package from the provided data", HttpStatus.BAD_REQUEST, e);
-            } catch (CatalogueServiceException e) {
-                return createErrorResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST, e);
-            } catch (BinaryContentException e){
-                return createErrorResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST, null);
+                throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_GET_ZIP_PACKAGE.toString(),e);
+            } catch (CatalogueServiceException | BinaryContentException e) {
+                throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_UPLOAD_IMAGES.toString(),e);
             } catch (Exception e){
-                return createErrorResponseEntity(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR, e);
+                throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_UPLOAD_IMAGES.toString(),e);
             }finally {
                 try {
                     zis.close();
@@ -681,7 +654,7 @@ public class CatalogueController {
             return ResponseEntity.ok().body(serializationUtility.serializeUBLObject(catalogue));
 
         } catch (Exception e) {
-            return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while uploading images. uuid: %s", id), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_UNEXPECTED_ERROR_WHILE_UPLOADING_IMAGES.toString(),Arrays.asList(id));
         }
     }
 
@@ -701,7 +674,7 @@ public class CatalogueController {
             log.info("Incoming request to delete images for catalogues: {}", ids);
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
 
             for (String id : ids) {
@@ -720,7 +693,7 @@ public class CatalogueController {
             return ResponseEntity.ok().body(serializationUtility.serializeUBLObject(null));
 
         } catch (Exception e) {
-            return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while uploading images. uuid: %s", ids), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_DELETE_IMAGES.toString(),Arrays.asList(ids.toString()));
         }
     }
 
@@ -742,19 +715,18 @@ public class CatalogueController {
             log.info("Incoming request to get catalogue in semantic format, uuid: {}, content type: {}", uuid, semanticContentType);
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
 
             Object catalogue;
             try {
                 catalogue = service.getCatalogue(uuid, Configuration.Standard.UBL);
             } catch (Exception e) {
-                return createErrorResponseEntity("Failed to get catalogue for uuid: " + uuid, HttpStatus.INTERNAL_SERVER_ERROR, e);
+                throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_GET_CATALOGUE.toString(),Arrays.asList(uuid),e);
             }
 
             if (catalogue == null) {
-                log.info("No catalogue for uuid: {}", uuid);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("No default catalogue for uuid: %s", uuid));
+                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(uuid));
             }
 
             // transform content to other semantic formats
@@ -768,14 +740,14 @@ public class CatalogueController {
                 rdfGenerator.writeModel(response.getOutputStream(), semanticContentType);
                 response.flushBuffer();
             } catch (IOException e) {
-                return HttpResponseUtil.createResponseEntityAndLog(String.format("Failed to get catalogue with uuid: %s", uuid), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+                throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_GET_CATALOGUE.toString(),Arrays.asList(uuid),e);
             }
 
             log.info("Completed request to get catalogue, uuid: {}", uuid);
             return ResponseEntity.ok().build();
 
         } catch (Exception e) {
-            return HttpResponseUtil.createResponseEntityAndLog(String.format("Unexpected error while getting the catalogue in semantic format. uuid: %s, content-type: %s", uuid, semanticContentType), e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GET_CATALOGUE_IN_SEMANTIC_FORMAT.toString(),Arrays.asList(uuid, semanticContentType),e);
         }
     }
 
@@ -795,19 +767,18 @@ public class CatalogueController {
         log.info("Incoming request to get catalogue id list for party: {}", partyId);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
         }
 
         List<String> catalogueIds;
         try {
             catalogueIds = service.getCatalogueIdsForParty(partyId);
         } catch (Exception e) {
-            return createErrorResponseEntity("Failed to get catalogues for party id: " + partyId, HttpStatus.INTERNAL_SERVER_ERROR, e);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_GET_CATALOGUES.toString(),e);
         }
 
         if (catalogueIds == null) {
-            log.info("No default catalogue for party: {}", partyId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("No default catalogue for party: %s", partyId));
+            throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_DEFAULT_CATALOGUE.toString(),Arrays.asList(partyId));
         }
 
         log.info("Completed request to get catalogue id list for party: {}", partyId);
@@ -830,19 +801,18 @@ public class CatalogueController {
         log.info("Incoming request to get catalogue uuidid list for party: {}", partyId);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
         }
 
         List<Object[]> catalogueIds;
         try {
             catalogueIds = service.getCatalogueIdAndNameForParty(partyId);
         } catch (Exception e) {
-            return createErrorResponseEntity("Failed to get catalogues for party id: " + partyId, HttpStatus.INTERNAL_SERVER_ERROR, e);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_GET_CATALOGUES.toString(),Arrays.asList(partyId),e);
         }
 
         if (catalogueIds == null) {
-            log.info("No default catalogue for party: {}", partyId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("No default catalogue for party: %s", partyId));
+            throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_DEFAULT_CATALOGUE.toString(),Arrays.asList(partyId));
         }
 
         log.info("Completed request to get catalogue uuid list for party: {}", partyId);

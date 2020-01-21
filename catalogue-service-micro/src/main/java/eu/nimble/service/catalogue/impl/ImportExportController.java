@@ -10,8 +10,9 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PersonType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.Configuration;
-import eu.nimble.utility.HttpResponseUtil;
 import eu.nimble.utility.JsonSerializationUtility;
+import eu.nimble.utility.exception.NimbleException;
+import eu.nimble.utility.exception.NimbleExceptionMessageCode;
 import eu.nimble.utility.validation.IValidationUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -22,7 +23,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.logging.LogLevel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -67,7 +68,7 @@ public class ImportExportController {
             log.info("Importing catalogue ...");
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
 
             // remove hjid fields of catalogue
@@ -97,8 +98,7 @@ public class ImportExportController {
             return ResponseEntity.ok().body(JsonSerializationUtility.serializeEntity(catalogue));
 
         } catch (Exception e) {
-            String msg = String.format("Failed to import catalogue: %s", serializedCatalogue);
-            return HttpResponseUtil.createResponseEntityAndLog(msg, e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_IMPORT_CATALOGUE.toString(),Arrays.asList(serializedCatalogue));
         }
     }
 
@@ -124,8 +124,7 @@ public class ImportExportController {
         log.info("Incoming request to export catalogue with uuid {}", catalogueUuid);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_TO_EXPORT_CATALOGUE)) {
-            HttpResponseUtil.writeMessageServletResponseAndLog(response, "Invalid role", HttpStatus.UNAUTHORIZED);
-            return;
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
         }
 
         // check whether the catalogue with the given uuid exists or not
@@ -133,16 +132,12 @@ public class ImportExportController {
         try {
             catalogue = service.getCatalogue(catalogueUuid);
         } catch (Exception e) {
-            String msg = "Failed to get catalogue for uuid: "+catalogueUuid + "\n" + e.getMessage();
-            HttpResponseUtil.writeMessageServletResponseAndLog(response, msg, e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
-            return;
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_GET_CATALOGUE.toString(),Arrays.asList(catalogueUuid),true);
         }
 
         // no catalogue for the given uuid
         if (catalogue == null) {
-            String msg = "No catalogue for uuid: " + catalogueUuid;
-            HttpResponseUtil.writeMessageServletResponseAndLog(response, msg, null, HttpStatus.NOT_FOUND, LogLevel.INFO);
-            return;
+            throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(catalogueUuid),true);
         }
         // get workbooks
         Map<Workbook,String> workbooks = service.generateTemplateForCatalogue(catalogue,languageId);
@@ -159,9 +154,7 @@ public class ImportExportController {
 
             response.flushBuffer();
         } catch (IOException e) {
-            String msg = String.format("Failed to write the catalogue content to the response output stream: %s", e.getMessage());
-            HttpResponseUtil.writeMessageServletResponseAndLog(response, msg, e, HttpStatus.INTERNAL_SERVER_ERROR, LogLevel.ERROR);
-
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_WRITE_CATALOGUE_CONTENT_TO_OUTPUT_STREAM.toString(),true);
         } finally {
             try {
                 if(zos != null){
@@ -207,8 +200,7 @@ public class ImportExportController {
 
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_TO_EXPORT_CATALOGUE)) {
-                HttpResponseUtil.writeMessageServletResponseAndLog(response, "Invalid role", HttpStatus.UNAUTHORIZED);
-                return;
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
 
 
@@ -248,15 +240,7 @@ public class ImportExportController {
             log.info("Completed request to delete catalogues for party: {}, ids: {}, delete all: {}", partyId, idsLog, exportAll);
 
         } catch(Exception e) {
-            String msg = String.format("Unexpected error while deleting catalogues for party: %s ids: %s, delete all: %b", partyId, idsLog, exportAll);
-            log.error(msg, e);
-            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            try {
-                response.getOutputStream().write(msg.getBytes());
-            } catch (IOException e1) {
-                log.error("Failed to write the error message to the output stream", e);
-            }
-
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_EXPORT_CATALOGUE.toString(),Arrays.asList(partyId, idsLog, exportAll.toString()),true);
         } finally {
             if(zos != null) {
                 try {
