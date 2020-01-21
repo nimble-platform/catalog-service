@@ -37,7 +37,7 @@ public class RestServiceInterceptor extends HandlerInterceptorAdapter {
             // validate token
             try {
                 HttpResponseUtil.validateToken(bearerToken);
-            } catch (AuthenticationException e) {
+            } catch (Exception e) {
                 throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_NO_USER_FOR_TOKEN.toString(), Arrays.asList(bearerToken),e);
             }
         }
