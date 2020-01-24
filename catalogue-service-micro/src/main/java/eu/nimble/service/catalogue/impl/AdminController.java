@@ -143,7 +143,7 @@ public class AdminController {
     @RequestMapping(value = "/admin/index-catalogues",
             produces = {"application/json"},
             method = RequestMethod.POST)
-    public ResponseEntity indexAllCatalogues(@ApiParam(value = "Identifier of the party", required = true) @RequestParam(value = "partyId", required = true) String partyId,
+    public ResponseEntity indexAllCatalogues(@ApiParam(value = "Identifier of the party", required = false) @RequestParam(value = "partyId", required = false) String partyId,
                                              @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         // check token
         eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
