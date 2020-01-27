@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue.impl;
 import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.category.TaxonomyQueryInterface;
 import eu.nimble.service.catalogue.category.eclass.EClassIndexLoader;
+import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.exception.InvalidCategoryException;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
@@ -10,6 +11,7 @@ import eu.nimble.service.catalogue.index.ClassIndexClient;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.utility.exception.NimbleException;
 import eu.nimble.utility.exception.NimbleExceptionMessageCode;
+import eu.nimble.utility.validation.IValidationUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -21,7 +23,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +44,8 @@ public class ProductCategoryController {
     private ClassIndexClient classIndexClient;
     @Autowired
     private EClassIndexLoader eClassIndexLoader;
+    @Autowired
+    private IValidationUtil validationUtil;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves a list of Category instances. This operation takes a list of category ids and " +
@@ -228,7 +231,6 @@ public class ProductCategoryController {
         return ResponseEntity.ok(categories);
     }
 
-    @ApiIgnore
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Indexes eClass resources,i.e. eClass categories and properties.")
     @ApiResponses(value = {
@@ -241,8 +243,10 @@ public class ProductCategoryController {
             method = RequestMethod.GET)
     public ResponseEntity indexEclassResources(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         log.info("Incoming request to index eClass resources.");
-        // check token
-        eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INDEX_ECLASS_RESOURCES.toString());
+        }
 
         try {
             eClassIndexLoader.indexEClassResources();
@@ -252,7 +256,6 @@ public class ProductCategoryController {
         return ResponseEntity.ok(null);
     }
 
-    @ApiIgnore
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Indexes the given eClass properties.")
     @ApiResponses(value = {
@@ -266,8 +269,10 @@ public class ProductCategoryController {
     public ResponseEntity indexEclassProperties(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
                                                 @ApiParam(value = "Identifiers of eClass properties to be indexed") @RequestBody List<String> propertyIds) {
         log.info("Incoming request to index eClass properties.");
-        // check token
-        eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INDEX_ECLASS_PROPERTIES.toString());
+        }
 
         try {
             eClassIndexLoader.indexEClassProperties(propertyIds);
@@ -277,7 +282,6 @@ public class ProductCategoryController {
         return ResponseEntity.ok(null);
     }
 
-    @ApiIgnore
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Indexes the given eClass categories.")
     @ApiResponses(value = {
@@ -291,8 +295,10 @@ public class ProductCategoryController {
     public ResponseEntity indexEclassCategories(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
                                                 @ApiParam(value = "Identifiers of eClass categories to be indexed") @RequestBody List<String> categoryIds) {
         log.info("Incoming request to index eClass categories.");
-        // check token
-        eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INDEX_ECLASS_CATEGORIES.toString());
+        }
 
         try {
             eClassIndexLoader.indexEClassCategories(categoryIds);

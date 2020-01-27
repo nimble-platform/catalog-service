@@ -2,10 +2,14 @@ package eu.nimble.service.catalogue.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.index.ItemIndexClient;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.catalogue.util.migration.r10.VatMigrationUtility;
+import eu.nimble.utility.exception.NimbleException;
+import eu.nimble.utility.exception.NimbleExceptionMessageCode;
+import eu.nimble.utility.validation.IValidationUtil;
 import feign.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -29,7 +33,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 import java.io.InputStream;
 import java.util.Arrays;
@@ -38,7 +41,6 @@ import java.util.List;
 /**
  * Created by suat on 28-Jan-19.
  */
-@ApiIgnore
 @Controller
 public class AdminController {
 
@@ -54,6 +56,9 @@ public class AdminController {
     @Autowired
     private ItemIndexClient itemIndexClient;
 
+    @Autowired
+    private IValidationUtil validationUtil;
+
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Indexes UBL properties")
     @ApiResponses(value = {
@@ -63,8 +68,10 @@ public class AdminController {
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity indexUBLProperties(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) throws Exception{
-        // check token
-        eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INDEX_UBL_PROPERTIES.toString());
+        }
 
         String namespace = "http://www.nimble-project.org/resource/ubl#";
 
@@ -127,15 +134,6 @@ public class AdminController {
     }
 
     @CrossOrigin(origins = {"*"})
-    @RequestMapping(value = "/admin/add-class",
-            produces = {"application/json"},
-            method = RequestMethod.GET)
-    public ResponseEntity getDefaultCatalogue() {
-//        partyIndexClient.indexParty();
-        return null;
-    }
-
-    @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Indexes all catalogues in the database. If partyId is specified, only catalogues belonging to that party are indexed")
     @ApiResponses(value = {
             @ApiResponse(code = 401, message = "No user exists for the given token")
@@ -145,8 +143,10 @@ public class AdminController {
             method = RequestMethod.POST)
     public ResponseEntity indexAllCatalogues(@ApiParam(value = "Identifier of the party", required = false) @RequestParam(value = "partyId", required = false) String partyId,
                                              @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
-        // check token
-        eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INDEX_CATALOGUES.toString());
+        }
 
         catalogueIndexLoader.indexCatalogues(partyId);
         return null;
@@ -162,8 +162,10 @@ public class AdminController {
             method = RequestMethod.DELETE)
     public ResponseEntity deleteInvalidLinesFromIndex(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         logger.info("Incoming request to delete invalid lines from index");
-        // check token
-        eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_DELETE_INVALID_PRODUCTS.toString());
+        }
 
         // query to retrieve hjids of indexed catalogue lines
         String query = "{\"facet\": {\"field\": [ \"uri\"],\"limit\": -1,\"minCount\": 1},\"q\": \"*\",\"rows\": 0,\"sort\": [],\"start\": 0}";
@@ -210,11 +212,13 @@ public class AdminController {
     @RequestMapping(value = "/admin/create-vats",
             method = RequestMethod.POST)
     public ResponseEntity createVats(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
-        try {
-            logger.info("Incoming request for VAT migration");
-            // check token
-            eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        logger.info("Incoming request for VAT migration");
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_CREATE_VAT_FOR_PRODUCTS.toString());
+        }
 
+        try {
             vatMigrationUtility.createVatsForExistingPrdocuts();
             logger.info("Completed VAT migration request");
 
