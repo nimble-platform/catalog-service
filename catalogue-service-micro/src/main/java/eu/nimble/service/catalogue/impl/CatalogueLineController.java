@@ -192,7 +192,7 @@ public class CatalogueLineController {
         }
 
         if (catalogueLine == null) {
-            throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE_LINE_WITH_ID.toString(),Arrays.asList());
+            throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE_LINE_WITH_ID.toString(),Arrays.asList(lineId));
         }
         log.info("Completed the request to get catalogue line with lineId: {}", lineId);
         return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLine));
