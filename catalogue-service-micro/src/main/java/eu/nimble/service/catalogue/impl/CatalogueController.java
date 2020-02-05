@@ -656,6 +656,11 @@ public class CatalogueController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", id));
             }
 
+            if(!pack.getOriginalFilename().endsWith(".zip")){
+                log.error("Provided file to upload images is not zip");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You should provide a Zip package to upload images");
+            }
+
             ZipInputStream zis = null;
             try {
                 zis = new ZipInputStream(pack.getInputStream());
