@@ -631,6 +631,11 @@ public class CatalogueController {
                 throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(id));
             }
 
+            if(!pack.getOriginalFilename().endsWith(".zip")){
+                log.error("Provided file to upload images is not zip");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You should provide a Zip package to upload images");
+            }
+
             ZipInputStream zis = null;
             try {
                 zis = new ZipInputStream(pack.getInputStream());
