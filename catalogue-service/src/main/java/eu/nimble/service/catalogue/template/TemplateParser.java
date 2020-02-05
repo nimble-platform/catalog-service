@@ -83,6 +83,9 @@ public class TemplateParser {
         List<Category> categories = getTemplateCategories(metadataTab);
         List<CatalogueLineType> results = new ArrayList<>();
 
+        // identifiers of the products in template
+        List<String> productIds = new ArrayList<>();
+
         int catalogSize = productPropertiesTab.getLastRowNum();
         // first four rows contains fixed values
         for (int rowNum = 4; rowNum <= catalogSize; rowNum++) {
@@ -102,6 +105,13 @@ public class TemplateParser {
             parseFixedProperties(productPropertiesTab, rowNum, item);
             itemProperties.addAll(getCategoryRelatedItemProperties(categories, rowNum));
             itemProperties.addAll(0, getCustomItemProperties(categories, rowNum));
+
+            String productId = item.getManufacturersItemIdentification().getID();
+            // throw an exception if the same id is used for multiple products
+            if(productIds.contains(productId)){
+                throw new TemplateParseException(String.format("There exists multiple products with the same id: %s in the template",productId));
+            }
+            productIds.add(productId);
         }
 
         return results;

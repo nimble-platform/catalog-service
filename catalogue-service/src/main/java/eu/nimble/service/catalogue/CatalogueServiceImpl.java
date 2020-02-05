@@ -380,6 +380,19 @@ public class CatalogueServiceImpl implements CatalogueService {
 
             catalogue.getCatalogueLine().removeAll(catalogueLinesToBeRemoved);
             catalogue.getCatalogueLine().addAll(catalogueLines);
+
+            // since the replace operation applies for the product with the specified categories
+            // there may be multiple products with the same id at the end
+            // check whether this is the case or not
+            List<String> productIds = new ArrayList<>();
+            for (CatalogueLineType lineType : catalogue.getCatalogueLine()) {
+                String lineId = lineType.getGoodsItem().getItem().getManufacturersItemIdentification().getID();
+                if(productIds.contains(lineId)){
+                    throw new CatalogueServiceException(String.format("There exists another product having different categories for the given id: %s",lineId));
+                }
+                productIds.add(lineId);
+            }
+
         } else {
 
             // add catalogue lines which do not match with the existing ones to the new catalogue line list
