@@ -33,7 +33,7 @@ spring:
     remove-abandoned: false #making this false since some of the queries take too much time and abandoning connections causes an error in such cases
     log-abandoned: true
     initial-size: 3
-    max-active: 55
+    max-active: 175
     max-idle: 3
     min-idle: 3
     max-wait: 90000
@@ -167,7 +167,7 @@ hystrix:
             timeoutInMilliseconds: 50000
   threadpool:
     default:
-      coreSize: 75
+      coreSize: 175
       maxQueueSize: -1
 
 ################################################################################################
