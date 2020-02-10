@@ -47,6 +47,7 @@
       "productImage": [],
       "additionalItemProperty": [],
       "manufacturerParty": {
+        "federationInstanceID": "TEST_INSTANCE",
         "nace": [],
         "description": [],
         "brandName": [],

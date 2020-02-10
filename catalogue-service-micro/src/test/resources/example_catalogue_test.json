@@ -2,6 +2,7 @@
   "id": "test",
   "uuid": null,
   "providerParty": {
+    "federationInstanceID": "TEST_INSTANCE",
     "nace": [],
     "description": [],
     "brandName": [],

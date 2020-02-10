@@ -1,11 +1,13 @@
 package eu.nimble.service.catalogue.util;
 
+import eu.nimble.common.rest.delegate.IDelegateClient;
 import eu.nimble.common.rest.identity.IIdentityClientTyped;
 import eu.nimble.common.rest.indexing.IIndexingServiceClient;
 import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.category.TaxonomyManager;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.persistence.util.LockPool;
+import feign.Response;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -36,6 +38,10 @@ public class SpringBridge implements ApplicationContextAware {
     private LockPool lockPool;
     @Autowired
     private TaxonomyManager taxonomyManager;
+    @Autowired
+    private IDelegateClient delegateClient;
+
+    private String federationId = null;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext)
@@ -67,4 +73,15 @@ public class SpringBridge implements ApplicationContextAware {
         return iIndexingServiceClient;
     }
 
+    public IDelegateClient getDelegateClient() {
+        return delegateClient;
+    }
+
+    public String getFederationId() {
+        if(federationId == null){
+            Response response = delegateClient.getFederationId();
+            federationId = response.body().toString();
+        }
+        return federationId;
+    }
 }

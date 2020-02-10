@@ -412,6 +412,31 @@ public class EClassCategoryDatabaseAdapter {
         return results;
     }
 
+    public List<Category> getCategories(List<String> uris) throws Exception{
+        Connection connection = null;
+        List<Category> results;
+        try {
+            connection = getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(eClassQueryGetCategories(uris.size()));
+            int index = 1;
+            for (String uri: uris) {
+                if(uri.startsWith(EClassTaxonomyQueryImpl.namespace)){
+                    uri = uri.substring(EClassTaxonomyQueryImpl.namespace.length());
+                }
+
+                preparedStatement.setString(index++,uri);
+            }
+            ResultSet rs = preparedStatement.executeQuery();
+            results = extractClassificationClassesFromResultSet(rs);
+            rs.close();
+            preparedStatement.close();
+
+        } finally {
+            closeConnection(connection);
+        }
+        return results;
+    }
+
     public Map<String, List<Property>> getAllProperties() throws Exception {
         Connection connection = null;
 
@@ -429,6 +454,68 @@ public class EClassCategoryDatabaseAdapter {
             return properties;
         } catch (SQLException e) {
             throw new CategoryDatabaseException("Failed to retrieve properties for the category", e);
+        } finally {
+            closeConnection(connection);
+        }
+    }
+
+    public Map<String, List<Property>> getPropertiesForCategories(List<String> uris) throws Exception {
+        Connection connection = null;
+
+        try {
+            connection = getConnection();
+
+            // get properties without the unit and allowed values. They are queried separately.
+            Map<String, List<Property>> properties;
+            PreparedStatement preparedStatement = connection.prepareStatement(eClassQueryGetPropertiesForCategories(uris.size()));
+            int index = 1;
+            for (String uri: uris) {
+                if(uri.startsWith(EClassTaxonomyQueryImpl.namespace)){
+                    uri = uri.substring(EClassTaxonomyQueryImpl.namespace.length());
+                }
+
+                preparedStatement.setString(index++,uri);
+            }
+
+            ResultSet rs = preparedStatement.executeQuery();
+            properties = extractCategoryPropertyMapFromResultSet(rs);
+            rs.close();
+            preparedStatement.close();
+
+            return properties;
+        } catch (SQLException e) {
+            throw new CategoryDatabaseException("Failed to retrieve properties for the given categories", e);
+        } finally {
+            closeConnection(connection);
+        }
+    }
+
+    public Map<String, List<Property>> getProperties(List<String> uris) throws Exception {
+        Connection connection = null;
+
+        try {
+            connection = getConnection();
+
+            // get properties without the unit and allowed values. They are queried separately.
+            Map<String, List<Property>> properties;
+            PreparedStatement preparedStatement = connection.prepareStatement(eClassQueryGetProperties(uris.size()));
+            int index = 1;
+            for (String uri: uris) {
+                if(uri.startsWith(EClassTaxonomyQueryImpl.namespace)){
+                    uri = uri.substring(EClassTaxonomyQueryImpl.namespace.length());
+                }
+
+                preparedStatement.setString(index++,uri);
+            }
+
+            ResultSet rs = preparedStatement.executeQuery();
+            properties = extractCategoryPropertyMapFromResultSet(rs);
+            rs.close();
+            preparedStatement.close();
+
+            return properties;
+        } catch (SQLException e) {
+            throw new CategoryDatabaseException("Failed to retrieve given properties", e);
         } finally {
             closeConnection(connection);
         }

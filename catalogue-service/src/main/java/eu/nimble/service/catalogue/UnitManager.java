@@ -84,6 +84,11 @@ public class UnitManager {
         unitType10.setID("frame_contract_period");
         unitType10.setUnitCode(Arrays.asList("day(s)", "week(s)", "month(s)","year(s)"));
         repoFactory.forCatalogueRepository().persistEntity(unitType10);
+
+        UnitType unitType11 = new UnitType();
+        unitType11.setID("lcpa_input_currency_quantity");
+        unitType11.setUnitCode(Arrays.asList("EUR","USD","SEK","EUR/Year","USD/Year","SEK/Year","EUR/Month","USD/Month","SEK/Month"));
+        repoFactory.forCatalogueRepository().persistEntity(unitType11);
     }
 
 

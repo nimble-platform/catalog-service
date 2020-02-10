@@ -38,10 +38,7 @@ public class IndexController {
         log.info("Incoming request to clear the item index");
 
         // check token
-        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-        if (tokenCheck != null) {
-            return tokenCheck;
-        }
+        eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
 
         // delete the contents
         itemIndexClient.deleteAllContent();
@@ -65,10 +62,7 @@ public class IndexController {
         log.info("Incoming request to delete catalogue uuid from the item index with uuid: {}", catalogueUuid);
 
         // check token
-        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-        if (tokenCheck != null) {
-            return tokenCheck;
-        }
+        eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
 
         // delete the contents
         itemIndexClient.deleteCatalogue(catalogueUuid);

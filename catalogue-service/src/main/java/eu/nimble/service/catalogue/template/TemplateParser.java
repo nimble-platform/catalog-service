@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.template;
 
 import eu.nimble.service.catalogue.category.IndexCategoryService;
+import eu.nimble.service.catalogue.exception.InvalidCategoryException;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.Property;
@@ -71,13 +72,18 @@ public class TemplateParser {
             }
         }
 
-        List<CatalogueLineType> results = parseProductPropertiesTab();
+        List<CatalogueLineType> results = null;
+        try {
+            results = parseProductPropertiesTab();
+        } catch (InvalidCategoryException e) {
+            throw new TemplateParseException("Failed to parse product properties tab", e);
+        }
         parseTermsTab(results, includeVat);
 
         return results;
     }
 
-    private List<CatalogueLineType> parseProductPropertiesTab() throws TemplateParseException {
+    private List<CatalogueLineType> parseProductPropertiesTab() throws TemplateParseException, InvalidCategoryException {
         Sheet productPropertiesTab = wb.getSheet(TemplateConfig.TEMPLATE_TAB_PRODUCT_PROPERTIES);
         Sheet metadataTab = productPropertiesTab.getWorkbook().getSheet(TemplateConfig.TEMPLATE_TAB_METADATA);
         List<Category> categories = getTemplateCategories(metadataTab);
@@ -825,7 +831,7 @@ public class TemplateParser {
         }
     }
 
-    private List<Category> getTemplateCategories(Sheet metadataTab) {
+    private List<Category> getTemplateCategories(Sheet metadataTab) throws InvalidCategoryException {
         List<Category> categories = new ArrayList<>();
         Row row = metadataTab.getRow(0);
         // if there is no category

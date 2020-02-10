@@ -8,6 +8,7 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.LCPAInputType;
 public class ItemLCPAInput {
     private String catalogueLineHjid;
     private LCPAInputType lcpaInput;
+    private byte[] bomTemplate;
 
     public String getCatalogueLineHjid() {
         return catalogueLineHjid;
@@ -23,5 +24,13 @@ public class ItemLCPAInput {
 
     public void setLcpaInput(LCPAInputType lcpaInput) {
         this.lcpaInput = lcpaInput;
+    }
+
+    public byte[] getBomTemplate() {
+        return bomTemplate;
+    }
+
+    public void setBomTemplate(byte[] bomTemplate) {
+        this.bomTemplate = bomTemplate;
     }
 }

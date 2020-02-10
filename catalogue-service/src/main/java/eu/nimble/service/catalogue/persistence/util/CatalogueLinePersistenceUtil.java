@@ -3,11 +3,13 @@ package eu.nimble.service.catalogue.persistence.util;
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.lcpa.ItemLCPAInput;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
+import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
+import eu.nimble.utility.persistence.binary.BinaryContentService;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by suat on 31-Dec-18.
@@ -41,7 +43,7 @@ public class CatalogueLinePersistenceUtil {
             + " AND clj.ID = :lineId";
     private static final String QUERY_GET_BY_HJID = "SELECT cl FROM CatalogueLineType as cl WHERE cl.hjid = :hjid";
     private static final String QUERY_GET_BY_HJIDS = "SELECT cl FROM CatalogueLineType as cl WHERE cl.hjid in :hjids";
-    private static final String QUUERY_GET_LINE_IDS_WITH_LCPA_INPUT_WITHOUT_LCPA_OUTPUT = "SELECT cl.hjid, lcpa.LCPAInput FROM CatalogueLineType cl" +
+    private static final String QUERY_GET_LINE_ITEMS_WITH_LCPA_INPUT_WITHOUT_LCPA_OUTPUT = "SELECT cl.hjid, i FROM CatalogueLineType cl" +
             " JOIN cl.goodsItem gi" +
             " JOIN gi.item i" +
             " JOIN i.lifeCyclePerformanceAssessmentDetails lcpa WHERE" +
@@ -105,12 +107,23 @@ public class CatalogueLinePersistenceUtil {
     }
 
     public static List<ItemLCPAInput> getLinesIdsWithValidLcpaInput() {
-        List<Object[]> dbResults = new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUUERY_GET_LINE_IDS_WITH_LCPA_INPUT_WITHOUT_LCPA_OUTPUT);
+        List<Object[]> dbResults = new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_LINE_ITEMS_WITH_LCPA_INPUT_WITHOUT_LCPA_OUTPUT);
         List<ItemLCPAInput> results = new ArrayList<>();
         for (Object[] result : dbResults) {
             ItemLCPAInput itemLcpaInput = new ItemLCPAInput();
+            ItemType item = (ItemType) result[1];
+
+            byte[] bomTemplate = null;
+            for (DocumentReferenceType documentReferenceType : item.getItemSpecificationDocumentReference()) {
+                if(documentReferenceType.getDocumentType().contentEquals("BOM")){
+                    BinaryObjectType bomTemplateBinaryObject = new BinaryContentService().retrieveContent(documentReferenceType.getAttachment().getEmbeddedDocumentBinaryObject().getUri());
+                    bomTemplate = Base64.getEncoder().encode(bomTemplateBinaryObject.getValue());
+                }
+            }
+
             itemLcpaInput.setCatalogueLineHjid((result[0]).toString());
-            itemLcpaInput.setLcpaInput((LCPAInputType) result[1]);
+            itemLcpaInput.setLcpaInput(item.getLifeCyclePerformanceAssessmentDetails().getLCPAInput());
+            itemLcpaInput.setBomTemplate(bomTemplate);
             results.add(itemLcpaInput);
         }
         return results;

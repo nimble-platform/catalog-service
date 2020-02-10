@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue.index;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.category.IndexCategoryService;
+import eu.nimble.service.catalogue.exception.InvalidCategoryException;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.util.CredentialsUtil;
@@ -47,7 +48,7 @@ public class ClassIndexClient {
     @Autowired
     private PropertyIndexClient propertyIndexClient;
 
-    public void indexCategory(Category category, Set<String> directParentUris, Set<String> allParentUris, Set<String> directChildrenUris, Set<String> allChildrenUris) {
+    public boolean indexCategory(Category category, Set<String> directParentUris, Set<String> allParentUris, Set<String> directChildrenUris, Set<String> allChildrenUris)  {
         try {
             String categoryJson;
             try {
@@ -58,38 +59,41 @@ public class ClassIndexClient {
                 String serializedCategory = JsonSerializationUtility.serializeEntitySilently(category);
                 String msg = String.format("Failed to transform Category to ClassType. \n category: %s", serializedCategory);
                 logger.error(msg, e);
-                return;
+                return false;
             }
 
             Response response = SpringBridge.getInstance().getiIndexingServiceClient().setClass(credentialsUtil.getBearerToken(), categoryJson);
 
             if (response.status() == HttpStatus.OK.value()) {
                 logger.info("Indexed category successfully. category uri: {}", category.getCategoryUri());
-                return;
+                return true;
 
             } else {
                 String msg = String.format("Failed to index category. uri: %s, indexing call status: %d, message: %s", category.getCategoryUri(), response.status(), IOUtils.toString(response.body().asInputStream()));
                 logger.error(msg);
-                return;
+                return false;
             }
 
         } catch (Exception e) {
             String msg = String.format("Failed to index category. uri: %s", category.getCategoryUri());
             logger.error(msg, e);
-            return;
+            return false;
         }
     }
 
-    public ClassType getIndexCategory(String taxonomyId, String categoryId) {
+    public ClassType getIndexCategory(String taxonomyId, String categoryId) throws InvalidCategoryException {
         String uri = IndexCategoryService.constructUri(taxonomyId, categoryId);
         return getIndexCategory(uri);
     }
 
-    public ClassType getIndexCategory(String uri) {
+    public ClassType getIndexCategory(String uri) throws InvalidCategoryException {
         Set<String> paramWrap = new HashSet<>();
         paramWrap.add(uri);
         List<ClassType> categories = getIndexCategories(paramWrap);
         ClassType indexCategory = categories.size() > 0 ? categories.get(0) : null;
+        if(indexCategory == null){
+            throw new InvalidCategoryException(String.format("There is no indexed category for the uri: %s",uri));
+        }
         return indexCategory;
     }
 
@@ -125,7 +129,7 @@ public class ClassIndexClient {
         }
     }
 
-    public Category getCategory(String uri) {
+    public Category getCategory(String uri) throws InvalidCategoryException {
         ClassType indexCategory = getIndexCategory(uri);
         Category category = IndexingWrapper.toCategory(indexCategory);
 

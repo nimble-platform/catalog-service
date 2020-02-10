@@ -42,7 +42,7 @@ public class PropertyIndexClient {
     @Autowired
     private CredentialsUtil credentialsUtil;
 
-    public void indexProperty(Property property, Set<String> associatedCategoryUris) {
+    public boolean indexProperty(Property property, Set<String> associatedCategoryUris) {
         try {
             String propertyJson;
             try {
@@ -53,25 +53,25 @@ public class PropertyIndexClient {
                 String serializedProperty = JsonSerializationUtility.serializeEntitySilently(property);
                 String msg = String.format("Failed to transform Property to PropertyType. \n property: %s", serializedProperty);
                 logger.error(msg, e);
-                return;
+                return false;
             }
 
             Response response = SpringBridge.getInstance().getiIndexingServiceClient().setProperty(credentialsUtil.getBearerToken(),propertyJson);
 
             if (response.status() == HttpStatus.OK.value()) {
                 logger.info("Indexed property successfully. property uri: {}", property.getUri());
-                return;
+                return true;
 
             } else {
                 String msg = String.format("Failed to index property. uri: %s, indexing call status: %d, message: %s", property.getUri(), response.status(), IOUtils.toString(response.body().asInputStream()));
                 logger.error(msg);
-                return;
+                return false;
             }
 
         } catch (Exception e) {
             String msg = String.format("Failed to index property. uri: %s", property.getUri());
             logger.error(msg, e);
-            return;
+            return false;
         }
     }
 

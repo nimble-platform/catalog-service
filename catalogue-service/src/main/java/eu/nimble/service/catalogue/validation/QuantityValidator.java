@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Created by suat on 11-Mar-19.
  */
-public class QuantityValidator extends Validator{
+public class QuantityValidator {
     private static Logger logger = LoggerFactory.getLogger(QuantityValidator.class);
 
     private QuantityType quantityType;

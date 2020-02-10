@@ -10,9 +10,12 @@ import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil
 import eu.nimble.service.catalogue.util.CatalogueEvent;
 import eu.nimble.service.catalogue.util.LoggerUtil;
 import eu.nimble.service.catalogue.validation.CatalogueLineValidator;
+import eu.nimble.service.catalogue.validation.ValidationMessages;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.utility.*;
+import eu.nimble.utility.exception.NimbleException;
+import eu.nimble.utility.exception.NimbleExceptionMessageCode;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import eu.nimble.utility.serialization.TransactionEnabledSerializationUtility;
 import eu.nimble.utility.validation.IValidationUtil;
@@ -23,7 +26,6 @@ import io.swagger.annotations.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.logging.LogLevel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -70,19 +72,18 @@ public class CatalogueLineController {
         log.info("Incoming request to get catalogue line with hjid: {}", hjid);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
         }
 
         CatalogueLineType catalogueLine;
         try {
             catalogueLine = service.getCatalogueLine(hjid);
         } catch (Exception e) {
-            return createErrorResponseEntity("Failed to get catalogue line", HttpStatus.INTERNAL_SERVER_ERROR, e);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GET_CATALOGUE_LINE.toString(),e);
         }
 
         if (catalogueLine == null) {
-            log.error("There does not exist a catalogue line with hjid {}", hjid);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("There does not exist a catalogue line with hjid %s", hjid));
+            throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE_LINE_FOR_HJID.toString(),Arrays.asList(hjid.toString()));
         }
         log.info("Completed the request to get catalogue line with hjid: {}", hjid);
         return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLine));
@@ -106,14 +107,14 @@ public class CatalogueLineController {
         log.info("Incoming request to get catalogue lines with hjids: {}", hjids);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
         }
 
         List<CatalogueLineType> catalogueLines;
         try {
             catalogueLines = service.getCatalogueLines(hjids,sortOption,limit,pageNo);
         } catch (Exception e) {
-            return createErrorResponseEntity("Failed to get catalogue lines", HttpStatus.INTERNAL_SERVER_ERROR, e);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GET_CATALOGUE_LINES.toString(),e);
         }
 
         log.info("Completed the request to get catalogue lines with hjids: {}", hjids);
@@ -137,14 +138,12 @@ public class CatalogueLineController {
         log.info("Incoming request to get catalogue lines, catalogue uuids: {}, line ids: {}",catalogueUuids,lineIds);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
         }
 
         // ensure that catalogue uuids and catalogue line ids lists have the same size
         if (catalogueUuids.size() != lineIds.size()) {
-            String msg = "Number of elements in catalogue uuids list and line ids list does not match";
-            log.info(msg);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(msg);
+            throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_GET_CATALOGUE_LINES.toString());
         }
 
         List<CatalogueLineType> catalogueLines = new ArrayList<>();
@@ -178,25 +177,22 @@ public class CatalogueLineController {
         log.info("Incoming request to get catalogue line with lineId: {}, catalogue uuid: {}", lineId, catalogueUuid);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
         }
 
         if (service.getCatalogue(catalogueUuid) == null) {
-            log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
+            throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(catalogueUuid));
         }
 
         CatalogueLineType catalogueLine;
         try {
             catalogueLine = service.getCatalogueLine(catalogueUuid, lineId);
         } catch (Exception e) {
-            String msg = String.format("Failed to get catalogue line: %s, catalogue uuid: %s", lineId, catalogueUuid);
-            return createErrorResponseEntity(msg, HttpStatus.INTERNAL_SERVER_ERROR, e);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GET_CATALOGUE_LINE_WITH_LINE_AND_CATALOGUE_ID.toString(),Arrays.asList(lineId, catalogueUuid));
         }
 
         if (catalogueLine == null) {
-            log.error("There does not exist a catalogue line with lineId {}", lineId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("There does not exist a catalogue line with lineId %s", lineId));
+            throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE_LINE_WITH_ID.toString(),Arrays.asList(lineId));
         }
         log.info("Completed the request to get catalogue line with lineId: {}", lineId);
         return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLine));
@@ -219,20 +215,18 @@ public class CatalogueLineController {
         log.info("Incoming request to get catalogue line with lineIds: {}, catalogue uuid: {}", lineIds, catalogueUuid);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
         }
 
         if (service.getCatalogue(catalogueUuid) == null) {
-            log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
+            throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(catalogueUuid));
         }
 
         List<CatalogueLineType> catalogueLines;
         try {
             catalogueLines = service.getCatalogueLines(catalogueUuid, lineIds);
         } catch (Exception e) {
-            String msg = String.format("Failed to get catalogue lines: %s, catalogue uuid: %s", lineIds, catalogueUuid);
-            return createErrorResponseEntity(msg, HttpStatus.INTERNAL_SERVER_ERROR, e);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GET_MULTIPLE_CATALOGUE_LINES.toString(),Arrays.asList(lineIds.toString(), catalogueUuid),e);
         }
 
         log.info("Completed the request to get catalogue lines with lineIds: {}", lineIds);
@@ -262,39 +256,33 @@ public class CatalogueLineController {
         try {
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
 
             // get owning catalogue
             catalogue = service.getCatalogue(catalogueUuid);
             if (catalogue == null) {
-                log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
+                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(catalogueUuid));
             }
 
             // parse catalogue line
             try {
                 catalogueLine = JsonSerializationUtility.getObjectMapper().readValue(catalogueLineJson, CatalogueLineType.class);
             } catch (IOException e) {
-                log.warn("The following catalogue line could not be created: {}", catalogueLineJson);
-                return HttpResponseUtil.createResponseEntityAndLog(String.format("Failed to deserialize catalogue line: %s", catalogueLineJson), e, HttpStatus.BAD_REQUEST, LogLevel.ERROR);
+                throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_DESERIALIZE_CATALOGUE_LINE.toString(),Arrays.asList(catalogueLineJson),e);
             }
 
             // validate the incoming content
             CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogue, catalogueLine);
-            List<String> errors = catalogueLineValidator.validate();
-            if (errors.size() > 0) {
-                StringBuilder sb = new StringBuilder("");
-                for (String error : errors) {
-                    sb.append(error).append(System.lineSeparator());
-                }
-                return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
+            ValidationMessages errors = catalogueLineValidator.validate();
+            if (errors.getErrorMessages().size() > 0) {
+                throw new NimbleException(errors.getErrorMessages(),errors.getErrorParameters());
             }
 
             // check the entity ids
             boolean hjidsExists = resourceValidationUtil.hjidsExit(catalogueLine);
             if(hjidsExists) {
-                return HttpResponseUtil.createResponseEntityAndLog(String.format("Entity IDs (hjid fields) found in the passed catalogue line: %s. Make sure they are null", catalogueLineJson), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_HJIDS.toString(),Arrays.asList(catalogueLineJson));
             }
 
             // check duplicate line
@@ -302,12 +290,12 @@ public class CatalogueLineController {
             if (!lineExists) {
                 catalogueLine = service.addLineToCatalogue(catalogue, catalogueLine);
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("There already exists a product with the given id");
+                throw new NimbleException(NimbleExceptionMessageCode.NOT_ACCEPTABLE_ALREADY_EXISTS.toString());
             }
 
         } catch (Exception e) {
             log.warn("The following catalogue line could not be created: {}", catalogueLineJson);
-            return createErrorResponseEntity("Failed to add the provided catalogue line", HttpStatus.INTERNAL_SERVER_ERROR, e);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_ADD_CATALOGUE_LINE.toString(),e);
         }
 
         return createCreatedCatalogueLineResponse(catalogueUuid, catalogueLine);
@@ -330,7 +318,7 @@ public class CatalogueLineController {
                 log.info("Completed request to add catalogue line with an empty URI, catalogue uuid: {}, lineId: {}", catalogueUuid, line.getID());
                 return ResponseEntity.created(new URI("")).body(serializationUtility.serializeUBLObject(line));
             } catch (URISyntaxException e1) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("WTF");
+                throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_ADD_CATALOGUE_LINE.toString(),e);
             }
         }
         log.info("Completed request to add catalogue line, catalogue uuid: {}, lineId: {}", catalogueUuid, line.getID());
@@ -356,7 +344,7 @@ public class CatalogueLineController {
         try {
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-                return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
 
             CatalogueLineType catalogueLine;
@@ -367,15 +355,13 @@ public class CatalogueLineController {
                 catalogueLine = objectMapper.readValue(catalogueLineJson, CatalogueLineType.class);
 
             } catch (IOException e) {
-                log.warn("The following catalogue line could not be updated: {}", catalogueLineJson);
-                return HttpResponseUtil.createResponseEntityAndLog(String.format("Failed to deserialize catalogue line from json string: %s", catalogueLineJson), e, HttpStatus.BAD_REQUEST, LogLevel.ERROR);
+                throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_DESERIALIZE_CATALOGUE_LINE.toString(),Arrays.asList(catalogueLineJson),e);
             }
 
             log.info("Incoming request to update catalogue line. Catalogue uuid: {}, line hjid: {}", catalogueUuid, catalogueLine.getHjid());
             CatalogueType catalogue = service.getCatalogue(catalogueUuid);
             if (catalogue == null) {
-                log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
+                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(catalogueUuid));
             }
 
             CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogue, catalogueLine);
@@ -385,19 +371,15 @@ public class CatalogueLineController {
                 String oldCatalogueUuid = catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID();
 
                 catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().setID(newCatalogueUuid);
-                List<String> errors = catalogueLineValidator.validate();
-                if (errors.size() > 0) {
-                    StringBuilder sb = new StringBuilder("");
-                    for (String error : errors) {
-                        sb.append(error).append(System.lineSeparator());
-                    }
-                    return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
+                ValidationMessages validationMessages = catalogueLineValidator.validate();
+                if (validationMessages.getErrorMessages().size() > 0) {
+                    throw new NimbleException(validationMessages.getErrorMessages(),validationMessages.getErrorParameters());
                 }
 
                 // validate the entity ids
                 boolean hjidsBelongToCompany = resourceValidationUtil.hjidsBelongsToParty(catalogueLine, catalogue.getProviderParty().getPartyIdentification().get(0).getID(), Configuration.Standard.UBL.toString());
                 if(!hjidsBelongToCompany) {
-                    return HttpResponseUtil.createResponseEntityAndLog(String.format("Some of the identifiers (hjid fields) do not belong to the party in the passed catalogue line: %s.", catalogueLineJson), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                    throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_HJIDS_IN_LINE.toString(),Arrays.asList(catalogueLineJson));
                 }
 
                 // consider the case of an updated line id conflicting with the id of an existing line
@@ -406,7 +388,7 @@ public class CatalogueLineController {
                 if (!lineExists) {
                     service.updateLinesCatalogue(newCatalogueUuid,oldCatalogueUuid,catalogueLine);
                 } else {
-                    return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("There already exists a product with the given id");
+                    throw new NimbleException(NimbleExceptionMessageCode.NOT_ACCEPTABLE_ALREADY_EXISTS.toString());
                 }
                 //mdc logging
                 Map<String,String> paramMap = LoggerUtil.getMDCParamMapForCatalogueLine(catalogueLine, CatalogueEvent.CATALOGUE_UPDATE);
@@ -415,19 +397,15 @@ public class CatalogueLineController {
                 return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLine));
             }else{
                 // validate the incoming content
-                List<String> errors = catalogueLineValidator.validate();
-                if (errors.size() > 0) {
-                    StringBuilder sb = new StringBuilder("");
-                    for (String error : errors) {
-                        sb.append(error).append(System.lineSeparator());
-                    }
-                    return HttpResponseUtil.createResponseEntityAndLog(sb.toString(), null, HttpStatus.BAD_REQUEST, LogLevel.WARN);
+                ValidationMessages errors = catalogueLineValidator.validate();
+                if (errors.getErrorMessages().size() > 0) {
+                    throw new NimbleException(errors.getErrorMessages(),errors.getErrorParameters());
                 }
 
                 // validate the entity ids
                 boolean hjidsBelongToCompany = resourceValidationUtil.hjidsBelongsToParty(catalogueLine, catalogue.getProviderParty().getPartyIdentification().get(0).getID(), Configuration.Standard.UBL.toString());
                 if(!hjidsBelongToCompany) {
-                    return HttpResponseUtil.createResponseEntityAndLog(String.format("Some of the identifiers (hjid fields) do not belong to the party in the passed catalogue line: %s.", catalogueLineJson), null, HttpStatus.BAD_REQUEST, LogLevel.INFO);
+                    throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_HJIDS_IN_LINE.toString(),Arrays.asList(catalogueLineJson));
                 }
 
                 // consider the case of an updated line id conflicting with the id of an existing line
@@ -435,7 +413,7 @@ public class CatalogueLineController {
                 if (!lineExists) {
                     service.updateCatalogueLine(catalogueLine);
                 } else {
-                    return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("There already exists a product with the given id");
+                    throw new NimbleException(NimbleExceptionMessageCode.NOT_ACCEPTABLE_ALREADY_EXISTS.toString());
                 }
 
                 //mdc logging
@@ -446,8 +424,7 @@ public class CatalogueLineController {
             }
 
         } catch (Exception e) {
-            log.warn("The following catalogue line could not be updated: {}", catalogueLineJson);
-            return createErrorResponseEntity("Failed to add the provided catalogue line", HttpStatus.INTERNAL_SERVER_ERROR, e);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_UPDATE_CATALOGUE_LINE.toString(),e);
         }
     }
 
@@ -467,18 +444,17 @@ public class CatalogueLineController {
         log.info("Incoming request to delete catalogue line. catalogue uuid: {}: line lineId {}", catalogueUuid, lineId);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
         }
 
         if (service.getCatalogue(catalogueUuid) == null) {
-            log.error("Catalogue with uuid : {} does not exist", catalogueUuid);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Catalogue with uuid %s does not exist", catalogueUuid));
+            throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(catalogueUuid));
         }
 
         try {
             service.deleteCatalogueLineById(catalogueUuid, lineId);
         } catch (Exception e) {
-            return createErrorResponseEntity("Failed to delete the catalogue line. catalogue uuid: " + catalogueUuid + " line id: " + lineId, HttpStatus.INTERNAL_SERVER_ERROR, e);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_DELETE_CATALOGUE_LINE.toString(),e);
         }
         //mdc logging
         Map<String,String> paramMap = new HashMap<String, String>();
@@ -498,14 +474,14 @@ public class CatalogueLineController {
         log.info("Incoming request to get catalogue line statistics no of products and services");
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
         }
 
        ProductAndServiceStatistics stats;
         try {
             stats = service.getProductAndServiceCount();
         } catch (Exception e) {
-            return createErrorResponseEntity("Failed to get count of services and product", HttpStatus.INTERNAL_SERVER_ERROR, e);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GET_PRODUCT_AND_SERVICE_COUNT.toString(),e);
         }
 
         log.info("Completed the request to get product and service count");

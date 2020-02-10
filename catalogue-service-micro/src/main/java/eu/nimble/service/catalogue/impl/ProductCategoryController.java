@@ -3,10 +3,15 @@ package eu.nimble.service.catalogue.impl;
 import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.category.TaxonomyQueryInterface;
 import eu.nimble.service.catalogue.category.eclass.EClassIndexLoader;
+import eu.nimble.service.catalogue.config.RoleConfig;
+import eu.nimble.service.catalogue.exception.InvalidCategoryException;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
 import eu.nimble.service.catalogue.index.ClassIndexClient;
 import eu.nimble.service.catalogue.util.SpringBridge;
+import eu.nimble.utility.exception.NimbleException;
+import eu.nimble.utility.exception.NimbleExceptionMessageCode;
+import eu.nimble.utility.validation.IValidationUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -18,9 +23,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -39,6 +44,8 @@ public class ProductCategoryController {
     private ClassIndexClient classIndexClient;
     @Autowired
     private EClassIndexLoader eClassIndexLoader;
+    @Autowired
+    private IValidationUtil validationUtil;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves a list of Category instances. This operation takes a list of category ids and " +
@@ -59,25 +66,20 @@ public class ProductCategoryController {
         if (taxonomyIds != null && taxonomyIds.size() > 0 && categoryIds != null && categoryIds.size() > 0) {
             // ensure that taxonomy id and category id lists have the same size
             if (taxonomyIds.size() != categoryIds.size()) {
-                String msg = "Number of elements in taxonomy ids list and  category ids list does not match";
-                log.info(msg);
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(msg);
+                throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_PARAMETERS_TO_GET_CATEGORIES.toString());
             }
 
             // validate taxonomy ids
             for (int i = 0; i < taxonomyIds.size(); i++) {
                 if(!taxonomyIdExists(taxonomyIds.get(i))){
-                    log.error("The given taxonomy id : {} is not valid", taxonomyIds.get(i));
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("The given taxonomy id %s is not valid", taxonomyIds.get(i)));
+                    throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_TAXONOMY.toString(), Arrays.asList(taxonomyIds.get(i)));
                 }
             }
 
             categories = categoryService.getCategories(taxonomyIds, categoryIds);
 
         } else {
-            String msg = "(taxonomy id / category id) pairs should be provided";
-            log.info(msg);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(msg);
+            throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_MISSING_PARAMETERS_TO_GET_CATEGORIES.toString());
         }
 
         log.info("Completed request to get categories. size: {}", categories.size());
@@ -102,8 +104,7 @@ public class ProductCategoryController {
         log.info("Incoming request to get categories by name");
         // check whether the taxonomy id is valid or not
         if(!(taxonomyId.compareToIgnoreCase("all") == 0 || taxonomyIdExists(taxonomyId))) {
-            log.error("The given taxonomy id : {} is not valid", taxonomyId);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("The given taxonomy id %s is not valid", taxonomyId));
+            throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_TAXONOMY.toString(),Arrays.asList(taxonomyId));
         }
         List<Category> categories = new ArrayList<>();
         if(taxonomyId.compareToIgnoreCase("all") == 0 ){
@@ -132,9 +133,7 @@ public class ProductCategoryController {
         try {
             SpringBridge.getInstance().getTaxonomyManager().getTaxonomiesMap().keySet().forEach(id -> taxonomies.add(id));
         } catch (Exception e) {
-            String msg = "Failed to get available taxonomies\n" + e.getMessage();
-            log.error(msg, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(msg);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GET_AVAILABLE_TAXONOMIES.toString(),e);
         }
         return ResponseEntity.ok(taxonomies);
     }
@@ -170,8 +169,7 @@ public class ProductCategoryController {
     public ResponseEntity getRootCategories(@ApiParam(value = "Taxonomy id from which categories would be retrieved.", required = true) @PathVariable String taxonomyId,
                                             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         if (!taxonomyIdExists(taxonomyId)) {
-            log.error("The given taxonomy id : {} is not valid", taxonomyId);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("The given taxonomy id %s is not valid", taxonomyId));
+            throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_TAXONOMY.toString(),Arrays.asList(taxonomyId));
         }
         List<Category> categories = categoryService.getRootCategories(taxonomyId);
         return ResponseEntity.ok(categories);
@@ -191,16 +189,15 @@ public class ProductCategoryController {
                                                 @ApiParam(value = "Category ifd for which the children categories to be retrieved", required = true) @RequestParam("categoryId") String categoryId,
                                                 @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         if (!taxonomyIdExists(taxonomyId)) {
-            log.error("The given taxonomy id : {} is not valid", taxonomyId);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("The given taxonomy id %s is not valid", taxonomyId));
+            throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_TAXONOMY.toString(),Arrays.asList(taxonomyId));
         }
 
-        if (!categoryExists(taxonomyId, categoryId)) {
-            log.error("There does not exist a category with the id : {}", categoryId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("There does not exist a category with the id %s", categoryId));
+        List<Category> categories = null;
+        try {
+            categories = categoryService.getChildrenCategories(taxonomyId, categoryId);
+        } catch (InvalidCategoryException e) {
+            throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATEGORY.toString(),Arrays.asList(categoryId));
         }
-
-        List<Category> categories = categoryService.getChildrenCategories(taxonomyId, categoryId);
         return ResponseEntity.ok(categories);
     }
 
@@ -222,24 +219,22 @@ public class ProductCategoryController {
                                           @ApiParam(value = "Category ifd for which the children categories to be retrieved", required = true) @RequestParam("categoryId") String categoryId,
                                           @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         if (!taxonomyIdExists(taxonomyId)) {
-            log.error("The given taxonomy id : {} is not valid", taxonomyId);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("The given taxonomy id %s is not valid", taxonomyId));
+            throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_TAXONOMY.toString(),Arrays.asList(taxonomyId));
         }
 
-        if (!categoryExists(taxonomyId, categoryId)) {
-            log.error("There does not exist a category with the id : {}", categoryId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("There does not exist a category with the id %s", categoryId));
+        CategoryTreeResponse categories = null;
+        try {
+            categories = categoryService.getCategoryTree(taxonomyId, categoryId);
+        } catch (InvalidCategoryException e) {
+            throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATEGORY.toString(),Arrays.asList(categoryId));
         }
-
-        CategoryTreeResponse categories = categoryService.getCategoryTree(taxonomyId, categoryId);
         return ResponseEntity.ok(categories);
     }
 
-    @ApiIgnore
     @CrossOrigin(origins = {"*"})
-    @ApiOperation(value = "", notes = "Indexes eClass categories.")
+    @ApiOperation(value = "", notes = "Indexes eClass resources,i.e. eClass categories and properties.")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Indexed eClass categories successfully"),
+            @ApiResponse(code = 200, message = "Indexed eClass resources successfully"),
             @ApiResponse(code = 401, message = "No user exists for the given token"),
             @ApiResponse(code = 500, message = "Failed to index eClass resources")
     })
@@ -248,17 +243,67 @@ public class ProductCategoryController {
             method = RequestMethod.GET)
     public ResponseEntity indexEclassResources(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         log.info("Incoming request to index eClass resources.");
-        // check token
-        ResponseEntity tokenCheck = eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
-        if (tokenCheck != null) {
-            return tokenCheck;
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INDEX_ECLASS_RESOURCES.toString());
         }
 
         try {
             eClassIndexLoader.indexEClassResources();
         } catch (Exception e) {
-            log.error("Failed to index eClass Resources:",e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to index eClass Resources");
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_INDEX_ECLASS_RESOURCES.toString(),e);
+        }
+        return ResponseEntity.ok(null);
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Indexes the given eClass properties.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Indexed eClass properties successfully"),
+            @ApiResponse(code = 401, message = "No user exists for the given token"),
+            @ApiResponse(code = 500, message = "Failed to index eClass properties")
+    })
+    @RequestMapping(value = "/categories/eClass/index/properties",
+            produces = {"application/json"},
+            method = RequestMethod.POST)
+    public ResponseEntity indexEclassProperties(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
+                                                @ApiParam(value = "Identifiers of eClass properties to be indexed") @RequestBody List<String> propertyIds) {
+        log.info("Incoming request to index eClass properties.");
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INDEX_ECLASS_PROPERTIES.toString());
+        }
+
+        try {
+            eClassIndexLoader.indexEClassProperties(propertyIds);
+        } catch (Exception e) {
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_INDEX_ECLASS_PROPERTIES.toString(),e);
+        }
+        return ResponseEntity.ok(null);
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Indexes the given eClass categories.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Indexed eClass categories successfully"),
+            @ApiResponse(code = 401, message = "No user exists for the given token"),
+            @ApiResponse(code = 500, message = "Failed to index eClass categories")
+    })
+    @RequestMapping(value = "/categories/eClass/index/categories",
+            produces = {"application/json"},
+            method = RequestMethod.POST)
+    public ResponseEntity indexEclassCategories(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
+                                                @ApiParam(value = "Identifiers of eClass categories to be indexed") @RequestBody List<String> categoryIds) {
+        log.info("Incoming request to index eClass categories.");
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INDEX_ECLASS_CATEGORIES.toString());
+        }
+
+        try {
+            eClassIndexLoader.indexEClassCategories(categoryIds);
+        } catch (Exception e) {
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_INDEX_ECLASS_CATEGORIES.toString(),e);
         }
         return ResponseEntity.ok(null);
     }
@@ -270,15 +315,5 @@ public class ProductCategoryController {
             }
         }
         return false;
-    }
-
-    private boolean categoryExists(String taxonomyId, String categoryId) {
-        try {
-            classIndexClient.getIndexCategory(taxonomyId, categoryId);
-        } catch (IndexOutOfBoundsException e) {
-            log.error("There does not exist a category with the id : {}", categoryId);
-            return false;
-        }
-        return true;
     }
 }

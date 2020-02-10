@@ -212,6 +212,19 @@ public class EClassCategoryDatabaseConfig {
         return sb.toString();
     }
 
+    public static String eClassQueryGetCategories(int numberOfUris){
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT * FROM ").append(TABLE_NAME_CLASSIFICATION_CLASS).append(" cc")
+            .append(" WHERE ")
+            .append(" cc.").append(COLUMN_CLASSIFICATION_CLASS_IRDICC).append(" in (");
+        for( int i = 0 ; i < numberOfUris; i++ ) {
+            sb.append("?,");
+        }
+        sb.deleteCharAt( sb.length() -1 );
+        sb.append(")");
+        return sb.toString();
+    }
+
     public static String eClassQueryGetAllProperties() {
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT ")
@@ -219,6 +232,42 @@ public class EClassCategoryDatabaseConfig {
                 .append(" FROM ").append(TABLE_NAME_PROPERTY).append(" pr, ").append(TABLE_NAME_CLASSIFICATION_CLASS_PROPERTY).append(" cc_pr ")
                 .append(" WHERE ")
                 .append("pr.").append(COLUMN_PROPERTY_IRDI_PR).append("=").append("cc_pr.").append(COLUMN_CLASSIFICATION_CLASS_PROPERTY_IRDI_PR);
+        return sb.toString();
+    }
+
+    public static String eClassQueryGetPropertiesForCategories(int numberOfUris) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT ")
+                .append("pr.*, cc_pr.").append(COLUMN_CLASSIFICATION_CLASS_PROPERTY_IRDI_CC)
+                .append(" FROM ").append(TABLE_NAME_PROPERTY).append(" pr, ").append(TABLE_NAME_CLASSIFICATION_CLASS_PROPERTY).append(" cc_pr ")
+                .append(" WHERE ")
+                .append("pr.").append(COLUMN_PROPERTY_IRDI_PR).append("=").append("cc_pr.").append(COLUMN_CLASSIFICATION_CLASS_PROPERTY_IRDI_PR)
+                .append(" AND ")
+                .append("cc_pr.").append(COLUMN_CLASSIFICATION_CLASS_PROPERTY_IRDI_CC).append(" in (");
+        for( int i = 0 ; i < numberOfUris; i++ ) {
+            sb.append("?,");
+        }
+        sb.deleteCharAt( sb.length() -1 );
+        sb.append(")");
+        return sb.toString();
+    }
+
+    public static String eClassQueryGetProperties(int numberOfUris) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT ")
+                .append("pr.*, cc_pr.").append(COLUMN_CLASSIFICATION_CLASS_PROPERTY_IRDI_CC)
+                .append(" FROM ").append(TABLE_NAME_PROPERTY).append(" pr, ").append(TABLE_NAME_CLASSIFICATION_CLASS_PROPERTY).append(" cc_pr ")
+                .append(" WHERE ")
+                .append("pr.").append(COLUMN_PROPERTY_IRDI_PR).append("=").append("cc_pr.").append(COLUMN_CLASSIFICATION_CLASS_PROPERTY_IRDI_PR)
+                .append(" AND ")
+                .append("pr.").append(COLUMN_PROPERTY_IRDI_PR).append(" in (");
+
+        for( int i = 0 ; i < numberOfUris; i++ ) {
+            sb.append("?,");
+        }
+        sb.deleteCharAt( sb.length() -1 );
+        sb.append(")");
+
         return sb.toString();
     }
 

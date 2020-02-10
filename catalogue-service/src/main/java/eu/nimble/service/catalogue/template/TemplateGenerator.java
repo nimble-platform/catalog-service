@@ -1,5 +1,6 @@
 package eu.nimble.service.catalogue.template;
 
+import eu.nimble.service.catalogue.exception.InvalidCategoryException;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.model.category.Value;
@@ -76,7 +77,7 @@ public class TemplateGenerator {
         return template;
     }
 
-    public Workbook generateTemplateForCatalogueLines(List<CatalogueLineType> catalogueLines, List<Category> categories, String languageId){
+    public Workbook generateTemplateForCatalogueLines(List<CatalogueLineType> catalogueLines, List<Category> categories, String languageId) throws InvalidCategoryException {
         // use property id while generating the excel
         Workbook template = generateTemplateForCategory(categories,languageId, true);
         fillProductPropertiesTab(template.getSheet(TemplateConfig.TEMPLATE_TAB_PRODUCT_PROPERTIES),catalogueLines);
@@ -379,7 +380,7 @@ public class TemplateGenerator {
         }
     }
 
-    private void fillCategoryProperties(Sheet productPropertiesTab,List<CatalogueLineType> catalogueLines,List<Category> categories){
+    private void fillCategoryProperties(Sheet productPropertiesTab,List<CatalogueLineType> catalogueLines,List<Category> categories) throws InvalidCategoryException {
 
         // create category - parent category uris map
         Map<Category,List<String>> parentCategoryUriMap = new HashMap<>();
