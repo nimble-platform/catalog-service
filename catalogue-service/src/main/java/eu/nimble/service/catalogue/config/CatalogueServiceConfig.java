@@ -52,6 +52,9 @@ public class CatalogueServiceConfig {
     @Value("${nimble.binary-content.url}")
     private String binaryContentUrl;
 
+    @Value("${nimble.federation-instance-id}")
+    private String federationInstanceId;
+
     @PostConstruct
     private void setupDBConnections() {
         if (environment != null) {
@@ -158,5 +161,13 @@ public class CatalogueServiceConfig {
 
     public void setBinaryContentUrl(String binaryContentUrl) {
         this.binaryContentUrl = binaryContentUrl;
+    }
+
+    public String getFederationInstanceId() {
+        return federationInstanceId;
+    }
+
+    public void setFederationInstanceId(String federationInstanceId) {
+        this.federationInstanceId = federationInstanceId;
     }
 }

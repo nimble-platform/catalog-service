@@ -78,10 +78,6 @@ public class SpringBridge implements ApplicationContextAware {
     }
 
     public String getFederationId() {
-        if(federationId == null){
-            Response response = delegateClient.getFederationId();
-            federationId = response.body().toString();
-        }
-        return federationId;
+        return getCatalogueServiceConfig().getFederationInstanceId();
     }
 }
