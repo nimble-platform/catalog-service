@@ -52,11 +52,6 @@
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>eu.nimble.core.service.catalogue</groupId>
-            <artifactId>ontmalizer</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
             <groupId>eu.nimble.core.common</groupId>
             <artifactId>utility</artifactId>
             <version>0.0.1-SNAPSHOT</version>

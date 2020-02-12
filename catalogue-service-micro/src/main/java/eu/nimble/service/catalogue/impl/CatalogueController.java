@@ -1,6 +1,5 @@
 package eu.nimble.service.catalogue.impl;
 
-import eu.nimble.data.transformer.ontmalizer.XML2OWLMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
@@ -10,7 +9,6 @@ import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.LockPool;
 import eu.nimble.service.catalogue.util.CatalogueEvent;
-import eu.nimble.service.catalogue.util.SemanticTransformationUtil;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
 import eu.nimble.service.catalogue.validation.ValidationMessages;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
@@ -32,7 +30,6 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.logging.LogLevel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -699,60 +696,6 @@ public class CatalogueController {
 
         } catch (Exception e) {
             throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_DELETE_IMAGES.toString(),Arrays.asList(ids.toString()));
-        }
-    }
-
-    @CrossOrigin(origins = {"*"})
-    @ApiOperation(value = "", notes = "Retrieves the specified UBL-compliant catalogue in the specified semantic format. If no format is specified, RDF/XML is used.")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Retrieved the catalogue successfully"),
-            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
-            @ApiResponse(code = 404, message = "No catalogue for the given uuid"),
-            @ApiResponse(code = 500, message = "Unexpected error while getting catalogue")
-    })
-    @RequestMapping(value = "/catalogue/semantic/{uuid}",
-            method = RequestMethod.GET)
-    public ResponseEntity getCatalogueInSemanticFormat(@ApiParam(value = "uuid of the catalogue to be retrieved.", required = true) @PathVariable String uuid,
-                                                       @ApiParam(value = "Target content type for the serialization.", defaultValue = "RDF/XML") @RequestParam(value = "semanticContentType", required = false) String semanticContentType,
-                                                       @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
-                                                       HttpServletResponse response) {
-        try {
-            log.info("Incoming request to get catalogue in semantic format, uuid: {}, content type: {}", uuid, semanticContentType);
-            // validate role
-            if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
-                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
-            }
-
-            Object catalogue;
-            try {
-                catalogue = service.getCatalogue(uuid, Configuration.Standard.UBL);
-            } catch (Exception e) {
-                throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_GET_CATALOGUE.toString(),Arrays.asList(uuid),e);
-            }
-
-            if (catalogue == null) {
-                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(uuid));
-            }
-
-            // transform content to other semantic formats
-            if (semanticContentType == null) {
-                semanticContentType = "RDF/XML";
-            }
-
-            SemanticTransformationUtil semanticTransformationUtil = new SemanticTransformationUtil();
-            try {
-                XML2OWLMapper rdfGenerator = semanticTransformationUtil.transformCatalogueToRDF((CatalogueType) catalogue);
-                rdfGenerator.writeModel(response.getOutputStream(), semanticContentType);
-                response.flushBuffer();
-            } catch (IOException e) {
-                throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_GET_CATALOGUE.toString(),Arrays.asList(uuid),e);
-            }
-
-            log.info("Completed request to get catalogue, uuid: {}", uuid);
-            return ResponseEntity.ok().build();
-
-        } catch (Exception e) {
-            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GET_CATALOGUE_IN_SEMANTIC_FORMAT.toString(),Arrays.asList(uuid, semanticContentType),e);
         }
     }
 

@@ -65,7 +65,6 @@
 	</repositories>
 
 	<modules>
-		<module>ontmalizer</module>
 		<module>catalogue-service</module>
 		<module>catalogue-service-micro</module>
 	</modules>
