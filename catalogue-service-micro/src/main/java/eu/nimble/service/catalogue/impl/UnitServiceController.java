@@ -1,9 +1,11 @@
 package eu.nimble.service.catalogue.impl;
 
 import eu.nimble.service.catalogue.UnitManager;
+import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.model.unit.UnitList;
 import eu.nimble.utility.exception.NimbleException;
 import eu.nimble.utility.exception.NimbleExceptionMessageCode;
+import eu.nimble.utility.validation.IValidationUtil;
 import io.swagger.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +24,8 @@ public class UnitServiceController {
 
     @Autowired
     private UnitManager unitManager;
+    @Autowired
+    private IValidationUtil validationUtil;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Gets all unit lists")
@@ -73,7 +77,10 @@ public class UnitServiceController {
     public ResponseEntity addUnitToList(@ApiParam(value = "Id of the list to be deleted", required = true) @PathVariable String unitListId,
                                         @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         logger.info("Unit list '{}' will be deleted", unitListId);
-        eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
+        }
 
         if (!unitManager.checkUnitListId(unitListId)) {
             throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_UNIT_LIST.toString(),Arrays.asList(unitListId));
@@ -98,7 +105,10 @@ public class UnitServiceController {
                                         @ApiParam(value = "Unit to be added", required = true) @RequestParam("unit") String unit,
                                         @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         logger.info("Unit '{}' will be added to unit list with id: {}", unit, unitListId);
-        eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
+        }
 
         if (!unitManager.checkUnitListId(unitListId)) {
             throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_UNIT_LIST.toString(),Arrays.asList(unitListId));
@@ -125,7 +135,10 @@ public class UnitServiceController {
                                              @ApiParam(value = "Unit to be added", required = true) @PathVariable String unit,
                                              @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         logger.info("Unit '{}' will be deleted from unit list with id: {}", unit, unitListId);
-        eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
+        }
 
         if (!unitManager.checkUnitListId(unitListId)) {
             throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_UNIT_LIST.toString(),Arrays.asList(unitListId));
@@ -152,7 +165,10 @@ public class UnitServiceController {
                                       @ApiParam(value = "Comma-separated units to be included in the unit list", required = true) @RequestParam("units") List<String> units,
                                       @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         logger.info("Unit list with id: {} will be persisted in DB", unitListId);
-        eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
+        }
 
         if (unitManager.checkUnitListId(unitListId)) {
             throw new NimbleException(NimbleExceptionMessageCode.CONFLICT_UNIT_LIST_EXISTS.toString(),Arrays.asList(unitListId));

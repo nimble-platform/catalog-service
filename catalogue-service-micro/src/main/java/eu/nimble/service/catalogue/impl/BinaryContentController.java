@@ -47,8 +47,6 @@ public class BinaryContentController {
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         try {
             logger.info("Request to retrieve binary content for uri: {}", uri);
-            // check token
-            eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
 
             BinaryObjectType result = new BinaryContentService().retrieveContent(uri);
             // check whether the binary content exists or not
@@ -82,8 +80,6 @@ public class BinaryContentController {
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         try {
             logger.info("Request to retrieve binary contents for uris: {}", uris.toString());
-            // check token
-            eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
 
             // eliminate empty uris
             uris = uris.stream()
