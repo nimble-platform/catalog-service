@@ -31,14 +31,6 @@ public class ItemIndexClient {
 
     private static final Logger logger = LoggerFactory.getLogger(ItemIndexClient.class);
 
-    @Value("${nimble.indexing.url}")
-    private String indexingUrl;
-    @Value("${nimble.indexing.solr.url}")
-    private String solrUrl;
-    @Value("${nimble.indexing.solr.username}")
-    private String solrUsername;
-    @Value("${nimble.indexing.solr.password}")
-    private String solrPassword;
     @Value("${nimble.indexing.sync}")
     private Boolean indexingSync;
 
