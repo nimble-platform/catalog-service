@@ -38,11 +38,6 @@ public class CatalogueServiceConfig {
     @Value("${persistence.categorydb.schema}")
     private String categoryDbScheme;
 
-    @Value("${persistence.solr.url}")
-    private String solrURL;
-    @Value("${persistence.solr.properties-index}")
-    private String solrPropertyIndex;
-
     @Value("${nimble.catalog.max-file-size:5}")
     private int maxFileSize;
 
@@ -121,22 +116,6 @@ public class CatalogueServiceConfig {
 
     public void setCategoryDbScheme(String categoryDbScheme) {
         this.categoryDbScheme = categoryDbScheme;
-    }
-
-    public String getSolrURL() {
-        return solrURL;
-    }
-
-    public void setSolrURL(String solrURL) {
-        this.solrURL = solrURL;
-    }
-
-    public String getSolrPropertyIndex() {
-        return solrPropertyIndex;
-    }
-
-    public void setSolrPropertyIndex(String solrPropertyIndex) {
-        this.solrPropertyIndex = solrPropertyIndex;
     }
 
     public int getMaxFileSize() {
