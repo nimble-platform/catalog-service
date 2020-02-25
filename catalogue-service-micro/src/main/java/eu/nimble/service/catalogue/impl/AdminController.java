@@ -3,12 +3,19 @@ package eu.nimble.service.catalogue.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.config.RoleConfig;
+import eu.nimble.service.catalogue.exception.InvalidCategoryException;
 import eu.nimble.service.catalogue.index.ItemIndexClient;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
+import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
+import eu.nimble.service.catalogue.util.DataIntegratorUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.catalogue.util.migration.r10.VatMigrationUtility;
+import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.utility.exception.NimbleException;
 import eu.nimble.utility.exception.NimbleExceptionMessageCode;
+import eu.nimble.utility.persistence.GenericJPARepository;
+import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.validation.IValidationUtil;
 import feign.Response;
 import org.json.JSONArray;
@@ -226,5 +233,59 @@ public class AdminController {
             logger.error("Unexpected error while creating VATs", e);
         }
         return null;
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Adds missing parent categories to catalogue lines. If uuid of catalogue is provided, it checks the specified catalogue for missing parent categories. If party id is provided," +
+            "all catalogues of the given party are checked. If none of them is provided, then all catalogues are checked.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 401, message = "No user exists for the given token"),
+            @ApiResponse(code = 404, message = "Catalogue with given uuid does not exist"),
+            @ApiResponse(code = 500, message = "Unexpected error while adding missing parent categories to catalogue line")
+    })
+    @RequestMapping(value = "/admin/missing-parent-categories",
+            method = RequestMethod.PATCH)
+    public ResponseEntity addMissingParentCategories(@ApiParam(value = "uuid of the catalogue to be checked for missing parent categories.", required = false) @RequestParam(value = "uuid",required = false) String uuid,
+                                                     @ApiParam(value = "Identifier of the party", required = false) @RequestParam(value = "partyId", required = false) String partyId,
+                                                     @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        logger.info("Incoming request to add missing parent categories for uuid:{} and party id:{}",uuid,partyId);
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_CREATE_VAT_FOR_PRODUCTS.toString());
+        }
+        // get catalogues to be checked for missing parent categories
+        List<CatalogueType> catalogues;
+        if(uuid != null){
+            CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueByUuid(uuid);
+            // check whether the catalogue with the given uuid exists or not
+            if(catalogue == null){
+                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(uuid),true);
+            }
+            catalogues = Arrays.asList(catalogue);
+        }else if(partyId != null){
+            catalogues = CataloguePersistenceUtil.getAllCataloguesForParty(partyId);
+        } else{
+            catalogues = CataloguePersistenceUtil.getAllCatalogues();
+        }
+
+        GenericJPARepository catalogueRepo = new JPARepositoryFactory().forCatalogueRepository();
+        // add missing parent categories to corresponding catalogue lines and reindex catalogue
+        for (CatalogueType catalogue : catalogues) {
+            // add missing parent categories
+            for (CatalogueLineType catalogueLine : catalogue.getCatalogueLine()) {
+                try {
+                    DataIntegratorUtil.setParentCategories(catalogueLine.getGoodsItem().getItem().getCommodityClassification());
+                    catalogueRepo.updateEntity(catalogueLine);
+                } catch (InvalidCategoryException e) {
+                    String msg = String.format("Failed to add missing parent categories to catalogue line: %s",catalogueLine.getID());
+                    logger.error(msg,e);
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(msg);
+                }
+            }
+            // reindex catalogue
+            itemIndexClient.indexCatalogue(catalogue);
+        }
+        logger.info("Completed the request to add missing parent categories for uuid:{} and party id:{}",uuid,partyId);
+        return ResponseEntity.ok(null);
     }
 }
