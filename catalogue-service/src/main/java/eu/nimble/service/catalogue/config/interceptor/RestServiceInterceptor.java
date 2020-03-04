@@ -5,6 +5,8 @@ import eu.nimble.service.catalogue.util.HttpResponseUtil;
 import eu.nimble.utility.exception.AuthenticationException;
 import eu.nimble.utility.exception.NimbleException;
 import eu.nimble.utility.exception.NimbleExceptionMessageCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -21,6 +23,9 @@ import java.util.Arrays;
  */
 @Configuration
 public class RestServiceInterceptor extends HandlerInterceptorAdapter {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     @Autowired
     private ExecutionContext executionContext;
 
@@ -43,6 +48,21 @@ public class RestServiceInterceptor extends HandlerInterceptorAdapter {
         }
 
         executionContext.setBearerToken(bearerToken);
+        // save the time as an Http attribute
+        request.setAttribute("startTime", System.currentTimeMillis());
         return true;
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+        // calculate and log the execution time for the request
+        long startTime = (Long)request.getAttribute("startTime");
+
+        long endTime = System.currentTimeMillis();
+
+        long executionTime = endTime - startTime;
+        if(executionContext.getRequestLog() != null){
+            logger.info("Duration for '{}' is {} millisecond",executionContext.getRequestLog(),executionTime);
+        }
     }
 }

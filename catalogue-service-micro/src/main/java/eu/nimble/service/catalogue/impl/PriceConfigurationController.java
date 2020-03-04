@@ -7,6 +7,7 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.config.RoleConfig;
+import eu.nimble.service.catalogue.util.ExecutionContext;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PriceOptionType;
 import eu.nimble.utility.Configuration;
@@ -54,6 +55,8 @@ public class PriceConfigurationController {
     private CatalogueService service;
     @Autowired
     private IValidationUtil validationUtil;
+    @Autowired
+    private ExecutionContext executionContext;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Adds the provided price option to the specified catalogue line (i.e. product/service)")
@@ -73,7 +76,11 @@ public class PriceConfigurationController {
                                            @ApiParam(value = "Identifier of the catalogue line to which the price option to be added. (lineId.id)", required = true) @PathVariable("lineId") String lineId,
                                            @ApiParam(value = "Serialized form of PriceOptionType instance. An example price serialization can be found in: https://github.com/nimble-platform/catalog-service/tree/staging/catalogue-service-micro/src/main/resources/example_content/price_option.json", required = true) @RequestBody PriceOptionType priceOption,
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
-        log.info("Incoming request to add pricing option. catalogueId: {}, lineId: {}", catalogueUuid, lineId);
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to add pricing option. catalogueId: %s, lineId: %s", catalogueUuid, lineId);
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
         try {
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
@@ -137,7 +144,11 @@ public class PriceConfigurationController {
                                               @ApiParam(value = "Identifier of the catalogue line from which the price option to be deleted. (lineId.id)", required = true) @PathVariable("lineId") String lineId,
                                               @ApiParam(value = "Identifier of the price option to be deleted. (priceOption.hjid)", required = true) @PathVariable("optionId") Long optionId,
                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
-        log.info("Incoming request to delete pricing option. catalogueId: {}, lineId: {}, optionId: {}", catalogueUuid, lineId, optionId);
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to delete pricing option. catalogueId: %s, lineId: %s, optionId: %s", catalogueUuid, lineId, optionId);
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
         try {
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
@@ -200,7 +211,11 @@ public class PriceConfigurationController {
                                               @ApiParam(value = "Identifier of the catalogue line to which the price option to be updated. (lineId.id)", required = true) @PathVariable("lineId") String lineId,
                                               @ApiParam(value = "Serialized form of PriceOptionType instance to be updated. An example price serialization can be found in: https://github.com/nimble-platform/catalog-service/tree/staging/catalogue-service-micro/src/main/resources/example_content/price_option.json", required = true) @RequestBody PriceOptionType priceOption,
                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
-        log.info("Incoming request to delete pricing option. catalogueId: {}, lineId: {}, optionId: {}", catalogueUuid, lineId, priceOption.getHjid());
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to delete pricing option. catalogueId: %s, lineId: %s, optionId: %s", catalogueUuid, lineId, priceOption.getHjid());
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
 
         try {
             // validate role
@@ -262,7 +277,11 @@ public class PriceConfigurationController {
             produces = {MediaType.APPLICATION_JSON_VALUE},
             method = RequestMethod.GET)
     public ResponseEntity getStandardVatRates(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
-        log.info("Incoming request to get VAT rates");
+        // set request log of ExecutionContext
+        String requestLog = "Incoming request to get VAT rates";
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
 
         try {
             // validate role

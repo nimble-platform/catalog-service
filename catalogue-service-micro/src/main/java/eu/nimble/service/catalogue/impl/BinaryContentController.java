@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.nimble.service.catalogue.util.ExecutionContext;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.JsonSerializationUtility;
@@ -15,6 +16,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +33,8 @@ import java.util.stream.Collectors;
 public class BinaryContentController {
 
     private static Logger logger = LoggerFactory.getLogger(BinaryContentController.class);
+    @Autowired
+    private ExecutionContext executionContext;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves a specified binary content wrapped inside a BinaryCbjectType instance.")
@@ -46,7 +50,11 @@ public class BinaryContentController {
     public ResponseEntity getBinaryContent(@ApiParam(value = "Uri of the binary content to be retrieved", required = true) @RequestParam(value = "uri") String uri,
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         try {
-            logger.info("Request to retrieve binary content for uri: {}", uri);
+            // set request log of ExecutionContext
+            String requestLog = String.format("Request to retrieve binary content for uri: %s", uri);
+            executionContext.setRequestLog(requestLog);
+
+            logger.info(requestLog);
 
             BinaryObjectType result = new BinaryContentService().retrieveContent(uri);
             // check whether the binary content exists or not
@@ -79,7 +87,11 @@ public class BinaryContentController {
     public ResponseEntity getBinaryContents(@ApiParam(value = "Uri of the binary content to be retrieved", required = true) @RequestParam(value = "uris") List<String> uris,
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         try {
-            logger.info("Request to retrieve binary contents for uris: {}", uris.toString());
+            // set request log of ExecutionContext
+            String requestLog = String.format("Request to retrieve binary contents for uris: %s", uris.toString());
+            executionContext.setRequestLog(requestLog);
+
+            logger.info(requestLog);
 
             // eliminate empty uris
             uris = uris.stream()
@@ -113,7 +125,11 @@ public class BinaryContentController {
                                        @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken,
                                        HttpServletResponse response) {
         try {
-            logger.info("Request to retrieve raw binary content for uri: {}", uri);
+            // set request log of ExecutionContext
+            String requestLog = String.format("Request to retrieve raw binary content for uri: %s", uri);
+            executionContext.setRequestLog(requestLog);
+
+            logger.info(requestLog);
             BinaryObjectType result = new BinaryContentService().retrieveContent(uri);
             // check whether the binary content exists or not
             if(result == null){

@@ -9,6 +9,7 @@ import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.LockPool;
 import eu.nimble.service.catalogue.util.CatalogueEvent;
+import eu.nimble.service.catalogue.util.ExecutionContext;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
 import eu.nimble.service.catalogue.validation.ValidationMessages;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
@@ -68,6 +69,8 @@ public class CatalogueController {
     private LockPool lockPool;
     @Autowired
     private IValidationUtil validationUtil;
+    @Autowired
+    private ExecutionContext executionContext;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves the default CataloguePaginationResponse for the specified party.")
@@ -91,7 +94,11 @@ public class CatalogueController {
                                                         @ApiParam(value = "Option used to sort catalogue lines") @RequestParam(value = "sortOption",required = false) CatalogueLineSortOptions sortOption,
                                                         @ApiParam(value = "CatalogueUUID") @RequestParam(value = "catalogueUUId",required = false) String catalogueUUId,
                                                         @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
-        log.info("Incoming request to get CataloguePaginationResponse for party: {}, catalogue id: {} with limit: {}, offset: {}", partyId, catalogueId, limit, offset);
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to get CataloguePaginationResponse for party: %s, catalogue id: %s with limit: %s, offset: %s", partyId, catalogueId, limit, offset);
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
@@ -133,7 +140,11 @@ public class CatalogueController {
     public ResponseEntity getCatalogue(@ApiParam(value = "Data model standard that the provided catalogue is compatible with.", defaultValue = "ubl", required = true) @PathVariable String standard,
                                        @ApiParam(value = "uuid of the catalogue to be retrieved.", required = true) @PathVariable String uuid,
                                        @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
-        log.info("Incoming request to get catalogue for standard: {}, uuid: {}", standard, uuid);
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to get catalogue for standard: %s, uuid: %s", standard, uuid);
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
@@ -229,7 +240,11 @@ public class CatalogueController {
                                            @ApiParam(value = "Serialized form of the catalogue. Valid serializations can be achieved via JsonSerializationUtility.getObjectMapper method located in the utility module. An example catalogue serialization can be found in: https://github.com/nimble-platform/catalog-service/tree/staging/catalogue-service-micro/src/main/resources/example_content/catalogue.json", required = true) @RequestBody String serializedCatalogue,
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken, HttpServletRequest request) {
         try {
-            log.info("Incoming request to post catalogue with standard: {} standard", standard);
+            // set request log of ExecutionContext
+            String requestLog = String.format("Incoming request to post catalogue with standard: %s standard", standard);
+            executionContext.setRequestLog(requestLog);
+
+            log.info(requestLog);
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
                 throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
@@ -303,7 +318,11 @@ public class CatalogueController {
                                           @ApiParam(value = "Serialized form of the catalogue. Valid serializations can be achieved via JsonSerializationUtility.getObjectMapper method located in the utility module. An example catalogue serialization can be found in: https://github.com/nimble-platform/catalog-service/tree/staging/catalogue-service-micro/src/main/resources/example_content/catalogue.json", required = true) @RequestBody String catalogueJson,
                                           @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         try {
-            log.info("Incoming request to update catalogue");
+            // set request log of ExecutionContext
+            String requestLog = "Incoming request to update catalogue";
+            executionContext.setRequestLog(requestLog);
+
+            log.info(requestLog);
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
                 throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
@@ -381,7 +400,11 @@ public class CatalogueController {
     public ResponseEntity deleteCatalogue(@ApiParam(value = "Data model standard that the provided catalogue is compatible with.", defaultValue = "ubl", required = true) @PathVariable String standard,
                                           @ApiParam(value = "uuid of the catalogue to be retrieved.", required = true) @PathVariable(value = "uuid", required = true) String uuid,
                                           @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
-        log.info("Incoming request to delete catalogue with uuid: {}", uuid);
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to delete catalogue with uuid: %s", uuid);
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
@@ -423,7 +446,11 @@ public class CatalogueController {
                                                    @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         String idsLog = ids == null ? "" : ids.toString();
         try {
-            log.info("Incoming request to delete catalogues for party: {}, ids: {}, delete all: {}", partyId, idsLog, deleteAll);
+            // set request log of ExecutionContext
+            String requestLog = String.format("Incoming request to delete catalogues for party: %s, ids: %s, delete all: %s", partyId, idsLog, deleteAll);
+            executionContext.setRequestLog(requestLog);
+
+            log.info(requestLog);
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
                 throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
@@ -472,7 +499,11 @@ public class CatalogueController {
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
             @RequestParam("templateLanguage") String templateLanguage,
             HttpServletResponse response) {
-        log.info("Incoming request to generate a template. Category ids: {}, taxonomy ids: {}", categoryIds, taxonomyIds);
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to generate a template. Category ids: %s, taxonomy ids: %s", categoryIds, taxonomyIds);
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
@@ -521,7 +552,11 @@ public class CatalogueController {
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
             HttpServletRequest request) {
         try {
-            log.info("Incoming request to upload template upload mode: {}, party id: {}", uploadMode, partyId);
+            // set request log of ExecutionContext
+            String requestLog = String.format("Incoming request to upload template upload mode: %s, party id: %s", uploadMode, partyId);
+            executionContext.setRequestLog(requestLog);
+
+            log.info(requestLog);
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
                 throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
@@ -582,7 +617,11 @@ public class CatalogueController {
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity getSupportedStandards(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String authorization) {
-        log.info("Incoming request to retrieve the supported standards");
+        // set request log of ExecutionContext
+        String requestLog = "Incoming request to retrieve the supported standards";
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
 
         List<Configuration.Standard> standards = new ArrayList<>();
         try {
@@ -616,7 +655,11 @@ public class CatalogueController {
             @ApiParam(value = "Identifier of the party for which the catalogue will be updated", required = true) @RequestParam("partyId") String partyId,
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         try {
-            log.info("Incoming request to upload images for catalogue: {}", id);
+            // set request log of ExecutionContext
+            String requestLog = String.format("Incoming request to upload images for catalogue: %s", id);
+            executionContext.setRequestLog(requestLog);
+
+            log.info(requestLog);
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
                 throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
@@ -673,7 +716,11 @@ public class CatalogueController {
                                                       @ApiParam(value = "Identifier of the party for which the product images to be deleted ", required = true) @RequestParam(value = "partyId", required = true) String partyId,
                                                       @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         try {
-            log.info("Incoming request to delete images for catalogues: {}", ids);
+            // set request log of ExecutionContext
+            String requestLog = String.format("Incoming request to delete images for catalogues: %s", ids);
+            executionContext.setRequestLog(requestLog);
+
+            log.info(requestLog);
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
                 throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
@@ -712,7 +759,11 @@ public class CatalogueController {
             method = RequestMethod.GET)
     public ResponseEntity getAllCatalogueIdsForParty(@ApiParam(value = "Identifier of the party for which the catalogue to be retrieved", required = true) @PathVariable String partyId,
                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
-        log.info("Incoming request to get catalogue id list for party: {}", partyId);
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to get catalogue id list for party: %s", partyId);
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
@@ -746,7 +797,11 @@ public class CatalogueController {
             method = RequestMethod.GET)
     public ResponseEntity getAllCatalogueIdsUUIDsForParty(@ApiParam(value = "Identifier of the party for which the catalogue to be retrieved", required = true) @PathVariable String partyId,
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
-        log.info("Incoming request to get catalogue uuidid list for party: {}", partyId);
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to get catalogue uuidid list for party: %s", partyId);
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());

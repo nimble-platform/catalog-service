@@ -8,6 +8,7 @@ import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.statistics.ProductAndServiceStatistics;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.catalogue.util.CatalogueEvent;
+import eu.nimble.service.catalogue.util.ExecutionContext;
 import eu.nimble.service.catalogue.util.LoggerUtil;
 import eu.nimble.service.catalogue.validation.CatalogueLineValidator;
 import eu.nimble.service.catalogue.validation.ValidationMessages;
@@ -55,6 +56,8 @@ public class CatalogueLineController {
     private CatalogueService service;
     @Autowired
     private IValidationUtil validationUtil;
+    @Autowired
+    private ExecutionContext executionContext;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves the catalogue line with the DB-scoped identifier")
@@ -69,7 +72,11 @@ public class CatalogueLineController {
             method = RequestMethod.GET)
     public ResponseEntity getCatalogueLineByHjid(@ApiParam(value = "Identifier of the catalogue line to be retrieved. (line.hjid)", required = true) @PathVariable Long hjid,
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
-        log.info("Incoming request to get catalogue line with hjid: {}", hjid);
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to get catalogue line with hjid: %s", hjid);
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
@@ -104,7 +111,11 @@ public class CatalogueLineController {
                                                    @ApiParam(value = "Offset of the first catalogue line among all catalogue lines of the default catalogue for the party",required = true) @RequestParam(value = "offset",required = true) Integer pageNo,
                                                    @ApiParam(value = "Option used to sort catalogue lines", required = false) @RequestParam(value = "sortOption", required = false) CatalogueLineSortOptions sortOption,
                                                    @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
-        log.info("Incoming request to get catalogue lines with hjids: {}", hjids);
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to get catalogue lines with hjids: %s", hjids);
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
@@ -135,7 +146,11 @@ public class CatalogueLineController {
     public ResponseEntity getCatalogueLines(@ApiParam(value = "Comma-separated catalogue uuids to be retrieved e.g. 5e910673-8232-4ec1-adb3-9188377309bf,34rwe231-34ds-5dw2-hgd2-462tdr64wfgs", required = true) @RequestParam(value = "catalogueUuids",required = true) List<String> catalogueUuids,
                                             @ApiParam(value = "Comma-separated line ids to be retrieved e.g. e86e6558-b95c-4c3d-ac17-ac84830d7527,80f50752-e147-4063-8573-be78cde0d3a6",required = true) @RequestParam(value = "lineIds",required = true) List<String> lineIds,
                                             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
-        log.info("Incoming request to get catalogue lines, catalogue uuids: {}, line ids: {}",catalogueUuids,lineIds);
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to get catalogue lines, catalogue uuids: %s, line ids: %s",catalogueUuids,lineIds);
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
@@ -174,7 +189,11 @@ public class CatalogueLineController {
     public ResponseEntity getCatalogueLine(@ApiParam(value = "uuid of the catalogue containing the line to be retrieved. (catalogue.uuid)", required = true) @PathVariable String catalogueUuid,
                                            @ApiParam(value = "Identifier of the catalogue line to be retrieved. (line.id)", required = true) @PathVariable String lineId,
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
-        log.info("Incoming request to get catalogue line with lineId: {}, catalogue uuid: {}", lineId, catalogueUuid);
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to get catalogue line with lineId: %s, catalogue uuid: %s", lineId, catalogueUuid);
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
@@ -212,7 +231,11 @@ public class CatalogueLineController {
     public ResponseEntity getCatalogueLines(@ApiParam(value = "uuid of the catalogue containing the lines to be retrieved. (catalogue.uuid)", required = true) @PathVariable String catalogueUuid,
                                            @ApiParam(value = "Identifier of the catalogue lines to be retrieved. (line.id)", required = true) @RequestParam(value = "lineIds") List<String> lineIds,
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
-        log.info("Incoming request to get catalogue line with lineIds: {}, catalogue uuid: {}", lineIds, catalogueUuid);
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to get catalogue line with lineIds: %s, catalogue uuid: %s", lineIds, catalogueUuid);
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
@@ -249,7 +272,11 @@ public class CatalogueLineController {
     public ResponseEntity addCatalogueLine(@ApiParam(value = "uuid of the catalogue containing the line to be retrieved. (catalogue.uuid)", required = true) @PathVariable String catalogueUuid,
                                            @ApiParam(value = "Serialized form of the catalogue line. Valid serializations can be achieved via JsonSerializationUtility.getObjectMapper method located in the utility module. An example catalogue line serialization can be found in: https://github.com/nimble-platform/catalog-service/tree/staging/catalogue-service-micro/src/main/resources/example_content/catalogue_line.json", required = true) @RequestBody String catalogueLineJson,
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
-        log.info("Incoming request to add catalogue line to catalogue: {}", catalogueUuid);
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to add catalogue line to catalogue: %s", catalogueUuid);
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
         CatalogueType catalogue;
         CatalogueLineType catalogueLine;
 
@@ -341,6 +368,9 @@ public class CatalogueLineController {
     public ResponseEntity updateCatalogueLine(@ApiParam(value = "uuid of the catalogue containing the line to be retrieved. (catalogue.uuid)", required = true) @PathVariable String catalogueUuid,
                                               @ApiParam(value = "Serialized form of the catalogue line. Valid serializations can be achieved via JsonSerializationUtility.getObjectMapper method located in the utility module. An example catalogue line serialization can be found in: https://github.com/nimble-platform/catalog-service/tree/staging/catalogue-service-micro/src/main/resources/example_content/catalogue_line.json.", required = true) @RequestBody String catalogueLineJson,
                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to update catalogue line. Catalogue uuid: %s}", catalogueUuid);
+        executionContext.setRequestLog(requestLog);
         try {
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
@@ -441,7 +471,11 @@ public class CatalogueLineController {
     public ResponseEntity deleteCatalogueLine(@ApiParam(value = "uuid of the catalogue containing the line to be retrieved. (catalogue.uuid)", required = true) @PathVariable String catalogueUuid,
                                               @ApiParam(value = "Identifier of the catalogue line to be retrieved. (line.id)", required = true) @PathVariable String lineId,
                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
-        log.info("Incoming request to delete catalogue line. catalogue uuid: {}: line lineId {}", catalogueUuid, lineId);
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to delete catalogue line. catalogue uuid: %s: line lineId %s", catalogueUuid, lineId);
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
@@ -471,7 +505,11 @@ public class CatalogueLineController {
     public ResponseEntity getCatalogue(
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
 
-        log.info("Incoming request to get catalogue line statistics no of products and services");
+        // set request log of ExecutionContext
+        String requestLog = "Incoming request to get catalogue line statistics no of products and services";
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());

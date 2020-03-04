@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue.impl;
 import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.model.lcpa.ItemLCPAInput;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
+import eu.nimble.service.catalogue.util.ExecutionContext;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.LCPAOutputType;
 import eu.nimble.utility.JsonSerializationUtility;
@@ -42,6 +43,8 @@ public class LCPAController {
 
     @Autowired
     private IValidationUtil validationUtil;
+    @Autowired
+    private ExecutionContext executionContext;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Returns the catalogue uuid/catalogue line information along with the corresponding " +
@@ -56,7 +59,11 @@ public class LCPAController {
             method = RequestMethod.GET)
     public ResponseEntity getProductsWithoutLCPAProcessing(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         try {
-            logger.info("Incoming request to get product with LCPA input but not output");
+            // set request log of ExecutionContext
+            String requestLog = "Incoming request to get product with LCPA input but not output";
+            executionContext.setRequestLog(requestLog);
+
+            logger.info(requestLog);
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
                 throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
@@ -90,7 +97,11 @@ public class LCPAController {
             @ApiParam(value = "JSON serialization of the LCPAOutput", required = true) @RequestBody String lcpaOutputJson,
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         try {
-            logger.info("Incoming request to update LCPAOutput for catalogue line with hjid: {}", catalogueLineHjid);
+            // set request log of ExecutionContext
+            String requestLog = String.format("Incoming request to update LCPAOutput for catalogue line with hjid: %s", catalogueLineHjid);
+            executionContext.setRequestLog(requestLog);
+
+            logger.info(requestLog);
             // validate role
             if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
                 throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
@@ -135,7 +146,11 @@ public class LCPAController {
     public void downloadBOMTemplate(
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
             HttpServletResponse response) {
-        logger.info("Incoming request to download BOM template");
+        // set request log of ExecutionContext
+        String requestLog = "Incoming request to download BOM template";
+        executionContext.setRequestLog(requestLog);
+
+        logger.info(requestLog);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());

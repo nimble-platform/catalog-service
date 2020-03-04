@@ -8,6 +8,7 @@ import eu.nimble.service.catalogue.exception.InvalidCategoryException;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
 import eu.nimble.service.catalogue.index.ClassIndexClient;
+import eu.nimble.service.catalogue.util.ExecutionContext;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.utility.exception.NimbleException;
 import eu.nimble.utility.exception.NimbleExceptionMessageCode;
@@ -46,6 +47,8 @@ public class ProductCategoryController {
     private EClassIndexLoader eClassIndexLoader;
     @Autowired
     private IValidationUtil validationUtil;
+    @Autowired
+    private ExecutionContext executionContext;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves a list of Category instances. This operation takes a list of category ids and " +
@@ -61,7 +64,11 @@ public class ProductCategoryController {
     public ResponseEntity getSpecificCategories(@ApiParam(value = "Comma-separated category ids to be retrieved e.g. 0173-1#01-BAC439#012,0173-1#01-AJZ694#013", required = true) @RequestParam(required = false) List<String> categoryIds,
                                                 @ApiParam(value = "Comma-separated taxonomy ids corresponding to the specified category ids e.g. eClass, eClass", required = true) @RequestParam(required = false) List<String> taxonomyIds,
                                                 @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
-        log.info("Incoming request to get categories");
+        // set request log of ExecutionContext
+        String requestLog ="Incoming request to get categories";
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
         List<Category> categories = new ArrayList<>();
         if (taxonomyIds != null && taxonomyIds.size() > 0 && categoryIds != null && categoryIds.size() > 0) {
             // ensure that taxonomy id and category id lists have the same size
@@ -101,7 +108,11 @@ public class ProductCategoryController {
                                               @ApiParam(value = "Taxonomy id from which categories would be retrieved. If no taxonomy id is specified, all available taxonomies are considered. In addition to the taxonomies ids as returned by getAvailableTaxonomyIds method, 'all' value can be specified in order to get categories from all the taxonomies", required = true) @PathVariable String taxonomyId,
                                               @ApiParam(value = "An indicator for retrieving categories for logistics service or regular products. If not specified, no such distinction is considered.", defaultValue = "false") @RequestParam(required = false,defaultValue = "false") Boolean forLogistics,
                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
-        log.info("Incoming request to get categories by name");
+        // set request log of ExecutionContext
+        String requestLog ="Incoming request to get categories by name";
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
         // check whether the taxonomy id is valid or not
         if(!(taxonomyId.compareToIgnoreCase("all") == 0 || taxonomyIdExists(taxonomyId))) {
             throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_TAXONOMY.toString(),Arrays.asList(taxonomyId));
@@ -129,6 +140,10 @@ public class ProductCategoryController {
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity getAvailableTaxonomyIds(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        // set request log of ExecutionContext
+        String requestLog ="Incoming request to get available taxonomy ids";
+        executionContext.setRequestLog(requestLog);
+
         List<String> taxonomies = new ArrayList<>();
         try {
             SpringBridge.getInstance().getTaxonomyManager().getTaxonomiesMap().keySet().forEach(id -> taxonomies.add(id));
@@ -149,7 +164,11 @@ public class ProductCategoryController {
             method = RequestMethod.GET)
     public ResponseEntity getLogisticsRelatedServices(@ApiParam(value = "The taxonomy id which is used to retrieve logistic related services. If 'all' value is specified for taxonomy id, then logistic related services for each available taxonomy id are returned.",required = true) @PathVariable(value = "taxonomyId",required = true) String taxonomyId,
                                                       @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
-        log.info("Incoming request to get the logistics related services-category map for taxonomy id: {}",taxonomyId);
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to get the logistics related services-category map for taxonomy id: %s",taxonomyId);
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
 
         Map<String,Map<String,String>> logisticServicesCategoryUriMap = categoryService.getLogisticsRelatedServices(taxonomyId);
 
@@ -168,6 +187,10 @@ public class ProductCategoryController {
             method = RequestMethod.GET)
     public ResponseEntity getRootCategories(@ApiParam(value = "Taxonomy id from which categories would be retrieved.", required = true) @PathVariable String taxonomyId,
                                             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        // set request log of ExecutionContext
+        String requestLog = "Incoming request to get root categories";
+        executionContext.setRequestLog(requestLog);
+
         if (!taxonomyIdExists(taxonomyId)) {
             throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_TAXONOMY.toString(),Arrays.asList(taxonomyId));
         }
@@ -188,6 +211,10 @@ public class ProductCategoryController {
     public ResponseEntity getChildrenCategories(@ApiParam(value = "Taxonomy id containing the category for which children categories to be retrieved", required = true) @PathVariable("taxonomyId") String taxonomyId,
                                                 @ApiParam(value = "Category ifd for which the children categories to be retrieved", required = true) @RequestParam("categoryId") String categoryId,
                                                 @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        // set request log of ExecutionContext
+        String requestLog = "Incoming request to get children categories";
+        executionContext.setRequestLog(requestLog);
+
         if (!taxonomyIdExists(taxonomyId)) {
             throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_TAXONOMY.toString(),Arrays.asList(taxonomyId));
         }
@@ -218,6 +245,10 @@ public class ProductCategoryController {
     public ResponseEntity getCategoryTree(@ApiParam(value = "Taxonomy id containing the category for which children categories to be retrieved", required = true) @PathVariable("taxonomyId") String taxonomyId,
                                           @ApiParam(value = "Category ifd for which the children categories to be retrieved", required = true) @RequestParam("categoryId") String categoryId,
                                           @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        // set request log of ExecutionContext
+        String requestLog = "Incoming request to get category tree";
+        executionContext.setRequestLog(requestLog);
+
         if (!taxonomyIdExists(taxonomyId)) {
             throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_TAXONOMY.toString(),Arrays.asList(taxonomyId));
         }
@@ -242,7 +273,11 @@ public class ProductCategoryController {
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity indexEclassResources(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
-        log.info("Incoming request to index eClass resources.");
+        // set request log of ExecutionContext
+        String requestLog = "Incoming request to index eClass resources.";
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INDEX_ECLASS_RESOURCES.toString());
@@ -268,7 +303,11 @@ public class ProductCategoryController {
             method = RequestMethod.POST)
     public ResponseEntity indexEclassProperties(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
                                                 @ApiParam(value = "Identifiers of eClass properties to be indexed") @RequestBody List<String> propertyIds) {
-        log.info("Incoming request to index eClass properties.");
+        // set request log of ExecutionContext
+        String requestLog = "Incoming request to index eClass properties.";
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INDEX_ECLASS_PROPERTIES.toString());
@@ -294,7 +333,11 @@ public class ProductCategoryController {
             method = RequestMethod.POST)
     public ResponseEntity indexEclassCategories(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
                                                 @ApiParam(value = "Identifiers of eClass categories to be indexed") @RequestBody List<String> categoryIds) {
-        log.info("Incoming request to index eClass categories.");
+        // set request log of ExecutionContext
+        String requestLog = "Incoming request to index eClass categories.";
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
         // validate role
         if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INDEX_ECLASS_CATEGORIES.toString());
