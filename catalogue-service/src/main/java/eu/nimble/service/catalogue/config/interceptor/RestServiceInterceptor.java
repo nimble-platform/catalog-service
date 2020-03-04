@@ -1,8 +1,7 @@
 package eu.nimble.service.catalogue.config.interceptor;
 
-import eu.nimble.service.catalogue.util.ExecutionContext;
 import eu.nimble.service.catalogue.util.HttpResponseUtil;
-import eu.nimble.utility.exception.AuthenticationException;
+import eu.nimble.utility.ExecutionContext;
 import eu.nimble.utility.exception.NimbleException;
 import eu.nimble.utility.exception.NimbleExceptionMessageCode;
 import org.slf4j.Logger;

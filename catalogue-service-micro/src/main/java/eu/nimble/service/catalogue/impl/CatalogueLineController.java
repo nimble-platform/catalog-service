@@ -8,7 +8,6 @@ import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.statistics.ProductAndServiceStatistics;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.catalogue.util.CatalogueEvent;
-import eu.nimble.service.catalogue.util.ExecutionContext;
 import eu.nimble.service.catalogue.util.LoggerUtil;
 import eu.nimble.service.catalogue.validation.CatalogueLineValidator;
 import eu.nimble.service.catalogue.validation.ValidationMessages;

@@ -2,8 +2,7 @@ package eu.nimble.service.catalogue.impl;
 
 import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.index.ItemIndexClient;
-import eu.nimble.service.catalogue.util.ExecutionContext;
-import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.utility.ExecutionContext;
 import eu.nimble.utility.exception.NimbleException;
 import eu.nimble.utility.exception.NimbleExceptionMessageCode;
 import eu.nimble.utility.validation.IValidationUtil;

@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue.util;
 
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
+import eu.nimble.utility.ExecutionContext;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
