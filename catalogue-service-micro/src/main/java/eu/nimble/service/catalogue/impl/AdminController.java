@@ -156,8 +156,30 @@ public class AdminController {
         if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(),RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INDEX_CATALOGUES.toString());
         }
-
         catalogueIndexLoader.indexCatalogues(partyId);
+        return null;
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Indexes catalogues from all the verified companies in the database")
+    @ApiResponses(value = {
+            @ApiResponse(code = 401, message = "No user exists for the given token")
+    })
+    @RequestMapping(value = "/admin/index-verified-catalogues",
+            produces = {"application/json"},
+            method = RequestMethod.POST)
+    public ResponseEntity indexCataloguesFromVerifiedCompanies(@ApiParam(value = "The Bearer token provided by the identity service", required = true)
+                                                                   @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INDEX_CATALOGUES.toString());
+        }
+        try{
+            catalogueIndexLoader.indexVerifiedCompanyCatalogues(bearerToken);
+
+        } catch(Exception ex){
+            logger.error("Failed to index catalogues of the verified companies",ex);
+        }
         return null;
     }
 
