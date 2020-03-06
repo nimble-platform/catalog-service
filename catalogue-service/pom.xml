@@ -123,5 +123,11 @@
             <artifactId>spring-kafka</artifactId>
             <version>${spring.kafka.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.bitbucket.b_c</groupId>
+            <artifactId>jose4j</artifactId>
+            <version>0.5.8</version>
+        </dependency>
     </dependencies>
 </project>

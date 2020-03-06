@@ -75,7 +75,7 @@ public class AdminController {
         String requestLog = "Incoming request to index UBL properties";
         executionContext.setRequestLog(requestLog);
         // validate role
-        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+        if(!validationUtil.validateRole(bearerToken,executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INDEX_UBL_PROPERTIES.toString());
         }
 
@@ -153,7 +153,7 @@ public class AdminController {
         String requestLog = String.format("Incoming request to index all catalogues for party %s",partyId);
         executionContext.setRequestLog(requestLog);
         // validate role
-        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+        if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(),RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INDEX_CATALOGUES.toString());
         }
 
@@ -176,7 +176,7 @@ public class AdminController {
 
         logger.info(requestLog);
         // validate role
-        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+        if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(),RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_DELETE_INVALID_PRODUCTS.toString());
         }
 
@@ -231,7 +231,7 @@ public class AdminController {
 
         logger.info(requestLog);
         // validate role
-        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+        if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(),RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_CREATE_VAT_FOR_PRODUCTS.toString());
         }
 

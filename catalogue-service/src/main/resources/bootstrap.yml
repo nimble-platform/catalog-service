@@ -137,6 +137,8 @@ nimble:
   identity:
     url: ${IDENTITY_SERVICE_URL}
     check-token: ${IDENTITY_SERVICE_CHECK_TOKEN:true}
+  keycloak:
+    public-key: ${KEYCLOAK_PUBLIC_KEY}
   trust:
     url: ${TRUST_SERVICE_URL}
   indexing:

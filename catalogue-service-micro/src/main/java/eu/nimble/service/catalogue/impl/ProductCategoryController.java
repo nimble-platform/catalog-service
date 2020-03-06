@@ -278,7 +278,7 @@ public class ProductCategoryController {
 
         log.info(requestLog);
         // validate role
-        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+        if(!validationUtil.validateRole(bearerToken,executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INDEX_ECLASS_RESOURCES.toString());
         }
 
@@ -308,7 +308,7 @@ public class ProductCategoryController {
 
         log.info(requestLog);
         // validate role
-        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+        if(!validationUtil.validateRole(bearerToken,executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INDEX_ECLASS_PROPERTIES.toString());
         }
 
@@ -338,7 +338,7 @@ public class ProductCategoryController {
 
         log.info(requestLog);
         // validate role
-        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+        if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(),RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INDEX_ECLASS_CATEGORIES.toString());
         }
 
