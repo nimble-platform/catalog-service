@@ -170,8 +170,12 @@ public class AdminController {
             method = RequestMethod.POST)
     public ResponseEntity indexCataloguesFromVerifiedCompanies(@ApiParam(value = "The Bearer token provided by the identity service", required = true)
                                                                    @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        // set request log of ExecutionContext
+        String requestLog = "Incoming request to index catalogues from verified companies";
+        executionContext.setRequestLog(requestLog);
+
         // validate role
-        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+        if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(),RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INDEX_CATALOGUES.toString());
         }
         try{
