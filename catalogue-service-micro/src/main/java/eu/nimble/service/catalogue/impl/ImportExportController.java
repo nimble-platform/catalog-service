@@ -10,6 +10,7 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PersonType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.Configuration;
+import eu.nimble.utility.ExecutionContext;
 import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.exception.NimbleException;
 import eu.nimble.utility.exception.NimbleExceptionMessageCode;
@@ -23,7 +24,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -49,6 +49,8 @@ public class ImportExportController {
     private CatalogueService service;
     @Autowired
     private IValidationUtil validationUtil;
+    @Autowired
+    private ExecutionContext executionContext;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "This service imports the provided UBL catalogue. The service replaces the PartyType" +
@@ -64,10 +66,13 @@ public class ImportExportController {
             consumes = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity importCatalogue(@ApiParam(value = "Serialized form of the catalogue.", required = true) @RequestBody String serializedCatalogue,
                                           @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        // set request log of ExecutionContext
+        String requestLog = "Importing catalogue ...";
+        executionContext.setRequestLog(requestLog);
         try {
-            log.info("Importing catalogue ...");
+            log.info(requestLog);
             // validate role
-            if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
+            if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(),RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
                 throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
 
@@ -120,10 +125,13 @@ public class ImportExportController {
             @ApiParam(value = "language id", required = true) @RequestParam("languageId") String languageId,
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
             HttpServletResponse response) {
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to export catalogue with uuid %s", catalogueUuid);
+        executionContext.setRequestLog(requestLog);
 
-        log.info("Incoming request to export catalogue with uuid {}", catalogueUuid);
+        log.info(requestLog);
         // validate role
-        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_TO_EXPORT_CATALOGUE)) {
+        if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(),RoleConfig.REQUIRED_ROLES_TO_EXPORT_CATALOGUE)) {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
         }
 
@@ -189,17 +197,21 @@ public class ImportExportController {
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
             HttpServletResponse response) {
 
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to export catalogues for party: %s, ids: %s, export all: %s", partyId,ids, exportAll);
+        executionContext.setRequestLog(requestLog);
+
         String idsLog = ids == null ? "" : ids.toString();
         ByteArrayInputStream responseInputStream = null;
         ByteArrayOutputStream responseOutputStream = new ByteArrayOutputStream();
         ZipOutputStream zos = null;
 
         try {
-            log.info("Incoming request to export catalogues for party: {}, ids: {}, export all: {}", partyId, idsLog, exportAll);
+            log.info(requestLog);
             zos = new ZipOutputStream(response.getOutputStream());
 
             // validate role
-            if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_TO_EXPORT_CATALOGUE)) {
+            if(!validationUtil.validateRole(bearerToken,executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_TO_EXPORT_CATALOGUE)) {
                 throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
 
