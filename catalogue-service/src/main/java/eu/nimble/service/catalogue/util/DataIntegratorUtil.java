@@ -74,7 +74,7 @@ public class DataIntegratorUtil {
         }
     }
 
-    private static List<CommodityClassificationType> getParentCategories(List<CommodityClassificationType> commodityClassifications) throws InvalidCategoryException {
+    public static List<CommodityClassificationType> getParentCategories(List<CommodityClassificationType> commodityClassifications) throws InvalidCategoryException {
         // get uris of the given categories
         List<String> uris = new ArrayList<>();
         for(CommodityClassificationType commodityClassificationType:commodityClassifications){

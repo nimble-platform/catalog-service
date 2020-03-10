@@ -2,14 +2,23 @@ package eu.nimble.service.catalogue.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.config.RoleConfig;
+import eu.nimble.service.catalogue.exception.InvalidCategoryException;
 import eu.nimble.service.catalogue.index.ItemIndexClient;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
+import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
+import eu.nimble.service.catalogue.util.DataIntegratorUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.catalogue.util.migration.r10.VatMigrationUtility;
 import eu.nimble.utility.ExecutionContext;
+import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CommodityClassificationType;
 import eu.nimble.utility.exception.NimbleException;
 import eu.nimble.utility.exception.NimbleExceptionMessageCode;
+import eu.nimble.utility.persistence.GenericJPARepository;
+import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.validation.IValidationUtil;
 import feign.Response;
 import org.json.JSONArray;
@@ -36,6 +45,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -56,6 +66,8 @@ public class AdminController {
     private CatalogueIndexLoader catalogueIndexLoader;
     @Autowired
     private ItemIndexClient itemIndexClient;
+    @Autowired
+    private CatalogueService catalogueService;
 
     @Autowired
     private IValidationUtil validationUtil;
@@ -269,5 +281,107 @@ public class AdminController {
             logger.error("Unexpected error while creating VATs", e);
         }
         return null;
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Checks the categories of the given lines and adds missing parent categories,if any, to them.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 401, message = "No user exists for the given token"),
+            @ApiResponse(code = 400, message = "Number of elements in catalogue uuids list and line ids list does not match"),
+            @ApiResponse(code = 500, message = "Catalogue line has an invalid category")
+    })
+    @RequestMapping(value = "/admin/missing-parent-categories",
+            method = RequestMethod.PATCH)
+    public ResponseEntity addMissingParentCategories(@ApiParam(value = "uuids of the catalogue to be checked for missing parent categories.", required = true) @RequestParam(value = "uuids",required = true) List<String> uuids,
+                                                     @ApiParam(value = "ids of the catalogue lines to be checked for missing parent categories.", required = true) @RequestParam(value = "lineIds",required = true) List<String> lineIds,
+                                                     @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        // set request log of ExecutionContext
+        String requestLog =String.format("Incoming request to add missing parent categories for uuids:%s and line ids:%s",uuids,lineIds);
+        executionContext.setRequestLog(requestLog);
+
+        logger.info(requestLog);
+        // validate role
+        if(!validationUtil.validateRole(bearerToken,executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_CREATE_VAT_FOR_PRODUCTS.toString());
+        }
+        // get catalogues to be checked for missing parent categories
+        List<CatalogueLineType> catalogueLines = new ArrayList<>();
+        // ensure that catalogue uuids and catalogue line ids lists have the same size
+        if (uuids.size() != lineIds.size()) {
+            throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_GET_CATALOGUE_LINES.toString());
+        }
+
+        int numberOfCatalog = uuids.size();
+        for(int i = 0; i < numberOfCatalog; i++){
+            CatalogueLineType catalogueLine = catalogueService.getCatalogueLine(uuids.get(i),lineIds.get(i));
+            if(catalogueLine != null){
+                catalogueLines.add(catalogueLine);
+            }
+        }
+
+        GenericJPARepository catalogueRepo = new JPARepositoryFactory().forCatalogueRepository();
+        // add missing parent categories to corresponding catalogue lines and reindex catalogue
+        // add missing parent categories
+        for (CatalogueLineType catalogueLine : catalogueLines) {
+            try {
+                DataIntegratorUtil.setParentCategories(catalogueLine.getGoodsItem().getItem().getCommodityClassification());
+                catalogueRepo.updateEntity(catalogueLine);
+            } catch (InvalidCategoryException e) {
+                String msg = String.format("Catalogue: %s,catalogue line: %s has an invalid category",catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID(),catalogueLine.getID());
+                logger.error(msg,e);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(msg);
+            }
+            itemIndexClient.indexCatalogueLine(catalogueLine);
+        }
+        logger.info("Completed the request to add missing parent categories for uuids:{} and line ids:{}",uuids,lineIds);
+        return ResponseEntity.ok(null);
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieves the catalog lines which lack some parent categories")
+    @ApiResponses(value = {
+            @ApiResponse(code = 401, message = "No user exists for the given token")
+    })
+    @RequestMapping(value = "/admin/missing-parent-categories",
+            method = RequestMethod.GET)
+    public ResponseEntity getCatalogueLinesWithMissingParentCategories(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        // set request log of ExecutionContext
+        String requestLog ="Incoming request to get catalogue lines with missing parent categories";
+        executionContext.setRequestLog(requestLog);
+
+        logger.info(requestLog);
+        // validate role
+        if(!validationUtil.validateRole(bearerToken,executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_CREATE_VAT_FOR_PRODUCTS.toString());
+        }
+        // get catalogues to be checked for missing parent categories
+        List<CatalogueType> catalogues = CataloguePersistenceUtil.getAllCatalogues();
+
+        // lines which lack some parent categories
+        List<String> catalogueUuids = new ArrayList<>();
+        List<String> lineIds = new ArrayList<>();
+
+        for (CatalogueType catalogue : catalogues) {
+
+            for (CatalogueLineType catalogueLine : catalogue.getCatalogueLine()) {
+                try {
+                    List<CommodityClassificationType> missingParentCategories = DataIntegratorUtil.getParentCategories(catalogueLine.getGoodsItem().getItem().getCommodityClassification());
+                    if(missingParentCategories.size() != 0){
+                        catalogueUuids.add(catalogue.getUUID());
+                        lineIds.add(catalogueLine.getID());
+                    }
+                } catch (InvalidCategoryException e) {
+                    String msg = String.format("Catalogue: %s,catalogue line: %s has an invalid category",catalogue.getUUID(),catalogueLine.getID());
+                    logger.error(msg,e);
+                }
+            }
+        }
+        // create response
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("catalogueUuids",catalogueUuids);
+        jsonObject.put("lineIds",lineIds);
+
+        logger.info("Completed request to get catalogue lines with missing parent categories");
+        return ResponseEntity.ok(jsonObject.toString());
     }
 }
