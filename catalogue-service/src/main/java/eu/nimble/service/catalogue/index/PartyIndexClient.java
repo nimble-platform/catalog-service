@@ -20,15 +20,6 @@ import org.springframework.stereotype.Component;
 public class PartyIndexClient {
     private static final Logger logger = LoggerFactory.getLogger(PartyIndexClient.class);
 
-    @Value("${nimble.indexing.url}")
-    private String indexingUrl;
-    @Value("${nimble.indexing.solr.url}")
-    private String solrUrl;
-    @Value("${nimble.indexing.solr.username}")
-    private String solrUsername;
-    @Value("${nimble.indexing.solr.password}")
-    private String solrPassword;
-
     @Autowired
     private CredentialsUtil credentialsUtil;
 

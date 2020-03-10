@@ -635,8 +635,10 @@ public class TemplateGenerator {
                 cell = getCellWithMissingCellPolicy(topRow, colFrom);
                 cell.setCellValue(categories.get(i).getPreferredName(defaultLanguage));
                 cell.setCellStyle(tabCellStyle);
-                cra = new CellRangeAddress(0, 0, colFrom, colTo);
-                productPropertiesTab.addMergedRegion(cra);
+                if (colFrom < colTo) {
+                    cra = new CellRangeAddress(0, 0, colFrom, colTo);
+                    productPropertiesTab.addMergedRegion(cra);
+                }
                 columnOffset = colTo + 1;
             }
         }
@@ -827,8 +829,10 @@ public class TemplateGenerator {
                 cell = getCellWithMissingCellPolicy(topRow, colFrom);
                 cell.setCellValue(categories.get(i).getPreferredName(defaultLanguage));
                 cell.setCellStyle(tabCellStyle);
-                cra = new CellRangeAddress(0, 0, colFrom, colTo);
-                productPropertiesExampleTab.addMergedRegion(cra);
+                if (colFrom < colTo) {
+                    cra = new CellRangeAddress(0, 0, colFrom, colTo);
+                    productPropertiesExampleTab.addMergedRegion(cra);
+                }
                 columnOffset = colTo + 1;
             }
         }
@@ -1505,8 +1509,10 @@ public class TemplateGenerator {
                     Cell valueCell = getCellWithMissingCellPolicy(row, 0);
                     valueCell.setCellValue(categories.get(i).getPreferredName(defaultLanguage));
                     valueCell.setCellStyle(headerCellStyle);
-                    CellRangeAddress cra = new CellRangeAddress(rowFrom, rowTo, 0, 0);
-                    propertyDetailsTab.addMergedRegion(cra);
+                    if (rowFrom < rowTo) {
+                        CellRangeAddress cra = new CellRangeAddress(rowFrom, rowTo, 0, 0);
+                        propertyDetailsTab.addMergedRegion(cra);
+                    }
                     rowIndex = rowTo + 1;
                 }
             }

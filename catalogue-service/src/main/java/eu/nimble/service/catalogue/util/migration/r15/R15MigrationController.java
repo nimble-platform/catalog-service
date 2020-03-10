@@ -4,6 +4,7 @@ import eu.nimble.service.catalogue.UnitManager;
 import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
+import eu.nimble.utility.ExecutionContext;
 import eu.nimble.utility.HttpResponseUtil;
 import eu.nimble.utility.persistence.GenericJPARepository;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
@@ -36,6 +37,8 @@ public class R15MigrationController {
     private UnitManager unitManager;
     @Autowired
     private IValidationUtil validationUtil;
+    @Autowired
+    private ExecutionContext executionContext;
 
     @ApiOperation(value = "", notes = "Add LCPA input units to Unit Manager")
     @ApiResponses(value = {
@@ -47,10 +50,14 @@ public class R15MigrationController {
             method = RequestMethod.PATCH)
     public ResponseEntity addLCPAInputUnits(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken
     ) {
-        logger.info("Incoming request to add LCPA input units");
+        // set request log of ExecutionContext
+        String requestLog = "Incoming request to add LCPA input units";
+        executionContext.setRequestLog(requestLog);
+
+        logger.info(requestLog);
 
         // validate role
-        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
+        if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(),RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
             return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
         }
 
@@ -71,10 +78,14 @@ public class R15MigrationController {
             method = RequestMethod.PATCH)
     public ResponseEntity federateParties(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken
     ) {
-        logger.info("Incoming request to federate parties");
+        // set request log of ExecutionContext
+        String requestLog = "Incoming request to federate parties";
+        executionContext.setRequestLog(requestLog);
+
+        logger.info(requestLog);
 
         // validate role
-        if(!validationUtil.validateRole(bearerToken, RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
+        if(!validationUtil.validateRole(bearerToken,executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
             return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
         }
 

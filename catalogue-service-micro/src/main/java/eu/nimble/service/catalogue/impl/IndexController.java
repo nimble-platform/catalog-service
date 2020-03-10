@@ -1,7 +1,11 @@
 package eu.nimble.service.catalogue.impl;
 
+import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.index.ItemIndexClient;
-import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.utility.ExecutionContext;
+import eu.nimble.utility.exception.NimbleException;
+import eu.nimble.utility.exception.NimbleExceptionMessageCode;
+import eu.nimble.utility.validation.IValidationUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -23,6 +27,10 @@ public class IndexController {
 
     @Autowired
     private ItemIndexClient itemIndexClient;
+    @Autowired
+    private IValidationUtil validationUtil;
+    @Autowired
+    private ExecutionContext executionContext;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Gets all the catalogue identifiers from the item index and clear all data in the index")
@@ -35,10 +43,16 @@ public class IndexController {
             produces = {"application/json"},
             method = RequestMethod.DELETE)
     public ResponseEntity clearItemIndex(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
-        log.info("Incoming request to clear the item index");
+        // set request log of ExecutionContext
+        String requestLog = "Incoming request to clear the item index";
+        executionContext.setRequestLog(requestLog);
 
-        // check token
-        eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        log.info(requestLog);
+
+        // validate role
+        if(!validationUtil.validateRole(bearerToken,executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
+        }
 
         // delete the contents
         itemIndexClient.deleteAllContent();
@@ -59,10 +73,16 @@ public class IndexController {
             method = RequestMethod.DELETE)
     public ResponseEntity clearItemIndex(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
                                          @ApiParam(value = "Uuid of the catalogue to be deleted from the index") @PathVariable(value = "catalogueUuid",required = true) String catalogueUuid) {
-        log.info("Incoming request to delete catalogue uuid from the item index with uuid: {}", catalogueUuid);
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to delete catalogue uuid from the item index with uuid: %s", catalogueUuid);
+        executionContext.setRequestLog(requestLog);
 
-        // check token
-        eu.nimble.service.catalogue.util.HttpResponseUtil.checkToken(bearerToken);
+        log.info(requestLog);
+
+        // validate role
+        if(!validationUtil.validateRole(bearerToken,executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
+        }
 
         // delete the contents
         itemIndexClient.deleteCatalogue(catalogueUuid);
