@@ -41,6 +41,7 @@ public class CatalogueLineValidator {
         extractedLineId = !Strings.isNullOrEmpty(catalogueLine.getID()) ? catalogueLine.getID() : catalogueLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID();
 
         idExists();
+        idHasInvalidSpace();
         manufacturerIdExists();
         lineIdManufacturerIdMatches();
         nameExists();
@@ -59,6 +60,12 @@ public class CatalogueLineValidator {
         }
     }
 
+    private void idHasInvalidSpace() {
+        if (extractedLineId != null && extractedLineId.length() != extractedLineId.trim().length()) {
+            errorMessages.add(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_CATALOGUE_LINE_ID.toString());
+            errorParameters.add(Arrays.asList(extractedLineId));
+        }
+    }
     private void checkReferenceToCatalogue() {
         if(owningCatalogue.getUUID() != null){
             ItemType item = catalogueLine.getGoodsItem().getItem();
