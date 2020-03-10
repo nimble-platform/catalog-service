@@ -20,6 +20,8 @@ import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 import eu.nimble.service.model.ubl.extension.ItemPropertyValueQualifier;
 import eu.nimble.service.model.ubl.extension.QualityIndicatorParameter;
 import eu.nimble.utility.JsonSerializationUtility;
+import eu.nimble.utility.exception.NimbleException;
+import eu.nimble.utility.exception.NimbleExceptionMessageCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +51,13 @@ public class IndexingWrapper {
         AmountValidator amountValidator = new AmountValidator(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount());
         if(amountValidator.bothFieldsPopulated()) {
             indexItem.addPrice(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getCurrencyID(), catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue().doubleValue());
+            // index also the base quantity
+            QuantityValidator quantityValidator = new QuantityValidator(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity());
+            if(!quantityValidator.bothFieldsPopulated()) {
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
+            }
+            indexItem.setBaseQuantity(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getValue().doubleValue());
+            indexItem.setBaseQuantityUnit(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getUnitCode());
         }
         QuantityValidator quantityValidator = new QuantityValidator(catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure());
         if(quantityValidator.bothFieldsPopulated()) {
