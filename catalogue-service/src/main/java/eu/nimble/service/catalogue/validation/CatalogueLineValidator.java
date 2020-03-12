@@ -62,7 +62,7 @@ public class CatalogueLineValidator {
 
     private void idHasInvalidSpace() {
         if (extractedLineId != null && extractedLineId.length() != extractedLineId.trim().length()) {
-            errorMessages.add(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_CATALOGUE_LINE_ID.toString());
+            errorMessages.add(NimbleExceptionMessageCode.BAD_REQUEST_PRECEDING_TRAILING_IN_ID.toString());
             errorParameters.add(Arrays.asList(extractedLineId));
         }
     }
