@@ -8,6 +8,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +26,7 @@ import org.springframework.web.filter.CorsFilter;
 @RestController
 @SpringBootApplication
 @ComponentScan(basePackages = "eu")
+@EnableCaching
 public class CatalogueApp implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(CatalogueApp.class);

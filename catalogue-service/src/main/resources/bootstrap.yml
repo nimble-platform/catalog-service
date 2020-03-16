@@ -5,6 +5,9 @@ spring:
     # the name of the application represents the global identifier of this microservice.
     name: catalogue-service-srdc
     url: ${CATALOGUE_SERVICE_URL}
+  cache:
+      jcache:
+        config: classpath:ehcache.xml
   cloud:
     config:
       uri: ${CONFIG_SERVER_URI:http://localhost:8888}
