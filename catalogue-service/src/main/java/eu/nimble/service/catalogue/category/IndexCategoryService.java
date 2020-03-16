@@ -21,10 +21,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.*;
 
@@ -35,6 +36,9 @@ import java.util.*;
 public class IndexCategoryService {
     private static final Logger logger = LoggerFactory.getLogger(IndexCategoryService.class);
 
+    // self-invocation of this class needed to make sure that calls from this class leads to an cache interception for the methods annotated with @Cacheable
+    @Resource
+    private IndexCategoryService indexCategoryService;
     @Autowired
     private CredentialsUtil credentialsUtil;
     @Autowired
@@ -70,7 +74,7 @@ public class IndexCategoryService {
         // get children of parents categories
         List<List<Category>> childenListsList = new ArrayList<>();
         // first the root categories
-        List<Category> rootCategories = getRootCategories(IndexingWrapper.extractTaxonomyFromUri(parentIndexCategories.get(0).getUri()).getId());
+        List<Category> rootCategories = indexCategoryService.getRootCategories(IndexingWrapper.extractTaxonomyFromUri(parentIndexCategories.get(0).getUri()).getId());
         childenListsList.add(rootCategories);
 
         // get all children of each parent
@@ -189,6 +193,7 @@ public class IndexCategoryService {
         return getChildrenCategories(categoryUri);
     }
 
+    @Cacheable(value = "rootCategories")
     public List<Category> getRootCategories(String taxonomyId) {
         Map<String, String> facetCriteria = new HashMap<>();
 
