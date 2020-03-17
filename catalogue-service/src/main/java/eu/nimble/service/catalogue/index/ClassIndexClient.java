@@ -2,7 +2,7 @@ package eu.nimble.service.catalogue.index;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import eu.nimble.service.catalogue.category.IndexCategoryService;
+import eu.nimble.service.catalogue.cache.CacheHelper;
 import eu.nimble.service.catalogue.exception.InvalidCategoryException;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.Property;
@@ -17,13 +17,15 @@ import feign.Response;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.IOUtils;
+import org.ehcache.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.*;
 
@@ -38,6 +40,11 @@ public class ClassIndexClient {
     private CredentialsUtil credentialsUtil;
     @Autowired
     private PropertyIndexClient propertyIndexClient;
+    @Autowired
+    private CacheHelper cacheHelper;
+    // self-invocation of this class needed to make sure that calls from this class leads to an cache interception for the methods annotated with @Cacheable
+    @Resource
+    private ClassIndexClient classIndexClient;
 
     public boolean indexCategory(Category category, Set<String> directParentUris, Set<String> allParentUris, Set<String> directChildrenUris, Set<String> allChildrenUris)  {
         try {
@@ -72,11 +79,7 @@ public class ClassIndexClient {
         }
     }
 
-    public ClassType getIndexCategory(String taxonomyId, String categoryId) throws InvalidCategoryException {
-        String uri = IndexCategoryService.constructUri(taxonomyId, categoryId);
-        return getIndexCategory(uri);
-    }
-
+    @Cacheable(value = "category")
     public ClassType getIndexCategory(String uri) throws InvalidCategoryException {
         Set<String> paramWrap = new HashSet<>();
         paramWrap.add(uri);
@@ -89,8 +92,31 @@ public class ClassIndexClient {
     }
 
     public List<ClassType> getIndexCategories(Set<String> uris) {
+        logger.info("Incoming request to get indexed categories for uris: {}",uris);
+        // first, retrieve the categories from cache if possible, then retrieve the rest from indexing-service and cache them as well
+        Cache<Object,Object> categoryCache = cacheHelper.getCategoryCache();
+
+        List<ClassType> indexCategories = new ArrayList<>();
+        // uris to be retrieved from indexing-service
+        Set<String> urisToBeRetrievedFromIndex = new HashSet<>();
+        // check the existence of category uri in the cache
+        for (String uri : uris) {
+            if(categoryCache.containsKey(uri)){
+                indexCategories.add((ClassType) categoryCache.get(uri));
+            }
+            else{
+                urisToBeRetrievedFromIndex.add(uri);
+            }
+        }
+
+        // if all categories exist in the cache, return them
+        if(urisToBeRetrievedFromIndex.size() == 0){
+            logger.info("Retrieved indexed categories for uris: {},number of indexed categories: {}",uris,indexCategories.size());
+            return indexCategories;
+        }
+
+        // get the categories which are not cached from indexing service
         try {
-            logger.info("Incoming request to get indexed categories for uris: {}",uris);
             StringBuilder queryStr = new StringBuilder("");
             for(String uri : uris) {
                 queryStr.append("id:\"").append(uri).append("\" OR ");
@@ -103,7 +129,13 @@ public class ClassIndexClient {
             Response response = SpringBridge.getInstance().getiIndexingServiceClient().searchClass(credentialsUtil.getBearerToken(),JsonSerializationUtility.getObjectMapper().writeValueAsString(search));
 
             if (response.status() == HttpStatus.OK.value()) {
-                List<ClassType> indexCategories = extractIndexCategoriesFromSearchResults(response, uris.toString());
+                indexCategories = extractIndexCategoriesFromSearchResults(response, uris.toString());
+
+                // cache the categories
+                for (ClassType indexCategory : indexCategories) {
+                    categoryCache.put(indexCategory.getUri(),indexCategory);
+                }
+
                 logger.info("Retrieved indexed categories for uris: {},number of indexed categories: {}",uris,indexCategories.size());
                 return indexCategories;
 
@@ -121,7 +153,7 @@ public class ClassIndexClient {
     }
 
     public Category getCategory(String uri) throws InvalidCategoryException {
-        ClassType indexCategory = getIndexCategory(uri);
+        ClassType indexCategory = classIndexClient.getIndexCategory(uri);
         Category category = IndexingWrapper.toCategory(indexCategory);
 
         //populate properties

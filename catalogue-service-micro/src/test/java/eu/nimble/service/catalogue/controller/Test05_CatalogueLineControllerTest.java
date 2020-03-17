@@ -211,4 +211,19 @@ public class Test05_CatalogueLineControllerTest {
                 .header("Authorization", TestConfig.buyerId);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isNotFound()).andReturn();
     }
+
+    @Test
+    public void test11_postCatalogueLineWithInvalidId() throws Exception {
+        // add the catalogue line
+        String catalogueLineJson = IOUtils.toString(Test05_CatalogueLineControllerTest.class.getResourceAsStream("/example_catalogue_line_invalid_id.json"));
+        CatalogueLineType catalogueLine = mapper.readValue(catalogueLineJson, CatalogueLineType.class);
+        catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().setID(defaultCatalogueId);
+        catalogueLineJson = mapper.writeValueAsString(catalogueLine);
+
+        MockHttpServletRequestBuilder request = post("/catalogue/" + defaultCatalogueId + "/catalogueline")
+                .header("Authorization", TestConfig.buyerId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(catalogueLineJson);
+        this.mockMvc.perform(request).andDo(print()).andExpect(status().isBadRequest()).andReturn();
+    }
 }
