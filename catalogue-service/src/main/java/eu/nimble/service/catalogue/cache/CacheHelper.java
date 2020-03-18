@@ -1,5 +1,6 @@
 package eu.nimble.service.catalogue.cache;
 
+import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import org.ehcache.Cache;
 import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheManagerBuilder;
@@ -13,6 +14,7 @@ import java.net.URL;
 @Component
 public class CacheHelper {
     private CacheManager cacheManager;
+    private Cache catalogCache;
 
     private final String xmlConfigurationFile = "/ehcache.xml";
 
@@ -23,6 +25,8 @@ public class CacheHelper {
         cacheManager = CacheManagerBuilder.newCacheManager(xmlConfiguration);
         // initialize cache manager
         cacheManager.init();
+        // set catalog cache
+        catalogCache = cacheManager.getCache("catalog",Object.class, Object.class);
     }
 
     @PreDestroy
@@ -30,7 +34,28 @@ public class CacheHelper {
         cacheManager.close();
     }
 
+    // method for Category cache
     public Cache<Object,Object> getCategoryCache() {
         return cacheManager.getCache("category",Object.class, Object.class);
+    }
+
+    // methods for Catalog cache
+    public Object getCatalog(String uuid) {
+        if(catalogCache.containsKey(uuid)){
+            return catalogCache.get(uuid);
+        }
+        return null;
+    }
+
+    public void putCatalog(CatalogueType catalog) {
+        if(catalog != null){
+            catalogCache.put(catalog.getUUID(),catalog);
+        }
+    }
+
+    public void removeCatalog(String uuid) {
+        if(catalogCache.containsKey(uuid)){
+            catalogCache.remove(uuid);
+        }
     }
 }
