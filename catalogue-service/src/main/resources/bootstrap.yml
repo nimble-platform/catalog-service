@@ -310,6 +310,8 @@ persistence:
 nimble:
   catalog:
     max-file-size: 5 #in MB
+    category:
+      enabled-taxonomies: eClass,FurnitureOntology
   binary-content:
     url: CatalogBinaryContentUri
   identity:
