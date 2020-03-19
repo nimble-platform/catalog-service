@@ -1,10 +1,24 @@
 [
   {
     "id": "eClass",
-    "namespace": "http://www.nimble-project.org/resource/eclass#"
+    "namespace": "http://www.nimble-project.org/resource/eclass#",
+    "serviceRootCategories": [
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AFW236#002",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-ADG629#002",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-ADG630#002",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AAB315#006"
+    ]
   },
   {
     "id": "FurnitureOntology",
-    "namespace": "http://www.aidimme.es/FurnitureSectorOntology.owl#"
+    "namespace": "http://www.aidimme.es/FurnitureSectorOntology.owl#",
+    "serviceRootCategories": [
+      "http://www.aidimme.es/FurnitureSectorOntology.owl#LogisticsService",
+      "http://www.aidimme.es/FurnitureSectorOntology.owl#Service"
+    ]
+  },
+  {
+    "id": "TextileOntology",
+    "namespace": "http://nimble-project.eu/TextileAndWGSectorsOntology.owl#"
   }
 ]
