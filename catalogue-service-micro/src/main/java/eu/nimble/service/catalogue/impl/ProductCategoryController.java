@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.impl;
 
 import eu.nimble.service.catalogue.category.IndexCategoryService;
+import eu.nimble.service.catalogue.category.TaxonomyManager;
 import eu.nimble.service.catalogue.category.TaxonomyQueryInterface;
 import eu.nimble.service.catalogue.category.eclass.EClassIndexLoader;
 import eu.nimble.service.catalogue.config.RoleConfig;
@@ -38,6 +39,8 @@ public class ProductCategoryController {
     private static Logger log = LoggerFactory
             .getLogger(ProductCategoryController.class);
 
+    @Autowired
+    private TaxonomyManager taxonomyManager;
     @Autowired
     private IndexCategoryService categoryService;
     @Autowired
@@ -187,14 +190,44 @@ public class ProductCategoryController {
     public ResponseEntity getRootCategories(@ApiParam(value = "Taxonomy id from which categories would be retrieved.", required = true) @PathVariable String taxonomyId,
                                             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         // set request log of ExecutionContext
-        String requestLog = "Incoming request to get root categories";
+        String requestLog = String.format("Incoming request to get root categories for taxonomy: %s", taxonomyId);
+        log.info(requestLog);
         executionContext.setRequestLog(requestLog);
 
         if (!taxonomyIdExists(taxonomyId)) {
             throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_TAXONOMY.toString(),Arrays.asList(taxonomyId));
         }
         List<Category> categories = categoryService.getRootCategories(taxonomyId);
+        log.info("Completed request to get root categories for taxonomy: %{}", taxonomyId);
         return ResponseEntity.ok(categories);
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieves service of the specified taxonomy")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved the service categories successfully", response = Category.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Invalid taxonomy id")
+    })
+    @RequestMapping(value = "/taxonomies/{taxonomyId}/service-categories",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity getServiceCategoryUris(@ApiParam(value = "Taxonomy id from which categories would be retrieved.", required = true) @PathVariable String taxonomyId,
+                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to get service categories for taxonomy: %s", taxonomyId);
+        log.info(requestLog);
+        executionContext.setRequestLog(requestLog);
+
+        if (!taxonomyIdExists(taxonomyId)) {
+            throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_TAXONOMY.toString(),Arrays.asList(taxonomyId));
+        }
+
+        List<String> categoryUris = taxonomyManager.getTaxonomiesMap().get(taxonomyId).getTaxonomy().getServiceRootCategories();
+        if (categoryUris == null) {
+            categoryUris = new ArrayList<>();
+        }
+        log.info("Completed request to get service categories for taxonomy: {}", taxonomyId);
+        return ResponseEntity.ok(categoryUris);
     }
 
     @CrossOrigin(origins = {"*"})
