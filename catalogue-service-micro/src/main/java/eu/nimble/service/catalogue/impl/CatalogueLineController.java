@@ -175,6 +175,48 @@ public class CatalogueLineController {
     }
 
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieves the validity (i.e, whether it exists or not) of catalogue lines.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved the status of catalogue lines successfully", response = Boolean.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Number of elements in catalogue uuids list and line ids list does not match"),
+            @ApiResponse(code = 401, message = "No user exists for the given token")
+    })
+    @RequestMapping(value = "/catalogue/cataloguelines/valid",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity areProductsValid(@ApiParam(value = "Comma-separated catalogue uuids whose status to be checked e.g. 5e910673-8232-4ec1-adb3-9188377309bf,34rwe231-34ds-5dw2-hgd2-462tdr64wfgs", required = true) @RequestParam(value = "catalogueUuids",required = true) List<String> catalogueUuids,
+                                            @ApiParam(value = "Comma-separated line ids whose status to be checked e.g. e86e6558-b95c-4c3d-ac17-ac84830d7527,80f50752-e147-4063-8573-be78cde0d3a6",required = true) @RequestParam(value = "lineIds",required = true) List<String> lineIds,
+                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to get validity of catalogue lines, catalogue uuids: %s, line ids: %s",catalogueUuids,lineIds);
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(),RoleConfig.REQUIRED_ROLES_CATALOGUE)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
+        }
+
+        // ensure that catalogue uuids and catalogue line ids lists have the same size
+        if (catalogueUuids.size() != lineIds.size()) {
+            throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_GET_CATALOGUE_LINES.toString());
+        }
+
+        List<Boolean> areCatalogueLinesValid = new ArrayList<>();
+
+        int numberOfCatalog = catalogueUuids.size();
+        for(int i = 0; i < numberOfCatalog; i++){
+            // get catalogue line
+            CatalogueLineType catalogueLine = service.getCatalogueLine(catalogueUuids.get(i),lineIds.get(i));
+
+            areCatalogueLinesValid.add(catalogueLine != null);
+        }
+
+        log.info("Completed the request to get validity of catalogue lines, catalogue uuids: {}, line ids: {}",catalogueUuids,lineIds);
+        return ResponseEntity.ok(areCatalogueLinesValid);
+    }
+
+    @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves the catalogue line specified with the catalogueUuid and lineId parameters")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieved catalogue line successfully", response = CatalogueLineType.class),
