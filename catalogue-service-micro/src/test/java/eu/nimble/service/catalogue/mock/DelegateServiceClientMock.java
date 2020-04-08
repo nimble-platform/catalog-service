@@ -44,6 +44,16 @@ public class DelegateServiceClientMock implements IDelegateClient {
     }
 
     @Override
+    public Response getPersonViaToken(String s, String s1, String s2) {
+        return null;
+    }
+
+    @Override
+    public Response getPartyByPersonID(String s, String s1, String s2) {
+        return null;
+    }
+
+    @Override
     public Response getCollaborationGroup(String bearerToken,String id, String delegateId) {
         return null;
     }

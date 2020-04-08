@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue.util;
 import eu.nimble.common.rest.delegate.IDelegateClient;
 import eu.nimble.common.rest.identity.IIdentityClientTyped;
 import eu.nimble.common.rest.indexing.IIndexingServiceClient;
+import eu.nimble.service.catalogue.cache.CacheHelper;
 import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.category.TaxonomyManager;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
@@ -40,6 +41,8 @@ public class SpringBridge implements ApplicationContextAware {
     private TaxonomyManager taxonomyManager;
     @Autowired
     private IDelegateClient delegateClient;
+    @Autowired
+    private CacheHelper cacheHelper;
 
     private String federationId = null;
 
@@ -79,5 +82,9 @@ public class SpringBridge implements ApplicationContextAware {
 
     public String getFederationId() {
         return getCatalogueServiceConfig().getFederationInstanceId();
+    }
+
+    public CacheHelper getCacheHelper() {
+        return cacheHelper;
     }
 }

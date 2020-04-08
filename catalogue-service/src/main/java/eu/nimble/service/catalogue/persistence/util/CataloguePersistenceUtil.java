@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue.persistence.util;
 
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
+import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
@@ -178,7 +179,15 @@ public class CataloguePersistenceUtil {
     }
 
     public static CatalogueType getCatalogueByUuid(String catalogueUuid) {
-        return new JPARepositoryFactory().forCatalogueRepository(true).getSingleEntity(QUERY_GET_BY_UUID, new String[]{"uuid"}, new Object[]{catalogueUuid});
+        // retrieve catalog from cache
+        Object catalog = SpringBridge.getInstance().getCacheHelper().getCatalog(catalogueUuid);
+        // it does not exist in the cache, therefore, retrieve it from database and cache it
+        if(catalog == null){
+            catalog = new JPARepositoryFactory().forCatalogueRepository(true).getSingleEntity(QUERY_GET_BY_UUID, new String[]{"uuid"}, new Object[]{catalogueUuid});
+            // cache catalog
+            SpringBridge.getInstance().getCacheHelper().putCatalog((CatalogueType) catalog);
+        }
+        return (CatalogueType) catalog;
     }
 
     public static CatalogueType getCatalogueForParty(String catalogueId, String partyId) {

@@ -135,6 +135,8 @@ security:
 nimble:
   catalog:
     max-file-size: 5 #in MB
+    category:
+      enabled-taxonomies: ${CATALOGUE_SERVICE_ENABLED_TAXONOMIES} #comma separated taxonomy ids as defined in the Taxonomies.json file e.g. eClass,FurnitureOntology
   binary-content:
     url: CatalogBinaryContentUri
   identity:
@@ -308,6 +310,8 @@ persistence:
 nimble:
   catalog:
     max-file-size: 5 #in MB
+    category:
+      enabled-taxonomies: eClass,FurnitureOntology
   binary-content:
     url: CatalogBinaryContentUri
   identity:

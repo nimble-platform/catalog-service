@@ -15,6 +15,7 @@ import eu.nimble.service.catalogue.template.TemplateGenerator;
 import eu.nimble.service.catalogue.template.TemplateParser;
 import eu.nimble.service.catalogue.util.DataIntegratorUtil;
 import eu.nimble.service.catalogue.util.LanguageUtil;
+import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
 import eu.nimble.service.catalogue.validation.ValidationException;
 import eu.nimble.service.catalogue.validation.ValidationMessages;
@@ -115,6 +116,8 @@ public class CatalogueServiceImpl implements CatalogueService {
         }
         EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogue.getProviderParty().getPartyIdentification().get(0).getID());
         catalogue = repositoryWrapper.updateEntity(catalogue);
+        // cache catalog
+        SpringBridge.getInstance().getCacheHelper().putCatalog(catalogue);
         logger.info("Catalogue with uuid: {} updated in DB", catalogue.getUUID());
 
         // index catalogue
@@ -177,6 +180,8 @@ public class CatalogueServiceImpl implements CatalogueService {
             // persist the catalogue in relational DB
             EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(ublCatalogue.getProviderParty().getPartyIdentification().get(0).getID());
             catalogue = repositoryWrapper.updateEntityForPersistCases((T) ublCatalogue);
+            // cache catalog
+            SpringBridge.getInstance().getCacheHelper().putCatalog((CatalogueType) catalogue);
             logger.info("Catalogue with uuid: {} persisted in DB", uuid.toString());
 
             // index the catalogue
@@ -257,6 +262,8 @@ public class CatalogueServiceImpl implements CatalogueService {
             if (catalogue != null) {
                 EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogue.getProviderParty().getPartyIdentification().get(0).getID());
                 repositoryWrapper.deleteEntity(catalogue);
+                // remove catalog from cache
+                SpringBridge.getInstance().getCacheHelper().removeCatalog(catalogue.getUUID());
 
                 // delete indexed catalogue
                 itemIndexClient.deleteCatalogue(uuid);
@@ -623,6 +630,8 @@ public class CatalogueServiceImpl implements CatalogueService {
         }
         EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogue.getProviderParty().getPartyIdentification().get(0).getID());
         catalogue = repositoryWrapper.updateEntity(catalogue);
+        // cache catalog
+        SpringBridge.getInstance().getCacheHelper().putCatalog(catalogue);
         catalogueLine = catalogue.getCatalogueLine().get(catalogue.getCatalogueLine().size() - 1);
 
         // index the line
@@ -660,7 +669,11 @@ public class CatalogueServiceImpl implements CatalogueService {
         }
 
         oldcatalogue = repositoryWrapper.updateEntity(oldcatalogue);
+        // cache catalog
+        SpringBridge.getInstance().getCacheHelper().putCatalog(oldcatalogue);
         newcatalogue = repositoryWrapper.updateEntity(newcatalogue);
+        // cache catalog
+        SpringBridge.getInstance().getCacheHelper().putCatalog(newcatalogue);
         catalogueLine = newcatalogue.getCatalogueLine().get(newcatalogue.getCatalogueLine().size() - 1);
 
         // index the line
