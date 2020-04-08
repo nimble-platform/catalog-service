@@ -85,8 +85,8 @@ public class DataIntegratorUtil {
         List<CommodityClassificationType> commodityClassificationTypeList = new ArrayList<>();
         // find parents of the selected categories
         for(CommodityClassificationType cct : commodityClassifications){
-            // Default categories have no parents
-            if(cct.getItemClassificationCode().getListID().contentEquals("Default")){
+            // Default/custom categories have no parents
+            if(cct.getItemClassificationCode().getListID().contentEquals("Default") || cct.getItemClassificationCode().getListID().contentEquals("Custom")){
                 continue;
             }
             IndexCategoryService csm = SpringBridge.getInstance().getIndexCategoryService();
