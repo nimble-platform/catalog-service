@@ -302,7 +302,7 @@ public class AdminController {
         logger.info(requestLog);
         // validate role
         if(!validationUtil.validateRole(bearerToken,executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
-            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_CREATE_VAT_FOR_PRODUCTS.toString());
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_ADD_MISSING_PARENT_CATEGORIES.toString());
         }
         // get catalogues to be checked for missing parent categories
         List<CatalogueLineType> catalogueLines = new ArrayList<>();
@@ -352,7 +352,7 @@ public class AdminController {
         logger.info(requestLog);
         // validate role
         if(!validationUtil.validateRole(bearerToken,executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
-            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_CREATE_VAT_FOR_PRODUCTS.toString());
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_GET_PRODUCTS_WITH_MISSING_PARENT_CATEGORIES.toString());
         }
         // get catalogues to be checked for missing parent categories
         List<CatalogueType> catalogues = CataloguePersistenceUtil.getAllCatalogues();
