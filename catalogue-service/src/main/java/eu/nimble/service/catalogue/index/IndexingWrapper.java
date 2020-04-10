@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue.index;
 import eu.nimble.service.catalogue.category.Taxonomy;
 import eu.nimble.service.catalogue.category.TaxonomyQueryInterface;
 import eu.nimble.service.catalogue.category.eclass.EClassTaxonomyQueryImpl;
+import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.template.TemplateConfig;
@@ -21,7 +22,6 @@ import eu.nimble.service.model.ubl.extension.ItemPropertyValueQualifier;
 import eu.nimble.service.model.ubl.extension.QualityIndicatorParameter;
 import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.exception.NimbleException;
-import eu.nimble.utility.exception.NimbleExceptionMessageCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

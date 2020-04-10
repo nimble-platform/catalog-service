@@ -1,9 +1,9 @@
 package eu.nimble.service.catalogue.validation;
 
 import com.google.common.base.Strings;
+import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
-import eu.nimble.utility.exception.NimbleExceptionMessageCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

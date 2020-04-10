@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.validation;
 
 import com.google.common.base.Strings;
+import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
@@ -8,7 +9,6 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemPropertyType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
-import eu.nimble.utility.exception.NimbleExceptionMessageCode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
