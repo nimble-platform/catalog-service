@@ -571,11 +571,7 @@ public class CatalogueController {
                 lockPool.getLockForParty(partyId).writeLock().lock();
 
                 // parse catalogue
-                try {
-                    catalogue = service.parseCatalogue(file.getInputStream(), uploadMode, party, includeVat);
-                } catch (Exception e) {
-                    throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_PARSE_CATALOGUE.toString(),e);
-                }
+                catalogue = service.parseCatalogue(file.getInputStream(), uploadMode, party, includeVat);
 
                 // save catalogue
                 // check whether an insert or update operations is needed

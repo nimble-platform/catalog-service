@@ -2,10 +2,10 @@ package eu.nimble.service.catalogue.template;
 
 import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.exception.InvalidCategoryException;
+import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.Property;
-import eu.nimble.service.catalogue.model.category.Unit;
 import eu.nimble.service.catalogue.util.LanguageUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
@@ -53,15 +53,15 @@ public class TemplateParser {
         this.party = party;
     }
 
-    public List<CatalogueLineType> getCatalogueLines(InputStream catalogueTemplate, Boolean includeVat) throws TemplateParseException {
+    public List<CatalogueLineType> getCatalogueLines(InputStream catalogueTemplate, Boolean includeVat) throws TemplateParseException,InvalidCategoryException {
         OPCPackage pkg = null;
         try {
             pkg = OPCPackage.open(catalogueTemplate);
             wb = new XSSFWorkbook(pkg);
         } catch (InvalidFormatException e) {
-            throw new TemplateParseException("Invalid format for the submitted template", e);
+            throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_TEMPLATE_FORMAT.toString(), e);
         } catch (IOException e) {
-            throw new TemplateParseException("Failed to read the submitted template", e);
+            throw new TemplateParseException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_READ_TEMPLATE.toString(), e);
         } finally {
             if (pkg != null) {
                 try {
@@ -72,12 +72,7 @@ public class TemplateParser {
             }
         }
 
-        List<CatalogueLineType> results = null;
-        try {
-            results = parseProductPropertiesTab();
-        } catch (InvalidCategoryException e) {
-            throw new TemplateParseException("Failed to parse product properties tab", e);
-        }
+        List<CatalogueLineType> results =  parseProductPropertiesTab();
         parseTermsTab(results, includeVat);
 
         return results;
@@ -115,7 +110,7 @@ public class TemplateParser {
             String productId = item.getManufacturersItemIdentification().getID();
             // throw an exception if the same id is used for multiple products
             if(productIds.contains(productId)){
-                throw new TemplateParseException(String.format("There exists multiple products with the same id: %s in the template",productId));
+                throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_MULTIPLE_PRODUCTS_IN_TEMPLATE.toString(),Arrays.asList(productId));
             }
             productIds.add(productId);
         }
@@ -228,12 +223,7 @@ public class TemplateParser {
             }
         }
 
-
-        try {
-            valueQualifier = TemplateGenerator.denormalizeDataTypeFromTemplate(valueQualifier);
-        } catch (TemplateParseException e) {
-            throw new TemplateParseException(e.getMessage());
-        }
+        valueQualifier = TemplateGenerator.denormalizeDataTypeFromTemplate(valueQualifier);
         itemProp.setValueQualifier(valueQualifier);
 
         return itemProp;
@@ -296,7 +286,7 @@ public class TemplateParser {
             String dataType = TemplateGenerator.getCellStringValue(TemplateGenerator.getCellWithMissingCellPolicy(row, columnIndex));
             // custom properties can not have TEXT data type
             if(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_TEXT)){
-                throw new TemplateParseException("Custom properties can not have TEXT data type. Please, use MULTILINGUAL TEXT data type instead.");
+                throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_WRONG_DATA_TYPE_FOR_CUSTOM_PROPERTIES.toString());
             }
             dataType = TemplateGenerator.denormalizeDataTypeFromTemplate(dataType);
 
@@ -340,7 +330,7 @@ public class TemplateParser {
             Cell cell = TemplateGenerator.getCellWithMissingCellPolicy(propertiesRow, columnIndex);
             if (property.getPreferredName(null).equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION)) {
                 if(TemplateGenerator.getCellStringValue(cell).contentEquals("")){
-                    throw new TemplateParseException("No Manufacturer Item Identification provided for the item");
+                    throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_NO_MANUFACTURER_ITEM_IDENTIFICATION.toString());
                 }
                 ItemIdentificationType itemId = new ItemIdentificationType();
                 itemId.setID((String) parseCell(cell,TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION, TEMPLATE_DATA_TYPE_TEXT, false));
@@ -348,7 +338,7 @@ public class TemplateParser {
 
             } else if (property.getPreferredName(null).equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_NAME)) {
                 if(TemplateGenerator.getCellStringValue(cell).contentEquals("")){
-                    throw new TemplateParseException("No name provided for the item : " + " id: " + item.getManufacturersItemIdentification().getID());
+                    throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_NO_NAME_FOR_ITEM.toString(),Arrays.asList(item.getManufacturersItemIdentification().getID()));
                 }
                 List<TextType> productNames = (List<TextType>) parseCell(cell, TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_NAME, TEMPLATE_DATA_TYPE_MULTILINGUAL_TEXT, true);
 
@@ -421,7 +411,7 @@ public class TemplateParser {
                 try {
                     widths = (List<QuantityType>) parseCell(productPropertiesTab,cell,unitCell,TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_WIDTH, TEMPLATE_DATA_TYPE_QUANTITY, true);
                 } catch (TemplateParseException e) {
-                    throw new TemplateParseException("Failed to parse width dimension. Check the corresponding unit", e);
+                    throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_WIDTH_DIMENSION.toString(), e);
                 }
                 for (QuantityType width : widths) {
                     DimensionType dimension = new DimensionType();
@@ -436,7 +426,7 @@ public class TemplateParser {
                 try {
                     lengths = (List<QuantityType>) parseCell(productPropertiesTab,cell,unitCell,TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_LENGTH, TEMPLATE_DATA_TYPE_QUANTITY, true);
                 } catch (TemplateParseException e) {
-                    throw new TemplateParseException("Failed to parse length dimension. Check the corresponding unit", e);
+                    throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_LENGTH_DIMENSION.toString(), e);
                 }
                 for (QuantityType width : lengths) {
                     DimensionType dimension = new DimensionType();
@@ -451,7 +441,7 @@ public class TemplateParser {
                 try {
                     widths = (List<QuantityType>) parseCell(productPropertiesTab,cell,unitCell,TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_HEIGHT, TEMPLATE_DATA_TYPE_QUANTITY, true);
                 } catch (TemplateParseException e) {
-                    throw new TemplateParseException("Failed to parse width dimension. Check the corresponding unit", e);
+                    throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_HEIGHT_DIMENSION.toString(), e);
                 }
                 for (QuantityType width : widths) {
                     DimensionType dimension = new DimensionType();
@@ -488,7 +478,7 @@ public class TemplateParser {
                 }
             }
             if (row == null) {
-                throw new TemplateParseException("No trading & delivery terms for item name: " + LanguageUtil.getValue(item.getName(),defaultLanguage) + " id: " + item.getManufacturersItemIdentification().getID());
+                throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_NO_TRADING_DELIVERY_TERMS_FOR_ITEM.toString(),Arrays.asList(LanguageUtil.getValue(item.getName(),defaultLanguage),item.getManufacturersItemIdentification().getID()));
             }
 
             // parse the terms
@@ -511,7 +501,7 @@ public class TemplateParser {
                     Boolean currencyNotExist = (tmp == null || TemplateGenerator.getCellStringValue(tmp).contentEquals(""));
 
                     if((priceNotExist && !currencyNotExist) || (!priceNotExist && currencyNotExist)){
-                        throw new TemplateParseException("Both amount and currency must be filled for the price of the item name:"+LanguageUtil.getValue(item.getName(),defaultLanguage) + " id: " + item.getManufacturersItemIdentification().getID());
+                        throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_AMOUNT_CURRENCY_REQUIRED_FOR_PRICE.toString(),Arrays.asList(LanguageUtil.getValue(item.getName(),defaultLanguage),item.getManufacturersItemIdentification().getID()));
                     }
 
                     amount.setValue((BigDecimal) parseCell(cell,TEMPLATE_TRADING_DELIVERY_PRICE_AMOUNT, TEMPLATE_DATA_TYPE_NUMBER, false));
@@ -532,7 +522,7 @@ public class TemplateParser {
                     QuantityType minimumOrderQuantity = (QuantityType) parseCell(termsTab,cell,unitCell,TEMPLATE_TRADING_DELIVERY_MINIMUM_ORDER_QUANTITY, TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (minimumOrderQuantity != null) {
                         if (minimumOrderQuantity.getUnitCode() == null) {
-                            throw new TemplateParseException("A unit must be provided for the minimum order quantity of the item name: " + LanguageUtil.getValue(item.getName(),defaultLanguage) + " id: " + item.getManufacturersItemIdentification().getID());
+                            throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_UNIT_REQUIRED_FOR_MINIMUM_ORDER_QUANTITY.toString(),Arrays.asList(LanguageUtil.getValue(item.getName(),defaultLanguage),item.getManufacturersItemIdentification().getID()));
                         }
                     } else {
                         minimumOrderQuantity = new QuantityType();
@@ -547,7 +537,7 @@ public class TemplateParser {
                     QuantityType warrantyValidityPeriod = (QuantityType) parseCell(termsTab,cell,unitCell,TEMPLATE_TRADING_DELIVERY_WARRANTY_VALIDITY_PERIOD, TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (warrantyValidityPeriod != null) {
                         if (warrantyValidityPeriod.getUnitCode() == null) {
-                            throw new TemplateParseException("A unit must be provided for the warranty validity period of the item name: " + LanguageUtil.getValue(item.getName(),defaultLanguage) + " id: " + item.getManufacturersItemIdentification().getID());
+                            throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_UNIT_REQUIRED_FOR_WARRANTY_PERIOD.toString(),Arrays.asList(LanguageUtil.getValue(item.getName(),defaultLanguage),item.getManufacturersItemIdentification().getID()));
                         }
                     } else {
                         warrantyValidityPeriod = new QuantityType();
@@ -588,7 +578,7 @@ public class TemplateParser {
                     QuantityType estimatedDeliveryQuantity = (QuantityType) parseCell(termsTab,cell,unitCell,TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD, TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (estimatedDeliveryQuantity != null) {
                         if (estimatedDeliveryQuantity.getUnitCode() == null) {
-                            throw new TemplateParseException("A unit must be provided for the estimated delivery period of the item name: " + LanguageUtil.getValue(item.getName(),defaultLanguage) + " id: " + item.getManufacturersItemIdentification().getID());
+                            throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_UNIT_REQUIRED_FOR_DELIVERY_PERIOD.toString(),Arrays.asList(LanguageUtil.getValue(item.getName(),defaultLanguage),item.getManufacturersItemIdentification().getID()));
                         }
 
                     } else {
@@ -641,7 +631,7 @@ public class TemplateParser {
                     QuantityType packageQuantity = (QuantityType) parseCell(termsTab,cell,unitCell,TEMPLATE_TRADING_DELIVERY_PACKAGE_QUANTITY, TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (packageQuantity != null) {
                         if (packageQuantity.getUnitCode() == null) {
-                            throw new TemplateParseException("A unit must be provided for the package quantity of the item name: " + LanguageUtil.getValue(item.getName(),defaultLanguage) + " id: " + item.getManufacturersItemIdentification().getID());
+                            throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_UNIT_REQUIRED_FOR_PACKAGE_QUANTITY.toString(),Arrays.asList(LanguageUtil.getValue(item.getName(),defaultLanguage),item.getManufacturersItemIdentification().getID()));
                         }
                     } else {
                         packageQuantity = new QuantityType();
@@ -728,7 +718,7 @@ public class TemplateParser {
                     results.add(new BigDecimal(value));
                 } catch(NumberFormatException e) {
                     //  logger.warn("Invalid value passed for number: {}", value);
-                    throw new TemplateParseException("'"+propertyName+"' property can only have number : '"+value+"' is not a number");
+                    throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_NUMBER_REQUIRED_FOR_PROPERTY.toString(),Arrays.asList(propertyName,value));
                 }
             } else if (normalizedDataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY) == 0) {
                 results.add(parseQuantity(sheet,propertyName,value, cell,adjacentCell));
@@ -752,7 +742,7 @@ public class TemplateParser {
                 value.compareToIgnoreCase("FALSE") == 0 ||
                 value.compareToIgnoreCase("YES") == 0 ||
                 value.compareToIgnoreCase("NO") == 0)) {
-            throw new TemplateParseException("'"+propertyName+"' property can only have true/false or yes/no values");
+            throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_VALUE_FOR_BOOLEAN_PROPERTY.toString(),Arrays.asList(propertyName));
         }
         if (value.compareToIgnoreCase("YES") == 0) {
             value = "TRUE";
@@ -772,23 +762,23 @@ public class TemplateParser {
         } catch (NumberFormatException e) {
             //  logger.warn("Invalid number passed for quantity: {}", value, e);
             //  return null;
-            throw new TemplateParseException("'"+propertyName+"' property can only have number as value: '"+value+"' is not a number");
+            throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_NUMBER_REQUIRED_FOR_PROPERTY.toString(),Arrays.asList(propertyName,value));
         }
 
         // parse unit
         if (adjacentCell == null) {
-            throw new TemplateParseException("Both value and unit must be provided for '"+propertyName+"' property");
+            throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_VALUE_AND_UNIT_REQUIRED_FOR_PROPERTY.toString(),Arrays.asList(propertyName));
         } else {
             // check the data type of the quantity unit
             int columnIndex = adjacentCell.getColumnIndex();
             Row row = sheet.getRow(2);
             if(!TemplateGenerator.getCellStringValue(row.getCell(columnIndex)).contentEquals(TemplateConfig.TEMPLATE_QUANTITY_UNIT)){
-                throw new TemplateParseException("Quantity unit should be specified by using 'QUANTITY UNIT' data type");
+                throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_WRONG_DATA_TYPE_FOR_QUANTITY.toString());
             }
 
             value = TemplateGenerator.getCellStringValue(adjacentCell);
             if(value.contentEquals("")) {
-                throw new TemplateParseException("Both value and unit must be provided for '"+propertyName+"' property");
+                throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_VALUE_AND_UNIT_REQUIRED_FOR_PROPERTY.toString(),Arrays.asList(propertyName));
             }
         }
 
@@ -811,7 +801,7 @@ public class TemplateParser {
             byte[] srcBytes = Files.readAllBytes(Paths.get(filePath));
             binaryObject.setValue(srcBytes);
         } catch (IOException e) {
-            throw new TemplateParseException("Failed to get the file at " + filePath + " in base64 encoding", e);
+            throw new TemplateParseException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GET_FILE_IN_BASE_64_ENCODING.toString(),Arrays.asList(filePath), e);
         }
         return binaryObject;
     }

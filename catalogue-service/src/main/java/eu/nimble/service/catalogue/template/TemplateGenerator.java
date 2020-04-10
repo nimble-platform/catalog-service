@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.template;
 
 import eu.nimble.service.catalogue.exception.InvalidCategoryException;
+import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.model.category.Value;
@@ -1970,7 +1971,7 @@ public class TemplateGenerator {
             denormalizedDatatype = TEMPLATE_DATA_TYPE_STRING;
         } else {
             // for text or other unknown properties
-            throw new TemplateParseException("The data type of the property can not be '" + datatypeStr+"'" );
+            throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_DATA_TYPE_FOR_PROPERTY.toString(),Arrays.asList(datatypeStr));
         }
         return denormalizedDatatype;
     }

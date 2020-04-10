@@ -5,7 +5,6 @@ import eu.nimble.service.catalogue.category.TaxonomyManager;
 import eu.nimble.service.catalogue.category.TaxonomyQueryInterface;
 import eu.nimble.service.catalogue.category.eclass.EClassIndexLoader;
 import eu.nimble.service.catalogue.config.RoleConfig;
-import eu.nimble.service.catalogue.exception.InvalidCategoryException;
 import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.category.CategoryTreeResponse;
@@ -251,12 +250,7 @@ public class ProductCategoryController {
             throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_TAXONOMY.toString(),Arrays.asList(taxonomyId));
         }
 
-        List<Category> categories = null;
-        try {
-            categories = categoryService.getChildrenCategories(taxonomyId, categoryId);
-        } catch (InvalidCategoryException e) {
-            throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATEGORY.toString(),Arrays.asList(categoryId));
-        }
+        List<Category> categories = categoryService.getChildrenCategories(taxonomyId, categoryId);
         return ResponseEntity.ok(categories);
     }
 
@@ -285,12 +279,7 @@ public class ProductCategoryController {
             throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_TAXONOMY.toString(),Arrays.asList(taxonomyId));
         }
 
-        CategoryTreeResponse categories = null;
-        try {
-            categories = categoryService.getCategoryTree(taxonomyId, categoryId);
-        } catch (InvalidCategoryException e) {
-            throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATEGORY.toString(),Arrays.asList(categoryId));
-        }
+        CategoryTreeResponse categories = categoryService.getCategoryTree(taxonomyId, categoryId);
         return ResponseEntity.ok(categories);
     }
 

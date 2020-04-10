@@ -1,8 +1,11 @@
 package eu.nimble.service.catalogue.exception;
 
-public class InvalidCategoryException extends Exception {
+import eu.nimble.utility.exception.NimbleException;
+import java.util.Arrays;
 
-    public InvalidCategoryException(String message) {
-        super(message);
+public class InvalidCategoryException extends NimbleException {
+
+    public InvalidCategoryException(String categoryId) {
+        super(NimbleExceptionMessageCode.NOT_FOUND_NO_CATEGORY.toString(), Arrays.asList(categoryId));
     }
 }

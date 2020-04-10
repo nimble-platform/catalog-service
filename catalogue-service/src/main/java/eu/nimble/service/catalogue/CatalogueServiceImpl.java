@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue;
 import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.exception.InvalidCategoryException;
+import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
@@ -17,7 +18,6 @@ import eu.nimble.service.catalogue.util.DataIntegratorUtil;
 import eu.nimble.service.catalogue.util.LanguageUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
-import eu.nimble.service.catalogue.validation.ValidationException;
 import eu.nimble.service.catalogue.validation.ValidationMessages;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
@@ -104,15 +104,9 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public CatalogueType updateCatalogue(CatalogueType catalogue) {
+    public CatalogueType updateCatalogue(CatalogueType catalogue) throws InvalidCategoryException {
         logger.info("Catalogue with uuid: {} will be updated", catalogue.getUUID());
-        try {
-            DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(catalogue);
-        } catch (InvalidCategoryException e) {
-            String msg = e.getMessage();
-            logger.error(msg, e);
-            throw new CatalogueServiceException(msg, e);
-        }
+        DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(catalogue);
         EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogue.getProviderParty().getPartyIdentification().get(0).getID());
         catalogue = repositoryWrapper.updateEntity(catalogue);
         // cache catalog
@@ -157,7 +151,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public <T> T addCatalogueWithUUID(T catalogue, Configuration.Standard standard, String uuid) {
+    public <T> T addCatalogueWithUUID(T catalogue, Configuration.Standard standard, String uuid) throws InvalidCategoryException {
         if (standard == Configuration.Standard.UBL) {
             CatalogueType ublCatalogue = (CatalogueType) catalogue;
             if (uuid != null) {
@@ -168,13 +162,7 @@ public class CatalogueServiceImpl implements CatalogueService {
                 ublCatalogue.setUUID(uuid);
             }
 
-            try {
-                DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(ublCatalogue);
-            } catch (InvalidCategoryException e) {
-                String msg = e.getMessage();
-                logger.error(msg, e);
-                throw new CatalogueServiceException(msg, e);
-            }
+            DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(ublCatalogue);
 
             // persist the catalogue in relational DB
             EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(ublCatalogue.getProviderParty().getPartyIdentification().get(0).getID());
@@ -280,17 +268,10 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public Workbook generateTemplateForCategory(List<String> categoryIds, List<String> taxonomyIds,String templateLanguage) {
+    public Workbook generateTemplateForCategory(List<String> categoryIds, List<String> taxonomyIds,String templateLanguage) throws InvalidCategoryException{
         List<Category> categories = new ArrayList<>();
         for (int i = 0; i < categoryIds.size(); i++) {
-            Category category = null;
-            try {
-                category = indexCategoryService.getCategory(taxonomyIds.get(i), categoryIds.get(i));
-            } catch (InvalidCategoryException e) {
-                String msg = e.getMessage();
-                logger.error(msg, e);
-                throw new CatalogueServiceException(msg, e);
-            }
+            Category category = indexCategoryService.getCategory(taxonomyIds.get(i), categoryIds.get(i));
             categories.add(category);
         }
 
@@ -300,7 +281,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public Map<Workbook,String> generateTemplateForCatalogue(CatalogueType catalogue,String languageId) {
+    public Map<Workbook,String> generateTemplateForCatalogue(CatalogueType catalogue,String languageId) throws InvalidCategoryException{
         Map<HashSet<String>,List<CatalogueLineType>> categoryCatalogueLineMap = new HashMap<>();
         // create category-catalogue lines map
         for(CatalogueLineType catalogueLine:catalogue.getCatalogueLine()){
@@ -327,27 +308,13 @@ public class CatalogueServiceImpl implements CatalogueService {
         for (Map.Entry<HashSet<String>, List<CatalogueLineType>> entry : categoryCatalogueLineMap.entrySet()) {
             // get categories which are not Default or Custom categories
             List<Category> categories = new ArrayList<>();
-            try {
-                List<CommodityClassificationType> leafCommodityClassifications = DataIntegratorUtil.getLeafCategories(entry.getValue().get(0).getGoodsItem().getItem().getCommodityClassification());
-                for(CommodityClassificationType commodityClassification:leafCommodityClassifications){
-                    categories.add(indexCategoryService.getCategory(commodityClassification.getItemClassificationCode().getListID(),commodityClassification.getItemClassificationCode().getValue()));
-                }
+            List<CommodityClassificationType> leafCommodityClassifications = DataIntegratorUtil.getLeafCategories(entry.getValue().get(0).getGoodsItem().getItem().getCommodityClassification());
+            for(CommodityClassificationType commodityClassification:leafCommodityClassifications){
+                categories.add(indexCategoryService.getCategory(commodityClassification.getItemClassificationCode().getListID(),commodityClassification.getItemClassificationCode().getValue()));
             }
-            catch (InvalidCategoryException e){
-                String msg = e.getMessage();
-                logger.error(msg, e);
-                throw new CatalogueServiceException(msg, e);
-            }
-            // generate a template for the catalogue lines
+            // generate00 a template for the catalogue lines
             TemplateGenerator templateGenerator = new TemplateGenerator();
-            Workbook template = null;
-            try {
-                template = templateGenerator.generateTemplateForCatalogueLines(entry.getValue(),categories,languageId);
-            } catch (InvalidCategoryException e) {
-                String msg = e.getMessage();
-                logger.error(msg, e);
-                throw new CatalogueServiceException(msg, e);
-            }
+            Workbook template = templateGenerator.generateTemplateForCatalogueLines(entry.getValue(),categories,languageId);
             // add it to the map
             workbooks.put(template,createWorkbookName(categories,languageId));
         }
@@ -356,7 +323,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
 
     @Override
-    public CatalogueType parseCatalogue(InputStream catalogueTemplate, String uploadMode, PartyType party, Boolean includeVat) {
+    public CatalogueType parseCatalogue(InputStream catalogueTemplate, String uploadMode, PartyType party, Boolean includeVat) throws TemplateParseException{
         CatalogueType catalogue = getCatalogue("default", party.getPartyIdentification().get(0).getID());
         boolean newCatalogue = false;
         if (catalogue == null) {
@@ -364,15 +331,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         }
 
         TemplateParser templateParser = new TemplateParser(party);
-        List<CatalogueLineType> catalogueLines = null;
-        try {
-            catalogueLines = templateParser.getCatalogueLines(catalogueTemplate, includeVat);
-
-        } catch (TemplateParseException e) {
-            String msg = e.getMessage();
-            msg = msg != null ? msg : "Failed to parse the template";
-            throw new CatalogueServiceException(msg, e);
-        }
+        List<CatalogueLineType> catalogueLines = templateParser.getCatalogueLines(catalogueTemplate, includeVat);
 
         if (newCatalogue) {
             catalogue = new CatalogueType();
@@ -390,19 +349,12 @@ public class CatalogueServiceImpl implements CatalogueService {
     /**
      * Populates catalogue line list of the catalogue based on the given update mode.
      */
-    private void updateLinesForUploadMode(CatalogueType catalogue, String uploadMode, List<CatalogueLineType> catalogueLines) {
+    private void updateLinesForUploadMode(CatalogueType catalogue, String uploadMode, List<CatalogueLineType> catalogueLines) throws InvalidCategoryException,CatalogueServiceException {
         List<CatalogueLineType> newCatalogueLines = new ArrayList<>();
         if (uploadMode.compareToIgnoreCase("replace") == 0) {
             // since each catalogue line has the same categories, it is OK to get categories using the first one
             CommodityClassificationType defaultCategory = DataIntegratorUtil.getDefaultCategories(catalogueLines.get(0));
-            List<String> categoriesUris = null;
-            try {
-                categoriesUris = DataIntegratorUtil.getCategoryUris(catalogueLines.get(0));
-            } catch (InvalidCategoryException e) {
-                String msg = e.getMessage();
-                logger.error(msg, e);
-                throw new CatalogueServiceException(msg, e);
-            }
+            List<String> categoriesUris = DataIntegratorUtil.getCategoryUris(catalogueLines.get(0));
             // catalogue lines which will be removed and will be replaced by the new ones
             List<CatalogueLineType> catalogueLinesToBeRemoved = new ArrayList<>();
             for(CatalogueLineType catalogueLine:catalogue.getCatalogueLine()){
@@ -438,7 +390,7 @@ public class CatalogueServiceImpl implements CatalogueService {
             for (CatalogueLineType lineType : catalogue.getCatalogueLine()) {
                 String lineId = lineType.getGoodsItem().getItem().getManufacturersItemIdentification().getID();
                 if(productIds.contains(lineId)){
-                    throw new CatalogueServiceException(String.format("There exists another product having different categories for the given id: %s",lineId));
+                    throw new CatalogueServiceException(NimbleExceptionMessageCode.BAD_REQUEST_PRODUCT_WITH_DIFFERENT_CATEGORIES.toString(),Arrays.asList(lineId));
                 }
                 productIds.add(lineId);
             }
@@ -558,7 +510,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         } catch (IOException e) {
             String msg = "Failed to get next entry";
             logger.error(msg, e);
-            throw new CatalogueServiceException(msg, e);
+            throw new CatalogueServiceException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_GET_NEXT_ENTRY.toString(), e);
         }
     }
 
@@ -618,15 +570,9 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine) {
+    public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine) throws InvalidCategoryException{
         catalogue.getCatalogueLine().add(catalogueLine);
-        try {
-            DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(catalogueLine,catalogue);
-        } catch (InvalidCategoryException e) {
-            String msg = e.getMessage();
-            logger.error(msg, e);
-            throw new CatalogueServiceException(msg, e);
-        }
+        DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(catalogueLine,catalogue);
         EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogue.getProviderParty().getPartyIdentification().get(0).getID());
         catalogue = repositoryWrapper.updateEntity(catalogue);
         // cache catalog
@@ -640,7 +586,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public CatalogueLineType updateLinesCatalogue(String newCatalogueUuid, String oldeCatalogueUuid,CatalogueLineType catalogueLine) {
+    public CatalogueLineType updateLinesCatalogue(String newCatalogueUuid, String oldeCatalogueUuid,CatalogueLineType catalogueLine) throws InvalidCategoryException{
         CatalogueType oldcatalogue = getCatalogue(oldeCatalogueUuid);
         CatalogueType newcatalogue = getCatalogue(newCatalogueUuid);
 
@@ -659,13 +605,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         oldcatalogue.getCatalogueLine().remove(catLine);
         catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().setID(newCatalogueUuid);
         newcatalogue.getCatalogueLine().add(catalogueLine);
-        try {
-            DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(catalogueLine,newcatalogue);
-        } catch (InvalidCategoryException e) {
-            String msg = e.getMessage();
-            logger.error(msg, e);
-            throw new CatalogueServiceException(msg, e);
-        }
+        DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(catalogueLine,newcatalogue);
 
         oldcatalogue = repositoryWrapper.updateEntity(oldcatalogue);
         // cache catalog
@@ -684,15 +624,9 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine) {
+    public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine) throws InvalidCategoryException{
         CatalogueType catalogue = getCatalogue(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID());
-        try {
-            DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(catalogueLine, catalogue);
-        } catch (InvalidCategoryException e) {
-            String msg = e.getMessage();
-            logger.error(msg, e);
-            throw new CatalogueServiceException(msg, e);
-        }
+        DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(catalogueLine, catalogue);
         EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID());
         catalogueLine = repositoryWrapper.updateEntity(catalogueLine);
 
