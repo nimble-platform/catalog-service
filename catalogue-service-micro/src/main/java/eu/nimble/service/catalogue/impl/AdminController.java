@@ -223,7 +223,7 @@ public class AdminController {
 
         Response response;
         try {
-            response = SpringBridge.getInstance().getiIndexingServiceClient().searchItem(query);
+            response = SpringBridge.getInstance().getiIndexingServiceClient().searchItem(bearerToken,query);
 
             if(response.status() == 200){
                 JSONObject object = new JSONObject(IOUtils.toString(response.body().asInputStream()));

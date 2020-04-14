@@ -90,7 +90,7 @@ public class IndexingServiceClientMock implements IIndexingServiceClient {
         return Response.builder().headers(new HashMap<>()).status(HttpStatus.OK.value()).body(response, Charset.defaultCharset()).build();
     }
 
-    public Response searchItem(@RequestBody String query){
+    public Response searchItem(String s, String s1) {
         return null;
     }
 
