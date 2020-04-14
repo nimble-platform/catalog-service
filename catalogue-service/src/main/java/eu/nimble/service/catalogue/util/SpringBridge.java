@@ -8,12 +8,15 @@ import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.category.TaxonomyManager;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.persistence.util.LockPool;
-import feign.Response;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
+
+import java.util.Collections;
+import java.util.Locale;
 
 /**
  * Created by suat on 24-Jul-18.
@@ -43,6 +46,8 @@ public class SpringBridge implements ApplicationContextAware {
     private IDelegateClient delegateClient;
     @Autowired
     private CacheHelper cacheHelper;
+    @Autowired
+    private MessageSource messageSource;
 
     private String federationId = null;
 
@@ -86,5 +91,9 @@ public class SpringBridge implements ApplicationContextAware {
 
     public CacheHelper getCacheHelper() {
         return cacheHelper;
+    }
+
+    public String getMessage(String code,String languageId) {
+        return messageSource.getMessage(code, Collections.emptyList().toArray(), Locale.forLanguageTag(languageId));
     }
 }

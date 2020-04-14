@@ -86,7 +86,7 @@ public class ClassIndexClient {
         List<ClassType> categories = getIndexCategories(paramWrap);
         ClassType indexCategory = categories.size() > 0 ? categories.get(0) : null;
         if(indexCategory == null){
-            throw new InvalidCategoryException(String.format("There is no indexed category for the uri: %s",uri));
+            throw new InvalidCategoryException(uri);
         }
         return indexCategory;
     }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.exception.InvalidCategoryException;
+import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
 import eu.nimble.service.catalogue.index.ItemIndexClient;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
@@ -16,7 +17,6 @@ import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CommodityClassificationType;
 import eu.nimble.utility.exception.NimbleException;
-import eu.nimble.utility.exception.NimbleExceptionMessageCode;
 import eu.nimble.utility.persistence.GenericJPARepository;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.validation.IValidationUtil;
@@ -302,7 +302,7 @@ public class AdminController {
         logger.info(requestLog);
         // validate role
         if(!validationUtil.validateRole(bearerToken,executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
-            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_CREATE_VAT_FOR_PRODUCTS.toString());
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_ADD_MISSING_PARENT_CATEGORIES.toString());
         }
         // get catalogues to be checked for missing parent categories
         List<CatalogueLineType> catalogueLines = new ArrayList<>();
@@ -352,7 +352,7 @@ public class AdminController {
         logger.info(requestLog);
         // validate role
         if(!validationUtil.validateRole(bearerToken,executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
-            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_CREATE_VAT_FOR_PRODUCTS.toString());
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_GET_PRODUCTS_WITH_MISSING_PARENT_CATEGORIES.toString());
         }
         // get catalogues to be checked for missing parent categories
         List<CatalogueType> catalogues = CataloguePersistenceUtil.getAllCatalogues();

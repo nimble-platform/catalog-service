@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue.impl;
 
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.config.RoleConfig;
+import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
@@ -13,7 +14,6 @@ import eu.nimble.utility.Configuration;
 import eu.nimble.utility.ExecutionContext;
 import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.exception.NimbleException;
-import eu.nimble.utility.exception.NimbleExceptionMessageCode;
 import eu.nimble.utility.validation.IValidationUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;

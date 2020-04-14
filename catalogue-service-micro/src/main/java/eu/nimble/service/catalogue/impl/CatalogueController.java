@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue.impl;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
+import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
@@ -18,7 +19,6 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.*;
 import eu.nimble.utility.exception.BinaryContentException;
 import eu.nimble.utility.exception.NimbleException;
-import eu.nimble.utility.exception.NimbleExceptionMessageCode;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import eu.nimble.utility.serialization.TransactionEnabledSerializationUtility;
 import eu.nimble.utility.validation.IValidationUtil;
@@ -571,11 +571,7 @@ public class CatalogueController {
                 lockPool.getLockForParty(partyId).writeLock().lock();
 
                 // parse catalogue
-                try {
-                    catalogue = service.parseCatalogue(file.getInputStream(), uploadMode, party, includeVat);
-                } catch (Exception e) {
-                    throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_PARSE_CATALOGUE.toString(),e);
-                }
+                catalogue = service.parseCatalogue(file.getInputStream(), uploadMode, party, includeVat);
 
                 // save catalogue
                 // check whether an insert or update operations is needed

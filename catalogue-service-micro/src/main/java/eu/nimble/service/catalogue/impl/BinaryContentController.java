@@ -1,12 +1,12 @@
 package eu.nimble.service.catalogue.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.ExecutionContext;
 import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.exception.NimbleException;
-import eu.nimble.utility.exception.NimbleExceptionMessageCode;
 import eu.nimble.utility.persistence.binary.BinaryContentService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
