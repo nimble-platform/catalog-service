@@ -28,6 +28,20 @@
     "dataType": "http://www.w3.org/2001/XMLSchema#boolean"
   },
   {
+    "id": "customizable",
+    "preferredName": [
+      {
+        "value": "Customizable",
+        "languageID": "en"
+      },
+      {
+        "value": "Personalizable",
+        "languageID": "es"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#boolean"
+  },
+  {
     "id": "certificateType",
     "preferredName": [
       {
