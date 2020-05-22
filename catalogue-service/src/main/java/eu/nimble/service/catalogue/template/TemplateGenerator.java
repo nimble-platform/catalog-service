@@ -1051,6 +1051,11 @@ public class TemplateGenerator {
         cra = new CellRangeAddress(0, 0, 18, 20);
         termsTab.addMergedRegion(cra);
 
+        // customization block
+        cell = getCellWithMissingCellPolicy(topRow, 21);
+        cell.setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_CUSTOMIZATION.toString(), defaultLanguage));
+        cell.setCellStyle(boldCellStyle);
+
 
         // 2nd, 3rd and 4th rows
         // name, data type, unit label on the leftmost column
@@ -1234,6 +1239,10 @@ public class TemplateGenerator {
         cra = new CellRangeAddress(0, 0, 18, 20);
         termsExampleTab.addMergedRegion(cra);
 
+        // customization block
+        cell = getCellWithMissingCellPolicy(topRow, 21);
+        cell.setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_CUSTOMIZATION.toString(), defaultLanguage));
+        cell.setCellStyle(boldCellStyle);
 
         // 2nd, 3rd and 4th rows
         // name, data type, unit label on the leftmost column
@@ -1342,6 +1351,11 @@ public class TemplateGenerator {
                 termsExampleTab.getRow(4).getCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PLASTIC_HEAD_MALLET_PACKAGING_TYPE.toString(), defaultLanguage));
                 termsExampleTab.getRow(5).createCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_IRON_HEAD_MALLET_PACKAGING_TYPE.toString(), defaultLanguage));
                 termsExampleTab.getRow(6).createCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_WOOD_HEAD_MALLET_PACKAGING_TYPE.toString(), defaultLanguage));
+            }
+            else if(property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_CUSTOMIZABLE.toString(), defaultLanguage))){
+                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue(true);
+                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue(true);
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue(false);
             }
             else if(property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PACKAGE_QUANTITY.toString(), defaultLanguage))){
                 termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("10");

@@ -649,6 +649,8 @@ public class TemplateParser {
                         packageQuantity = new QuantityType();
                     }
                     catalogueLine.getGoodsItem().getContainingPackage().setQuantity(packageQuantity);
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_CUSTOMIZABLE.toString(), defaultLanguage) )){
+                    catalogueLine.getGoodsItem().getItem().setCustomizable((Boolean) parseCell(cell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_CUSTOMIZABLE.toString(), defaultLanguage) ,TEMPLATE_DATA_TYPE_BOOLEAN  , false));
                 }
                 columnIndex++;
             }

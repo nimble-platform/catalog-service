@@ -186,6 +186,12 @@ public class TemplateConfig {
         prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
         properties.add(prop);
 
+        // customizable
+        prop = new Property();
+        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_CUSTOMIZABLE.toString(), language) , language);
+        prop.setDataType("BOOLEAN");
+        properties.add(prop);
+
         return properties;
     }
 }
