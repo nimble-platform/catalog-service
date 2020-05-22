@@ -65,6 +65,7 @@ public class IndexingWrapper {
         }
         indexItem.setDescription(getLabelMapFromMultilingualLabels(catalogueLine.getGoodsItem().getItem().getDescription()));
         indexItem.setFreeOfCharge(catalogueLine.isFreeOfChargeIndicator());
+        indexItem.setCustomizable(catalogueLine.getGoodsItem().getItem().isCustomizable());
         indexItem.setImgageUri(getImageUris(catalogueLine));
         indexItem.setManufacturerId(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID());
         quantityValidator = new QuantityValidator(catalogueLine.getGoodsItem().getContainingPackage().getQuantity());
