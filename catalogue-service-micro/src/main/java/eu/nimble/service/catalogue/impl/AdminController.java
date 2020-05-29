@@ -95,7 +95,7 @@ public class AdminController {
 
         logger.info("Reading CatalogueProperties.json ...");
         InputStream inputStream = null;
-        inputStream =  ClassLoader.getSystemClassLoader().getResourceAsStream("CatalogueProperties.json");
+        inputStream =  AdminController.class.getResourceAsStream("/CatalogueProperties.json");
         String fileContent = IOUtils.toString(inputStream);
 
         logger.info("Read CatalogueProperties.json");
@@ -135,7 +135,7 @@ public class AdminController {
 
             String propertyJson = JsonSerializationUtility.getObjectMapper().writeValueAsString(indexProperty);
 
-            Response response = SpringBridge.getInstance().getiIndexingServiceClient().setItem(bearerToken,propertyJson);
+            Response response = SpringBridge.getInstance().getiIndexingServiceClient().setProperty(bearerToken,propertyJson);
 
             if (response.status() == HttpStatus.OK.value()) {
                 logger.info("Indexed property successfully. property uri: " + indexProperty.getUri());
