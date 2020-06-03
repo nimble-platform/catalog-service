@@ -270,6 +270,8 @@ public class TemplateParser {
             List<TextType> propertyNames = new ArrayList<>();
             List<String> propertyNamesString = parseMultiValues(TemplateGenerator.getCellWithMissingCellPolicy(row, columnIndex));
             for(String propertyNameString: propertyNamesString){
+                // remove all the leading and trailing spaces
+                propertyNameString = propertyNameString.trim();
                 String languageId;
                 String textValue;
                 // if the value's length is smaller than 3, it does not have any language id
@@ -703,6 +705,8 @@ public class TemplateParser {
             } else if (normalizedDataType.compareToIgnoreCase("TEXT") == 0) {
                 results.add(value);
             } else if (normalizedDataType.compareToIgnoreCase("MULTILINGUAL TEXT") == 0){
+                // remove all the leading and trailing spaces
+                value = value.trim();
                 String languageId;
                 String textValue;
                 // if the value's length is smaller than 3, it does not have any language id
