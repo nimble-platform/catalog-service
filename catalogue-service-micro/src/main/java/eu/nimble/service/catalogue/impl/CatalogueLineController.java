@@ -224,7 +224,7 @@ public class CatalogueLineController {
             @ApiResponse(code = 404, message = "Specified catalogue or catalogue line does not exist"),
             @ApiResponse(code = 500, message = "Unexpected error while getting catalogue line")
     })
-    @RequestMapping(value = "/catalogue/{catalogueUuid}/catalogueline/{lineId}",
+    @RequestMapping(value = "/catalogue/{catalogueUuid}/catalogueline/{lineId:.+}",
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity getCatalogueLine(@ApiParam(value = "uuid of the catalogue containing the line to be retrieved. (catalogue.uuid)", required = true) @PathVariable String catalogueUuid,
@@ -506,7 +506,7 @@ public class CatalogueLineController {
             @ApiResponse(code = 404, message = "Catalogue with the given uuid does not exist"),
             @ApiResponse(code = 500, message = "Failed to delete the catalogue line")
     })
-    @RequestMapping(value = "/catalogue/{catalogueUuid}/catalogueline/{lineId}",
+    @RequestMapping(value = "/catalogue/{catalogueUuid}/catalogueline/{lineId:.+}",
             produces = {"application/json"},
             method = RequestMethod.DELETE)
     public ResponseEntity deleteCatalogueLine(@ApiParam(value = "uuid of the catalogue containing the line to be retrieved. (catalogue.uuid)", required = true) @PathVariable String catalogueUuid,

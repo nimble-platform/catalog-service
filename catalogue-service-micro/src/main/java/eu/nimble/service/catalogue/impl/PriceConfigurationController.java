@@ -137,7 +137,7 @@ public class PriceConfigurationController {
             @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
             @ApiResponse(code = 404, message = "No catalogue or catalogue line found for the specified parameters")
     })
-    @RequestMapping(value = "/catalogue/{catalogueUuid}/catalogueline/{lineId}/price-options/{optionId}",
+    @RequestMapping(value = "/catalogue/{catalogueUuid}/catalogueline/{lineId:.+}/price-options/{optionId}",
             method = RequestMethod.DELETE)
     public ResponseEntity deletePricingOption(@ApiParam(value = "uuid of the catalogue containing the line for which the price option to be deleted. (catalogue.uuid)", required = true) @PathVariable("catalogueUuid") String catalogueUuid,
                                               @ApiParam(value = "Identifier of the catalogue line from which the price option to be deleted. (lineId.id)", required = true) @PathVariable("lineId") String lineId,
