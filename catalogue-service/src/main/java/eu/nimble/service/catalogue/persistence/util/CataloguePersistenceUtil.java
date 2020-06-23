@@ -99,7 +99,7 @@ public class CataloguePersistenceUtil {
         return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_ALL_CATALOGUES_FOR_PARTY, new String[]{"partyId"}, new Object[]{partyId});
     }
 
-    public static CataloguePaginationResponse getCatalogueLinesForParty(String catalogueId, String partyId, String selectedCategoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset,String catalogueUUID) {
+    public static CataloguePaginationResponse getCatalogueLinesForParty(String catalogueId, String partyId, String selectedCategoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset) {
 
         String catalogueUuid = "";
         long size = 0;
@@ -112,16 +112,12 @@ public class CataloguePersistenceUtil {
             categoryNames = new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_COMMODITY_CLASSIFICATION_NAMES_FOR_PARTY_CATALOGUES,new String[]{"partyId"}, new Object[]{partyId});
             if(limit != 0){
                 // get the query
-                queryData = getQuery(null,partyId,searchText,languageId,selectedCategoryName,sortOption,catalogueUUID);
+                queryData = getQuery(null,partyId,searchText,languageId,selectedCategoryName,sortOption,null);
             }
 
         }else{
-            if(catalogueUUID == null){
-                // get catalogue uuid
-                catalogueUuid = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_CATALOGUE_UUID_FOR_PARTY,new String[]{"catalogueId","partyId"}, new Object[]{catalogueId,partyId});
-            }else{
-                catalogueUuid = catalogueUUID;
-            }
+            // get catalogue uuid
+            catalogueUuid = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_CATALOGUE_UUID_FOR_PARTY,new String[]{"catalogueId","partyId"}, new Object[]{catalogueId,partyId});
 
             if(catalogueUuid != null){
                 // get names of the categories for all catalogue lines which the catalogue contains

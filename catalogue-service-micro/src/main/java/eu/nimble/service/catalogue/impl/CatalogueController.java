@@ -91,7 +91,6 @@ public class CatalogueController {
                                                         @ApiParam(value = "Identifier for the language of search text such as en and tr") @RequestParam(value = "languageId",required = false) String languageId,
                                                         @ApiParam(value = "Name of the category which is used to filter catalogue lines.Catalogue lines are added to the response if and only if they contain the given category.") @RequestParam(value = "categoryName",required = false) String categoryName,
                                                         @ApiParam(value = "Option used to sort catalogue lines") @RequestParam(value = "sortOption",required = false) CatalogueLineSortOptions sortOption,
-                                                        @ApiParam(value = "CatalogueUUID") @RequestParam(value = "catalogueUUId",required = false) String catalogueUUId,
                                                         @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         // set request log of ExecutionContext
         String requestLog = String.format("Incoming request to get CataloguePaginationResponse for party: %s, catalogue id: %s with limit: %s, offset: %s", partyId, catalogueId, limit, offset);
@@ -111,7 +110,7 @@ public class CatalogueController {
         CataloguePaginationResponse cataloguePaginationResponse;
 
         try {
-            cataloguePaginationResponse = service.getCataloguePaginationResponse(catalogueId, partyId,categoryName,searchText,languageId,sortOption,limit,offset,catalogueUUId);
+            cataloguePaginationResponse = service.getCataloguePaginationResponse(catalogueId, partyId,categoryName,searchText,languageId,sortOption,limit,offset);
         } catch (Exception e) {
             throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_CATALOGUE_PAGINATION_RESPONSE.toString(), Arrays.asList(partyId, catalogueId),e);
         }
