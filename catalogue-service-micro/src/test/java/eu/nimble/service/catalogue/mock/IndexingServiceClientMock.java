@@ -73,6 +73,11 @@ public class IndexingServiceClientMock implements IIndexingServiceClient {
         return null;
     }
 
+    @Override
+    public Response clearItemIndex(String s) {
+        return null;
+    }
+
     public Response setProperty(@RequestHeader("Authorization") String bearerToken, @RequestBody String prop){
         return null;
     }
