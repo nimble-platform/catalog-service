@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.ClauseType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.JsonSerializationUtility;
@@ -27,10 +28,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -339,8 +337,32 @@ public class Test01_CatalogueControllerTest {
 
     }
 
+
     @Test
-    public void test7_deleteCataloguesForParty() throws Exception {
+    public void test70_setContractForCatalogue() throws Exception {
+        String clauses = IOUtils.toString(Test01_CatalogueControllerTest.class.getResourceAsStream("/example_contract_clauses.json"));
+
+        MockHttpServletRequestBuilder request = post(String.format("/catalogue/%s/contract",createdCatalogueId))
+                .header("Authorization", TestConfig.buyerId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(clauses);
+        MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+    }
+
+    @Test
+    public void test71_getContractForCatalogue() throws Exception {
+        MockHttpServletRequestBuilder request = get("/catalogue//contract")
+                .param("catalogueUuids",createdCatalogueId)
+                .header("Authorization", TestConfig.buyerId);
+        MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+        HashMap<String,List<ClauseType>> catalogueClauses =  mapper.readValue(result.getResponse().getContentAsString(), HashMap.class);
+
+        Assert.assertEquals(1,catalogueClauses.size());
+        Assert.assertEquals(2,catalogueClauses.get(createdCatalogueId).size());
+    }
+
+    @Test
+    public void test8_deleteCataloguesForParty() throws Exception {
         MockHttpServletRequestBuilder request = delete("/catalogue")
                 .header("Authorization",TestConfig.buyerId)
                 .param("deleteAll","true")
@@ -354,7 +376,7 @@ public class Test01_CatalogueControllerTest {
     }
 
     @Test
-    public void test8_postJsonCatalogueWithTransportService() throws Exception {
+    public void test9_postJsonCatalogueWithTransportService() throws Exception {
         String catalogueJson = IOUtils.toString(Test01_CatalogueControllerTest.class.getResourceAsStream("/example_catalogue_transport_service.json"));
 
         MockHttpServletRequestBuilder request = post("/catalogue/ubl")

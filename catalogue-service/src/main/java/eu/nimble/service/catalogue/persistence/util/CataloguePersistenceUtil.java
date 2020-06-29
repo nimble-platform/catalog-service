@@ -5,6 +5,7 @@ import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.ClauseType;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
 
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ public class CataloguePersistenceUtil {
             + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification"
             + " WHERE catalogue.ID = :catalogueId"
             + " AND partyIdentification.ID = :partyId";
+    private static final String QUERY_GET_CLAUSES_BY_UUID = "SELECT catalogue.clause FROM CatalogueType catalogue WHERE catalogue.UUID = :uuid";
     private static final String QUERY_CHECK_EXISTENCE_BY_ID = "SELECT COUNT(catalogue) FROM CatalogueType catalogue"
             + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification"
             + " WHERE catalogue.ID = :catalogueId and partyIdentification.ID = :partyId";
@@ -192,6 +194,10 @@ public class CataloguePersistenceUtil {
 
     public static CatalogueType getCatalogueForParty(String catalogueId, String partyId, boolean lazyDisabled) {
         return new JPARepositoryFactory().forCatalogueRepository(lazyDisabled).getSingleEntity(QUERY_GET_FOR_PARTY, new String[]{"catalogueId", "partyId"}, new Object[]{catalogueId, partyId});
+    }
+
+    public static List<ClauseType> getClausesForCatalogue(String uuid) {
+        return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_CLAUSES_BY_UUID, new String[]{"uuid"}, new Object[]{uuid});
     }
 
     public static Boolean checkCatalogueExistenceById(String catalogueId, String partyId) {
