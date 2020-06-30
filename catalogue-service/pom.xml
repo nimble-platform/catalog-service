@@ -45,6 +45,12 @@
             <groupId>eu.nimble.core.common</groupId>
             <artifactId>solr-data-model</artifactId>
             <version>0.0.1-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.data</groupId>
+                    <artifactId>spring-data-solr</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>eu.nimble.core.common</groupId>
@@ -60,11 +66,6 @@
             <groupId>eu.nimble.core.common</groupId>
             <artifactId>rest-client</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.solr</groupId>
-            <artifactId>solr-solrj</artifactId>
-            <version>5.5.3</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
