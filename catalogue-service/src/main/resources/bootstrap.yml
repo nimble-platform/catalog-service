@@ -150,10 +150,6 @@ nimble:
     url: ${TRUST_SERVICE_URL}
   indexing:
     url: ${INDEXING_SERVICE_URL}
-    solr:
-      url: ${INDEXING_SERVICE_SOLR_URL}
-      username: ${INDEXING_SERVICE_SOLR_USERNAME}
-      password: ${INDEXING_SERVICE_SOLR_PASSWORD}
     sync: ${INDEXING_SYNC:true}
   oauth:
     client:
@@ -323,10 +319,6 @@ nimble:
     url:
   indexing:
     url:
-    solr:
-      url:
-      username:
-      password:
     sync: false
   oauth:
     client:
