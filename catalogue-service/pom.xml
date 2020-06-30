@@ -47,8 +47,12 @@
             <version>0.0.1-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
-                    <groupId>org.springframework.data</groupId>
-                    <artifactId>spring-data-solr</artifactId>
+                    <groupId>org.apache.solr</groupId>
+                    <artifactId>solr-solrj</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.solr</groupId>
+                    <artifactId>solr-langid</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
