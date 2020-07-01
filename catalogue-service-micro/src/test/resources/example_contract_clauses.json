@@ -1,0 +1,24 @@
+[
+  {
+    "id": "1_Catalog Specific Clause",
+    "type": null,
+    "content": [
+      {
+        "value": "some description here",
+        "languageID": "en"
+      }
+    ],
+    "tradingTerms": []
+  },
+  {
+    "id": "2_Second Catalog Specific Clause",
+    "type": null,
+    "content": [
+      {
+        "value": "Additional description here",
+        "languageID": "en"
+      }
+    ],
+    "tradingTerms": []
+  }
+]

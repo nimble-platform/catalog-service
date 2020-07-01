@@ -25,7 +25,7 @@ public interface CatalogueService {
 
     public CatalogueType getCatalogue(String id, String partyId);
 
-    public CataloguePaginationResponse getCataloguePaginationResponse(String catalogueId, String partyId, String categoryName,String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset,String catalogueUUID);
+    public CataloguePaginationResponse getCataloguePaginationResponse(String catalogueId, String partyId, String categoryName,String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset);
 
     public CatalogueType updateCatalogue(CatalogueType catalogue);
 
@@ -43,7 +43,7 @@ public interface CatalogueService {
 
     public <T> T getCatalogue(String id, String partyId, Configuration.Standard standard);
 
-    public <T> T getCataloguePaginationResponse(String id, String partyId,String categoryName, Configuration.Standard standard,String searchText,String languageId,CatalogueLineSortOptions sortOption, int limit, int offset,String catalogueUUID);
+    public <T> T getCataloguePaginationResponse(String id, String partyId,String categoryName, Configuration.Standard standard,String searchText,String languageId,CatalogueLineSortOptions sortOption, int limit, int offset);
 
     public void deleteCatalogue(String uuid, Configuration.Standard standard);
 

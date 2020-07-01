@@ -28,6 +28,20 @@
     "dataType": "http://www.w3.org/2001/XMLSchema#boolean"
   },
   {
+    "id": "price",
+    "preferredName": [
+      {
+        "value": "Price",
+        "languageID": "en"
+      },
+      {
+        "value": "Precio",
+        "languageID": "es"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
     "id": "customizable",
     "preferredName": [
       {
@@ -330,6 +344,48 @@
       },
       {
         "value": "Nombre comercial de la empresa",
+        "languageID": "es"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "manufacturer.businessKeywords",
+    "preferredName": [
+      {
+        "value": "Business Keywords",
+        "languageID": "en"
+      },
+      {
+        "value": "Palabras Comerciales clave",
+        "languageID": "es"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "manufacturer.activitySectors",
+    "preferredName": [
+      {
+        "value": "Activity Sectors",
+        "languageID": "en"
+      },
+      {
+        "value": "Sectores de Actividad",
+        "languageID": "es"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#string"
+  },
+  {
+    "id": "manufacturer.businessType",
+    "preferredName": [
+      {
+        "value": "Business Type",
+        "languageID": "en"
+      },
+      {
+        "value": "Tipo de Negocio",
         "languageID": "es"
       }
     ],
