@@ -64,6 +64,8 @@ public class CataloguePersistenceUtil {
             + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification"
             + " WHERE catalogue.ID = :catalogueId"
             + " AND partyIdentification.ID = :partyId";
+    private static final String QUERY_GET_PERMITTED_PARTIES_FOR_CATALOG = "SELECT permittedPartyIDs.item FROM CatalogueType catalogue join catalogue.permittedPartyIDItems permittedPartyIDs WHERE catalogue.UUID = :uuid";
+    private static final String QUERY_GET_RESTRICTED_PARTIES_FOR_CATALOG = "SELECT restrictedPartyIDs.item FROM CatalogueType catalogue join catalogue.restrictedPartyIDItems restrictedPartyIDs WHERE catalogue.UUID = :uuid";
     // native queries
     private static final String QUERY_GET_CATALOGUE_LINE_IDS_WITH_CATEGORY_NAME_AND_SEARCH_TEXT_FOR_PARTY = "select catalogue_line.id from catalogue_type catalogue join party_type party on (catalogue.provider_party_catalogue_typ_0 = party.hjid)" +
             " join party_identification_type party_identification on (party_identification.party_identification_party_t_0 = party.hjid)" +
@@ -95,6 +97,14 @@ public class CataloguePersistenceUtil {
 
     public static List<CatalogueType> getAllCatalogues() {
         return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_ALL_CATALOGUES);
+    }
+
+    public static List<String> getPermittedParties(String catalogueUuid) {
+        return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_PERMITTED_PARTIES_FOR_CATALOG, new String[]{"uuid"}, new Object[]{catalogueUuid});
+    }
+
+    public static List<String> getRestrictedParties(String catalogueUuid) {
+        return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_RESTRICTED_PARTIES_FOR_CATALOG, new String[]{"uuid"}, new Object[]{catalogueUuid});
     }
 
     public static List<CatalogueType> getAllCataloguesForParty(String partyId) {
@@ -173,6 +183,10 @@ public class CataloguePersistenceUtil {
         cataloguePaginationResponse.setCatalogueUuid(catalogueUuid);
         cataloguePaginationResponse.setCategoryNames(categoryNames);
         cataloguePaginationResponse.setCatalogueId(catalogueId);
+        if(catalogueUuid != null && !catalogueUuid.contentEquals("")){
+            cataloguePaginationResponse.setPermittedParties(getPermittedParties(catalogueUuid));
+            cataloguePaginationResponse.setRestrictedParties(getRestrictedParties(catalogueUuid));
+        }
         return cataloguePaginationResponse;
     }
 
