@@ -1,0 +1,11 @@
+Dear [(${user})],
+
+[(${companyName})] would like to share their catalogue details:
+
+[(${details})]
+
+You can see the products included in this offer via the following links:
+[(${urls})]
+
+Sincerely,
+[(${platformName})] Notification Service

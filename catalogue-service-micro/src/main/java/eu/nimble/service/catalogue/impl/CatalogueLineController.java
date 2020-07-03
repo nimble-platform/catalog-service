@@ -10,10 +10,14 @@ import eu.nimble.service.catalogue.model.statistics.ProductAndServiceStatistics;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.catalogue.util.CatalogueEvent;
 import eu.nimble.service.catalogue.util.LoggerUtil;
+import eu.nimble.service.catalogue.util.SpringBridge;
+import eu.nimble.service.catalogue.util.email.EmailSenderUtil;
 import eu.nimble.service.catalogue.validation.CatalogueLineValidator;
 import eu.nimble.service.catalogue.validation.ValidationMessages;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.PersonType;
 import eu.nimble.utility.*;
 import eu.nimble.utility.exception.NimbleException;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
@@ -57,6 +61,8 @@ public class CatalogueLineController {
     private IValidationUtil validationUtil;
     @Autowired
     private ExecutionContext executionContext;
+    @Autowired
+    private EmailSenderUtil emailSenderUtil;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves the catalogue line with the DB-scoped identifier")
@@ -565,6 +571,68 @@ public class CatalogueLineController {
 
         log.info("Completed the request to get product and service count");
         return ResponseEntity.ok(serializationUtility.serializeUBLObject(stats));
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Offers the given catalogues/products to the specified companies by VAT numbers.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Offered catalogues/products to the specified companies successfully"),
+            @ApiResponse(code = 401, message = "Invalid role."),
+            @ApiResponse(code = 500, message = "Unexpected error while offering catalogues/products to the specified companies")
+    })
+    @RequestMapping(value = "/catalogue/cataloguelines/offer",
+            produces = {"application/json"},
+            method = RequestMethod.POST)
+    public ResponseEntity offerCatalogsOrLines(@ApiParam(value = "Comma-separated catalogue uuids to be offered e.g. 5e910673-8232-4ec1-adb3-9188377309bf,34rwe231-34ds-5dw2-hgd2-462tdr64wfgs", required = true) @RequestParam(value = "catalogueUuids",required = true) List<String> catalogueUuids,
+                                               @ApiParam(value = "Comma-separated line ids to be offered e.g. e86e6558-b95c-4c3d-ac17-ac84830d7527,80f50752-e147-4063-8573-be78cde0d3a6",required = false) @RequestParam(value = "lineIds",required = false) List<String> lineIds,
+                                               @ApiParam(value = "Comma-separated vat numbers of the companies to which the offer is sent e.g. VAT1,VAT2",required = true) @RequestParam(value = "vats",required = true) List<String> vatNumbers,
+                                               @ApiParam(value = "The details of the offer") @RequestBody String offerDetails,
+                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to offer products, catalogue uuids: %s, line ids: %s, vat numbers: %s, offer details: %s",catalogueUuids,lineIds,vatNumbers,offerDetails);
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(),RoleConfig.REQUIRED_ROLES_CATALOGUE_WRITE)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
+        }
+
+        // identifiers for the products which are included in the offer
+        List<String> uuids = new ArrayList<>();
+        List<String> ids = new ArrayList<>();
+
+        // retrieve all lines from the catalogues
+        if (lineIds == null || catalogueUuids.size() != lineIds.size()) {
+            List<Object[]> catalogueUuidsAndIds = CatalogueLinePersistenceUtil.getCatalogueUuidAndLines(catalogueUuids);
+            for (Object[] result : catalogueUuidsAndIds) {
+                String uuid = (String) result[0];
+                String id = (String) result[1];
+
+                uuids.add(uuid);
+                ids.add(id);
+            }
+        }
+        // send offer to the specified catalogue lines
+        else{
+            uuids = catalogueUuids;
+            ids = lineIds;
+        }
+
+        try {
+            // get person using the given bearer token
+            PersonType person = SpringBridge.getInstance().getiIdentityClientTyped().getPerson(bearerToken);
+            // get party for the person
+            PartyType party = SpringBridge.getInstance().getiIdentityClientTyped().getPartyByPersonID(person.getID()).get(0);
+
+            // send an email
+            emailSenderUtil.offerProducts(offerDetails,vatNumbers,uuids,ids,party.getPartyName().get(0).getName().getValue());
+        } catch (Exception e) {
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_OFFER_PRODUCT_DETAILS.toString(), Arrays.asList(catalogueUuids.toString(),lineIds == null ? "" :lineIds.toString(),vatNumbers.toString()),e);
+        }
+
+        log.info("Completed the request to offer products, catalogue uuids: {}, line ids: {}, vat numbers: {}, offer details: {}",catalogueUuids,lineIds,vatNumbers,offerDetails);
+        return ResponseEntity.ok(null);
     }
 
     private ResponseEntity createErrorResponseEntity(String msg, HttpStatus status, Exception e) {
