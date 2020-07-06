@@ -162,6 +162,8 @@ nimble:
   indexing:
     url: ${INDEXING_SERVICE_URL}
     sync: ${INDEXING_SYNC:true}
+    federated-index-enabled: ${FEDERATED_INDEX_ENABLED:false}
+    federated-index-url: ${FEDERATED_INDEXING_SERVICE_URL:}
   oauth:
     client:
       clientId: ${CATALOG_SERVICE_OAUTH_CLIENT_ID}
