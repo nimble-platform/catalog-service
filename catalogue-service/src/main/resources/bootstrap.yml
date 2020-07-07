@@ -336,8 +336,10 @@ nimble:
   trust:
     url:
   indexing:
-    url:
+    url: http://localhost:8090
     sync: false
+    federated-index-enabled: ${FEDERATED_INDEX_ENABLED:false}
+    federated-index-url: ${FEDERATED_INDEXING_SERVICE_URL:http://localhost:8090}
   oauth:
     client:
       clientId:
