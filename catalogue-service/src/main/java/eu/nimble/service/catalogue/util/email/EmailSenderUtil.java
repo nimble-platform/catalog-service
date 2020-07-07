@@ -24,6 +24,7 @@ import org.springframework.web.client.RestTemplate;
 import org.thymeleaf.context.Context;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,7 +95,7 @@ public class EmailSenderUtil {
             List<String> productDetailUrls = new ArrayList<>();
             int size = catalogueUuids.size();
             for(int i = 0; i < size; i++){
-                productDetailUrls.add(frontEndURL+String.format("/#/product-details?catalogueId=%s&id=%s",catalogueUuids.get(i),lineIds.get(i)));
+                productDetailUrls.add(frontEndURL+String.format("/#/product-details?catalogueId=%s&id=%s",catalogueUuids.get(i), URLEncoder.encode(lineIds.get(i),"UTF-8")));
             }
 
             if(userRepresentationsForMail.size() == 0){
