@@ -8,6 +8,7 @@ import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.statistics.ProductAndServiceStatistics;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
+import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.util.CatalogueEvent;
 import eu.nimble.service.catalogue.util.LoggerUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
@@ -528,8 +529,12 @@ public class CatalogueLineController {
             throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
         }
 
-        if (service.getCatalogue(catalogueUuid) == null) {
-            throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(catalogueUuid));
+        if (!CataloguePersistenceUtil.checkCatalogueExistenceByUuid(catalogueUuid)) {
+            throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(), Collections.singletonList(catalogueUuid));
+        }
+
+        if(!CatalogueLinePersistenceUtil.checkCatalogueLineExistence(catalogueUuid,lineId)){
+            throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE_LINE_WITH_ID.toString(), Collections.singletonList(lineId));
         }
 
         try {
