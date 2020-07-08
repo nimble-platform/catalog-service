@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue.index;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.nimble.common.rest.indexing.IIndexingServiceClient;
 import eu.nimble.service.catalogue.cache.CacheHelper;
 import eu.nimble.service.catalogue.exception.InvalidCategoryException;
 import eu.nimble.service.catalogue.model.category.Category;
@@ -45,6 +46,8 @@ public class ClassIndexClient {
     // self-invocation of this class needed to make sure that calls from this class leads to an cache interception for the methods annotated with @Cacheable
     @Resource
     private ClassIndexClient classIndexClient;
+    @Autowired
+    IndexingClientController indexingClientController;
 
     public boolean indexCategory(Category category, Set<String> directParentUris, Set<String> allParentUris, Set<String> directChildrenUris, Set<String> allChildrenUris)  {
         try {
@@ -60,17 +63,22 @@ public class ClassIndexClient {
                 return false;
             }
 
-            Response response = SpringBridge.getInstance().getiIndexingServiceClient().setClass(credentialsUtil.getBearerToken(), categoryJson);
+            List<IIndexingServiceClient> clients = indexingClientController.getClients();
+            boolean indexComplete = false;
+            for (IIndexingServiceClient client : clients) {
+                Response response = client.setClass(credentialsUtil.getBearerToken(), categoryJson);
 
-            if (response.status() == HttpStatus.OK.value()) {
-                logger.info("Indexed category successfully. category uri: {}", category.getCategoryUri());
-                return true;
+                if (response.status() == HttpStatus.OK.value()) {
+                    logger.info("Indexed category successfully. category uri: {}", category.getCategoryUri());
+                    indexComplete = true;
 
-            } else {
-                String msg = String.format("Failed to index category. uri: %s, indexing call status: %d, message: %s", category.getCategoryUri(), response.status(), IOUtils.toString(response.body().asInputStream()));
-                logger.error(msg);
-                return false;
+                } else {
+                    String msg = String.format("Failed to index category. uri: %s, indexing call status: %d, message: %s", category.getCategoryUri(), response.status(), IOUtils.toString(response.body().asInputStream()));
+                    logger.error(msg);
+                    indexComplete = false;
+                }
             }
+            return indexComplete;
 
         } catch (Exception e) {
             String msg = String.format("Failed to index category. uri: %s", category.getCategoryUri());
@@ -126,7 +134,7 @@ public class ClassIndexClient {
             search.setStart(0);
             search.setQuery(queryStr.substring(0, queryStr.length()-3));
 
-            Response response = SpringBridge.getInstance().getiIndexingServiceClient().searchClass(credentialsUtil.getBearerToken(),JsonSerializationUtility.getObjectMapper().writeValueAsString(search));
+            Response response = indexingClientController.getNimbleIndexClient().searchClass(credentialsUtil.getBearerToken(),JsonSerializationUtility.getObjectMapper().writeValueAsString(search));
 
             if (response.status() == HttpStatus.OK.value()) {
                 indexCategories = extractIndexCategoriesFromSearchResults(response, uris.toString());
@@ -194,7 +202,7 @@ public class ClassIndexClient {
                 }
             }
 
-            response = SpringBridge.getInstance().getiIndexingServiceClient().selectClass(credentialsUtil.getBearerToken(),Integer.toString(Integer.MAX_VALUE),query,params);
+            response = indexingClientController.getNimbleIndexClient().selectClass(credentialsUtil.getBearerToken(),Integer.toString(Integer.MAX_VALUE),query,params);
 
             if (response.status() == HttpStatus.OK.value()) {
                 List<ClassType> indexCategories = extractIndexCategoriesFromSearchResults(response, query);

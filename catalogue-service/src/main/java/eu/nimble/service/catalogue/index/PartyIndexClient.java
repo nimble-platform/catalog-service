@@ -1,5 +1,6 @@
 package eu.nimble.service.catalogue.index;
 
+import eu.nimble.common.rest.indexing.IIndexingServiceClient;
 import eu.nimble.service.catalogue.util.CredentialsUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.solr.party.PartyType;
@@ -13,6 +14,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
  * Created by suat on 11-Feb-19.
  */
@@ -22,6 +25,8 @@ public class PartyIndexClient {
 
     @Autowired
     private CredentialsUtil credentialsUtil;
+    @Autowired
+    IndexingClientController indexingClientController;
 
     public void indexParty(eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType party) {
         try {
@@ -32,21 +37,20 @@ public class PartyIndexClient {
 
             } catch (Exception e) {
                 String serializedParty = JsonSerializationUtility.serializeEntitySilently(party);
-                String msg = String.format("Failed to transporm party to index party.\nparty: %s", serializedParty);
+                String msg = String.format("Failed to transform party to index party.\nparty: %s", serializedParty);
                 logger.error(msg, e);
                 return;
             }
 
-            Response response = SpringBridge.getInstance().getiIndexingServiceClient().setParty(credentialsUtil.getBearerToken(),partyJson);
-
-            if (response.status() == HttpStatus.OK.value()) {
-                logger.info("Indexed party successfully. party name: {}, id: {}", party.getPartyName().get(0).getName().getValue(), party.getPartyIdentification().get(0).getID());
-                return;
-
-            } else {
-                String msg = String.format("Failed to index party. id: %s, indexing call status: %d, message: %s", party.getPartyIdentification().get(0).getID(), response.status(), IOUtils.toString(response.body().asInputStream()));
-                logger.error(msg);
-                return;
+            List<IIndexingServiceClient> clients = indexingClientController.getClients();
+            for (IIndexingServiceClient client : clients) {
+                Response response = client.setParty(credentialsUtil.getBearerToken(),partyJson);
+                if (response.status() == HttpStatus.OK.value()) {
+                    logger.info("Indexed party successfully. party name: {}, id: {}", party.getPartyName().get(0).getName().getValue(), party.getPartyIdentification().get(0).getID());
+                } else {
+                    String msg = String.format("Failed to index party. id: %s, indexing call status: %d, message: %s", party.getPartyIdentification().get(0).getID(), response.status(), IOUtils.toString(response.body().asInputStream()));
+                    logger.error(msg);
+                }
             }
 
         } catch (Exception e) {
@@ -58,14 +62,16 @@ public class PartyIndexClient {
 
     public void removeParty(String partyId) {
         try {
-            Response response = SpringBridge.getInstance().getiIndexingServiceClient().removeParty(credentialsUtil.getBearerToken(),partyId);
+            List<IIndexingServiceClient> clients = indexingClientController.getClients();
+            for (IIndexingServiceClient client : clients) {
+                Response response = client.removeParty(credentialsUtil.getBearerToken(),partyId);
+                if (response.status() == HttpStatus.OK.value()) {
+                    logger.info("Deleted indexed Party. partyId: {}", partyId);
 
-            if (response.status() == HttpStatus.OK.value()) {
-                logger.info("Deleted indexed Party. partyId: {}", partyId);
-
-            } else {
-                logger.error("Failed to delete indexed Party. partyId: {}, indexing call status: {}, message: {}",
-                        partyId, response.status(), IOUtils.toString(response.body().asInputStream()));
+                } else {
+                    logger.error("Failed to delete indexed Party. partyId: {}, indexing call status: {}, message: {}",
+                            partyId, response.status(), IOUtils.toString(response.body().asInputStream()));
+                }
             }
 
         } catch (Exception e) {
