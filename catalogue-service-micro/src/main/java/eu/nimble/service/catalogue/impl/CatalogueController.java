@@ -109,6 +109,19 @@ public class CatalogueController {
             throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_MISSING_PARAMETERS.toString());
         }
 
+        if(catalogueId.contentEquals("all")){
+            List<String> ids = CataloguePersistenceUtil.getCatalogueIdListsForParty(partyId);
+            for (String id : ids) {
+                if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(id,partyId,executionContext.getVatNumber())){
+                    throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE_BY_ID.toString(),Arrays.asList(partyId,id));
+                }
+            }
+        } else{
+            if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogueId,partyId,executionContext.getVatNumber())){
+                throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE_BY_ID.toString(),Arrays.asList(partyId,catalogueId));
+            }
+        }
+
         CataloguePaginationResponse cataloguePaginationResponse;
 
         try {
@@ -165,6 +178,10 @@ public class CatalogueController {
 
         if (catalogue == null) {
             throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(uuid));
+        }
+
+        if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(uuid,executionContext.getVatNumber())){
+            throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(),Arrays.asList(uuid));
         }
 
         log.info("Completed request to get catalogue for standard: {}, uuid: {}", standard, uuid);
@@ -354,6 +371,10 @@ public class CatalogueController {
                 throw new NimbleException(validationMessages.getErrorMessages(),validationMessages.getErrorParameters());
             }
 
+            if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogue.getUUID(),executionContext.getVatNumber())){
+                throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(), Collections.singletonList(catalogue.getUUID()));
+            }
+
             // validate the entity ids
             boolean hjidsBelongToCompany = resourceValidationUtil.hjidsBelongsToParty(catalogue, catalogue.getProviderParty().getPartyIdentification().get(0).getID(), Configuration.Standard.UBL.toString());
             if (!hjidsBelongToCompany) {
@@ -417,6 +438,10 @@ public class CatalogueController {
             throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_STANDARD.toString(),Arrays.asList(standard),e);
         }
 
+        if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(uuid,executionContext.getVatNumber())){
+            throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(), Collections.singletonList(uuid));
+        }
+
         try {
             service.deleteCatalogue(uuid, std);
             Map<String,String> paramMap = new HashMap<String, String>();
@@ -463,6 +488,9 @@ public class CatalogueController {
 
             if(ids != null){
                 for (String id : ids) {
+                    if (!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(id,partyId,executionContext.getVatNumber())) {
+                        throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE_BY_ID.toString(), Arrays.asList(partyId,id));
+                    }
                     service.deleteCatalogue(id, partyId);
                     Map<String,String> paramMap = new HashMap<String, String>();
                     paramMap.put("activity", CatalogueEvent.CATALOGUE_DELETE.getActivity());
@@ -579,6 +607,9 @@ public class CatalogueController {
                 if (catalogue.getHjid() == null) {
                     catalogue = service.addCatalogue(catalogue, Configuration.Standard.UBL);
                 } else {
+                    if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogue.getUUID(),executionContext.getVatNumber())){
+                        throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(), Collections.singletonList(catalogue.getUUID()));
+                    }
                     catalogue = service.updateCatalogue(catalogue);
                 }
             } finally {
@@ -667,6 +698,10 @@ public class CatalogueController {
                 throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(id));
             }
 
+            if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(id,executionContext.getVatNumber())){
+                throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(),Arrays.asList(id));
+            }
+
             if(!pack.getOriginalFilename().endsWith(".zip")){
                 log.error("Provided file to upload images is not zip");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You should provide a Zip package to upload images");
@@ -729,7 +764,9 @@ public class CatalogueController {
                     log.warn("Catalogue with uuid : {} does not exist", id);
                     continue;
                 }
-
+                if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogue.getUUID(),executionContext.getVatNumber())){
+                    throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(),Arrays.asList(catalogue.getUUID()));
+                }
                 // remove the images
                 service.removeAllImagesFromCatalogue(catalogue);
             }

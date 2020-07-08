@@ -113,6 +113,27 @@ public class CataloguePersistenceUtil {
         return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_ALL_CATALOGUES_FOR_PARTY, new String[]{"partyId"}, new Object[]{partyId});
     }
 
+    public static boolean checkCatalogueForWhiteBlackList(String catalogueId,String partyId, String vatNumber){
+        String catalogueUuid = getCatalogueUUid(catalogueId,partyId);
+        return checkCatalogueForWhiteBlackList(catalogueUuid,vatNumber);
+    }
+
+    public static boolean checkCatalogueForWhiteBlackList(String catalogueUuid, String vatNumber){
+        List<String> permittedParties = getPermittedParties(catalogueUuid);
+        List<String> restrictedParties = getRestrictedParties(catalogueUuid);
+        if(permittedParties.size() > 0){
+            if(vatNumber != null){
+                return permittedParties.contains(vatNumber);
+            }
+            return false;
+        } else if(restrictedParties.size() > 0){
+            if(vatNumber != null){
+                return !restrictedParties.contains(vatNumber);
+            }
+        }
+        return true;
+    }
+
     public static CataloguePaginationResponse getCatalogueLinesForParty(String catalogueId, String partyId, String selectedCategoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset) {
 
         String catalogueUuid = "";
@@ -210,6 +231,10 @@ public class CataloguePersistenceUtil {
 
     public static CatalogueType getCatalogueForParty(String catalogueId, String partyId, boolean lazyDisabled) {
         return new JPARepositoryFactory().forCatalogueRepository(lazyDisabled).getSingleEntity(QUERY_GET_FOR_PARTY, new String[]{"catalogueId", "partyId"}, new Object[]{catalogueId, partyId});
+    }
+
+    public static String getCatalogueUUid(String catalogueId, String partyId){
+        return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_CATALOGUE_UUID_FOR_PARTY,new String[]{"catalogueId","partyId"}, new Object[]{catalogueId,partyId});
     }
 
     public static List<ClauseType> getClausesForCatalogue(String uuid) {

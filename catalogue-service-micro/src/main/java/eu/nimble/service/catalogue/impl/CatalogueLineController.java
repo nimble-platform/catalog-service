@@ -98,6 +98,11 @@ public class CatalogueLineController {
         if (catalogueLine == null) {
             throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE_LINE_FOR_HJID.toString(),Arrays.asList(hjid.toString()));
         }
+
+        if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID(),executionContext.getVatNumber())){
+            throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE_LINE_BY_HJID.toString(),Arrays.asList(hjid.toString()));
+        }
+
         log.info("Completed the request to get catalogue line with hjid: {}", hjid);
         return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLine));
     }
@@ -132,6 +137,12 @@ public class CatalogueLineController {
             catalogueLines = service.getCatalogueLines(hjids,sortOption,limit,pageNo);
         } catch (Exception e) {
             throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GET_CATALOGUE_LINES.toString(),e);
+        }
+
+        for (CatalogueLineType catalogueLine : catalogueLines) {
+            if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID(),executionContext.getVatNumber())){
+                throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE_LINE_BY_HJID.toString(),Arrays.asList(catalogueLine.getHjid().toString()));
+            }
         }
 
         log.info("Completed the request to get catalogue lines with hjids: {}", hjids);
@@ -172,7 +183,7 @@ public class CatalogueLineController {
         int numberOfCatalog = catalogueUuids.size();
         for(int i = 0; i < numberOfCatalog; i++){
             CatalogueLineType catalogueLine = service.getCatalogueLine(catalogueUuids.get(i),lineIds.get(i));
-            if(catalogueLine != null){
+            if(catalogueLine != null && CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogueUuids.get(i),executionContext.getVatNumber())){
                 catalogueLines.add(catalogueLine);
             }
         }
@@ -251,6 +262,10 @@ public class CatalogueLineController {
             throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(catalogueUuid));
         }
 
+        if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogueUuid,executionContext.getVatNumber())){
+            throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE_LINE.toString(),Arrays.asList(lineId,catalogueUuid));
+        }
+
         CatalogueLineType catalogueLine;
         try {
             catalogueLine = service.getCatalogueLine(catalogueUuid, lineId);
@@ -291,6 +306,10 @@ public class CatalogueLineController {
 
         if (service.getCatalogue(catalogueUuid) == null) {
             throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(catalogueUuid));
+        }
+
+        if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogueUuid,executionContext.getVatNumber())){
+            throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE_LINES.toString(),Arrays.asList(lineIds.toString(),catalogueUuid));
         }
 
         List<CatalogueLineType> catalogueLines;
@@ -338,6 +357,10 @@ public class CatalogueLineController {
             catalogue = service.getCatalogue(catalogueUuid);
             if (catalogue == null) {
                 throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(catalogueUuid));
+            }
+
+            if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogueUuid,executionContext.getVatNumber())){
+                throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(), Collections.singletonList(catalogueUuid));
             }
 
             // parse catalogue line
@@ -442,6 +465,10 @@ public class CatalogueLineController {
                 throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(catalogueUuid));
             }
 
+            if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogueUuid,executionContext.getVatNumber())){
+                throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(), Collections.singletonList(catalogueUuid));
+            }
+
             CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogue, catalogueLine);
 
             if(!catalogueUuid.equals(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID())){
@@ -531,6 +558,10 @@ public class CatalogueLineController {
 
         if (!CataloguePersistenceUtil.checkCatalogueExistenceByUuid(catalogueUuid)) {
             throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(), Collections.singletonList(catalogueUuid));
+        }
+
+        if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogueUuid,executionContext.getVatNumber())){
+            throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(), Collections.singletonList(catalogueUuid));
         }
 
         if(!CatalogueLinePersistenceUtil.checkCatalogueLineExistence(catalogueUuid,lineId)){

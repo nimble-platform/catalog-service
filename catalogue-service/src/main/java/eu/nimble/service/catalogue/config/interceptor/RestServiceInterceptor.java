@@ -39,6 +39,8 @@ public class RestServiceInterceptor extends HandlerInterceptorAdapter {
     private final String CLAIMS_FIELD_REALM_ACCESS = "realm_access";
     private final String CLAIMS_FIELD_ROLES = "roles";
     private final String CLAIMS_FIELD_EMAIL = "email";
+    private final String CLAIMS_FIELD_COMPANY = "company";
+    private final String CLAIMS_FIELD_VATIN = "vatin";
     private final int MEGABYTE = 1024*1024;
 
     @Override
@@ -72,6 +74,10 @@ public class RestServiceInterceptor extends HandlerInterceptorAdapter {
 
             executionContext.setUserEmail(email);
             executionContext.setUserRoles(roles);
+            LinkedHashMap companyRealm = (LinkedHashMap) claims.get(CLAIMS_FIELD_COMPANY);
+            if(companyRealm != null){
+                executionContext.setVatNumber((String) companyRealm.get(CLAIMS_FIELD_VATIN));
+            }
 
             // to append user email to the exception logs, we do not clear MDC since ExceptionHandler is invoked after afterCompletion method.
             MDC.put("userEmail",email);
