@@ -37,6 +37,9 @@ public class CatalogueLinePersistenceUtil {
             + " JOIN c.catalogueLine as clj"
             + " WHERE c.UUID = :catalogueUuid "
             + " AND clj.ID in :lineIds";
+    private static final String QUERY_GET_CAT_UUID_AND_IDS = "SELECT c.UUID, clj.ID FROM CatalogueType as c "
+            + " JOIN c.catalogueLine as clj"
+            + " WHERE c.UUID in :catalogueUuid";
     private static final String QUERY_GET_HJID_AND_PARTY_ID_BY_CAT_UUID_AND_ID = "SELECT clj.hjid,partyIdentification.ID FROM CatalogueType as c"
             + " JOIN c.catalogueLine as clj join clj.goodsItem.item.manufacturerParty.partyIdentification partyIdentification"
             + " WHERE c.UUID = :catalogueUuid "
@@ -104,6 +107,10 @@ public class CatalogueLinePersistenceUtil {
 
     public static List<CatalogueLineType> getCatalogueLines(String catalogueUuid, List<String> lineIds) {
         return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_BY_CAT_UUID_AND_IDS, new String[]{"catalogueUuid", "lineIds"}, new Object[]{catalogueUuid, lineIds});
+    }
+
+    public static List<Object[]> getCatalogueUuidAndLines(List<String> catalogueUuid) {
+        return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_CAT_UUID_AND_IDS, new String[]{"catalogueUuid"}, new Object[]{catalogueUuid});
     }
 
     public static List<ItemLCPAInput> getLinesIdsWithValidLcpaInput() {

@@ -4,12 +4,14 @@ import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
+import eu.nimble.service.catalogue.index.ItemIndexClient;
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.LockPool;
 import eu.nimble.service.catalogue.util.CatalogueEvent;
+import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
 import eu.nimble.service.catalogue.validation.ValidationMessages;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
@@ -19,13 +21,11 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.*;
 import eu.nimble.utility.exception.BinaryContentException;
 import eu.nimble.utility.exception.NimbleException;
+import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import eu.nimble.utility.serialization.TransactionEnabledSerializationUtility;
 import eu.nimble.utility.validation.IValidationUtil;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +69,8 @@ public class CatalogueController {
     @Autowired
     private IValidationUtil validationUtil;
     @Autowired
+    private ItemIndexClient itemIndexClient;
+    @Autowired
     private ExecutionContext executionContext;
 
     @CrossOrigin(origins = {"*"})
@@ -105,6 +107,19 @@ public class CatalogueController {
         // check the validity of the request params
         if(searchText != null && languageId == null){
             throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_MISSING_PARAMETERS.toString());
+        }
+
+        if(catalogueId.contentEquals("all")){
+            List<String> ids = CataloguePersistenceUtil.getCatalogueIdListsForParty(partyId);
+            for (String id : ids) {
+                if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(id,partyId,executionContext.getVatNumber())){
+                    throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE_BY_ID.toString(),Arrays.asList(partyId,id));
+                }
+            }
+        } else{
+            if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogueId,partyId,executionContext.getVatNumber())){
+                throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE_BY_ID.toString(),Arrays.asList(partyId,catalogueId));
+            }
         }
 
         CataloguePaginationResponse cataloguePaginationResponse;
@@ -163,6 +178,10 @@ public class CatalogueController {
 
         if (catalogue == null) {
             throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(uuid));
+        }
+
+        if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(uuid,executionContext.getVatNumber())){
+            throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(),Arrays.asList(uuid));
         }
 
         log.info("Completed request to get catalogue for standard: {}, uuid: {}", standard, uuid);
@@ -352,6 +371,10 @@ public class CatalogueController {
                 throw new NimbleException(validationMessages.getErrorMessages(),validationMessages.getErrorParameters());
             }
 
+            if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogue.getUUID(),executionContext.getVatNumber())){
+                throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(), Collections.singletonList(catalogue.getUUID()));
+            }
+
             // validate the entity ids
             boolean hjidsBelongToCompany = resourceValidationUtil.hjidsBelongsToParty(catalogue, catalogue.getProviderParty().getPartyIdentification().get(0).getID(), Configuration.Standard.UBL.toString());
             if (!hjidsBelongToCompany) {
@@ -415,6 +438,10 @@ public class CatalogueController {
             throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_STANDARD.toString(),Arrays.asList(standard),e);
         }
 
+        if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(uuid,executionContext.getVatNumber())){
+            throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(), Collections.singletonList(uuid));
+        }
+
         try {
             service.deleteCatalogue(uuid, std);
             Map<String,String> paramMap = new HashMap<String, String>();
@@ -461,6 +488,9 @@ public class CatalogueController {
 
             if(ids != null){
                 for (String id : ids) {
+                    if (!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(id,partyId,executionContext.getVatNumber())) {
+                        throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE_BY_ID.toString(), Arrays.asList(partyId,id));
+                    }
                     service.deleteCatalogue(id, partyId);
                     Map<String,String> paramMap = new HashMap<String, String>();
                     paramMap.put("activity", CatalogueEvent.CATALOGUE_DELETE.getActivity());
@@ -577,6 +607,9 @@ public class CatalogueController {
                 if (catalogue.getHjid() == null) {
                     catalogue = service.addCatalogue(catalogue, Configuration.Standard.UBL);
                 } else {
+                    if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogue.getUUID(),executionContext.getVatNumber())){
+                        throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(), Collections.singletonList(catalogue.getUUID()));
+                    }
                     catalogue = service.updateCatalogue(catalogue);
                 }
             } finally {
@@ -665,6 +698,10 @@ public class CatalogueController {
                 throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(id));
             }
 
+            if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(id,executionContext.getVatNumber())){
+                throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(),Arrays.asList(id));
+            }
+
             if(!pack.getOriginalFilename().endsWith(".zip")){
                 log.error("Provided file to upload images is not zip");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("You should provide a Zip package to upload images");
@@ -727,7 +764,9 @@ public class CatalogueController {
                     log.warn("Catalogue with uuid : {} does not exist", id);
                     continue;
                 }
-
+                if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogue.getUUID(),executionContext.getVatNumber())){
+                    throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(),Arrays.asList(catalogue.getUUID()));
+                }
                 // remove the images
                 service.removeAllImagesFromCatalogue(catalogue);
             }
@@ -814,6 +853,55 @@ public class CatalogueController {
 
         log.info("Completed request to get catalogue uuid list for party: {}", partyId);
         return ResponseEntity.ok(catalogueIds);
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Adds the given white/black lists to the specified catalogue")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Added white/black lists to the catalogue successfully", response = CatalogueType.class),
+            @ApiResponse(code = 401, message = "Invalid role"),
+            @ApiResponse(code = 500, message = "Unexpected error while adding white/black list to the catalogue")
+    })
+    @RequestMapping(value = "/catalogue/{id}/white-black-list",
+            consumes = {"application/json"},
+            produces = {"application/json"},
+            method = RequestMethod.PUT)
+    public ResponseEntity addBlackWhiteList(@ApiParam(value = "Uuid of the catalogue to which the white/black lists are added. (catalogue.uuid)", required = true) @PathVariable(value = "id") String id,
+                                            @ApiParam(value = "VAT numbers of the companies in the black list", required = false) @RequestParam(value = "blackList",required = false) List<String> blackList,
+                                            @ApiParam(value = "VAT numbers of the companies in the white list", required = false) @RequestParam(value = "whiteList",required = false) List<String> whiteList,
+                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        try {
+            // set request log of ExecutionContext
+            String requestLog = String.format("Incoming request to add white/black list to the catalogue %s",id);
+            executionContext.setRequestLog(requestLog);
+
+            log.info(requestLog);
+            // validate role
+            if(!validationUtil.validateRole(bearerToken,executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_CATALOGUE_WRITE)) {
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
+            }
+
+            CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueByUuid(id);
+
+            catalogue.getPermittedPartyIDItems().clear();
+            catalogue.getPermittedPartyID().clear();
+            catalogue.getRestrictedPartyIDItems().clear();
+            catalogue.getRestrictedPartyID().clear();
+            catalogue.setPermittedPartyID(whiteList);
+            catalogue.setRestrictedPartyID(blackList);
+
+            catalogue = new JPARepositoryFactory().forCatalogueRepository(true).updateEntity(catalogue);
+
+            // cache catalog
+            SpringBridge.getInstance().getCacheHelper().putCatalog(catalogue);
+            itemIndexClient.indexCatalogue(catalogue);
+
+            log.info("Completed request to add white/black list to the catalogue {}", id);
+            return ResponseEntity.ok(null);
+
+        } catch (Exception e) {
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_UNEXPECTED_ERROR_WHILE_ADDING_WHITE_BLACK_LIST.toString(),Arrays.asList(id),e);
+        }
     }
 
     private ResponseEntity createErrorResponseEntity(String msg, HttpStatus status, Exception e) {

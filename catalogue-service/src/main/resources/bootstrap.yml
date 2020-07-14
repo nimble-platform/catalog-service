@@ -52,6 +52,15 @@ spring:
     multipart:
       max-file-size: 100MB
       max-request-size: 100MB
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:25}
+    defaultFrom: ${SMTP_DEFAULT_FROM:}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    smtp.auth: ${SMTP_AUTH:true}
+    properties.mail.smtp.starttls.enable: ${SMTP_STARTTLS:true}
+    platformName : ${MAIL_PLATFORM_NAME:NIMBLE}
   thymeleaf:
     cache: false
     mode: HTML
@@ -146,16 +155,25 @@ nimble:
     check-token: ${IDENTITY_SERVICE_CHECK_TOKEN:true}
   keycloak:
     public-key: ${KEYCLOAK_PUBLIC_KEY}
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:9092}
   trust:
     url: ${TRUST_SERVICE_URL}
   indexing:
     url: ${INDEXING_SERVICE_URL}
     sync: ${INDEXING_SYNC:true}
+    federated-index-enabled: ${FEDERATED_INDEX_ENABLED:false}
+    federated-index-url: ${FEDERATED_INDEXING_SERVICE_URL:}
   oauth:
     client:
       clientId: ${CATALOG_SERVICE_OAUTH_CLIENT_ID}
       clientSecret: ${CATALOG_SERVICE_OAUTH_SECRET}
       accessTokenUri: ${OAUTH_CLIENT_ACCESSTOKEN_URI}
+    eFactoryClient:
+      clientId: ${OAUTH_EFACTORY_CLIENT_ID:}
+      clientSecret: ${OAUTH_EFACTORY_CLIENT_SECRET:}
+      accessTokenUri: ${OAUTH_EFACTORY_CLIENT_ACCESSTOKEN_URI:}
+      userDetailsUri: ${OAUTH_EFACTORY_USER_DETAILS_URI:}
   check-entity-ids: ${CHECK_ENTITY_IDS:false}
   federation-instance-id: ${FEDERATION_INSTANCE_ID}
   delegate-service:
@@ -318,8 +336,10 @@ nimble:
   trust:
     url:
   indexing:
-    url:
+    url: http://localhost:8090
     sync: false
+    federated-index-enabled: ${FEDERATED_INDEX_ENABLED:false}
+    federated-index-url: ${FEDERATED_INDEXING_SERVICE_URL:http://localhost:8090}
   oauth:
     client:
       clientId:

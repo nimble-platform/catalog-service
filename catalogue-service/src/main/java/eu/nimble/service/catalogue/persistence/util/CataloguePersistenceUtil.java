@@ -28,6 +28,8 @@ public class CataloguePersistenceUtil {
     private static final String QUERY_CHECK_EXISTENCE_BY_ID = "SELECT COUNT(catalogue) FROM CatalogueType catalogue"
             + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification"
             + " WHERE catalogue.ID = :catalogueId and partyIdentification.ID = :partyId";
+    private static final String QUERY_CHECK_EXISTENCE_BY_UUID = "SELECT COUNT(catalogue) FROM CatalogueType catalogue"
+            + " WHERE catalogue.UUID = :catalogueUuid";
     private static final String QUERY_GET_CATALOGUE_IDLIST_FOR_PARTY = "SELECT catalogue.ID FROM CatalogueType as catalogue" +
             " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification" +
             " WHERE partyIdentification.ID = :partyId";
@@ -64,6 +66,8 @@ public class CataloguePersistenceUtil {
             + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification"
             + " WHERE catalogue.ID = :catalogueId"
             + " AND partyIdentification.ID = :partyId";
+    private static final String QUERY_GET_PERMITTED_PARTIES_FOR_CATALOG = "SELECT permittedPartyIDs.item FROM CatalogueType catalogue join catalogue.permittedPartyIDItems permittedPartyIDs WHERE catalogue.UUID = :uuid";
+    private static final String QUERY_GET_RESTRICTED_PARTIES_FOR_CATALOG = "SELECT restrictedPartyIDs.item FROM CatalogueType catalogue join catalogue.restrictedPartyIDItems restrictedPartyIDs WHERE catalogue.UUID = :uuid";
     // native queries
     private static final String QUERY_GET_CATALOGUE_LINE_IDS_WITH_CATEGORY_NAME_AND_SEARCH_TEXT_FOR_PARTY = "select catalogue_line.id from catalogue_type catalogue join party_type party on (catalogue.provider_party_catalogue_typ_0 = party.hjid)" +
             " join party_identification_type party_identification on (party_identification.party_identification_party_t_0 = party.hjid)" +
@@ -97,8 +101,37 @@ public class CataloguePersistenceUtil {
         return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_ALL_CATALOGUES);
     }
 
+    public static List<String> getPermittedParties(String catalogueUuid) {
+        return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_PERMITTED_PARTIES_FOR_CATALOG, new String[]{"uuid"}, new Object[]{catalogueUuid});
+    }
+
+    public static List<String> getRestrictedParties(String catalogueUuid) {
+        return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_RESTRICTED_PARTIES_FOR_CATALOG, new String[]{"uuid"}, new Object[]{catalogueUuid});
+    }
+
     public static List<CatalogueType> getAllCataloguesForParty(String partyId) {
         return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_ALL_CATALOGUES_FOR_PARTY, new String[]{"partyId"}, new Object[]{partyId});
+    }
+
+    public static boolean checkCatalogueForWhiteBlackList(String catalogueId,String partyId, String vatNumber){
+        String catalogueUuid = getCatalogueUUid(catalogueId,partyId);
+        return checkCatalogueForWhiteBlackList(catalogueUuid,vatNumber);
+    }
+
+    public static boolean checkCatalogueForWhiteBlackList(String catalogueUuid, String vatNumber){
+        List<String> permittedParties = getPermittedParties(catalogueUuid);
+        List<String> restrictedParties = getRestrictedParties(catalogueUuid);
+        if(permittedParties.size() > 0){
+            if(vatNumber != null){
+                return permittedParties.contains(vatNumber);
+            }
+            return false;
+        } else if(restrictedParties.size() > 0){
+            if(vatNumber != null){
+                return !restrictedParties.contains(vatNumber);
+            }
+        }
+        return true;
     }
 
     public static CataloguePaginationResponse getCatalogueLinesForParty(String catalogueId, String partyId, String selectedCategoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset) {
@@ -173,6 +206,10 @@ public class CataloguePersistenceUtil {
         cataloguePaginationResponse.setCatalogueUuid(catalogueUuid);
         cataloguePaginationResponse.setCategoryNames(categoryNames);
         cataloguePaginationResponse.setCatalogueId(catalogueId);
+        if(catalogueUuid != null && !catalogueUuid.contentEquals("")){
+            cataloguePaginationResponse.setPermittedParties(getPermittedParties(catalogueUuid));
+            cataloguePaginationResponse.setRestrictedParties(getRestrictedParties(catalogueUuid));
+        }
         return cataloguePaginationResponse;
     }
 
@@ -196,6 +233,10 @@ public class CataloguePersistenceUtil {
         return new JPARepositoryFactory().forCatalogueRepository(lazyDisabled).getSingleEntity(QUERY_GET_FOR_PARTY, new String[]{"catalogueId", "partyId"}, new Object[]{catalogueId, partyId});
     }
 
+    public static String getCatalogueUUid(String catalogueId, String partyId){
+        return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_CATALOGUE_UUID_FOR_PARTY,new String[]{"catalogueId","partyId"}, new Object[]{catalogueId,partyId});
+    }
+
     public static List<ClauseType> getClausesForCatalogue(String uuid) {
         return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_CLAUSES_BY_UUID, new String[]{"uuid"}, new Object[]{uuid});
     }
@@ -205,6 +246,10 @@ public class CataloguePersistenceUtil {
         return catalogueExists == 1 ? true : false;
     }
 
+    public static Boolean checkCatalogueExistenceByUuid(String catalogueUuid) {
+        long catalogueExists = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_CHECK_EXISTENCE_BY_UUID, new String[]{"catalogueUuid"}, new Object[]{catalogueUuid});
+        return catalogueExists == 1;
+    }
     public static List<String> getCatalogueIdListsForParty(String partyId) {
         return new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_CATALOGUE_IDLIST_FOR_PARTY, new String[]{"partyId"}, new Object[]{partyId});
     }

@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue.index;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.nimble.common.rest.indexing.IIndexingServiceClient;
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.util.CredentialsUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
@@ -32,6 +33,8 @@ public class PropertyIndexClient {
 
     @Autowired
     private CredentialsUtil credentialsUtil;
+    @Autowired
+    IndexingClientController indexingClientController;
 
     public boolean indexProperty(Property property, Set<String> associatedCategoryUris) {
         try {
@@ -47,17 +50,21 @@ public class PropertyIndexClient {
                 return false;
             }
 
-            Response response = SpringBridge.getInstance().getiIndexingServiceClient().setProperty(credentialsUtil.getBearerToken(),propertyJson);
+            List<IIndexingServiceClient> clients = indexingClientController.getClients();
+            boolean indexComplete = false;
+            for (IIndexingServiceClient client : clients) {
+                Response response = client.setProperty(credentialsUtil.getBearerToken(),propertyJson);
+                if (response.status() == HttpStatus.OK.value()) {
+                    logger.info("Indexed property successfully. property uri: {}", property.getUri());
+                    indexComplete =  true;
 
-            if (response.status() == HttpStatus.OK.value()) {
-                logger.info("Indexed property successfully. property uri: {}", property.getUri());
-                return true;
-
-            } else {
-                String msg = String.format("Failed to index property. uri: %s, indexing call status: %d, message: %s", property.getUri(), response.status(), IOUtils.toString(response.body().asInputStream()));
-                logger.error(msg);
-                return false;
+                } else {
+                    String msg = String.format("Failed to index property. uri: %s, indexing call status: %d, message: %s", property.getUri(), response.status(), IOUtils.toString(response.body().asInputStream()));
+                    logger.error(msg);
+                    indexComplete = false;
+                }
             }
+            return indexComplete;
 
         } catch (Exception e) {
             String msg = String.format("Failed to index property. uri: %s", property.getUri());
@@ -69,7 +76,7 @@ public class PropertyIndexClient {
     public List<PropertyType> getProperties(Set<String> uris) {
         Response response;
         try {
-            response = SpringBridge.getInstance().getiIndexingServiceClient().getProperties(credentialsUtil.getBearerToken(),uris,null);
+            response = indexingClientController.getNimbleIndexClient().getProperties(credentialsUtil.getBearerToken(),uris,null);
 
             if (response.status() == HttpStatus.OK.value()) {
                 List<PropertyType> properties = extractIndexPropertiesFromSearchResults(response, uris.toString());
@@ -96,7 +103,7 @@ public class PropertyIndexClient {
     public List<PropertyType> getIndexPropertiesForCategories(List<String> categoryUris) {
         try {
             Set<String> urisSet = new HashSet<>(categoryUris);
-            Response response = SpringBridge.getInstance().getiIndexingServiceClient().getProperties(credentialsUtil.getBearerToken(),null,urisSet);
+            Response response = indexingClientController.getNimbleIndexClient().getProperties(credentialsUtil.getBearerToken(),null,urisSet);
 
             if (response.status() == HttpStatus.OK.value()) {
                 List<PropertyType> properties = extractIndexPropertiesFromSearchResults(response, categoryUris.toString());

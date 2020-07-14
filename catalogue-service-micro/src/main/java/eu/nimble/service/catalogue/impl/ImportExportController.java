@@ -34,6 +34,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -147,6 +148,11 @@ public class ImportExportController {
         if (catalogue == null) {
             throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(catalogueUuid),true);
         }
+
+        if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogueUuid,executionContext.getVatNumber())){
+            throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(), Collections.singletonList(catalogueUuid));
+        }
+
         // get workbooks
         Map<Workbook,String> workbooks = service.generateTemplateForCatalogue(catalogue,languageId);
 
@@ -223,6 +229,9 @@ public class ImportExportController {
 
             for (String id : ids) {
                 CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueForParty(id, partyId);
+                if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogue.getUUID(),executionContext.getVatNumber())){
+                    throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(), Collections.singletonList(catalogue.getUUID()));
+                }
                 ByteArrayOutputStream catalogueBaos = new ByteArrayOutputStream();
                 getZipForCatalogue(catalogue, languageId, catalogueBaos);
 

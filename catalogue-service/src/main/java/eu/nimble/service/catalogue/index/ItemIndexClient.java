@@ -1,5 +1,6 @@
 package eu.nimble.service.catalogue.index;
 
+import eu.nimble.common.rest.indexing.IIndexingServiceClient;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.util.CredentialsUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
@@ -31,6 +32,8 @@ public class ItemIndexClient {
 
     @Autowired
     private CredentialsUtil credentialsUtil;
+    @Autowired
+    IndexingClientController indexingClientController;
 
     public void indexCatalogue(CatalogueType catalogue) {
         if(!indexingSync) {
@@ -54,17 +57,20 @@ public class ItemIndexClient {
         }
 
         try {
-            response = SpringBridge.getInstance().getiIndexingServiceClient().postCatalogue(credentialsUtil.getBearerToken(),catalogue.getUUID(),indexItemsJson);
 
-            if (response.status() == HttpStatus.OK.value()) {
-                logger.info("Indexed Catalogue successfully. uuid: {}, party id: {}", catalogue.getUUID(), catalogue.getProviderParty().getPartyIdentification().get(0).getID());
+            List<IIndexingServiceClient> clients = indexingClientController.getClients();
+            for (IIndexingServiceClient client : clients) {
+                response = client.postCatalogue(credentialsUtil.getBearerToken(),catalogue.getUUID(),indexItemsJson);
+                if (response.status() == HttpStatus.OK.value()) {
+                    logger.info("Indexed Catalogue successfully. uuid: {}, party id: {}", catalogue.getUUID(), catalogue.getProviderParty().getPartyIdentification().get(0).getID());
 
-            } else {
-                String serializedCatalogue = JsonSerializationUtility.serializeEntitySilently(catalogue);
-                logger.error("Failed to index Catalogue. uuid: {}, party id: {}, indexing call status: {}, message: {}\nCatalogue: {}",
-                        catalogue.getUUID(), catalogue.getProviderParty().getPartyIdentification().get(0).getID(), response.status(), IOUtils.toString(response.body().asInputStream()), serializedCatalogue);
-                return;
+                } else {
+                    String serializedCatalogue = JsonSerializationUtility.serializeEntitySilently(catalogue);
+                    logger.error("Failed to index Catalogue. uuid: {}, party id: {}, indexing call status: {}, message: {}\nCatalogue: {}",
+                            catalogue.getUUID(), catalogue.getProviderParty().getPartyIdentification().get(0).getID(), response.status(), IOUtils.toString(response.body().asInputStream()), serializedCatalogue);
+                }
             }
+            //response = SpringBridge.getInstance().getiIndexingServiceClient().postCatalogue(credentialsUtil.getBearerToken(),catalogue.getUUID(),indexItemsJson);
 
         } catch (Exception e) {
             String serializedCatalogue = JsonSerializationUtility.serializeEntitySilently(catalogue);
@@ -102,15 +108,16 @@ public class ItemIndexClient {
         }
 
         try {
-            response = SpringBridge.getInstance().getiIndexingServiceClient().setItem(credentialsUtil.getBearerToken(),indexItemJson);
-
-            if (response.status() == HttpStatus.OK.value()) {
-                logger.info("Indexed CatalogueLine successfully. hjid: {}, name: {}, party id: {}", catalogueLine.getHjid(), catalogueLine.getGoodsItem().getItem().getName(), catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID());
-
-            } else {
-                String serializedCatalogueLine = JsonSerializationUtility.serializeEntitySilently(catalogueLine);
-                logger.error("Failed to index CatalogueLine. id: {}, name: {}, party id: {}, indexing call status: {}, message: {}\nLine:{}",
-                        catalogueLine.getID(), catalogueLine.getGoodsItem().getItem().getName(), catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID(), response.status(), IOUtils.toString(response.body().asInputStream()), serializedCatalogueLine);
+            List<IIndexingServiceClient> clients = indexingClientController.getClients();
+            for (IIndexingServiceClient client : clients) {
+                response = client.setItem(credentialsUtil.getBearerToken(),indexItemJson);
+                if (response.status() == HttpStatus.OK.value()) {
+                    logger.info("Indexed CatalogueLine successfully. hjid: {}, name: {}, party id: {}", catalogueLine.getHjid(), catalogueLine.getGoodsItem().getItem().getName(), catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID());
+                } else {
+                    String serializedCatalogueLine = JsonSerializationUtility.serializeEntitySilently(catalogueLine);
+                    logger.error("Failed to index CatalogueLine. id: {}, name: {}, party id: {}, indexing call status: {}, message: {}\nLine:{}",
+                            catalogueLine.getID(), catalogueLine.getGoodsItem().getItem().getName(), catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID(), response.status(), IOUtils.toString(response.body().asInputStream()), serializedCatalogueLine);
+                }
             }
 
         } catch (Exception e) {
@@ -126,14 +133,16 @@ public class ItemIndexClient {
         }
 
         try {
-            Response response = SpringBridge.getInstance().getiIndexingServiceClient().deleteCatalogue(credentialsUtil.getBearerToken(),catalogueUuid);
+            List<IIndexingServiceClient> clients = indexingClientController.getClients();
+            for (IIndexingServiceClient client : clients) {
+                Response response = client.deleteCatalogue(credentialsUtil.getBearerToken(),catalogueUuid);
+                if (response.status() == HttpStatus.OK.value()) {
+                    logger.info("Deleted indexed Catalogue. uuid: {}", catalogueUuid);
 
-            if (response.status() == HttpStatus.OK.value()) {
-                logger.info("Deleted indexed Catalogue. uuid: {}", catalogueUuid);
-
-            } else {
-                logger.error("Failed to delete indexed Catalogue. uuid: {}, indexing call status: {}, message: {}",
-                        catalogueUuid, response.status(), IOUtils.toString(response.body().asInputStream()));
+                } else {
+                    logger.error("Failed to delete indexed Catalogue. uuid: {}, indexing call status: {}, message: {}",
+                            catalogueUuid, response.status(), IOUtils.toString(response.body().asInputStream()));
+                }
             }
 
         } catch (Exception e) {
@@ -148,16 +157,18 @@ public class ItemIndexClient {
         }
 
         try {
-            Response response = SpringBridge.getInstance().getiIndexingServiceClient().deleteItem(credentialsUtil.getBearerToken(),Long.toString(catalogueLineHjid));
+            List<IIndexingServiceClient> clients = indexingClientController.getClients();
+            for (IIndexingServiceClient client : clients) {
+                Response response = client.deleteItem(credentialsUtil.getBearerToken(),Long.toString(catalogueLineHjid));
 
-            if (response.status() == HttpStatus.OK.value()) {
-                logger.info("Deleted indexed CatalogueLine. hjid: {}", catalogueLineHjid);
+                if (response.status() == HttpStatus.OK.value()) {
+                    logger.info("Deleted indexed CatalogueLine. hjid: {}", catalogueLineHjid);
 
-            } else {
-                logger.error("Failed to delete indexed CatalogueLine. hjid: {}, indexing call status: {}, message: {}",
-                        catalogueLineHjid, response.status(), IOUtils.toString(response.body().asInputStream()));
+                } else {
+                    logger.error("Failed to delete indexed CatalogueLine. hjid: {}, indexing call status: {}, message: {}",
+                            catalogueLineHjid, response.status(), IOUtils.toString(response.body().asInputStream()));
+                }
             }
-
         } catch (Exception e) {
             logger.error("Failed to delete indexed CatalogueLine. hjid: {}", catalogueLineHjid, e);
         }
@@ -170,14 +181,16 @@ public class ItemIndexClient {
         }
 
         try {
-            Response response = SpringBridge.getInstance().getiIndexingServiceClient().clearItemIndex(credentialsUtil.getBearerToken());
+            List<IIndexingServiceClient> clients = indexingClientController.getClients();
+            for (IIndexingServiceClient client : clients) {
+                Response response = client.clearItemIndex(credentialsUtil.getBearerToken());
+                if (response.status() == HttpStatus.OK.value()) {
+                    logger.info("Cleared item index");
 
-            if (response.status() == HttpStatus.OK.value()) {
-                logger.info("Cleared item index");
-
-            } else {
-                logger.error("Failed to clear item index, indexing call status: {}, message: {}",
-                        response.status(), IOUtils.toString(response.body().asInputStream()));
+                } else {
+                    logger.error("Failed to clear item index, indexing call status: {}, message: {}",
+                            response.status(), IOUtils.toString(response.body().asInputStream()));
+                }
             }
 
         } catch (Exception e) {

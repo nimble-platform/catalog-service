@@ -11,6 +11,8 @@ public class CataloguePaginationResponse {
     private long size;
     private List<CatalogueLineType> catalogueLines;
     private List<String> categoryNames;
+    private List<String> permittedParties;
+    private List<String> restrictedParties;
 
     public CataloguePaginationResponse() {
     }
@@ -53,5 +55,21 @@ public class CataloguePaginationResponse {
 
     public void setCatalogueId(String catalogueId) {
         this.catalogueId = catalogueId;
+    }
+
+    public List<String> getPermittedParties() {
+        return permittedParties;
+    }
+
+    public void setPermittedParties(List<String> permittedParties) {
+        this.permittedParties = permittedParties;
+    }
+
+    public List<String> getRestrictedParties() {
+        return restrictedParties;
+    }
+
+    public void setRestrictedParties(List<String> restrictedParties) {
+        this.restrictedParties = restrictedParties;
     }
 }
