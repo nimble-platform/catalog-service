@@ -9,6 +9,7 @@ import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.statistics.ProductAndServiceStatistics;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
+import eu.nimble.service.catalogue.persistence.util.LockPool;
 import eu.nimble.service.catalogue.util.CatalogueEvent;
 import eu.nimble.service.catalogue.util.LoggerUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
@@ -64,6 +65,8 @@ public class CatalogueLineController {
     private ExecutionContext executionContext;
     @Autowired
     private EmailSenderUtil emailSenderUtil;
+    @Autowired
+    private LockPool lockPool;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves the catalogue line with the DB-scoped identifier")
@@ -347,18 +350,21 @@ public class CatalogueLineController {
         CatalogueType catalogue;
         CatalogueLineType catalogueLine;
 
+        String providerPartyID = null;
         try {
             // validate role
             if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(),RoleConfig.REQUIRED_ROLES_CATALOGUE_WRITE)) {
                 throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
+            // retrieve provider party id
+            providerPartyID = CataloguePersistenceUtil.getCatalogueProviderId(catalogueUuid);
+            if(providerPartyID == null){
+                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(catalogueUuid));
+            }
+            lockPool.getLockForParty(providerPartyID).writeLock().lock();
 
             // get owning catalogue
             catalogue = service.getCatalogue(catalogueUuid);
-            if (catalogue == null) {
-                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(catalogueUuid));
-            }
-
             if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogueUuid,executionContext.getVatNumber())){
                 throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(), Collections.singletonList(catalogueUuid));
             }
@@ -394,6 +400,10 @@ public class CatalogueLineController {
         } catch (Exception e) {
             log.warn("The following catalogue line could not be created: {}", catalogueLineJson);
             throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_ADD_CATALOGUE_LINE.toString(),e);
+        } finally {
+            if(providerPartyID != null){
+                lockPool.getLockForParty(providerPartyID).writeLock().unlock();
+            }
         }
 
         return createCreatedCatalogueLineResponse(catalogueUuid, catalogueLine);

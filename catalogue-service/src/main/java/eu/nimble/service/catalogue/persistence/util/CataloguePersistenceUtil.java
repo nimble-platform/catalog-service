@@ -66,6 +66,9 @@ public class CataloguePersistenceUtil {
             + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification"
             + " WHERE catalogue.ID = :catalogueId"
             + " AND partyIdentification.ID = :partyId";
+    private static final String QUERY_GET_PROVIDER_PARTY_ID_FOR_CATALOGUE_UUID = "SELECT partyIdentification.ID FROM CatalogueType as catalogue "
+            + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification"
+            + " WHERE catalogue.UUID = :catalogueUuid";
     private static final String QUERY_GET_PERMITTED_PARTIES_FOR_CATALOG = "SELECT permittedPartyIDs.item FROM CatalogueType catalogue join catalogue.permittedPartyIDItems permittedPartyIDs WHERE catalogue.UUID = :uuid";
     private static final String QUERY_GET_RESTRICTED_PARTIES_FOR_CATALOG = "SELECT restrictedPartyIDs.item FROM CatalogueType catalogue join catalogue.restrictedPartyIDItems restrictedPartyIDs WHERE catalogue.UUID = :uuid";
     // native queries
@@ -235,6 +238,10 @@ public class CataloguePersistenceUtil {
 
     public static String getCatalogueUUid(String catalogueId, String partyId){
         return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_CATALOGUE_UUID_FOR_PARTY,new String[]{"catalogueId","partyId"}, new Object[]{catalogueId,partyId});
+    }
+
+    public static String getCatalogueProviderId(String catalogueUuid ){
+        return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity( QUERY_GET_PROVIDER_PARTY_ID_FOR_CATALOGUE_UUID,new String[]{"catalogueUuid"}, new Object[]{catalogueUuid});
     }
 
     public static List<ClauseType> getClausesForCatalogue(String uuid) {
