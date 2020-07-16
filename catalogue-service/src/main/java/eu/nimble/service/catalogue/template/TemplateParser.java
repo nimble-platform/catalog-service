@@ -656,6 +656,16 @@ public class TemplateParser {
                 }
                 columnIndex++;
             }
+
+            // price base quantity should be provided if price amount is provided
+            if(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue() != null && catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getValue() == null){
+                throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_BASE_QUANTITY_REQUIRED.toString(),Arrays.asList(catalogueLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID()));
+            }
+            // unit must be the same for price base quantity and minimum order quantity
+            if(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getUnitCode() != null && catalogueLine.getMinimumOrderQuantity().getUnitCode() != null &&
+                    !catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getUnitCode().contentEquals(catalogueLine.getMinimumOrderQuantity().getUnitCode())){
+                throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_SAME_UNIT_REQUIRED_FOR_BASE_AND_MINIMUM_ORDER_QUANTITIES.toString(),Arrays.asList(catalogueLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID()));
+            }
         }
 
         // create vats for catalogue lines
