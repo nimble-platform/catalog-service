@@ -245,11 +245,11 @@ public class CatalogueLineController {
             @ApiResponse(code = 404, message = "Specified catalogue or catalogue line does not exist"),
             @ApiResponse(code = 500, message = "Unexpected error while getting catalogue line")
     })
-    @RequestMapping(value = "/catalogue/{catalogueUuid}/catalogueline/{lineId:.+}",
+    @RequestMapping(value = "/catalogue/{catalogueUuid}/catalogueline",
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity getCatalogueLine(@ApiParam(value = "uuid of the catalogue containing the line to be retrieved. (catalogue.uuid)", required = true) @PathVariable String catalogueUuid,
-                                           @ApiParam(value = "Identifier of the catalogue line to be retrieved. (line.id)", required = true) @PathVariable String lineId,
+                                           @ApiParam(value = "Identifier of the catalogue line to be retrieved. (line.id)", required = true) @RequestParam(value = "lineId") String lineId,
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         // set request log of ExecutionContext
         String requestLog = String.format("Incoming request to get catalogue line with lineId: %s, catalogue uuid: %s", lineId, catalogueUuid);
@@ -550,11 +550,11 @@ public class CatalogueLineController {
             @ApiResponse(code = 404, message = "Catalogue with the given uuid does not exist"),
             @ApiResponse(code = 500, message = "Failed to delete the catalogue line")
     })
-    @RequestMapping(value = "/catalogue/{catalogueUuid}/catalogueline/{lineId:.+}",
+    @RequestMapping(value = "/catalogue/{catalogueUuid}/catalogueline",
             produces = {"application/json"},
             method = RequestMethod.DELETE)
     public ResponseEntity deleteCatalogueLine(@ApiParam(value = "uuid of the catalogue containing the line to be retrieved. (catalogue.uuid)", required = true) @PathVariable String catalogueUuid,
-                                              @ApiParam(value = "Identifier of the catalogue line to be retrieved. (line.id)", required = true) @PathVariable String lineId,
+                                              @ApiParam(value = "Identifier of the catalogue line to be retrieved. (line.id)", required = true) @RequestParam(value = "lineId") String lineId,
                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         // set request log of ExecutionContext
         String requestLog = String.format("Incoming request to delete catalogue line. catalogue uuid: %s: line lineId %s", catalogueUuid, lineId);

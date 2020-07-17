@@ -290,8 +290,9 @@ public class Test01_CatalogueControllerTest {
         createdCatalogueId = catalogue.getUUID();
 
         // get default catalogue pagination response
-        request = get("/catalogue/"+TestConfig.sellerId+"/pagination/default")
+        request = get("/catalogue/"+TestConfig.sellerId+"/pagination")
                 .header("Authorization", TestConfig.buyerId)
+                .param("catalogueId","default")
                 .param("limit","10")
                 .param("offset","0");
         result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
@@ -306,10 +307,11 @@ public class Test01_CatalogueControllerTest {
 
     @Test
     public void test61_getDefaultCataloguePagination() throws Exception {
-        MockHttpServletRequestBuilder request = get("/catalogue/"+TestConfig.sellerId+"/pagination/default")
+        MockHttpServletRequestBuilder request = get("/catalogue/"+TestConfig.sellerId+"/pagination")
                 .header("Authorization", TestConfig.buyerId)
                 .param("limit","2")
                 .param("offset","1")
+                .param("catalogueId","default")
                 .param("sortOption", CatalogueLineSortOptions.PRICE_HIGH_TO_LOW.toString());
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         CataloguePaginationResponse cataloguePaginationResponse = mapper.readValue(result.getResponse().getContentAsString(), CataloguePaginationResponse.class);
@@ -322,8 +324,9 @@ public class Test01_CatalogueControllerTest {
 
     @Test
     public void test62_getDefaultCataloguePagination() throws Exception {
-        MockHttpServletRequestBuilder request = get("/catalogue/"+TestConfig.sellerId+"/pagination/default")
+        MockHttpServletRequestBuilder request = get("/catalogue/"+TestConfig.sellerId+"/pagination")
                 .header("Authorization", TestConfig.buyerId)
+                .param("catalogueId","default")
                 .param("limit","2")
                 .param("offset","0")
                 .param("categoryName","Notebook")
