@@ -69,6 +69,7 @@ public class CataloguePersistenceUtil {
     private static final String QUERY_GET_PROVIDER_PARTY_ID_FOR_CATALOGUE_UUID = "SELECT partyIdentification.ID FROM CatalogueType as catalogue "
             + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification"
             + " WHERE catalogue.UUID = :catalogueUuid";
+    private static final String QUERY_IS_PRICE_HIDDEN_FOR_CATALOG = "SELECT count(catalogueLine) FROM CatalogueType catalogue join catalogue.catalogueLine catalogueLine WHERE catalogue.UUID = :uuid AND catalogueLine.priceHidden = true";
     private static final String QUERY_GET_PERMITTED_PARTIES_FOR_CATALOG = "SELECT permittedPartyIDs.item FROM CatalogueType catalogue join catalogue.permittedPartyIDItems permittedPartyIDs WHERE catalogue.UUID = :uuid";
     private static final String QUERY_GET_RESTRICTED_PARTIES_FOR_CATALOG = "SELECT restrictedPartyIDs.item FROM CatalogueType catalogue join catalogue.restrictedPartyIDItems restrictedPartyIDs WHERE catalogue.UUID = :uuid";
     // native queries
@@ -102,6 +103,11 @@ public class CataloguePersistenceUtil {
 
     public static List<CatalogueType> getAllCatalogues() {
         return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_ALL_CATALOGUES);
+    }
+
+    public static Boolean isPriceHidden(String catalogueUuid) {
+        long priceHidden = new JPARepositoryFactory().forCatalogueRepository(true).getSingleEntity(QUERY_IS_PRICE_HIDDEN_FOR_CATALOG, new String[]{"uuid"}, new Object[]{catalogueUuid});
+        return priceHidden > 0;
     }
 
     public static List<String> getPermittedParties(String catalogueUuid) {
@@ -212,6 +218,7 @@ public class CataloguePersistenceUtil {
         if(catalogueUuid != null && !catalogueUuid.contentEquals("")){
             cataloguePaginationResponse.setPermittedParties(getPermittedParties(catalogueUuid));
             cataloguePaginationResponse.setRestrictedParties(getRestrictedParties(catalogueUuid));
+            cataloguePaginationResponse.setPriceHidden(isPriceHidden(catalogueUuid));
         }
         return cataloguePaginationResponse;
     }

@@ -53,7 +53,9 @@ public class IndexingWrapper {
         indexItem.setRestrictedParties(new HashSet<>(CataloguePersistenceUtil.getRestrictedParties(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID())));
         AmountValidator amountValidator = new AmountValidator(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount());
         if(amountValidator.bothFieldsPopulated()) {
-            indexItem.addPrice(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getCurrencyID(), catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue().doubleValue());
+            if(catalogueLine.isPriceHidden() == null || !catalogueLine.isPriceHidden()){
+                indexItem.addPrice(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getCurrencyID(), catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue().doubleValue());
+            }
             // index also the base quantity
             QuantityValidator quantityValidator = new QuantityValidator(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity());
             if(!quantityValidator.bothFieldsPopulated()) {
