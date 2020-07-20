@@ -653,6 +653,8 @@ public class TemplateParser {
                     catalogueLine.getGoodsItem().getContainingPackage().setQuantity(packageQuantity);
                 } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_CUSTOMIZABLE.toString(), defaultLanguage) )){
                     catalogueLine.getGoodsItem().getItem().setCustomizable((Boolean) parseCell(cell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_CUSTOMIZABLE.toString(), defaultLanguage) ,TEMPLATE_DATA_TYPE_BOOLEAN  , false));
+                } else if (SpringBridge.getInstance().getCatalogueServiceConfig().getSparePartEnabled() && property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_SPARE_PART.toString(), defaultLanguage) )){
+                    catalogueLine.getGoodsItem().getItem().setSparePart((Boolean) parseCell(cell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_SPARE_PART.toString(), defaultLanguage) ,TEMPLATE_DATA_TYPE_BOOLEAN  , false));
                 }
                 columnIndex++;
             }

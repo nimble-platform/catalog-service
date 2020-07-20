@@ -1056,6 +1056,12 @@ public class TemplateGenerator {
         cell.setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_CUSTOMIZATION.toString(), defaultLanguage));
         cell.setCellStyle(boldCellStyle);
 
+        // spare part block
+        if(SpringBridge.getInstance().getCatalogueServiceConfig().getSparePartEnabled()){
+            cell = getCellWithMissingCellPolicy(topRow, 22);
+            cell.setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_SPARE_PART.toString(), defaultLanguage));
+            cell.setCellStyle(boldCellStyle);
+        }
 
         // 2nd, 3rd and 4th rows
         // name, data type, unit label on the leftmost column
@@ -1244,6 +1250,12 @@ public class TemplateGenerator {
         cell.setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_CUSTOMIZATION.toString(), defaultLanguage));
         cell.setCellStyle(boldCellStyle);
 
+        // spare part block
+        if(SpringBridge.getInstance().getCatalogueServiceConfig().getSparePartEnabled()){
+            cell = getCellWithMissingCellPolicy(topRow, 22);
+            cell.setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_SPARE_PART.toString(), defaultLanguage));
+            cell.setCellStyle(boldCellStyle);
+        }
         // 2nd, 3rd and 4th rows
         // name, data type, unit label on the leftmost column
         int rowIndex = 1;
@@ -1354,6 +1366,11 @@ public class TemplateGenerator {
             }
             else if(property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_CUSTOMIZABLE.toString(), defaultLanguage))){
                 termsExampleTab.getRow(4).getCell(columnIndex).setCellValue(true);
+                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue(true);
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue(false);
+            }
+            else if(SpringBridge.getInstance().getCatalogueServiceConfig().getSparePartEnabled() && property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_SPARE_PART.toString(), defaultLanguage))){
+                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue(false);
                 termsExampleTab.getRow(5).createCell(columnIndex).setCellValue(true);
                 termsExampleTab.getRow(6).createCell(columnIndex).setCellValue(false);
             }

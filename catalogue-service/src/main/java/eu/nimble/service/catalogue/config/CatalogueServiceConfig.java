@@ -41,6 +41,9 @@ public class CatalogueServiceConfig {
     @Value("${nimble.catalog.max-file-size:5}")
     private int maxFileSize;
 
+    @Value("${nimble.catalog.spare-part}")
+    private Boolean sparePartEnabled;
+
     @Value("${nimble.identity.check-token}")
     private Boolean checkToken;
 
@@ -148,5 +151,13 @@ public class CatalogueServiceConfig {
 
     public void setFederationInstanceId(String federationInstanceId) {
         this.federationInstanceId = federationInstanceId;
+    }
+
+    public Boolean getSparePartEnabled() {
+        return sparePartEnabled;
+    }
+
+    public void setSparePartEnabled(Boolean sparePartEnabled) {
+        this.sparePartEnabled = sparePartEnabled;
     }
 }

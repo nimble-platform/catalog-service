@@ -192,6 +192,13 @@ public class TemplateConfig {
         prop.setDataType("BOOLEAN");
         properties.add(prop);
 
+        // spare part
+        if(SpringBridge.getInstance().getCatalogueServiceConfig().getSparePartEnabled()){
+            prop = new Property();
+            prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_SPARE_PART.toString(), language) , language);
+            prop.setDataType("BOOLEAN");
+            properties.add(prop);
+        }
         return properties;
     }
 }
