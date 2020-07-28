@@ -8,12 +8,17 @@ import com.mashape.unirest.http.Unirest;
 import eu.nimble.service.catalogue.CatalogueService;
 import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
+import eu.nimble.service.catalogue.index.ItemIndexClient;
+import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
+import eu.nimble.service.catalogue.util.SpringBridge;
+import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PriceOptionType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.ExecutionContext;
 import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.exception.NimbleException;
+import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import eu.nimble.utility.validation.IValidationUtil;
@@ -31,6 +36,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -54,6 +60,8 @@ public class PriceConfigurationController {
     private CatalogueService service;
     @Autowired
     private IValidationUtil validationUtil;
+    @Autowired
+    private ItemIndexClient itemIndexClient;
     @Autowired
     private ExecutionContext executionContext;
 
@@ -137,10 +145,10 @@ public class PriceConfigurationController {
             @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
             @ApiResponse(code = 404, message = "No catalogue or catalogue line found for the specified parameters")
     })
-    @RequestMapping(value = "/catalogue/{catalogueUuid}/catalogueline/{lineId:.+}/price-options/{optionId}",
+    @RequestMapping(value = "/catalogue/{catalogueUuid}/catalogueline/price-options/{optionId}",
             method = RequestMethod.DELETE)
     public ResponseEntity deletePricingOption(@ApiParam(value = "uuid of the catalogue containing the line for which the price option to be deleted. (catalogue.uuid)", required = true) @PathVariable("catalogueUuid") String catalogueUuid,
-                                              @ApiParam(value = "Identifier of the catalogue line from which the price option to be deleted. (lineId.id)", required = true) @PathVariable("lineId") String lineId,
+                                              @ApiParam(value = "Identifier of the catalogue line from which the price option to be deleted. (lineId.id)", required = true) @RequestParam(value = "lineId") String lineId,
                                               @ApiParam(value = "Identifier of the price option to be deleted. (priceOption.hjid)", required = true) @PathVariable("optionId") Long optionId,
                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         // set request log of ExecutionContext
@@ -296,6 +304,54 @@ public class PriceConfigurationController {
 
         } catch (Exception e) {
             throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GET_VAT_RATES.toString());
+        }
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Hide/Expose prices for the specified catalogue")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Hid/Exposed prices for the specified catalogue successfully"),
+            @ApiResponse(code = 401, message = "Invalid role."),
+            @ApiResponse(code = 404, message = "No catalogue found for the specified id"),
+            @ApiResponse(code = 500, message = "Unexpected error while hiding prices for the catalogue")
+    })
+    @RequestMapping(
+            value = "/catalogue/{catalogueUuid}/hide-price",
+            consumes = {MediaType.APPLICATION_JSON_VALUE},
+            method = RequestMethod.PUT)
+    public ResponseEntity hidePriceForCatalogue(@ApiParam(value = "uuid of the catalogue whose price is to be hidden/exposed. (catalogue.uuid)", required = true) @PathVariable("catalogueUuid") String catalogueUuid,
+                                              @ApiParam(value = "whether the price is to be hidden or exposed", required = true) @RequestParam(value = "hidden") Boolean hidden,
+                                              @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to hide price for catalogueId: %s", catalogueUuid);
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
+        try {
+            // validate role
+            if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(),RoleConfig.REQUIRED_ROLES_CATALOGUE_WRITE)) {
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
+            }
+
+            CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueByUuid(catalogueUuid);
+
+            // check catalogue
+            if (catalogue == null) {
+                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(), Collections.singletonList(catalogueUuid));
+            }
+
+            catalogue.getCatalogueLine().forEach(catalogueLineType -> catalogueLineType.setPriceHidden(hidden));
+            catalogue = new JPARepositoryFactory().forCatalogueRepository(true).updateEntity(catalogue);
+
+            // cache catalog
+            SpringBridge.getInstance().getCacheHelper().putCatalog(catalogue);
+            itemIndexClient.indexCatalogue(catalogue);
+
+            log.info("Completed request to hide price for catalogueId: {}", catalogueUuid);
+            return ResponseEntity.ok().body(null);
+
+        } catch (Exception e) {
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_HIDE_PRICE.toString(), Collections.singletonList(catalogueUuid));
         }
     }
 }

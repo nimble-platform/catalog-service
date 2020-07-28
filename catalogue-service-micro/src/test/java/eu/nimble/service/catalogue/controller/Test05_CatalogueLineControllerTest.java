@@ -88,7 +88,8 @@ public class Test05_CatalogueLineControllerTest {
 
     @Test
     public void test02_getCatalogueLine() throws Exception{
-        MockHttpServletRequestBuilder request = get("/catalogue/" + defaultCatalogueId + "/catalogueline/" + defaultCatalogueLineId)
+        MockHttpServletRequestBuilder request = get("/catalogue/" + defaultCatalogueId + "/catalogueline")
+                .param("lineId",defaultCatalogueLineId)
                 .header("Authorization", TestConfig.buyerId);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         CatalogueLineType catalogueLine = mapper.readValue(result.getResponse().getContentAsString(), CatalogueLineType.class);
@@ -97,7 +98,8 @@ public class Test05_CatalogueLineControllerTest {
 
     @Test
     public void test03_updateCatalogueLine() throws Exception{
-        MockHttpServletRequestBuilder request = get("/catalogue/" + defaultCatalogueId + "/catalogueline/" + defaultCatalogueLineId)
+        MockHttpServletRequestBuilder request = get("/catalogue/" + defaultCatalogueId + "/catalogueline")
+                .param("lineId",defaultCatalogueLineId)
                 .header("Authorization", TestConfig.buyerId);
         MvcResult result = this.mockMvc.perform(request).andReturn();
         CatalogueLineType catalogueLine = mapper.readValue(result.getResponse().getContentAsString(), CatalogueLineType.class);
@@ -155,7 +157,8 @@ public class Test05_CatalogueLineControllerTest {
         List<CatalogueLineType> catalogueLines = mapper.readValue(result.getResponse().getContentAsString(),new TypeReference<List<CatalogueLineType>>() {});
 
         // get catalogue line directly
-        request = get("/catalogue/"+ defaultCatalogueId +"/catalogueline/"+ defaultCatalogueLineId)
+        request = get("/catalogue/"+ defaultCatalogueId +"/catalogueline")
+                .param("lineId",defaultCatalogueLineId)
                 .header("Authorization", TestConfig.buyerId);
         result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         CatalogueLineType catalogueLine = mapper.readValue(result.getResponse().getContentAsString(), CatalogueLineType.class);
@@ -166,7 +169,8 @@ public class Test05_CatalogueLineControllerTest {
     // update catalogue line by changing its catalog
     @Test
     public void test07_updateCatalogueLine() throws Exception{
-        MockHttpServletRequestBuilder request = get("/catalogue/" + defaultCatalogueId + "/catalogueline/" + defaultCatalogueLineId)
+        MockHttpServletRequestBuilder request = get("/catalogue/" + defaultCatalogueId + "/catalogueline")
+                .param("lineId",defaultCatalogueLineId)
                 .header("Authorization", TestConfig.buyerId);
         MvcResult result = this.mockMvc.perform(request).andReturn();
 
@@ -177,11 +181,13 @@ public class Test05_CatalogueLineControllerTest {
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
 
         // make sure that old catalogue line does not exist
-        request = get("/catalogue/" + defaultCatalogueId + "/catalogueline/" + defaultCatalogueLineId)
+        request = get("/catalogue/" + defaultCatalogueId + "/catalogueline")
+                .param("lineId",defaultCatalogueLineId)
                 .header("Authorization", TestConfig.buyerId);
         this.mockMvc.perform(request).andExpect(status().isNotFound());
         // make sure that new catalogue line exists
-        request = get("/catalogue/" + testCatalogueId + "/catalogueline/" + defaultCatalogueLineId)
+        request = get("/catalogue/" + testCatalogueId + "/catalogueline")
+                .param("lineId",defaultCatalogueLineId)
                 .header("Authorization", TestConfig.buyerId);
         this.mockMvc.perform(request).andExpect(status().isOk());
     }
@@ -200,7 +206,8 @@ public class Test05_CatalogueLineControllerTest {
 
     @Test
     public void test09_deleteCatalogueLineById() throws Exception {
-        MockHttpServletRequestBuilder request = delete("/catalogue/" + testCatalogueId + "/catalogueline/" + defaultCatalogueLineId)
+        MockHttpServletRequestBuilder request = delete("/catalogue/" + testCatalogueId + "/catalogueline")
+                .param("lineId",defaultCatalogueLineId)
                 .header("Authorization", TestConfig.buyerId);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
     }

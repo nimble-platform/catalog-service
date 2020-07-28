@@ -82,11 +82,11 @@ public class CatalogueController {
             @ApiResponse(code = 404, message = "No default catalogue for the party"),
             @ApiResponse(code = 500, message = "Failed to get CataloguePaginationResponse for the party")
     })
-    @RequestMapping(value = "/catalogue/{partyId}/pagination/{catalogueId:.+}",
+    @RequestMapping(value = "/catalogue/{partyId}/pagination",
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity getDefaultCataloguePagination(@ApiParam(value = "Identifier of the party for which the catalogue to be retrieved", required = true) @PathVariable String partyId,
-                                                        @ApiParam(value = "Identifier of the catalogue", required = true) @PathVariable String catalogueId,
+                                                        @ApiParam(value = "Identifier of the catalogue", required = true) @RequestParam(value = "catalogueId") String catalogueId,
                                                         @ApiParam(value = "Number of catalogue lines to be included in CataloguePaginationResponse ",required = true) @RequestParam(value = "limit",required = true) Integer limit,
                                                         @ApiParam(value = "Offset of the first catalogue line among all catalogue lines of the default catalogue for the party",required = true) @RequestParam(value = "offset",required = true) Integer offset,
                                                         @ApiParam(value = "Text to be used to filter the catalogue lines.Item name and description will be searched for the given text.") @RequestParam(value = "searchText",required = false) String searchText,

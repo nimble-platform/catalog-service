@@ -9,6 +9,7 @@ import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.statistics.ProductAndServiceStatistics;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
+import eu.nimble.service.catalogue.persistence.util.LockPool;
 import eu.nimble.service.catalogue.util.CatalogueEvent;
 import eu.nimble.service.catalogue.util.LoggerUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
@@ -64,6 +65,8 @@ public class CatalogueLineController {
     private ExecutionContext executionContext;
     @Autowired
     private EmailSenderUtil emailSenderUtil;
+    @Autowired
+    private LockPool lockPool;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves the catalogue line with the DB-scoped identifier")
@@ -242,11 +245,11 @@ public class CatalogueLineController {
             @ApiResponse(code = 404, message = "Specified catalogue or catalogue line does not exist"),
             @ApiResponse(code = 500, message = "Unexpected error while getting catalogue line")
     })
-    @RequestMapping(value = "/catalogue/{catalogueUuid}/catalogueline/{lineId:.+}",
+    @RequestMapping(value = "/catalogue/{catalogueUuid}/catalogueline",
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity getCatalogueLine(@ApiParam(value = "uuid of the catalogue containing the line to be retrieved. (catalogue.uuid)", required = true) @PathVariable String catalogueUuid,
-                                           @ApiParam(value = "Identifier of the catalogue line to be retrieved. (line.id)", required = true) @PathVariable String lineId,
+                                           @ApiParam(value = "Identifier of the catalogue line to be retrieved. (line.id)", required = true) @RequestParam(value = "lineId") String lineId,
                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         // set request log of ExecutionContext
         String requestLog = String.format("Incoming request to get catalogue line with lineId: %s, catalogue uuid: %s", lineId, catalogueUuid);
@@ -347,18 +350,21 @@ public class CatalogueLineController {
         CatalogueType catalogue;
         CatalogueLineType catalogueLine;
 
+        String providerPartyID = null;
         try {
             // validate role
             if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(),RoleConfig.REQUIRED_ROLES_CATALOGUE_WRITE)) {
                 throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
+            // retrieve provider party id
+            providerPartyID = CataloguePersistenceUtil.getCatalogueProviderId(catalogueUuid);
+            if(providerPartyID == null){
+                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(catalogueUuid));
+            }
+            lockPool.getLockForParty(providerPartyID).writeLock().lock();
 
             // get owning catalogue
             catalogue = service.getCatalogue(catalogueUuid);
-            if (catalogue == null) {
-                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(catalogueUuid));
-            }
-
             if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogueUuid,executionContext.getVatNumber())){
                 throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(), Collections.singletonList(catalogueUuid));
             }
@@ -394,6 +400,10 @@ public class CatalogueLineController {
         } catch (Exception e) {
             log.warn("The following catalogue line could not be created: {}", catalogueLineJson);
             throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_ADD_CATALOGUE_LINE.toString(),e);
+        } finally {
+            if(providerPartyID != null){
+                lockPool.getLockForParty(providerPartyID).writeLock().unlock();
+            }
         }
 
         return createCreatedCatalogueLineResponse(catalogueUuid, catalogueLine);
@@ -540,11 +550,11 @@ public class CatalogueLineController {
             @ApiResponse(code = 404, message = "Catalogue with the given uuid does not exist"),
             @ApiResponse(code = 500, message = "Failed to delete the catalogue line")
     })
-    @RequestMapping(value = "/catalogue/{catalogueUuid}/catalogueline/{lineId:.+}",
+    @RequestMapping(value = "/catalogue/{catalogueUuid}/catalogueline",
             produces = {"application/json"},
             method = RequestMethod.DELETE)
     public ResponseEntity deleteCatalogueLine(@ApiParam(value = "uuid of the catalogue containing the line to be retrieved. (catalogue.uuid)", required = true) @PathVariable String catalogueUuid,
-                                              @ApiParam(value = "Identifier of the catalogue line to be retrieved. (line.id)", required = true) @PathVariable String lineId,
+                                              @ApiParam(value = "Identifier of the catalogue line to be retrieved. (line.id)", required = true) @RequestParam(value = "lineId") String lineId,
                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         // set request log of ExecutionContext
         String requestLog = String.format("Incoming request to delete catalogue line. catalogue uuid: %s: line lineId %s", catalogueUuid, lineId);

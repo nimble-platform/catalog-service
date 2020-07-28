@@ -653,8 +653,20 @@ public class TemplateParser {
                     catalogueLine.getGoodsItem().getContainingPackage().setQuantity(packageQuantity);
                 } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_CUSTOMIZABLE.toString(), defaultLanguage) )){
                     catalogueLine.getGoodsItem().getItem().setCustomizable((Boolean) parseCell(cell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_CUSTOMIZABLE.toString(), defaultLanguage) ,TEMPLATE_DATA_TYPE_BOOLEAN  , false));
+                } else if (SpringBridge.getInstance().getCatalogueServiceConfig().getSparePartEnabled() && property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_SPARE_PART.toString(), defaultLanguage) )){
+                    catalogueLine.getGoodsItem().getItem().setSparePart((Boolean) parseCell(cell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_SPARE_PART.toString(), defaultLanguage) ,TEMPLATE_DATA_TYPE_BOOLEAN  , false));
                 }
                 columnIndex++;
+            }
+
+            // price base quantity should be provided if price amount is provided
+            if(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue() != null && catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getValue() == null){
+                throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_BASE_QUANTITY_REQUIRED.toString(),Arrays.asList(catalogueLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID()));
+            }
+            // unit must be the same for price base quantity and minimum order quantity
+            if(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getUnitCode() != null && catalogueLine.getMinimumOrderQuantity().getUnitCode() != null &&
+                    !catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getUnitCode().contentEquals(catalogueLine.getMinimumOrderQuantity().getUnitCode())){
+                throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_SAME_UNIT_REQUIRED_FOR_BASE_AND_MINIMUM_ORDER_QUANTITIES.toString(),Arrays.asList(catalogueLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID()));
             }
         }
 

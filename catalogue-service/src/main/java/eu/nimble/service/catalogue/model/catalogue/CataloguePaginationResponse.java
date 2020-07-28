@@ -13,6 +13,7 @@ public class CataloguePaginationResponse {
     private List<String> categoryNames;
     private List<String> permittedParties;
     private List<String> restrictedParties;
+    private Boolean priceHidden;
 
     public CataloguePaginationResponse() {
     }
@@ -71,5 +72,13 @@ public class CataloguePaginationResponse {
 
     public void setRestrictedParties(List<String> restrictedParties) {
         this.restrictedParties = restrictedParties;
+    }
+
+    public Boolean getPriceHidden() {
+        return priceHidden;
+    }
+
+    public void setPriceHidden(Boolean priceHidden) {
+        this.priceHidden = priceHidden;
     }
 }

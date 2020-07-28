@@ -53,7 +53,9 @@ public class IndexingWrapper {
         indexItem.setRestrictedParties(new HashSet<>(CataloguePersistenceUtil.getRestrictedParties(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID())));
         AmountValidator amountValidator = new AmountValidator(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount());
         if(amountValidator.bothFieldsPopulated()) {
-            indexItem.addPrice(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getCurrencyID(), catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue().doubleValue());
+            if(catalogueLine.isPriceHidden() == null || !catalogueLine.isPriceHidden()){
+                indexItem.addPrice(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getCurrencyID(), catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue().doubleValue());
+            }
             // index also the base quantity
             QuantityValidator quantityValidator = new QuantityValidator(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity());
             if(!quantityValidator.bothFieldsPopulated()) {
@@ -69,6 +71,9 @@ public class IndexingWrapper {
         indexItem.setDescription(getLabelMapFromMultilingualLabels(catalogueLine.getGoodsItem().getItem().getDescription()));
         indexItem.setFreeOfCharge(catalogueLine.isFreeOfChargeIndicator());
         indexItem.setCustomizable(catalogueLine.getGoodsItem().getItem().isCustomizable());
+        if(SpringBridge.getInstance().getCatalogueServiceConfig().getSparePartEnabled()){
+            indexItem.setSparePart(catalogueLine.getGoodsItem().getItem().isSparePart());
+        }
         indexItem.setImgageUri(getImageUris(catalogueLine));
         indexItem.setManufacturerId(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID());
         quantityValidator = new QuantityValidator(catalogueLine.getGoodsItem().getContainingPackage().getQuantity());

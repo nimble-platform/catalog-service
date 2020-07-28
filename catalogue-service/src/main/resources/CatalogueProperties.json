@@ -56,6 +56,20 @@
     "dataType": "http://www.w3.org/2001/XMLSchema#boolean"
   },
   {
+    "id": "sparePart",
+    "preferredName": [
+      {
+        "value": "Spare Part",
+        "languageID": "en"
+      },
+      {
+        "value": "Pieza de recambio",
+        "languageID": "es"
+      }
+    ],
+    "dataType": "http://www.w3.org/2001/XMLSchema#boolean"
+  },
+  {
     "id": "certificateType",
     "preferredName": [
       {

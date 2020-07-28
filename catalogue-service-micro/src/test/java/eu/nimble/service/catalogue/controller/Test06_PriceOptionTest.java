@@ -93,12 +93,14 @@ public class Test06_PriceOptionTest {
     @Test
     public void test3_deletePriceOption() throws Exception {
         // delete the option
-        MockHttpServletRequestBuilder request = delete("/catalogue/" + Test05_CatalogueLineControllerTest.defaultCatalogueId + "/catalogueline/" + catalogueLine.getID() + "/price-options/" + priceOption.getHjid())
+        MockHttpServletRequestBuilder request = delete("/catalogue/" + Test05_CatalogueLineControllerTest.defaultCatalogueId + "/catalogueline/price-options/" + priceOption.getHjid())
+                .param("lineId",catalogueLine.getID())
                 .header("Authorization", TestConfig.buyerId);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
 
         // get catalogue line
-        request = get("/catalogue/" + Test05_CatalogueLineControllerTest.defaultCatalogueId + "/catalogueline/" + catalogueLine.getID())
+        request = get("/catalogue/" + Test05_CatalogueLineControllerTest.defaultCatalogueId + "/catalogueline")
+                .param("lineId",catalogueLine.getID())
                 .header("Authorization", TestConfig.buyerId);
         MvcResult result = this.mockMvc.perform(request).andReturn();
         CatalogueLineType catalogueLine = mapper.readValue(result.getResponse().getContentAsString(), CatalogueLineType.class);

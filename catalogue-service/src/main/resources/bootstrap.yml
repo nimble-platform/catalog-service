@@ -146,6 +146,7 @@ security:
 nimble:
   catalog:
     max-file-size: 5 #in MB
+    spare-part: ${SPARE_PART_ENABLED:false}
     category:
       enabled-taxonomies: ${CATALOGUE_SERVICE_ENABLED_TAXONOMIES} #comma separated taxonomy ids as defined in the Taxonomies.json file e.g. eClass,FurnitureOntology
   binary-content:
