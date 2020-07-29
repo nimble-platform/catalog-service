@@ -19,11 +19,10 @@ public class CatalogueLinePersistenceUtil {
     private static final String QUERY_CHECK_EXISTENCE_BY_HJID = "SELECT COUNT(cl) FROM CatalogueLineType as cl "
             + " WHERE cl.hjid = :hjid ";
 
-    private static final String QUERY_CHECK_EXISTENCE_BY_ID = "SELECT COUNT(cl) FROM CatalogueLineType as cl, CatalogueType as c "
+    private static final String QUERY_CHECK_EXISTENCE_BY_ID = "SELECT COUNT(clj) FROM CatalogueType as c "
             + " JOIN c.catalogueLine as clj"
             + " WHERE c.UUID = :catalogueUuid "
-            + " AND cl.ID = :lineId "
-            + " AND clj.ID = cl.ID ";
+            + " AND clj.ID = :lineId ";
     private static final String QUERY_CHECK_EXISTENCE_BY_HJID_AND_ID = "SELECT COUNT(clj) FROM CatalogueType as c "
             + " JOIN c.catalogueLine as clj"
             + " WHERE c.UUID = :catalogueUuid"
@@ -61,12 +60,12 @@ public class CatalogueLinePersistenceUtil {
 
     public static Boolean checkCatalogueLineExistence(String catalogueUuid, String lineId) {
         long lineExistence = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_CHECK_EXISTENCE_BY_ID, new String[]{"catalogueUuid", "lineId"}, new Object[]{catalogueUuid, lineId});
-        return lineExistence == 1 ? true : false;
+        return lineExistence == 1;
     }
 
     public static Boolean checkCatalogueLineExistence(String catalogueUuid, String lineId, Long hjid) {
         long lineExistence = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_CHECK_EXISTENCE_BY_HJID_AND_ID, new String[]{"catalogueUuid", "lineId", "hjid"}, new Object[]{catalogueUuid, lineId, hjid});
-        return lineExistence == 1 ? true : false;
+        return lineExistence == 1;
     }
 
     public static CatalogueLineType getCatalogueLine(Long hjid) {
