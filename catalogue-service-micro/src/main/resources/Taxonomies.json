@@ -20,5 +20,12 @@
   {
     "id": "TextileOntology",
     "namespace": "http://nimble-project.eu/TextileAndWGSectorsOntology.owl#"
+  },
+  {
+    "id": "Aerospace",
+    "namespace": "http://www.nimble-project.org/resource/aerospace#",
+    "serviceRootCategories": [
+      "http://www.nimble-project.org/resource/aerospace#Services"
+    ]
   }
 ]
