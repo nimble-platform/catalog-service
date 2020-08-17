@@ -197,10 +197,19 @@ public class IndexCategoryService {
     public List<Category> getRootCategories(String taxonomyId) {
         Map<String, String> facetCriteria = new HashMap<>();
 
-        String namespace = SpringBridge.getInstance().getTaxonomyManager().getTaxonomiesMap().get(taxonomyId).getTaxonomy().getNamespace();
-        facetCriteria.put(IConcept.NAME_SPACE_FIELD, "\"" + namespace + "\"");
-        facetCriteria.put("-" + IClassType.ALL_PARENTS_FIELD, "*");
-        List<Category> categories = classIndexClient.getCategories("*", facetCriteria);
+        List<String> namespaces = new ArrayList<>();
+        if(taxonomyId.compareToIgnoreCase("all") == 0){
+            SpringBridge.getInstance().getTaxonomyManager().getTaxonomiesMap().forEach((id, taxonomyQueryInterface) -> namespaces.add(taxonomyQueryInterface.getTaxonomy().getNamespace()));
+        } else{
+            namespaces.add(SpringBridge.getInstance().getTaxonomyManager().getTaxonomiesMap().get(taxonomyId).getTaxonomy().getNamespace());
+        }
+        List<Category> categories = new ArrayList<>();
+        for (String namespace : namespaces) {
+            facetCriteria.put(IConcept.NAME_SPACE_FIELD, "\"" + namespace + "\"");
+            facetCriteria.put("-" + IClassType.ALL_PARENTS_FIELD, "*");
+            categories.addAll(classIndexClient.getCategories("*", facetCriteria)) ;
+        }
+
         return categories;
 
 //        SolrQuery query = new SolrQuery();

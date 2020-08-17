@@ -193,7 +193,7 @@ public class ProductCategoryController {
         log.info(requestLog);
         executionContext.setRequestLog(requestLog);
 
-        if (!taxonomyIdExists(taxonomyId)) {
+        if (!(taxonomyId.compareToIgnoreCase("all") == 0 || taxonomyIdExists(taxonomyId))) {
             throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_TAXONOMY.toString(),Arrays.asList(taxonomyId));
         }
         List<Category> categories = categoryService.getRootCategories(taxonomyId);
