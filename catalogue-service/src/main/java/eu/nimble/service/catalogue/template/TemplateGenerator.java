@@ -1420,7 +1420,7 @@ public class TemplateGenerator {
 
                 termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("CIF (Cost,Insurance and Freight)");
                 termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("FOB (Free on Board)");
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("DAT (Delivered at Terminal)");
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("DPU (Delivery at Place Unloaded)");
             }
             else if (property.getDataType().equals("BOOLEAN")){
                 CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnIndex,columnIndex);
@@ -1723,9 +1723,9 @@ public class TemplateGenerator {
         sourceList.getRow(2).createCell(1).setCellValue("CIP (Carriage and Insurance Paid to)");
         sourceList.createRow(3).createCell(1).setCellValue("CFR (Cost and Freight)");
         sourceList.createRow(4).createCell(1).setCellValue("CPT (Carriage paid to)");
-        sourceList.createRow(5).createCell(1).setCellValue("DAT (Delivered at Terminal)");
-        sourceList.createRow(6).createCell(1).setCellValue("DAP (Delivered at Place)");
-        sourceList.createRow(7).createCell(1).setCellValue("DDP (Delivery Duty Paid)");
+        sourceList.createRow(5).createCell(1).setCellValue("DAP (Delivered at Place)");
+        sourceList.createRow(6).createCell(1).setCellValue("DDP (Delivery Duty Paid)");
+        sourceList.createRow(7).createCell(1).setCellValue("DPU (Delivery at Place Unloaded)");
         sourceList.createRow(8).createCell(1).setCellValue("EXW (Ex Works)");
         sourceList.createRow(9).createCell(1).setCellValue("FAS (Free Alongside Ship)");
         sourceList.createRow(10).createCell(1).setCellValue("FCA (Free Carrier)");
