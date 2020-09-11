@@ -6,6 +6,7 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.ClauseType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DeliveryTermsType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PriceOptionType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
+import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 import eu.nimble.utility.ExecutionContext;
 import eu.nimble.utility.HttpResponseUtil;
@@ -137,6 +138,44 @@ public class R17MigrationController {
         }
 
         logger.info("Completed request to update incoterms");
+        return ResponseEntity.ok(null);
+    }
+
+    @ApiOperation(value = "", notes = "Replaces 'day(s)' unit with 'calendar day(s)' unit for time quantities")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Updated the time quantity units successfully"),
+            @ApiResponse(code = 401, message = "Invalid role")
+    })
+    @RequestMapping(value = "/r17/migration/time-units",
+            produces = {"application/json"},
+            method = RequestMethod.PATCH)
+    public ResponseEntity updateTimeQuantityUnits(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken
+    ) throws IOException {
+        logger.info("Incoming request to update time quantity units");
+
+        if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+        }
+
+        // remove "day(s)" unit from the unit manager and add "calendar day(s)" unit
+        unitManager.deleteUnitFromList("day(s)","time_quantity");
+        unitManager.deleteUnitFromList("day(s)","frame_contract_period");
+
+        unitManager.addUnitToList("calendar day(s)","time_quantity");
+        unitManager.addUnitToList("calendar day(s)","frame_contract_period");
+
+        GenericJPARepository catalogueRepo = new JPARepositoryFactory().forCatalogueRepository(true);
+
+        List<QuantityType> quantityTypes = catalogueRepo.getEntities(QuantityType.class);
+
+        for (QuantityType quantityType : quantityTypes) {
+            if(quantityType.getUnitCode() != null && quantityType.getUnitCode().contentEquals("day(s)")){
+                quantityType.setUnitCode("calendar day(s)");
+                catalogueRepo.updateEntity(quantityType);
+            }
+        }
+
+        logger.info("Completed request to update time quantity units");
         return ResponseEntity.ok(null);
     }
 }

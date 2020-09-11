@@ -718,7 +718,7 @@
             "endTime": null,
             "durationMeasure": {
               "value": null,
-              "unitCode": "day(s)",
+              "unitCode": "calendar day(s)",
               "hjid": null
             },
             "hjid": null
