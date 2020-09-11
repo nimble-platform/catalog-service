@@ -24,10 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Product category related REST services
@@ -178,26 +175,28 @@ public class ProductCategoryController {
     }
 
     @CrossOrigin(origins = {"*"})
-    @ApiOperation(value = "", notes = "Retrieves root categories of the specified taxonomy")
+    @ApiOperation(value = "", notes = "Retrieves root categories of the specified taxonomies")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieved the root categories successfully", response = Category.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Invalid taxonomy id")
     })
-    @RequestMapping(value = "/taxonomies/{taxonomyId}/root-categories",
+    @RequestMapping(value = "/taxonomies/root-categories",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity getRootCategories(@ApiParam(value = "Taxonomy id from which categories would be retrieved.", required = true) @PathVariable String taxonomyId,
+    public ResponseEntity getRootCategories(@ApiParam(value = "Taxonomy id from which categories would be retrieved.",required = true) @RequestParam(value = "taxonomyIds") List<String> taxonomyIds,
                                             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         // set request log of ExecutionContext
-        String requestLog = String.format("Incoming request to get root categories for taxonomy: %s", taxonomyId);
+        String requestLog = String.format("Incoming request to get root categories for taxonomies: %s", taxonomyIds);
         log.info(requestLog);
         executionContext.setRequestLog(requestLog);
 
-        if (!(taxonomyId.compareToIgnoreCase("all") == 0 || taxonomyIdExists(taxonomyId))) {
-            throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_TAXONOMY.toString(),Arrays.asList(taxonomyId));
+        for (String taxonomyId : taxonomyIds) {
+            if(!taxonomyIdExists(taxonomyId)){
+                throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_TAXONOMY.toString(), Collections.singletonList(taxonomyId));
+            }
         }
-        List<Category> categories = categoryService.getRootCategories(taxonomyId);
-        log.info("Completed request to get root categories for taxonomy: %{}", taxonomyId);
+        List<Category> categories = categoryService.getRootCategories(taxonomyIds);
+        log.info("Completed request to get root categories for taxonomies: %{}", taxonomyIds);
         return ResponseEntity.ok(categories);
     }
 

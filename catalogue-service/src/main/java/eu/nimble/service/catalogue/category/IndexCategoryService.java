@@ -74,7 +74,7 @@ public class IndexCategoryService {
         // get children of parents categories
         List<List<Category>> childenListsList = new ArrayList<>();
         // first the root categories
-        List<Category> rootCategories = indexCategoryService.getRootCategories(IndexingWrapper.extractTaxonomyFromUri(parentIndexCategories.get(0).getUri()).getId());
+        List<Category> rootCategories = indexCategoryService.getRootCategories(Collections.singletonList(IndexingWrapper.extractTaxonomyFromUri(parentIndexCategories.get(0).getUri()).getId()));
         childenListsList.add(rootCategories);
 
         // get all children of each parent
@@ -194,15 +194,11 @@ public class IndexCategoryService {
     }
 
     @Cacheable(value = "rootCategories")
-    public List<Category> getRootCategories(String taxonomyId) {
+    public List<Category> getRootCategories(List<String> taxonomyIds) {
         Map<String, String> facetCriteria = new HashMap<>();
 
         List<String> namespaces = new ArrayList<>();
-        if(taxonomyId.compareToIgnoreCase("all") == 0){
-            SpringBridge.getInstance().getTaxonomyManager().getTaxonomiesMap().forEach((id, taxonomyQueryInterface) -> namespaces.add(taxonomyQueryInterface.getTaxonomy().getNamespace()));
-        } else{
-            namespaces.add(SpringBridge.getInstance().getTaxonomyManager().getTaxonomiesMap().get(taxonomyId).getTaxonomy().getNamespace());
-        }
+        taxonomyIds.forEach(taxonomyId -> namespaces.add(SpringBridge.getInstance().getTaxonomyManager().getTaxonomiesMap().get(taxonomyId).getTaxonomy().getNamespace()));
         List<Category> categories = new ArrayList<>();
         for (String namespace : namespaces) {
             facetCriteria.put(IConcept.NAME_SPACE_FIELD, "\"" + namespace + "\"");
