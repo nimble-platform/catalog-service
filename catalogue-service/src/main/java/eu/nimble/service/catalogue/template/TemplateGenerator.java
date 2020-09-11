@@ -2095,7 +2095,7 @@ public class TemplateGenerator {
         return propertiesSize;
     }
 
-    private List<Property> getPropertiesToBeIncludedInTemplate(Category category) {
+    public static List<Property> getPropertiesToBeIncludedInTemplate(Category category) {
         List<Property> properties = new ArrayList<>();
         if(category.getProperties() != null) {
             for(Property property : category.getProperties()) {
