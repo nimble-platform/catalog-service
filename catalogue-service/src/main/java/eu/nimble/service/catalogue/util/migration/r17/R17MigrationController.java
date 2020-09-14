@@ -3,6 +3,10 @@ package eu.nimble.service.catalogue.util.migration.r17;
 import eu.nimble.service.catalogue.UnitManager;
 import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ClauseType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.DeliveryTermsType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.PriceOptionType;
+import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
+import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 import eu.nimble.utility.ExecutionContext;
 import eu.nimble.utility.HttpResponseUtil;
@@ -23,6 +27,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 @Controller
@@ -36,6 +42,9 @@ public class R17MigrationController {
     private IValidationUtil validationUtil;
     @Autowired
     private ExecutionContext executionContext;
+
+    private final String oldIncoterm = "DAT (Delivered at Terminal)";
+    private final String newIncoterm = "DPU (Delivery at Place Unloaded)";
 
     @ApiOperation(value = "", notes = "Add titles to each clause")
     @ApiResponses(value = {
@@ -82,6 +91,91 @@ public class R17MigrationController {
         }
 
         logger.info("Completed request to add clause titles");
+        return ResponseEntity.ok(null);
+    }
+
+    @ApiOperation(value = "", notes = "Updates incoterms")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Updated the incoterms successfully"),
+            @ApiResponse(code = 401, message = "Invalid role")
+    })
+    @RequestMapping(value = "/r17/migration/incoterms",
+            produces = {"application/json"},
+            method = RequestMethod.PATCH)
+    public ResponseEntity updateIncoterms(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken
+    ) throws IOException {
+        logger.info("Incoming request to update incoterms");
+
+        if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+        }
+
+        GenericJPARepository catalogueRepo = new JPARepositoryFactory().forCatalogueRepository(true);
+
+        List<CodeType> codeTypeList = catalogueRepo.getEntities(CodeType.class);
+        List<DeliveryTermsType> deliveryTermsTypes = catalogueRepo.getEntities(DeliveryTermsType.class);
+        List<PriceOptionType> priceOptionTypes =  catalogueRepo.getEntities(PriceOptionType.class);
+
+        for (CodeType codeType : codeTypeList) {
+            if(codeType.getValue() != null && codeType.getValue().contentEquals(oldIncoterm)){
+                codeType.setValue(newIncoterm);
+                catalogueRepo.updateEntity(codeType);
+            }
+        }
+
+        for (DeliveryTermsType deliveryTermsType : deliveryTermsTypes) {
+            if(deliveryTermsType.getIncoterms() != null && deliveryTermsType.getIncoterms().contentEquals(oldIncoterm)){
+                deliveryTermsType.setIncoterms(newIncoterm);
+                catalogueRepo.updateEntity(deliveryTermsType);
+            }
+        }
+
+        for (PriceOptionType priceOptionType : priceOptionTypes) {
+            if (priceOptionType.getIncoterms().size() != 0){
+                Collections.replaceAll(priceOptionType.getIncoterms(),oldIncoterm,newIncoterm);
+                catalogueRepo.updateEntity(priceOptionType);
+            }
+        }
+
+        logger.info("Completed request to update incoterms");
+        return ResponseEntity.ok(null);
+    }
+
+    @ApiOperation(value = "", notes = "Replaces 'day(s)' unit with 'calendar day(s)' unit for time quantities")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Updated the time quantity units successfully"),
+            @ApiResponse(code = 401, message = "Invalid role")
+    })
+    @RequestMapping(value = "/r17/migration/time-units",
+            produces = {"application/json"},
+            method = RequestMethod.PATCH)
+    public ResponseEntity updateTimeQuantityUnits(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken
+    ) throws IOException {
+        logger.info("Incoming request to update time quantity units");
+
+        if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+        }
+
+        // remove "day(s)" unit from the unit manager and add "calendar day(s)" unit
+        unitManager.deleteUnitFromList("day(s)","time_quantity");
+        unitManager.deleteUnitFromList("day(s)","frame_contract_period");
+
+        unitManager.addUnitToList("calendar day(s)","time_quantity");
+        unitManager.addUnitToList("calendar day(s)","frame_contract_period");
+
+        GenericJPARepository catalogueRepo = new JPARepositoryFactory().forCatalogueRepository(true);
+
+        List<QuantityType> quantityTypes = catalogueRepo.getEntities(QuantityType.class);
+
+        for (QuantityType quantityType : quantityTypes) {
+            if(quantityType.getUnitCode() != null && quantityType.getUnitCode().contentEquals("day(s)")){
+                quantityType.setUnitCode("calendar day(s)");
+                catalogueRepo.updateEntity(quantityType);
+            }
+        }
+
+        logger.info("Completed request to update time quantity units");
         return ResponseEntity.ok(null);
     }
 }
