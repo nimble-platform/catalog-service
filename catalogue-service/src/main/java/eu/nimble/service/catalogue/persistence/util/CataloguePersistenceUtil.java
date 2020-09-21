@@ -15,7 +15,11 @@ import java.util.List;
  * Created by suat on 31-Dec-18.
  */
 public class CataloguePersistenceUtil {
+    public static final String CATALOGUE_SHOPPING_CART_ID = "SHOPPING_CART";
+
     private static final String QUERY_GET_ALL_CATALOGUES = "SELECT catalogue FROM CatalogueType catalogue";
+    private static final String QUERY_GET_ALL_CATALOGUES_EXCEPT_CART = "SELECT catalogue FROM CatalogueType catalogue " +
+            " WHERE catalogue.ID <> '"+ CATALOGUE_SHOPPING_CART_ID + "'";
     private static final String QUERY_GET_ALL_CATALOGUES_FOR_PARTY = "SELECT catalogue FROM CatalogueType as catalogue "
             + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification"
             + " WHERE partyIdentification.ID = :partyId";
@@ -103,6 +107,10 @@ public class CataloguePersistenceUtil {
 
     public static List<CatalogueType> getAllCatalogues() {
         return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_ALL_CATALOGUES);
+    }
+
+    public static List<CatalogueType> getAllCataloguesExceptCarts() {
+        return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_ALL_CATALOGUES_EXCEPT_CART);
     }
 
     public static Boolean isPriceHidden(String catalogueUuid) {

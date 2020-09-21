@@ -3,7 +3,6 @@ package eu.nimble.service.catalogue.index;
 import eu.nimble.common.rest.indexing.IIndexingServiceClient;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.util.CredentialsUtil;
-import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.solr.item.ItemType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
@@ -81,7 +80,7 @@ public class ItemIndexClient {
     }
 
     public void indexAllCatalogues() {
-        List<CatalogueType> catalogues = CataloguePersistenceUtil.getAllCatalogues();
+        List<CatalogueType> catalogues = CataloguePersistenceUtil.getAllCataloguesExceptCarts();
         for(CatalogueType catalogue : catalogues) {
             indexCatalogue(catalogue);
         }
