@@ -15,9 +15,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * This interceptor injects the bearer token into the {@link ExecutionContext} for each Rest call
@@ -43,6 +41,13 @@ public class RestServiceInterceptor extends HandlerInterceptorAdapter {
     private final String CLAIMS_FIELD_VATIN = "vatin";
     private final int MEGABYTE = 1024*1024;
 
+    private static Set<String> excludedEndpoints = new HashSet<>();
+    static {
+        excludedEndpoints.add("swagger-resources");
+        excludedEndpoints.add("api-docs");
+        excludedEndpoints.add("taxonomies");
+    }
+
     @Override
     public boolean preHandle (HttpServletRequest request, HttpServletResponse response, Object handler) {
         // log JVM memory stats
@@ -54,8 +59,8 @@ public class RestServiceInterceptor extends HandlerInterceptorAdapter {
         String bearerToken = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         Claims claims = null;
-        // do not validate the token for swagger operations
-        if(bearerToken != null && !(request.getServletPath().contains(swaggerPath) || request.getServletPath().contains(apiDocsPath))){
+        // do not validate the token for excluded endpoints
+        if(!excludedEndpoints.stream().anyMatch(endpoint -> request.getServletPath().contains(endpoint))) {
             // validate token
             try {
                 claims = iValidationUtil.validateToken(bearerToken);
