@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue.util.migration.r17;
 
 import eu.nimble.service.catalogue.UnitManager;
 import eu.nimble.service.catalogue.config.RoleConfig;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ClauseType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DeliveryTermsType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PriceOptionType;
@@ -176,6 +177,50 @@ public class R17MigrationController {
         }
 
         logger.info("Completed request to update time quantity units");
+        return ResponseEntity.ok(null);
+    }
+
+    @ApiOperation(value = "", notes = "Trim preceding and trailing spaces for catalogue lines")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Trimmed preceding and trailing spaces for catalogue lines successfully"),
+            @ApiResponse(code = 401, message = "Invalid role")
+    })
+    @RequestMapping(value = "/r17/migration/validate-spaces",
+            produces = {"application/json"},
+            method = RequestMethod.PATCH)
+    public ResponseEntity validateCatalogueLinesForPrecedingTrailingSpace(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken
+    ) throws IOException {
+        logger.info("Incoming request to trim preceding and trailing spaces for catalogue lines");
+
+        if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+        }
+
+        GenericJPARepository catalogueRepo = new JPARepositoryFactory().forCatalogueRepository(true);
+
+        List<CatalogueLineType> catalogueLineTypes = catalogueRepo.getEntities(CatalogueLineType.class);
+
+        for (CatalogueLineType catalogueLine : catalogueLineTypes) {
+            // product id
+            catalogueLine.setID(catalogueLine.getID().trim());
+            // product name
+            catalogueLine.getGoodsItem().getItem().getName().stream().filter(textType -> textType.getValue() !=null).forEach(textType -> textType.setValue(textType.getValue().trim()));
+            // additional properties
+            catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty().forEach(itemPropertyType -> {
+                itemPropertyType.getName().forEach(textType -> textType.setValue(textType.getValue().trim()));
+                itemPropertyType.getValue().forEach(textType -> textType.setValue(textType.getValue().trim()));
+                itemPropertyType.getValueQuantity().stream().filter(quantityType -> quantityType.getUnitCode() != null).forEach(quantityType -> quantityType.setUnitCode(quantityType.getUnitCode().trim()));
+                itemPropertyType.getValueBinary().forEach(binaryObjectType -> {
+                    binaryObjectType.setUri(binaryObjectType.getUri().trim());
+                    binaryObjectType.setFileName(binaryObjectType.getFileName().trim());
+                    binaryObjectType.setMimeCode(binaryObjectType.getMimeCode().trim());
+                });
+            });
+
+            catalogueRepo.updateEntity(catalogueLine);
+        }
+
+        logger.info("Completed request to trim preceding and trailing spaces for catalogue lines");
         return ResponseEntity.ok(null);
     }
 }
