@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by suat on 23-Jan-19.
@@ -46,7 +47,16 @@ public class IndexingWrapper {
         indexItem.setUri(catalogueLine.getHjid().toString());
         indexItem.setManufactuerItemId(catalogueLine.getID());
         indexItem.setLocalName(catalogueLine.getHjid().toString());
+        // product name
         catalogueLine.getGoodsItem().getItem().getName().forEach(name -> indexItem.addLabel(name.getLanguageID(), name.getValue()));
+        // for the missing languages ids, add an entry to index item using the first name of product
+        Set<String> availableLanguages= catalogueLine.getGoodsItem().getItem().getName().stream().map(TextType::getLanguageID).collect(Collectors.toSet());
+        List<String> catalogueServiceLanguages = SpringBridge.getInstance().getCatalogueServiceConfig().getCatalogueServiceLanguages();
+        catalogueServiceLanguages.forEach(catalogueServiceLanguage -> {
+            if(!availableLanguages.contains(catalogueServiceLanguage)){
+                catalogueServiceLanguages.forEach(languageId -> indexItem.addLabel(languageId,catalogueLine.getGoodsItem().getItem().getName().get(0).getValue()));
+            }
+        });
         indexItem.setApplicableCountries(getCountries(catalogueLine));
         indexItem.setCertificateType(getCertificates(catalogueLine));
         indexItem.setPermittedParties(new HashSet<>(CataloguePersistenceUtil.getPermittedParties(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID())));
