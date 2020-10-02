@@ -4,6 +4,7 @@ import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
 import eu.nimble.utility.ExecutionContext;
 import eu.nimble.utility.exception.NimbleException;
 import eu.nimble.utility.validation.IValidationUtil;
+import eu.nimble.utility.validation.NimbleRole;
 import io.jsonwebtoken.Claims;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,9 +44,23 @@ public class RestServiceInterceptor extends HandlerInterceptorAdapter {
 
     private static Set<String> excludedEndpoints = new HashSet<>();
     static {
-        excludedEndpoints.add("swagger-resources");
-        excludedEndpoints.add("api-docs");
-        excludedEndpoints.add("taxonomies");
+        excludedEndpoints.add("/swagger-resources");
+        excludedEndpoints.add("/api-docs");
+        // error point is called by spring if the execution of the request is not successful
+        excludedEndpoints.add("/error");
+        // excluding these as they are required while getting product details when the user is not logged in
+        excludedEndpoints.add("/taxonomies");
+        excludedEndpoints.add("/taxonomies/id");
+        excludedEndpoints.add("/taxonomies/.*/service-categories");
+        excludedEndpoints.add("/catalogue/.*/catalogueline");
+        excludedEndpoints.add("/catalogue/ubl/.*");
+        excludedEndpoints.add("/cataloguelines");
+        excludedEndpoints.add("/binary-contents");
+        excludedEndpoints.add("/unit-lists");
+    }
+
+    public static void main(String[] a) {
+        System.out.println(excludedEndpoints.stream().anyMatch("/taxonomies/id"::matches));
     }
 
     @Override
@@ -59,12 +74,14 @@ public class RestServiceInterceptor extends HandlerInterceptorAdapter {
         String bearerToken = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         Claims claims = null;
-        // do not validate the token for excluded endpoints
-        if(!excludedEndpoints.stream().anyMatch(endpoint -> request.getServletPath().contains(endpoint))) {
-            // validate token
-            try {
-                claims = iValidationUtil.validateToken(bearerToken);
-            } catch (Exception e) {
+        try {
+            claims = iValidationUtil.validateToken(bearerToken);
+        } catch (Exception e) {
+            // do not throw an exception if the endpoint is among the excluded ones from authentication
+            if(!excludedEndpoints.stream().anyMatch(endpoint -> request.getServletPath().matches(endpoint))) {
+                executionContext.setUserRoles(Collections.singletonList(NimbleRole.COMPANY_ADMIN.getName()));
+                return true;
+            } else {
                 throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_NO_USER_FOR_TOKEN.toString(), Arrays.asList(bearerToken),e);
             }
         }
