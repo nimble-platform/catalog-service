@@ -33,8 +33,6 @@ public class RestServiceInterceptor extends HandlerInterceptorAdapter {
     @Autowired
     IValidationUtil iValidationUtil;
 
-    private final String swaggerPath = "swagger-resources";
-    private final String apiDocsPath = "api-docs";
     private final String CLAIMS_FIELD_REALM_ACCESS = "realm_access";
     private final String CLAIMS_FIELD_ROLES = "roles";
     private final String CLAIMS_FIELD_EMAIL = "email";
@@ -44,8 +42,8 @@ public class RestServiceInterceptor extends HandlerInterceptorAdapter {
 
     private static Set<String> excludedEndpoints = new HashSet<>();
     static {
-        excludedEndpoints.add("/swagger-resources");
-        excludedEndpoints.add("/api-docs");
+        excludedEndpoints.add("/swagger-resources.*");
+        excludedEndpoints.add(".*/api-docs");
         // error point is called by spring if the execution of the request is not successful
         excludedEndpoints.add("/error");
         // excluding these as they are required while getting product details when the user is not logged in
