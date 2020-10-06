@@ -35,6 +35,7 @@ public class DataIntegratorUtil {
         setParentCategories(catalogueLine.getGoodsItem().getItem().getCommodityClassification());
         checkCatalogueLineIDs(catalogueLine);
         setCatalogueDocumentReference(catalogue.getUUID(),catalogueLine);
+        removePrecedingTrailingSpaces(catalogueLine);
     }
 
     public static void setParentCategories(List<CommodityClassificationType> commodityClassifications) throws InvalidCategoryException {
@@ -49,6 +50,24 @@ public class DataIntegratorUtil {
         DocumentReferenceType docRef = new DocumentReferenceType();
         docRef.setID(catalogueUUID);
         catalogueLine.getGoodsItem().getItem().setCatalogueDocumentReference(docRef);
+    }
+
+    private static void removePrecedingTrailingSpaces(CatalogueLineType catalogueLine) {
+        // product id
+        catalogueLine.setID(catalogueLine.getID().trim());
+        // product name
+        catalogueLine.getGoodsItem().getItem().getName().stream().filter(textType -> textType.getValue() !=null).forEach(textType -> textType.setValue(textType.getValue().trim()));
+        // additional properties
+        catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty().forEach(itemPropertyType -> {
+            itemPropertyType.getName().forEach(textType -> textType.setValue(textType.getValue().trim()));
+            itemPropertyType.getValue().forEach(textType -> textType.setValue(textType.getValue().trim()));
+            itemPropertyType.getValueQuantity().stream().filter(quantityType -> quantityType.getUnitCode() != null).forEach(quantityType -> quantityType.setUnitCode(quantityType.getUnitCode().trim()));
+            itemPropertyType.getValueBinary().forEach(binaryObjectType -> {
+                binaryObjectType.setUri(binaryObjectType.getUri().trim());
+                binaryObjectType.setFileName(binaryObjectType.getFileName().trim());
+                binaryObjectType.setMimeCode(binaryObjectType.getMimeCode().trim());
+            });
+        });
     }
 
     private static void checkCatalogueLineIDs(CatalogueLineType line){

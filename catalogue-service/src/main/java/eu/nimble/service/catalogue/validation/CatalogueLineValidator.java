@@ -49,27 +49,8 @@ public class CatalogueLineValidator {
         partyIdsMatch();
         fileSizesLessThanTheMaximum();
         checkReferenceToCatalogue();
-        checkPrecedingTrailingSpace();
 
         return new ValidationMessages(errorMessages,errorParameters);
-    }
-
-    private void checkPrecedingTrailingSpace() {
-        // product id
-        catalogueLine.setID(catalogueLine.getID().trim());
-        // product name
-        catalogueLine.getGoodsItem().getItem().getName().stream().filter(textType -> textType.getValue() !=null).forEach(textType -> textType.setValue(textType.getValue().trim()));
-        // additional properties
-        catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty().forEach(itemPropertyType -> {
-            itemPropertyType.getName().forEach(textType -> textType.setValue(textType.getValue().trim()));
-            itemPropertyType.getValue().forEach(textType -> textType.setValue(textType.getValue().trim()));
-            itemPropertyType.getValueQuantity().stream().filter(quantityType -> quantityType.getUnitCode() != null).forEach(quantityType -> quantityType.setUnitCode(quantityType.getUnitCode().trim()));
-            itemPropertyType.getValueBinary().forEach(binaryObjectType -> {
-                binaryObjectType.setUri(binaryObjectType.getUri().trim());
-                binaryObjectType.setFileName(binaryObjectType.getFileName().trim());
-                binaryObjectType.setMimeCode(binaryObjectType.getMimeCode().trim());
-            });
-        });
     }
 
     private void idExists() {
