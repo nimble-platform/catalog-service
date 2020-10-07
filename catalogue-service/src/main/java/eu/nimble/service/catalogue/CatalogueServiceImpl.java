@@ -336,11 +336,18 @@ public class CatalogueServiceImpl implements CatalogueService {
             catalogue.setProviderParty(party);
             catalogue.setCatalogueLine(catalogueLines);
         } else {
+            // each catalogue line should have a proper reference to the catalogue
+            // otherwise catalogue line validation fails
+            for (CatalogueLineType catalogueLine : catalogueLines) {
+                DocumentReferenceType docRef = new DocumentReferenceType();
+                docRef.setID(catalogue.getUUID());
+                catalogueLine.getGoodsItem().getItem().setCatalogueDocumentReference(docRef);
+            }
             updateLinesForUploadMode(catalogue, uploadMode, catalogueLines);
         }
 
         // validate the catalogue lines
-        for (CatalogueLineType catalogueLine : catalogueLines) {
+        for (CatalogueLineType catalogueLine : catalogue.getCatalogueLine()) {
             CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogue, catalogueLine);
             ValidationMessages errors = catalogueLineValidator.validate();
             if (errors.getErrorMessages().size() > 0) {
@@ -430,11 +437,6 @@ public class CatalogueServiceImpl implements CatalogueService {
             }
         }
 
-        newCatalogueLines.forEach(catalogueLine -> {
-            DocumentReferenceType docRef = new DocumentReferenceType();
-            docRef.setID(catalogue.getUUID());
-            catalogueLine.getGoodsItem().getItem().setCatalogueDocumentReference(docRef);
-        });
         // add new catalogue lines
         catalogue.getCatalogueLine().addAll(newCatalogueLines);
     }
