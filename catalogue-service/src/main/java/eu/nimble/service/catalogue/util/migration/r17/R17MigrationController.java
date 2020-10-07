@@ -2,10 +2,7 @@ package eu.nimble.service.catalogue.util.migration.r17;
 
 import eu.nimble.service.catalogue.UnitManager;
 import eu.nimble.service.catalogue.config.RoleConfig;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.ClauseType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.DeliveryTermsType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.PriceOptionType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
@@ -29,8 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Controller
 public class R17MigrationController {
@@ -221,6 +217,59 @@ public class R17MigrationController {
         }
 
         logger.info("Completed request to trim preceding and trailing spaces for catalogue lines");
+        return ResponseEntity.ok(null);
+    }
+
+    @ApiOperation(value = "", notes = "Update product names so that each product has at most one name for each language id")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Validated product names successfully"),
+            @ApiResponse(code = 401, message = "Invalid role")
+    })
+    @RequestMapping(value = "/r17/migration/validate-product-names",
+            produces = {"application/json"},
+            method = RequestMethod.PATCH)
+    public ResponseEntity validateCatalogueLineNames(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken
+    ) throws IOException {
+        logger.info("Incoming request to validate product names");
+
+        if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+        }
+
+        GenericJPARepository catalogueRepo = new JPARepositoryFactory().forCatalogueRepository(true);
+
+        List<CatalogueLineType> catalogueLineTypes = catalogueRepo.getEntities(CatalogueLineType.class);
+
+        // make sure that each product has at most one name for each language id
+        for (CatalogueLineType catalogueLine : catalogueLineTypes) {
+            ItemType item = catalogueLine.getGoodsItem().getItem();
+
+            // product names with unique language ids
+            List<TextType> productNames = new ArrayList<>();
+
+            Set<String> productNameLanguageIds = new HashSet<>();
+            item.getName().forEach(textType -> {
+                if(!productNameLanguageIds.contains(textType.getLanguageID())){
+                    productNameLanguageIds.add(textType.getLanguageID());
+                    productNames.add(textType);
+                }
+            });
+
+            // product descriptions with unique language ids
+            List<TextType> descriptions = new ArrayList<>();
+            productNames.forEach(textType -> {
+                Optional<TextType> productDescription = item.getDescription().stream().filter(description -> textType.getLanguageID().contentEquals(description.getLanguageID())).findFirst();
+                productDescription.ifPresent(descriptions::add);
+
+            });
+
+            item.setName(productNames);
+            item.setDescription(descriptions);
+
+            catalogueRepo.updateEntity(catalogueLine);
+        }
+
+        logger.info("Completed request to validate product names");
         return ResponseEntity.ok(null);
     }
 }

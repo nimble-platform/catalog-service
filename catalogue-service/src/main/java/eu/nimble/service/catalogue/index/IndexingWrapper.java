@@ -1,5 +1,6 @@
 package eu.nimble.service.catalogue.index;
 
+import com.google.common.base.Strings;
 import eu.nimble.service.catalogue.category.Taxonomy;
 import eu.nimble.service.catalogue.category.TaxonomyQueryInterface;
 import eu.nimble.service.catalogue.category.eclass.EClassTaxonomyQueryImpl;
@@ -47,14 +48,15 @@ public class IndexingWrapper {
         indexItem.setUri(catalogueLine.getHjid().toString());
         indexItem.setManufactuerItemId(catalogueLine.getID());
         indexItem.setLocalName(catalogueLine.getHjid().toString());
-        // product name
-        catalogueLine.getGoodsItem().getItem().getName().forEach(name -> indexItem.addLabel(name.getLanguageID(), name.getValue()));
+        // index the valid product names
+        List<TextType> productNames = catalogueLine.getGoodsItem().getItem().getName().stream().filter(textType -> !Strings.isNullOrEmpty(textType.getValue())).collect(Collectors.toList());
+        productNames.forEach(name -> indexItem.addLabel(name.getLanguageID(), name.getValue()));
         // for the missing languages ids, add an entry to index item using the first name of product
-        Set<String> availableLanguages= catalogueLine.getGoodsItem().getItem().getName().stream().map(TextType::getLanguageID).collect(Collectors.toSet());
+        Set<String> availableLanguages= productNames.stream().map(TextType::getLanguageID).collect(Collectors.toSet());
         List<String> catalogueServiceLanguages = SpringBridge.getInstance().getCatalogueServiceConfig().getCatalogueServiceLanguages();
         catalogueServiceLanguages.forEach(catalogueServiceLanguage -> {
             if(!availableLanguages.contains(catalogueServiceLanguage)){
-                catalogueServiceLanguages.forEach(languageId -> indexItem.addLabel(languageId,catalogueLine.getGoodsItem().getItem().getName().get(0).getValue()));
+                catalogueServiceLanguages.forEach(languageId -> indexItem.addLabel(languageId,productNames.get(0).getValue()));
             }
         });
         indexItem.setApplicableCountries(getCountries(catalogueLine));

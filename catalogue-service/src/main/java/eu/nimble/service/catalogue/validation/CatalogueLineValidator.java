@@ -10,9 +10,7 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by suat on 08-Aug-18.
@@ -44,7 +42,7 @@ public class CatalogueLineValidator {
         idHasInvalidSpace();
         manufacturerIdExists();
         lineIdManufacturerIdMatches();
-        nameExists();
+        checkProductNames();
         commodityClassificationExists();
         partyIdsMatch();
         fileSizesLessThanTheMaximum();
@@ -94,7 +92,7 @@ public class CatalogueLineValidator {
         }
     }
 
-    private void nameExists() {
+    private void checkProductNames() {
         ItemType item = catalogueLine.getGoodsItem().getItem();
 
         boolean nameExists = false;
@@ -108,6 +106,17 @@ public class CatalogueLineValidator {
             errorMessages.add(NimbleExceptionMessageCode.BAD_REQUEST_NO_NAME_FOR_LINE.toString());
             errorParameters.add(Arrays.asList(extractedLineId));
         }
+
+        // check whether there is at most one product name for each language id
+        Set<String> productNameLanguageIds = new HashSet<>();
+        item.getName().forEach(textType -> {
+            if(productNameLanguageIds.contains(textType.getLanguageID())){
+                errorMessages.add(NimbleExceptionMessageCode.BAD_REQUEST_MULTIPLE_NAME_FOR_SAME_LANGUAGE_ID.toString());
+                errorParameters.add(Arrays.asList(textType.getLanguageID(),extractedLineId));
+            } else {
+                productNameLanguageIds.add(textType.getLanguageID());
+            }
+        });
     }
 
     private void commodityClassificationExists() {

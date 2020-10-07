@@ -17,6 +17,7 @@ import eu.nimble.service.catalogue.template.TemplateParser;
 import eu.nimble.service.catalogue.util.DataIntegratorUtil;
 import eu.nimble.service.catalogue.util.LanguageUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
+import eu.nimble.service.catalogue.validation.CatalogueLineValidator;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
 import eu.nimble.service.catalogue.validation.ValidationMessages;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
@@ -324,26 +325,30 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     @Override
     public CatalogueType parseCatalogue(InputStream catalogueTemplate, String uploadMode, PartyType party, Boolean includeVat) throws TemplateParseException{
-        CatalogueType catalogue = getCatalogue("default", party.getPartyIdentification().get(0).getID());
-        boolean newCatalogue = false;
-        if (catalogue == null) {
-            newCatalogue = true;
-        }
-
         TemplateParser templateParser = new TemplateParser(party);
         List<CatalogueLineType> catalogueLines = templateParser.getCatalogueLines(catalogueTemplate, includeVat);
 
-        if (newCatalogue) {
+        CatalogueType catalogue = getCatalogue("default", party.getPartyIdentification().get(0).getID());
+
+        if (catalogue == null) {
             catalogue = new CatalogueType();
             catalogue.setID("default");
             catalogue.setProviderParty(party);
             catalogue.setCatalogueLine(catalogueLines);
-            return catalogue;
-
         } else {
             updateLinesForUploadMode(catalogue, uploadMode, catalogueLines);
-            return catalogue;
         }
+
+        // validate the catalogue lines
+        for (CatalogueLineType catalogueLine : catalogueLines) {
+            CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogue, catalogueLine);
+            ValidationMessages errors = catalogueLineValidator.validate();
+            if (errors.getErrorMessages().size() > 0) {
+                throw new NimbleException(errors.getErrorMessages(),errors.getErrorParameters());
+            }
+        }
+
+        return catalogue;
     }
 
     /**
@@ -424,6 +429,12 @@ public class CatalogueServiceImpl implements CatalogueService {
                 }
             }
         }
+
+        newCatalogueLines.forEach(catalogueLine -> {
+            DocumentReferenceType docRef = new DocumentReferenceType();
+            docRef.setID(catalogue.getUUID());
+            catalogueLine.getGoodsItem().getItem().setCatalogueDocumentReference(docRef);
+        });
         // add new catalogue lines
         catalogue.getCatalogueLine().addAll(newCatalogueLines);
     }
