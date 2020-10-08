@@ -16,6 +16,7 @@ public class TemplateConfig {
 
     public static String TEMPLATE_PRODUCT_PROPERTIES_WIDTH = "Width";
     public static String TEMPLATE_PRODUCT_PROPERTIES_LENGTH = "Length";
+    public static String TEMPLATE_PRODUCT_PROPERTIES_HEIGHT = "Height";
 
     public static String TEMPLATE_DATA_TYPE_TEXT = "TEXT";
     public static String TEMPLATE_DATA_TYPE_MULTILINGUAL_TEXT = "MULTILINGUAL TEXT";
@@ -36,6 +37,7 @@ public class TemplateConfig {
     public static String TEMPLATE_DIMENSION_REFERENCE = "SourceList!$D$2:$D$4";
     public static String TEMPLATE_WARRANTY_REFERENCE = "SourceList!$E$2:$E$3";
     public static String TEMPLATE_DELIVERY_PERIOD_REFERENCE = "SourceList!$F$2:$F$4";
+    public static String TEMPLATE_WEIGHT_UNITS_REFERENCE = "SourceList!$G$2:$G$4";
 
     public static List<Property> getFixedPropertiesForProductPropertyTab(String language) {
         List<Property> properties = new ArrayList<>();
@@ -85,6 +87,12 @@ public class TemplateConfig {
         // height
         prop = new Property();
         prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_HEIGHT.toString(), language) , language);
+        prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
+        properties.add(prop);
+
+        // weight
+        prop = new Property();
+        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WEIGHT.toString(), language) , language);
         prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
         properties.add(prop);
         return properties;

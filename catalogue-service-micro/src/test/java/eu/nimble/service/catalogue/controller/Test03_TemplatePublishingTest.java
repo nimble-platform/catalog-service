@@ -60,7 +60,7 @@ public class Test03_TemplatePublishingTest {
     final private String productID4 = "Product_id4";
     final private String colorProperty = "Color";
     final private String usageProperty = "Usage";
-    final private String incoterms = "DAT (Delivered at Terminal)";
+    final private String incoterms = "DPU (Delivery at Place Unloaded)";
 
     final private String contentType = "application/octet-stream";
     final private String fileName = "MDF_Raw.xlsx";

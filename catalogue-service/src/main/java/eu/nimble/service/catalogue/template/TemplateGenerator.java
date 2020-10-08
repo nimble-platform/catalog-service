@@ -125,16 +125,16 @@ public class TemplateGenerator {
 
             // dimensions
             for(DimensionType dimensionType : catalogueLine.getGoodsItem().getItem().getDimension()){
-                int columnIndex = 8;
+                int columnIndex = 10;
                 if(dimensionType.getAttributeID().contentEquals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_WIDTH)){
                     columnIndex = 4;
                 }
                 else if(dimensionType.getAttributeID().contentEquals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_LENGTH)){
                     columnIndex = 6;
                 }
-//                else if(dimensionType.getAttributeID().contentEquals(TEMPLATE_PRODUCT_PROPERTIES_HEIGHT)){
-//                    columnIndex = 8;
-//                }
+                else if(dimensionType.getAttributeID().contentEquals(TEMPLATE_PRODUCT_PROPERTIES_HEIGHT)){
+                    columnIndex = 8;
+                }
                 cell = row.createCell(columnIndex);
                 // get unit cell
                 Cell unitCell = row.createCell(columnIndex+1);
@@ -617,11 +617,11 @@ public class TemplateGenerator {
         Cell cell = getCellWithMissingCellPolicy(topRow, 4);
         cell.setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_DIMENSIONS.toString(), defaultLanguage));
         cell.setCellStyle(tabCellStyle);
-        CellRangeAddress cra = new CellRangeAddress(0, 0, 4, 9);
+        CellRangeAddress cra = new CellRangeAddress(0, 0, 4, 11);
         productPropertiesTab.addMergedRegion(cra);
 
         // create the titles for categories
-        int columnOffset = TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage).size() + 4;
+        int columnOffset = TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage).size() + 5;
         for (int i = 0; i < categories.size(); i++) {
             List<Property> properties = getPropertiesToBeIncludedInTemplate(categories.get(i));
             if(properties.size() > 0) {
@@ -702,7 +702,7 @@ public class TemplateGenerator {
                 productPropertiesTab.addValidationData(dataValidation);
             }
 
-            if(property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WIDTH.toString(), defaultLanguage) ) || property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_LENGTH.toString(), defaultLanguage) ) || property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_HEIGHT.toString(), defaultLanguage) )){
+            if(property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WIDTH.toString(), defaultLanguage) ) || property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_LENGTH.toString(), defaultLanguage) ) || property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_HEIGHT.toString(), defaultLanguage) ) || property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WEIGHT.toString(), defaultLanguage) )){
                 // quantity unit
                 cell = secondRow.createCell(++columnOffset);
                 cell.setCellStyle(readOnlyStyle);
@@ -715,7 +715,8 @@ public class TemplateGenerator {
 
                 CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnOffset,columnOffset);
                 DataValidationHelper dataValidationHelper = productPropertiesTab.getDataValidationHelper();
-                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_DIMENSION_LIST.toString(), defaultLanguage));
+                String constraints = property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WEIGHT.toString(), defaultLanguage)) ? SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_WEIGHT_UNIT_LIST.toString(), defaultLanguage): SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_DIMENSION_LIST.toString(), defaultLanguage);
+                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(constraints);
                 DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
                 dataValidation.setSuppressDropDownArrow(true);
                 // error box
@@ -811,11 +812,11 @@ public class TemplateGenerator {
         Cell cell = getCellWithMissingCellPolicy(topRow, 4);
         cell.setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_DIMENSIONS.toString(), defaultLanguage));
         cell.setCellStyle(tabCellStyle);
-        CellRangeAddress cra = new CellRangeAddress(0, 0, 4, 9);
+        CellRangeAddress cra = new CellRangeAddress(0, 0, 4, 11);
         productPropertiesExampleTab.addMergedRegion(cra);
 
         // create the titles for categories
-        int columnOffset = TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage).size() + 4;
+        int columnOffset = TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage).size() + 5;
         for (int i = 0; i < categories.size(); i++) {
             List<Property> properties = getPropertiesToBeIncludedInTemplate(categories.get(i));
             if(properties.size() > 0) {
@@ -898,7 +899,8 @@ public class TemplateGenerator {
                 productPropertiesExampleTab.getRow(5).createCell(columnOffset).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_IRON_HEAD_MALLET_DESCRIPTION.toString(), defaultLanguage));
                 productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_WOOD_HEAD_MALLET_DESCRIPTION.toString(), defaultLanguage));
             }
-            else if(property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WIDTH.toString(), defaultLanguage)) || property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_LENGTH.toString(), defaultLanguage)) || property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_HEIGHT.toString(), defaultLanguage))){
+            else if(property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WIDTH.toString(), defaultLanguage)) || property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_LENGTH.toString(), defaultLanguage)) || property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_HEIGHT.toString(), defaultLanguage)) || property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WEIGHT.toString(), defaultLanguage))){
+                String exampleUnit = "cm";
                 if(property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WIDTH.toString(), defaultLanguage))){
                     productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue("3");
                     productPropertiesExampleTab.getRow(5).createCell(columnOffset).setCellValue("78");
@@ -920,6 +922,14 @@ public class TemplateGenerator {
                     productPropertiesExampleTab.getRow(5).createCell(++columnOffset).setCellValue("cm");
                     productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("mm");
                 }
+                else if(property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WEIGHT.toString(), defaultLanguage))){
+                    exampleUnit = "g";
+                    productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue("20");
+                    productPropertiesExampleTab.getRow(5).createCell(columnOffset).setCellValue("30");
+                    productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("300");
+                    productPropertiesExampleTab.getRow(5).createCell(++columnOffset).setCellValue(exampleUnit);
+                    productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue(exampleUnit);
+                }
                 // quantity unit
                 cell = secondRow.createCell(columnOffset);
                 cell.setCellStyle(readOnlyStyle);
@@ -932,7 +942,8 @@ public class TemplateGenerator {
 
                 CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnOffset,columnOffset);
                 DataValidationHelper dataValidationHelper = productPropertiesExampleTab.getDataValidationHelper();
-                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_DIMENSION_LIST.toString(), defaultLanguage));
+                String constraints = property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WEIGHT.toString(), defaultLanguage)) ? SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_WEIGHT_UNIT_LIST.toString(), defaultLanguage): SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_DIMENSION_LIST.toString(), defaultLanguage);
+                DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(constraints);
                 DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
                 dataValidation.setSuppressDropDownArrow(true);
                 // error box
@@ -942,7 +953,7 @@ public class TemplateGenerator {
                 dataValidation.setEmptyCellAllowed(true);
                 productPropertiesExampleTab.addValidationData(dataValidation);
 
-                productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellValue("cm");
+                productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellValue(exampleUnit);
                 productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellStyle(editableStyle);
             }
             columnOffset++;
@@ -1409,7 +1420,7 @@ public class TemplateGenerator {
 
                 termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("CIF (Cost,Insurance and Freight)");
                 termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("FOB (Free on Board)");
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("DAT (Delivered at Terminal)");
+                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("DPU (Delivery at Place Unloaded)");
             }
             else if (property.getDataType().equals("BOOLEAN")){
                 CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnIndex,columnIndex);
@@ -1712,9 +1723,9 @@ public class TemplateGenerator {
         sourceList.getRow(2).createCell(1).setCellValue("CIP (Carriage and Insurance Paid to)");
         sourceList.createRow(3).createCell(1).setCellValue("CFR (Cost and Freight)");
         sourceList.createRow(4).createCell(1).setCellValue("CPT (Carriage paid to)");
-        sourceList.createRow(5).createCell(1).setCellValue("DAT (Delivered at Terminal)");
-        sourceList.createRow(6).createCell(1).setCellValue("DAP (Delivered at Place)");
-        sourceList.createRow(7).createCell(1).setCellValue("DDP (Delivery Duty Paid)");
+        sourceList.createRow(5).createCell(1).setCellValue("DAP (Delivered at Place)");
+        sourceList.createRow(6).createCell(1).setCellValue("DDP (Delivery Duty Paid)");
+        sourceList.createRow(7).createCell(1).setCellValue("DPU (Delivery at Place Unloaded)");
         sourceList.createRow(8).createCell(1).setCellValue("EXW (Ex Works)");
         sourceList.createRow(9).createCell(1).setCellValue("FAS (Free Alongside Ship)");
         sourceList.createRow(10).createCell(1).setCellValue("FCA (Free Carrier)");
@@ -1763,6 +1774,15 @@ public class TemplateGenerator {
         namedCell.setNameName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_DELIVERY_PERIOD_LIST.toString(), defaultLanguage));
         namedCell.setRefersToFormula(TemplateConfig.TEMPLATE_DELIVERY_PERIOD_REFERENCE);
 
+        // values for weight units
+        sourceList.getRow(0).createCell(6).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_WEIGHT_UNIT_LIST.toString(), defaultLanguage));
+        sourceList.getRow(1).createCell(6).setCellValue("g");
+        sourceList.getRow(2).createCell(6).setCellValue("kg");
+        sourceList.getRow(3).createCell(6).setCellValue("ton");
+
+        namedCell = template.createName();
+        namedCell.setNameName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_WEIGHT_UNIT_LIST.toString(), defaultLanguage));
+        namedCell.setRefersToFormula(TEMPLATE_WEIGHT_UNITS_REFERENCE);
         // set sheet hidden
         template.setSheetHidden(template.getSheetIndex(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TAB_SOURCE_LIST.toString(), defaultLanguage)),true);
     }

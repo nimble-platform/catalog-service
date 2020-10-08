@@ -681,7 +681,7 @@
             "endTime": null,
             "durationMeasure": {
               "value": null,
-              "unitCode": "day(s)",
+              "unitCode": "calendar day(s)",
               "unitCodeListID": null,
               "hjid": null
             },
@@ -1119,7 +1119,7 @@
             "endTime": null,
             "durationMeasure": {
               "value": null,
-              "unitCode": "day(s)",
+              "unitCode": "calendar day(s)",
               "unitCodeListID": null,
               "hjid": null
             },
@@ -1557,7 +1557,7 @@
             "endTime": null,
             "durationMeasure": {
               "value": null,
-              "unitCode": "day(s)",
+              "unitCode": "calendar day(s)",
               "unitCodeListID": null,
               "hjid": null
             },
@@ -1995,7 +1995,7 @@
             "endTime": null,
             "durationMeasure": {
               "value": null,
-              "unitCode": "day(s)",
+              "unitCode": "calendar day(s)",
               "unitCodeListID": null,
               "hjid": null
             },
@@ -2433,7 +2433,7 @@
             "endTime": null,
             "durationMeasure": {
               "value": null,
-              "unitCode": "day(s)",
+              "unitCode": "calendar day(s)",
               "unitCodeListID": null,
               "hjid": null
             },

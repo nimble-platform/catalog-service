@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by suat on 10-Oct-17.
@@ -52,6 +53,9 @@ public class CatalogueServiceConfig {
 
     @Value("${nimble.federation-instance-id}")
     private String federationInstanceId;
+
+    @Value("${nimble.languages}")
+    private String catalogueServiceLanguages;
 
     @PostConstruct
     private void setupDBConnections() {
@@ -159,5 +163,9 @@ public class CatalogueServiceConfig {
 
     public void setSparePartEnabled(Boolean sparePartEnabled) {
         this.sparePartEnabled = sparePartEnabled;
+    }
+
+    public List<String> getCatalogueServiceLanguages() {
+        return Arrays.asList(catalogueServiceLanguages.split(","));
     }
 }

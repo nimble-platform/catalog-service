@@ -34,7 +34,7 @@ public class CatalogueIndexLoader {
         // get catalogues
         List<CatalogueType> catalogues;
         if(partyId == null){
-            catalogues = CataloguePersistenceUtil.getAllCatalogues();
+            catalogues = CataloguePersistenceUtil.getAllCataloguesExceptCarts();
         }
         else {
             catalogues = CataloguePersistenceUtil.getAllCataloguesForParty(partyId);

@@ -179,6 +179,7 @@ nimble:
   federation-instance-id: ${FEDERATION_INSTANCE_ID}
   delegate-service:
     url: ${DELEGATE_SERVICE_URL:}
+  languages: ${CATALOG_SERVICE_LANGUAGES:en,es}
 
 hystrix:
   command:

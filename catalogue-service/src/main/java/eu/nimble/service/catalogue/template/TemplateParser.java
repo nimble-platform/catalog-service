@@ -257,7 +257,7 @@ public class TemplateParser {
                 totalCategoryPropertyNumber++;
             }
         }
-        int fixedPropNumber = TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage).size()+3;
+        int fixedPropNumber = TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage).size()+4;
         int customPropertyNum = productPropertiesTab.getRow(1).getLastCellNum() - (totalCategoryPropertyNumber + fixedPropNumber + 1);
         int columnIndex = 1 + fixedPropNumber + totalCategoryPropertyNumber;
 
@@ -459,6 +459,20 @@ public class TemplateParser {
                 for (QuantityType width : widths) {
                     DimensionType dimension = new DimensionType();
                     dimension.setAttributeID("Height");
+                    dimension.setMeasure(width);
+                    item.getDimension().add(dimension);
+                }
+            } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WEIGHT.toString(), defaultLanguage))) {
+                Cell unitCell = TemplateGenerator.getCellWithMissingCellPolicy(propertiesRow, ++columnIndex);
+                List<QuantityType> widths;
+                try {
+                    widths = (List<QuantityType>) parseCell(productPropertiesTab,cell,unitCell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WEIGHT.toString(), defaultLanguage), TEMPLATE_DATA_TYPE_QUANTITY , true);
+                } catch (TemplateParseException e) {
+                    throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_WEIGHT_DIMENSION.toString(), e);
+                }
+                for (QuantityType width : widths) {
+                    DimensionType dimension = new DimensionType();
+                    dimension.setAttributeID("Weight");
                     dimension.setMeasure(width);
                     item.getDimension().add(dimension);
                 }
