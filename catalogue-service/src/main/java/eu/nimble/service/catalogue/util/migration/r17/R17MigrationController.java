@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.*;
 
 @Controller
@@ -270,6 +271,43 @@ public class R17MigrationController {
         }
 
         logger.info("Completed request to validate product names");
+        return ResponseEntity.ok(null);
+    }
+
+    @ApiOperation(value = "", notes = "Updates the price options to have a proper charge indicator")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Updated price options successfully"),
+            @ApiResponse(code = 401, message = "Invalid role")
+    })
+    @RequestMapping(value = "/r17/migration/price-options",
+            produces = {"application/json"},
+            method = RequestMethod.PATCH)
+    public ResponseEntity updatePriceOptions(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken
+    ) {
+        logger.info("Incoming request to update price options");
+
+        if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+        }
+
+        GenericJPARepository catalogueRepo = new JPARepositoryFactory().forCatalogueRepository(true);
+
+        List<PriceOptionType> priceOptions = catalogueRepo.getEntities(PriceOptionType.class);
+
+        for (PriceOptionType priceOption : priceOptions) {
+            BigDecimal amountValue = null;
+            if(priceOption.getItemLocationQuantity().getAllowanceCharge().get(0).getAmount() != null){
+                amountValue = priceOption.getItemLocationQuantity().getAllowanceCharge().get(0).getAmount().getValue();
+            }
+
+            if(amountValue != null){
+                priceOption.getItemLocationQuantity().getAllowanceCharge().get(0).setChargeIndicator(amountValue.compareTo(BigDecimal.ZERO) < 0);
+                priceOption.getItemLocationQuantity().getAllowanceCharge().get(0).getAmount().setValue(amountValue.abs());
+            }
+            catalogueRepo.updateEntity(priceOption);
+        }
+
+        logger.info("Completed request to update price options");
         return ResponseEntity.ok(null);
     }
 }
