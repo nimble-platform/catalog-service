@@ -23,6 +23,10 @@ public class CataloguePersistenceUtil {
     private static final String QUERY_GET_ALL_CATALOGUES_FOR_PARTY = "SELECT catalogue FROM CatalogueType as catalogue "
             + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification"
             + " WHERE partyIdentification.ID = :partyId";
+    private static final String QUERY_GET_ALL_PRODUCT_CATALOGUES_FOR_PARTY = "SELECT catalogue FROM CatalogueType as catalogue "
+            + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification"
+            + " WHERE partyIdentification.ID = :partyId"
+            + " AND catalogue.ID <> '" + CATALOGUE_SHOPPING_CART_ID + "'";
     private static final String QUERY_GET_BY_UUID = "SELECT catalogue FROM CatalogueType catalogue WHERE catalogue.UUID = :uuid";
     private static final String QUERY_GET_FOR_PARTY = "SELECT catalogue FROM CatalogueType as catalogue "
             + " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification"
@@ -109,7 +113,11 @@ public class CataloguePersistenceUtil {
         return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_ALL_CATALOGUES);
     }
 
-    public static List<CatalogueType> getAllCataloguesExceptCarts() {
+    /**
+     * Gets all catalogues except shopping carts
+     * @return
+     */
+    public static List<CatalogueType> getAllProductCatalogues() {
         return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_ALL_CATALOGUES_EXCEPT_CART);
     }
 
@@ -128,6 +136,15 @@ public class CataloguePersistenceUtil {
 
     public static List<CatalogueType> getAllCataloguesForParty(String partyId) {
         return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_ALL_CATALOGUES_FOR_PARTY, new String[]{"partyId"}, new Object[]{partyId});
+    }
+
+    /**
+     * Gets all catalogues except shopping carts for the given party
+     * @param partyId
+     * @return
+     */
+    public static List<CatalogueType> getAllProductCataloguesForParty(String partyId) {
+        return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_ALL_PRODUCT_CATALOGUES_FOR_PARTY, new String[]{"partyId"}, new Object[]{partyId});
     }
 
     public static boolean checkCatalogueForWhiteBlackList(String catalogueId,String partyId, String vatNumber){
