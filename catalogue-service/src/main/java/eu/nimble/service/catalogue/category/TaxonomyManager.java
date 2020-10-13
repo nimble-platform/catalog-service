@@ -24,6 +24,7 @@ public class TaxonomyManager {
     private String enabledTaxonomies;
 
     private Map<String,TaxonomyQueryInterface> taxonomiesMap = new HashMap<>();
+    private List<String> serviceRootCategories = new ArrayList<>();
 
     @PostConstruct
     public void initTaxonomyManager() throws Exception {
@@ -75,6 +76,10 @@ public class TaxonomyManager {
             else{
                 taxonomiesMap.put(taxonomy.getId(),new DefaultTaxonomyQueryImpl(taxonomy));
             }
+
+            // add service root categories for the taxonomy
+            serviceRootCategories.addAll(taxonomy.getServiceRootCategories());
+
             logger.info("Parsed {} taxonomy metadata", taxonomy.getId());
         }
         logger.info("Created taxonomies map");
@@ -82,5 +87,9 @@ public class TaxonomyManager {
 
     public Map<String, TaxonomyQueryInterface> getTaxonomiesMap() {
         return taxonomiesMap;
+    }
+
+    public List<String> getServiceRootCategories() {
+        return serviceRootCategories;
     }
 }

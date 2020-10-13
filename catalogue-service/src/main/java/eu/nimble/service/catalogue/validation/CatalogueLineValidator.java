@@ -1,16 +1,20 @@
 package eu.nimble.service.catalogue.validation;
 
 import com.google.common.base.Strings;
+import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
+import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CommodityClassificationType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemPropertyType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by suat on 08-Aug-18.
@@ -43,7 +47,7 @@ public class CatalogueLineValidator {
         manufacturerIdExists();
         lineIdManufacturerIdMatches();
         checkProductNames();
-        commodityClassificationExists();
+        checkCommodityClassifications();
         partyIdsMatch();
         fileSizesLessThanTheMaximum();
         checkReferenceToCatalogue();
@@ -119,10 +123,33 @@ public class CatalogueLineValidator {
         });
     }
 
-    private void commodityClassificationExists() {
+    private void checkCommodityClassifications() {
         ItemType item = catalogueLine.getGoodsItem().getItem();
+        // check whether the item has at least one category
         if (item.getCommodityClassification().size() == 0) {
             errorMessages.add(NimbleExceptionMessageCode.BAD_REQUEST_NO_COMMODITY_CLASSIFICATION.toString());
+            errorParameters.add(Arrays.asList(extractedLineId));
+        }
+        // check whether all the categories are the same type (i.e, Product or Service categories)
+        IndexCategoryService csm = SpringBridge.getInstance().getIndexCategoryService();
+        // service root categories
+        List<String> serviceRootCategories = SpringBridge.getInstance().getTaxonomyManager().getServiceRootCategories();
+        // skip the default categories
+        List<CommodityClassificationType> nonDefaultCommodityClassificationTypes = item.getCommodityClassification().stream().filter(commodityClassificationType -> !commodityClassificationType.getItemClassificationCode().getListID().contentEquals("Default")).collect(Collectors.toList());
+        // find the service categories included in the item
+        List<CommodityClassificationType> serviceCommodityClassifications = new ArrayList<>();
+        for (CommodityClassificationType cct : nonDefaultCommodityClassificationTypes) {
+            List<Category> parentCategories = csm.getParentCategories(cct.getItemClassificationCode().getListID(),cct.getItemClassificationCode().getValue());
+            for (Category parentCategory : parentCategories) {
+                if(serviceRootCategories.contains(parentCategory.getCategoryUri())){
+                    serviceCommodityClassifications.add(cct);
+                    break;
+                }
+            }
+        }
+        // error if the types of categories are different
+        if(serviceCommodityClassifications.size() != 0 && nonDefaultCommodityClassificationTypes.size() != serviceCommodityClassifications.size()){
+            errorMessages.add(NimbleExceptionMessageCode.BAD_REQUEST_MIXED_COMMODITY_CLASSIFICATION.toString());
             errorParameters.add(Arrays.asList(extractedLineId));
         }
     }
