@@ -80,7 +80,7 @@ public class ItemIndexClient {
     }
 
     public void indexAllCatalogues() {
-        List<CatalogueType> catalogues = CataloguePersistenceUtil.getAllCataloguesExceptCarts();
+        List<CatalogueType> catalogues = CataloguePersistenceUtil.getAllProductCatalogues();
         for(CatalogueType catalogue : catalogues) {
             indexCatalogue(catalogue);
         }

@@ -34,7 +34,7 @@ public class CatalogueIndexLoader {
         // get catalogues
         List<CatalogueType> catalogues;
         if(partyId == null){
-            catalogues = CataloguePersistenceUtil.getAllCataloguesExceptCarts();
+            catalogues = CataloguePersistenceUtil.getAllProductCatalogues();
         }
         else {
             catalogues = CataloguePersistenceUtil.getAllCataloguesForParty(partyId);
@@ -63,7 +63,7 @@ public class CatalogueIndexLoader {
 
                     for(String partyID : partyIDs){
                         logger.info("Retrieving catalogues from the company {}", partyID );
-                        catalogues = CataloguePersistenceUtil.getAllCataloguesForParty(partyID);
+                        catalogues = CataloguePersistenceUtil.getAllProductCataloguesForParty(partyID);
                         for(CatalogueType catalogue : catalogues) {
                             try {
                                 itemIndexClient.indexCatalogue(catalogue);
