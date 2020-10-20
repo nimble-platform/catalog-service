@@ -48,7 +48,7 @@ spring:
   jackson:
     mapper:
       PROPAGATE_TRANSIENT_MARKER: true
-  http:
+ servlet:
     multipart:
       max-file-size: 100MB
       max-request-size: 100MB
