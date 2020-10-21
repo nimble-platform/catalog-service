@@ -730,7 +730,7 @@ public class CatalogueController {
             return ResponseEntity.ok().body(serializationUtility.serializeUBLObject(catalogue));
 
         } catch (Exception e) {
-            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_UNEXPECTED_ERROR_WHILE_UPLOADING_IMAGES.toString(),Arrays.asList(id));
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_UNEXPECTED_ERROR_WHILE_UPLOADING_IMAGES.toString(),Arrays.asList(id), e);
         }
     }
 
