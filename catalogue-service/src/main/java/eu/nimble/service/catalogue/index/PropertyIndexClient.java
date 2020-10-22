@@ -80,7 +80,7 @@ public class PropertyIndexClient {
 
             if (response.status() == HttpStatus.OK.value()) {
                 List<PropertyType> properties = extractIndexPropertiesFromSearchResults(response, uris.toString());
-                logger.info("Retrieved properties for uris: {}", uris);
+                logger.debug("Retrieved properties for uris: {}", uris);
                 return properties;
 
             } else {
@@ -107,7 +107,7 @@ public class PropertyIndexClient {
 
             if (response.status() == HttpStatus.OK.value()) {
                 List<PropertyType> properties = extractIndexPropertiesFromSearchResults(response, categoryUris.toString());
-                logger.info("Retrieved properties for categories: {}", categoryUris);
+                logger.debug("Retrieved properties for categories: {}", categoryUris);
                 return properties;
 
             } else {

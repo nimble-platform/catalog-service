@@ -100,7 +100,7 @@ public class ClassIndexClient {
     }
 
     public List<ClassType> getIndexCategories(Set<String> uris) {
-        logger.info("Incoming request to get indexed categories for uris: {}",uris);
+        logger.debug("Incoming request to get indexed categories for uris: {}",uris);
         // first, retrieve the categories from cache if possible, then retrieve the rest from indexing-service and cache them as well
         Cache<Object,Object> categoryCache = cacheHelper.getCategoryCache();
 
@@ -119,7 +119,7 @@ public class ClassIndexClient {
 
         // if all categories exist in the cache, return them
         if(urisToBeRetrievedFromIndex.size() == 0){
-            logger.info("Retrieved indexed categories for uris: {},number of indexed categories: {}",uris,indexCategories.size());
+            logger.debug("Retrieved indexed categories for uris: {},number of indexed categories: {}",uris,indexCategories.size());
             return indexCategories;
         }
 
@@ -144,7 +144,7 @@ public class ClassIndexClient {
                     categoryCache.put(indexCategory.getUri(),indexCategory);
                 }
 
-                logger.info("Retrieved indexed categories for uris: {},number of indexed categories: {}",uris,indexCategories.size());
+                logger.debug("Retrieved indexed categories for uris: {},number of indexed categories: {}",uris,indexCategories.size());
                 return indexCategories;
 
             } else {
