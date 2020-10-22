@@ -73,13 +73,13 @@ public interface CatalogueService {
     public CatalogueType parseCatalogue(InputStream catalogueTemplate, String uploadMode, PartyType party, Boolean includeVat);
 
     /**
-     * Adds the provided images to the relevant products in the catalogue.
+     * Adds the provided images to the relevant products in the specified catalogue of the specified party
      *
      * @param imagePackage
-     * @param catalogueType
+     * @param catalogueUuid
      * @return
      */
-    CatalogueType addImagesToProducts(ZipInputStream imagePackage, CatalogueType catalogueType);
+    void addImagesToProducts(ZipInputStream imagePackage, String catalogueUuid);
 
     CatalogueType removeAllImagesFromCatalogue(CatalogueType catalogueType);
 

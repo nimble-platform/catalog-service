@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue;
 
 import eu.nimble.service.catalogue.category.IndexCategoryService;
+import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.exception.InvalidCategoryException;
 import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
@@ -59,6 +60,8 @@ public class CatalogueServiceImpl implements CatalogueService {
     private ItemIndexClient itemIndexClient;
     @Autowired
     private IndexCategoryService indexCategoryService;
+    @Autowired
+    private CatalogueServiceConfig catalogueServiceConfig;
 
     public static void main(String[] args) throws IOException {
         CatalogueServiceImpl csi = new CatalogueServiceImpl();
@@ -442,7 +445,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public CatalogueType addImagesToProducts(ZipInputStream imagePackage, CatalogueType catalogue) {
+    public void addImagesToProducts(ZipInputStream imagePackage, String catalogueUuid) {
         try {
             ZipEntry ze = imagePackage.getNextEntry();
 
@@ -452,28 +455,28 @@ public class CatalogueServiceImpl implements CatalogueService {
                     String fileName = ze.getName();
                     String mimeType = MimetypesFileTypeMap.getDefaultFileTypeMap().getContentType(fileName);
                     String type = mimeType.split("/")[0];
-                    String prefix = fileName.split("\\.")[0];
+                    String lineId = fileName.split("\\.")[0];
 
                     if (type.equals("image")) {
                         // find the item according to the prefix provided in the image name
-                        ItemType item = null;
-                        for (CatalogueLineType line : catalogue.getCatalogueLine()) {
-                            if (line.getGoodsItem().getItem().getManufacturersItemIdentification().getID().contentEquals(prefix)) {
-                                item = line.getGoodsItem().getItem();
-                                break;
-                            }
-                        }
-                        if (item == null) {
-                            logger.warn("No product to assign image with prefix: {}", prefix);
+                        CatalogueLineType line = CatalogueLinePersistenceUtil.getCatalogueLine(catalogueUuid, lineId);
+                        if (line == null) {
+                            logger.warn("No product to assign image with prefix: {}", lineId);
 
                             // item is available
                         } else {
+                            ItemType item = line.getGoodsItem().getItem();
                             // prepare the new binary content
                             IOUtils.copy(imagePackage, baos);
                             BinaryObjectType binaryObject = new BinaryObjectType();
                             binaryObject.setMimeCode(mimeType);
                             binaryObject.setFileName(ze.getName());
                             binaryObject.setValue(baos.toByteArray());
+
+                            // ensure that the image size does not exceed the maximum limit
+                            if (binaryObject.getValue().length > catalogueServiceConfig.getMaxFileSize() * 1024 * 1024) {
+                                throw new CatalogueServiceException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_IMAGE_SIZE.toString(), Arrays.asList(ze.getName()));
+                            }
 
                             // check whether the image is already attached to the item
                             ItemType finalItem = item;
@@ -490,6 +493,7 @@ public class CatalogueServiceImpl implements CatalogueService {
                                 item.getProductImage().add(binaryObject);
                             }
 
+                            updateCatalogueLine(line);
                             logger.info("Image {} added to item {}", fileName, item.getManufacturersItemIdentification().getID());
                         }
 
@@ -509,19 +513,6 @@ public class CatalogueServiceImpl implements CatalogueService {
                 imagePackage.closeEntry();
                 ze = imagePackage.getNextEntry();
             }
-
-            List<String> errors = new ArrayList<>();
-            List<List<String>> errorParameters = new ArrayList<>();
-            for (CatalogueLineType line : catalogue.getCatalogueLine()) {
-                new CatalogueLineValidator(line, errors, errorParameters).fileSizesLessThanTheMaximum();
-            }
-            if(errors.size() > 0){
-                throw new NimbleException(errors, errorParameters);
-            }
-
-            catalogue = updateCatalogue(catalogue);
-
-            return catalogue;
 
         } catch (IOException e) {
             String msg = "Failed to get next entry";

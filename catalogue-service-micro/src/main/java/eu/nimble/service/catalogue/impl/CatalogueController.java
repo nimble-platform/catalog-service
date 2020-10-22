@@ -678,7 +678,7 @@ public class CatalogueController {
             method = RequestMethod.POST)
     public ResponseEntity uploadImages(
             @ApiParam(value = "The package compressed as a Zip file, including the images. An example image package can be found in: https://github.com/nimble-platform/catalog-service/tree/staging/catalogue-service-micro/src/main/resources/example_content/images.zip", required = true) @RequestParam("package") MultipartFile pack,
-            @ApiParam(value = "uuid of the catalogue to be retrieved.", required = true) @PathVariable("id") String id,
+            @ApiParam(value = "id of the catalogue to be retrieved.", required = true) @PathVariable("id") String id,
             @ApiParam(value = "Identifier of the party for which the catalogue will be updated", required = true) @RequestParam("partyId") String partyId,
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         try {
@@ -692,11 +692,7 @@ public class CatalogueController {
                 throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
 
-            CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueForParty(id, partyId);
-
-            if (catalogue == null) {
-                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(id));
-            }
+            String catalogueUUid = CataloguePersistenceUtil.getCatalogueUUid(id, partyId);
 
             if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(id,executionContext.getVatNumber())){
                 throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(),Arrays.asList(id));
@@ -710,7 +706,7 @@ public class CatalogueController {
             ZipInputStream zis = null;
             try {
                 zis = new ZipInputStream(pack.getInputStream());
-                catalogue = service.addImagesToProducts(zis, catalogue);
+                service.addImagesToProducts(zis, catalogueUUid);
 
             } catch (IOException e) {
                 throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_GET_ZIP_PACKAGE.toString(),e);
@@ -727,7 +723,7 @@ public class CatalogueController {
             }
 
             log.info("Completed the request to upload images for catalogue: {}", id);
-            return ResponseEntity.ok().body(serializationUtility.serializeUBLObject(catalogue));
+            return ResponseEntity.ok().build();
 
         } catch (Exception e) {
             if (e instanceof NimbleException) {
