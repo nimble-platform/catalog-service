@@ -27,10 +27,10 @@ public class CatalogueValidator {
     }
 
     public ValidationMessages validate() {
+        long start = System.currentTimeMillis();
         idExists();
         validateLines();
-
-        logger.info("Catalogue: {} validated", catalogueType.getUUID());
+        logger.info("Catalogue: {} validated in {} ms", catalogueType.getUUID(), System.currentTimeMillis() - start);
         return new ValidationMessages(errorMessages,errorParameters);
     }
 
@@ -44,7 +44,7 @@ public class CatalogueValidator {
     private void validateLines() {
         for (CatalogueLineType line : catalogueType.getCatalogueLine()) {
             CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogueType, line);
-            ValidationMessages validationMessages = catalogueLineValidator.validate();
+            ValidationMessages validationMessages = catalogueLineValidator.validateAll();
             errorMessages.addAll(validationMessages.getErrorMessages());
             errorParameters.addAll(validationMessages.getErrorParameters());
         }

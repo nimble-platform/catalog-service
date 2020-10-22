@@ -378,7 +378,7 @@ public class CatalogueLineController {
 
             // validate the incoming content
             CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogue, catalogueLine);
-            ValidationMessages errors = catalogueLineValidator.validate();
+            ValidationMessages errors = catalogueLineValidator.validateAll();
             if (errors.getErrorMessages().size() > 0) {
                 throw new NimbleException(errors.getErrorMessages(),errors.getErrorParameters());
             }
@@ -486,7 +486,7 @@ public class CatalogueLineController {
                 String oldCatalogueUuid = catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID();
 
                 catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().setID(newCatalogueUuid);
-                ValidationMessages validationMessages = catalogueLineValidator.validate();
+                ValidationMessages validationMessages = catalogueLineValidator.validateAll();
                 if (validationMessages.getErrorMessages().size() > 0) {
                     throw new NimbleException(validationMessages.getErrorMessages(),validationMessages.getErrorParameters());
                 }
@@ -512,7 +512,7 @@ public class CatalogueLineController {
                 return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLine));
             }else{
                 // validate the incoming content
-                ValidationMessages errors = catalogueLineValidator.validate();
+                ValidationMessages errors = catalogueLineValidator.validateAll();
                 if (errors.getErrorMessages().size() > 0) {
                     throw new NimbleException(errors.getErrorMessages(),errors.getErrorParameters());
                 }

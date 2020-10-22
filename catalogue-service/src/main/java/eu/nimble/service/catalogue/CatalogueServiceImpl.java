@@ -349,7 +349,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         // validate the catalogue lines
         for (CatalogueLineType catalogueLine : catalogue.getCatalogueLine()) {
             CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogue, catalogueLine);
-            ValidationMessages errors = catalogueLineValidator.validate();
+            ValidationMessages errors = catalogueLineValidator.validateAll();
             if (errors.getErrorMessages().size() > 0) {
                 throw new NimbleException(errors.getErrorMessages(),errors.getErrorParameters());
             }
@@ -510,10 +510,13 @@ public class CatalogueServiceImpl implements CatalogueService {
                 ze = imagePackage.getNextEntry();
             }
 
-            CatalogueValidator catalogueValidator = new CatalogueValidator(catalogue);
-            ValidationMessages validationMessages = catalogueValidator.validate();
-            if(validationMessages.getErrorMessages().size() > 0){
-                throw new NimbleException(validationMessages.getErrorMessages(),validationMessages.getErrorParameters());
+            List<String> errors = new ArrayList<>();
+            List<List<String>> errorParameters = new ArrayList<>();
+            for (CatalogueLineType line : catalogue.getCatalogueLine()) {
+                new CatalogueLineValidator(line, errors, errorParameters).fileSizesLessThanTheMaximum();
+            }
+            if(errors.size() > 0){
+                throw new NimbleException(errors, errorParameters);
             }
 
             catalogue = updateCatalogue(catalogue);
