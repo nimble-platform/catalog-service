@@ -64,27 +64,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     private CatalogueServiceConfig catalogueServiceConfig;
 
     public static void main(String[] args) throws IOException {
-        CatalogueServiceImpl csi = new CatalogueServiceImpl();
 
-        String filePath = "C:\\Users\\suat\\Desktop\\multtemp" + System.currentTimeMillis() + ".xlsx";
-        List<String> categoryIds = new ArrayList<>();
-        categoryIds.add("0173-1#01-AKJ052#013");
-        //categoryIds.add("http://www.semanticweb.org/ontologies/2017/8/FurnitureSectorOntology.owl#Glue");
-        categoryIds.add("http://www.semanticweb.org/ontologies/2017/8/FurnitureSectorOntology.owl#MDFBoard");
-        //categoryIds.add("0173-1#01-BAC439#012");
-        List<String> taxonomyIds = new ArrayList<>();
-        taxonomyIds.add("eClass");
-        taxonomyIds.add("FurnitureOntology");
-        //taxonomyIds.add("eClass");
-        Workbook wb = csi.generateTemplateForCategory(categoryIds, taxonomyIds,"en");
-        wb.write(new FileOutputStream(filePath));
-        wb.close();
-
-//        String filePath = "C:\\Users\\suat\\Desktop\\multtemp.xlsx";
-//        InputStream is = new FileInputStream(filePath);
-//        PartyType party = new PartyType();
-//        CatalogueType catalogue = csi.parseCatalogue(is, party);
-//        System.out.println(catalogue.getCatalogueLine().size());
     }
 
     @Override
@@ -513,6 +493,9 @@ public class CatalogueServiceImpl implements CatalogueService {
                 imagePackage.closeEntry();
                 ze = imagePackage.getNextEntry();
             }
+
+            // update the catalogue in the cache
+            SpringBridge.getInstance().getCacheHelper().putCatalog(CataloguePersistenceUtil.getCatalogueByUuid(catalogueUuid, true));
 
         } catch (IOException e) {
             String msg = "Failed to get next entry";

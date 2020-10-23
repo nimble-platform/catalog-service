@@ -249,15 +249,23 @@ public class CataloguePersistenceUtil {
     }
 
     public static CatalogueType getCatalogueByUuid(String catalogueUuid) {
-        // retrieve catalog from cache
-        Object catalog = SpringBridge.getInstance().getCacheHelper().getCatalog(catalogueUuid);
-        // it does not exist in the cache, therefore, retrieve it from database and cache it
-        if(catalog == null){
-            catalog = new JPARepositoryFactory().forCatalogueRepository(true).getSingleEntity(QUERY_GET_BY_UUID, new String[]{"uuid"}, new Object[]{catalogueUuid});
-            // cache catalog
-            SpringBridge.getInstance().getCacheHelper().putCatalog((CatalogueType) catalog);
+        return getCatalogueByUuid(catalogueUuid, false);
+    }
+
+    public static CatalogueType getCatalogueByUuid(String catalogueUuid, boolean byPassCache) {
+        CatalogueType catalogue;
+        if (byPassCache) {
+            catalogue = new JPARepositoryFactory().forCatalogueRepository(true).getSingleEntity(QUERY_GET_BY_UUID, new String[]{"uuid"}, new Object[]{catalogueUuid});
+
+        } else {
+            // retrieve catalog from cache
+            catalogue = (CatalogueType) SpringBridge.getInstance().getCacheHelper().getCatalog(catalogueUuid);
+            // it does not exist in the cache, therefore, retrieve it from database and cache it
+            if (catalogue == null) {
+                catalogue = new JPARepositoryFactory().forCatalogueRepository(true).getSingleEntity(QUERY_GET_BY_UUID, new String[]{"uuid"}, new Object[]{catalogueUuid});
+            }
         }
-        return (CatalogueType) catalog;
+        return catalogue;
     }
 
     public static CatalogueType getCatalogueForParty(String catalogueId, String partyId) {

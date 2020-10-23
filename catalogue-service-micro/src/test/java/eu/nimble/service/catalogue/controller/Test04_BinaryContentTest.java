@@ -1,6 +1,8 @@
 package eu.nimble.service.catalogue.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
+import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
@@ -194,7 +196,7 @@ public class Test04_BinaryContentTest {
                 .header("Authorization", TestConfig.buyerId)).andExpect(status().isOk()).andReturn();
 
         // check the number of product images
-        CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
+        CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueForParty(catalogueId, TestConfig.buyerId);
         Assert.assertEquals(1,catalogue.getCatalogueLine().size());
         Assert.assertEquals(2,catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().size());
         // try to get product images
@@ -229,7 +231,7 @@ public class Test04_BinaryContentTest {
                 .header("Authorization", TestConfig.buyerId)).andExpect(status().isOk()).andReturn();
 
         // check the number of product images
-        CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
+        CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueForParty(catalogueId, TestConfig.buyerId);
         Assert.assertEquals(1,catalogue.getCatalogueLine().size());
         Assert.assertEquals(2,catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().size());
         // try to get original image
