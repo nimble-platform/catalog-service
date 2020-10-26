@@ -23,20 +23,18 @@ public class CatalogueLineValidator {
 
     private List<String> errorMessages;
     private List<List<String>> errorParameters;
-    private CatalogueType owningCatalogue;
+    // UUID of the catalogue containing the line. Could be null in cases such as new template-based publishing and new catalogue creation
+    private String owningCatalogueUuid;
+    private String cataloguePartyId;
     private CatalogueLineType catalogueLine;
     private String extractedLineId;
 
-    public CatalogueLineValidator(CatalogueLineType catalogueLine, List<String> errorMessages, List<List<String>> errorParameters) {
-        this(null, catalogueLine, errorMessages, errorParameters);
+    public CatalogueLineValidator(String owningCatalogueUuid, String cataloguePartyId, CatalogueLineType catalogueLine) {
+        this(owningCatalogueUuid, catalogueLine, new ArrayList<>(), new ArrayList<>());
     }
 
-    public CatalogueLineValidator(CatalogueType catalogueType, CatalogueLineType catalogueLine) {
-        this(catalogueType, catalogueLine, new ArrayList<>(), new ArrayList<>());
-    }
-
-    public CatalogueLineValidator(CatalogueType catalogueType, CatalogueLineType catalogueLine, List<String> errorMessages, List<List<String>> errorParameters) {
-        this.owningCatalogue = catalogueType;
+    public CatalogueLineValidator(String owningCatalogueUuid, CatalogueLineType catalogueLine, List<String> errorMessages, List<List<String>> errorParameters) {
+        this.owningCatalogueUuid = owningCatalogueUuid;
         this.errorMessages = errorMessages;
         this.catalogueLine = catalogueLine;
         this.errorParameters = errorParameters;
@@ -73,9 +71,9 @@ public class CatalogueLineValidator {
         }
     }
     public void checkReferenceToCatalogue() {
-        if(owningCatalogue.getUUID() != null){
+        if(owningCatalogueUuid != null){
             ItemType item = catalogueLine.getGoodsItem().getItem();
-            if (!item.getCatalogueDocumentReference().getID().equals(owningCatalogue.getUUID())) {
+            if (!item.getCatalogueDocumentReference().getID().equals(owningCatalogueUuid)) {
                 errorMessages.add(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_REFERENCE.toString());
                 errorParameters.add(Arrays.asList(extractedLineId));
             }
@@ -160,11 +158,10 @@ public class CatalogueLineValidator {
 
     public void partyIdsMatch() {
         ItemType item = catalogueLine.getGoodsItem().getItem();
-        String catalogueProviderPartyId = owningCatalogue.getProviderParty().getPartyIdentification().get(0).getID();
         String itemManufacturerPartyId = item.getManufacturerParty().getPartyIdentification().get(0).getID();
-        if (!catalogueProviderPartyId.contentEquals(itemManufacturerPartyId)) {
+        if (!this.cataloguePartyId.contentEquals(itemManufacturerPartyId)) {
             errorMessages.add(NimbleExceptionMessageCode.BAD_REQUEST_PARTY_IDS_DO_NOT_MATCH.toString());
-            errorParameters.add(Arrays.asList(extractedLineId, catalogueProviderPartyId, itemManufacturerPartyId));
+            errorParameters.add(Arrays.asList(extractedLineId, this.cataloguePartyId, itemManufacturerPartyId));
         }
     }
 

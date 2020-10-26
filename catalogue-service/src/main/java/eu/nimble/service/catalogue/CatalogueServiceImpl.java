@@ -28,6 +28,7 @@ import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.Configuration;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
+import eu.nimble.utility.UblUtil;
 import eu.nimble.utility.exception.NimbleException;
 import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
 import org.apache.commons.io.IOUtils;
@@ -331,7 +332,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
         // validate the catalogue lines
         for (CatalogueLineType catalogueLine : catalogue.getCatalogueLine()) {
-            CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogue, catalogueLine);
+            CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogue.getUUID(), UblUtil.getCatalogueProviderPartyId(catalogue), catalogueLine);
             ValidationMessages errors = catalogueLineValidator.validateAll();
             if (errors.getErrorMessages().size() > 0) {
                 throw new NimbleException(errors.getErrorMessages(),errors.getErrorParameters());

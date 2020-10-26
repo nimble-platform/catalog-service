@@ -377,7 +377,7 @@ public class CatalogueLineController {
             }
 
             // validate the incoming content
-            CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogue, catalogueLine);
+            CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogueUuid, providerPartyID, catalogueLine);
             ValidationMessages errors = catalogueLineValidator.validateAll();
             if (errors.getErrorMessages().size() > 0) {
                 throw new NimbleException(errors.getErrorMessages(),errors.getErrorParameters());
@@ -479,7 +479,7 @@ public class CatalogueLineController {
                 throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(), Collections.singletonList(catalogueUuid));
             }
 
-            CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogue, catalogueLine);
+            CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogue.getUUID(), UblUtil.getCatalogueProviderPartyId(catalogue), catalogueLine);
 
             if(!catalogueUuid.equals(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID())){
                 String newCatalogueUuid = catalogueUuid;

@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import eu.nimble.utility.UblUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +44,11 @@ public class CatalogueValidator {
 
     private void validateLines() {
         for (CatalogueLineType line : catalogueType.getCatalogueLine()) {
-            CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogueType, line);
+            CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(
+                    catalogueType.getUUID(),
+                    UblUtil.getCatalogueProviderPartyId(catalogueType),
+                    line
+            );
             ValidationMessages validationMessages = catalogueLineValidator.validateAll();
             errorMessages.addAll(validationMessages.getErrorMessages());
             errorParameters.addAll(validationMessages.getErrorParameters());
