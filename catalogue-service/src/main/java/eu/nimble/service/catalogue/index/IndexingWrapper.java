@@ -286,6 +286,7 @@ public class IndexingWrapper {
         Property property = new Property();
         property.setPreferredName(getLabelListFromMap(indexProperty.getLabel()));
         property.setDefinition(getSingleLabel(indexProperty.getDescription()));
+        property.setRequired(indexProperty.isRequired());
         property.setRemark(getLabelListFromMap(indexProperty.getComment()));
 
         // TODO the data type is currently keeping the value qualifier. However, it should be stored in the value qualifier field.

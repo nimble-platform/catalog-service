@@ -24,6 +24,7 @@ public class Property {
     private List<KeywordSynonym> synonyms;
     private List<Value> values = new ArrayList<>();
     private String uri;
+    private Boolean required;
 
     public String getId() {
         return id;
@@ -74,6 +75,14 @@ public class Property {
 
     public void setNote(String note) {
         this.note = note;
+    }
+
+    public Boolean getRequired() {
+        return required;
+    }
+
+    public void setRequired(Boolean required) {
+        this.required = required;
     }
 
     public List<TextType> getRemark() {

@@ -26,6 +26,7 @@ import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.Configuration;
+import eu.nimble.utility.ExecutionContext;
 import eu.nimble.utility.HibernateUtility;
 import eu.nimble.utility.JAXBUtility;
 import eu.nimble.utility.UblUtil;
@@ -63,9 +64,10 @@ public class CatalogueServiceImpl implements CatalogueService {
     private IndexCategoryService indexCategoryService;
     @Autowired
     private CatalogueServiceConfig catalogueServiceConfig;
+    @Autowired
+    private ExecutionContext executionContext;
 
     public static void main(String[] args) throws IOException {
-
     }
 
     @Override
@@ -261,8 +263,7 @@ public class CatalogueServiceImpl implements CatalogueService {
         }
 
         TemplateGenerator templateGenerator = new TemplateGenerator();
-        Workbook template = templateGenerator.generateTemplateForCategory(categories,templateLanguage);
-        return template;
+        return templateGenerator.generateTemplateForCategory(categories,templateLanguage,executionContext.getBearerToken());
     }
 
     @Override
@@ -299,7 +300,7 @@ public class CatalogueServiceImpl implements CatalogueService {
             }
             // generate00 a template for the catalogue lines
             TemplateGenerator templateGenerator = new TemplateGenerator();
-            Workbook template = templateGenerator.generateTemplateForCatalogueLines(entry.getValue(),categories,languageId);
+            Workbook template = templateGenerator.generateTemplateForCatalogueLines(entry.getValue(),categories,languageId,executionContext.getBearerToken());
             // add it to the map
             workbooks.put(template,createWorkbookName(categories,languageId));
         }
