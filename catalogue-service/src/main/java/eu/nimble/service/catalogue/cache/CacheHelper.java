@@ -1,5 +1,6 @@
 package eu.nimble.service.catalogue.cache;
 
+import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import org.ehcache.Cache;
 import org.ehcache.CacheManager;
@@ -51,6 +52,11 @@ public class CacheHelper {
         if(catalog != null){
             catalogCache.put(catalog.getUUID(),catalog);
         }
+    }
+
+    public void putCatalogue(String catalogueUuid) {
+        CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueByUuid(catalogueUuid, true);
+        catalogCache.put(catalogueUuid, catalogue);
     }
 
     public void removeCatalog(String uuid) {

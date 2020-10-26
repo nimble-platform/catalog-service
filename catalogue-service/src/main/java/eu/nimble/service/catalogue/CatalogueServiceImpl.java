@@ -561,13 +561,16 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine) throws InvalidCategoryException{
+    public CatalogueLineType addLineToCatalogue(String catalogueUuid, String catalogueProviderId, CatalogueLineType catalogueLine) throws InvalidCategoryException{
+        CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueByUuidWithLinesInitialized(catalogueUuid);
         catalogue.getCatalogueLine().add(catalogueLine);
+
         DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(catalogueLine,catalogue);
-        EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogue.getProviderParty().getPartyIdentification().get(0).getID());
-        catalogue = repositoryWrapper.updateEntity(catalogue);
+        EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueProviderId);
+        catalogue = repositoryWrapper.updateEntity(catalogue, UblUtil.getBinaryObjectsFrom(catalogueLine));
+
         // cache catalog
-        SpringBridge.getInstance().getCacheHelper().putCatalog(catalogue);
+        SpringBridge.getInstance().getCacheHelper().putCatalogue(catalogueUuid);
         catalogueLine = catalogue.getCatalogueLine().get(catalogue.getCatalogueLine().size() - 1);
 
         // index the line

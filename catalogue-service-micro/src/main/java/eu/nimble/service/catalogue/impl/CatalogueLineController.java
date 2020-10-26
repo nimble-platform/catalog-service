@@ -347,7 +347,6 @@ public class CatalogueLineController {
         executionContext.setRequestLog(requestLog);
 
         log.info(requestLog);
-        CatalogueType catalogue;
         CatalogueLineType catalogueLine;
 
         String providerPartyID = null;
@@ -363,8 +362,6 @@ public class CatalogueLineController {
             }
             lockPool.getLockForParty(providerPartyID).writeLock().lock();
 
-            // get owning catalogue
-            catalogue = service.getCatalogue(catalogueUuid);
             if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogueUuid,executionContext.getVatNumber())){
                 throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(), Collections.singletonList(catalogueUuid));
             }
@@ -392,7 +389,7 @@ public class CatalogueLineController {
             // check duplicate line
             boolean lineExists = CatalogueLinePersistenceUtil.checkCatalogueLineExistence(catalogueUuid, catalogueLine.getID());
             if (!lineExists) {
-                catalogueLine = service.addLineToCatalogue(catalogue, catalogueLine);
+                catalogueLine = service.addLineToCatalogue(catalogueUuid, providerPartyID, catalogueLine);
             } else {
                 throw new NimbleException(NimbleExceptionMessageCode.NOT_ACCEPTABLE_ALREADY_EXISTS.toString());
             }

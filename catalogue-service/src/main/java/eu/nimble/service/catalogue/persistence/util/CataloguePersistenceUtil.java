@@ -109,6 +109,11 @@ public class CataloguePersistenceUtil {
             " SELECT text_type.value_ FROM text_type, plainto_tsquery(:searchText) AS q WHERE (value_ @@ q)" +
             ")";
 
+    /*
+     Queries for lazy getters
+     */
+    public static final String QUERY_GET_CATALOGUE_WITH_LINES = "SELECT catalogue FROM CatalogueType catalogue JOIN FETCH catalogue.catalogueLine cl WHERE catalogue.UUID = :uuid";
+
     public static List<CatalogueType> getAllCatalogues() {
         return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_ALL_CATALOGUES);
     }
@@ -266,6 +271,13 @@ public class CataloguePersistenceUtil {
             }
         }
         return catalogue;
+    }
+
+    public static CatalogueType getCatalogueByUuidWithLinesInitialized(String catalogueUuid) {
+        return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(
+                CataloguePersistenceUtil.QUERY_GET_CATALOGUE_WITH_LINES,
+                new String[]{"uuid"},
+                new Object[]{catalogueUuid});
     }
 
     public static CatalogueType getCatalogueForParty(String catalogueId, String partyId) {

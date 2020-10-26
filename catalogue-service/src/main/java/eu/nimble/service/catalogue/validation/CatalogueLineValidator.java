@@ -30,11 +30,12 @@ public class CatalogueLineValidator {
     private String extractedLineId;
 
     public CatalogueLineValidator(String owningCatalogueUuid, String cataloguePartyId, CatalogueLineType catalogueLine) {
-        this(owningCatalogueUuid, catalogueLine, new ArrayList<>(), new ArrayList<>());
+        this(owningCatalogueUuid, cataloguePartyId, catalogueLine, new ArrayList<>(), new ArrayList<>());
     }
 
-    public CatalogueLineValidator(String owningCatalogueUuid, CatalogueLineType catalogueLine, List<String> errorMessages, List<List<String>> errorParameters) {
+    public CatalogueLineValidator(String owningCatalogueUuid, String cataloguePartyId, CatalogueLineType catalogueLine, List<String> errorMessages, List<List<String>> errorParameters) {
         this.owningCatalogueUuid = owningCatalogueUuid;
+        this.cataloguePartyId = cataloguePartyId;
         this.errorMessages = errorMessages;
         this.catalogueLine = catalogueLine;
         this.errorParameters = errorParameters;
