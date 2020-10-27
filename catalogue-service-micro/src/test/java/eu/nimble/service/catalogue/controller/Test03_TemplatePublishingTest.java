@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DimensionType;
@@ -95,7 +96,7 @@ public class Test03_TemplatePublishingTest {
                 .param("partyId",partyId)
                 .param("partyName",partyName))
                 .andExpect(status().isCreated()).andReturn();
-        CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
+        CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueForParty("default", partyId);
         // check catalogue line size
         Assert.assertSame(catalogue.getCatalogueLine().size(),3);
         // get catalogue lines
@@ -183,7 +184,7 @@ public class Test03_TemplatePublishingTest {
                 .param("partyId",partyId)
                 .param("partyName",partyName))
                 .andExpect(status().isCreated()).andReturn();
-        CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
+        CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueForParty("default", partyId);
         // check catalogue line size
         Assert.assertSame(catalogue.getCatalogueLine().size(),4);
         // get catalogue lines
@@ -254,7 +255,7 @@ public class Test03_TemplatePublishingTest {
                 .param("partyName",partyName)
                 .param("includeVat","false"))
                 .andExpect(status().isCreated()).andReturn();
-        CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
+        CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueForParty("default", partyId);
         // check catalogue line size
         Assert.assertSame(catalogue.getCatalogueLine().size(),5);
         // set catalogue uuid
@@ -262,6 +263,6 @@ public class Test03_TemplatePublishingTest {
 
         // check whether VAT is set for the products
         Assert.assertEquals(1, catalogue.getCatalogueLine().get(catalogue.getCatalogueLine().size()-1).getRequiredItemLocationQuantity().getApplicableTaxCategory().size());
-        Assert.assertEquals(BigDecimal.ZERO, catalogue.getCatalogueLine().get(catalogue.getCatalogueLine().size()-1).getRequiredItemLocationQuantity().getApplicableTaxCategory().get(0).getPercent());
+        Assert.assertTrue(BigDecimal.ZERO.compareTo(catalogue.getCatalogueLine().get(catalogue.getCatalogueLine().size()-1).getRequiredItemLocationQuantity().getApplicableTaxCategory().get(0).getPercent()) == 0);
     }
 }
