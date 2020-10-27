@@ -625,6 +625,7 @@ public class EClassCategoryDatabaseAdapter {
             prop.setPreferredName(Arrays.asList(textType));
             prop.setShortName(rs.getString(COLUMN_PROPERTY_SHORT_NAME));
             prop.setDefinition(rs.getString(COLUMN_PROPERTY_DEFINITION));
+            prop.setRequired(false);
             prop.setNote(rs.getString(COLUMN_PROPERTY_NOTE));
             TextType remark = new TextType();
             remark.setLanguageID("en");
@@ -650,6 +651,7 @@ public class EClassCategoryDatabaseAdapter {
             prop.addPreferredName(rs.getString(COLUMN_PROPERTY_PREFERRED_NAME), defaultLanguage);
             prop.setShortName(rs.getString(COLUMN_PROPERTY_SHORT_NAME));
             prop.setDefinition(rs.getString(COLUMN_PROPERTY_DEFINITION));
+            prop.setRequired(false);
             prop.setNote(rs.getString(COLUMN_PROPERTY_NOTE));
             TextType remark = new TextType();
             remark.setLanguageID("en");
