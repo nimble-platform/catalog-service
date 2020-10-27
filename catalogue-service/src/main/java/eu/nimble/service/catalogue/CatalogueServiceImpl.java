@@ -229,13 +229,13 @@ public class CatalogueServiceImpl implements CatalogueService {
         if (standard == Configuration.Standard.UBL) {
             logger.info("Deleting catalogue with uuid: {}", uuid);
             // delete catalogue from relational db
-            CatalogueType catalogue = getCatalogue(uuid);
+            Long catalogueHjid = CataloguePersistenceUtil.getCatalogueHjid(uuid);
 
-            if (catalogue != null) {
-                EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogue.getProviderParty().getPartyIdentification().get(0).getID());
-                repositoryWrapper.deleteEntity(catalogue);
+            if (catalogueHjid != null) {
+                EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper();
+                repositoryWrapper.deleteEntityByHjid(CatalogueType.class, catalogueHjid);
                 // remove catalog from cache
-                SpringBridge.getInstance().getCacheHelper().removeCatalog(catalogue.getUUID());
+                SpringBridge.getInstance().getCacheHelper().removeCatalog(uuid);
 
                 // delete indexed catalogue
                 itemIndexClient.deleteCatalogue(uuid);

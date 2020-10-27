@@ -38,6 +38,8 @@ public class CataloguePersistenceUtil {
             + " WHERE catalogue.ID = :catalogueId and partyIdentification.ID = :partyId";
     private static final String QUERY_CHECK_EXISTENCE_BY_UUID = "SELECT COUNT(catalogue) FROM CatalogueType catalogue"
             + " WHERE catalogue.UUID = :catalogueUuid";
+    private static final String QUERY_GET_CATALOGUE_HJID = "SELECT catalogue.hjid FROM CatalogueType catalogue"
+            + " WHERE catalogue.UUID = :catalogueUuid";
     private static final String QUERY_GET_CATALOGUE_IDLIST_FOR_PARTY = "SELECT catalogue.ID FROM CatalogueType as catalogue" +
             " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification" +
             " WHERE partyIdentification.ID = :partyId";
@@ -290,6 +292,10 @@ public class CataloguePersistenceUtil {
 
     public static String getCatalogueUUid(String catalogueId, String partyId){
         return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_CATALOGUE_UUID_FOR_PARTY,new String[]{"catalogueId","partyId"}, new Object[]{catalogueId,partyId});
+    }
+
+    public static Long getCatalogueHjid(String catalogueUuid) {
+        return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_CATALOGUE_HJID, new String[]{"catalogueUuid"}, new Object[]{catalogueUuid});
     }
 
     public static String getCatalogueProviderId(String catalogueUuid ){

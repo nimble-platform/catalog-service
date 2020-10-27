@@ -25,7 +25,10 @@ import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import eu.nimble.utility.serialization.TransactionEnabledSerializationUtility;
 import eu.nimble.utility.validation.IValidationUtil;
-import io.swagger.annotations.*;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -620,7 +623,7 @@ public class CatalogueController {
             try {
                 catalogueURI = new URI(HttpResponseUtil.baseUrl(request) + catalogue.getUUID());
                 log.info("Completed the request to upload template. Added catalogue uuid: {}", catalogue.getUUID());
-                return ResponseEntity.created(catalogueURI).body(serializationUtility.serializeUBLObject(catalogue));
+                return ResponseEntity.created(catalogueURI).build();
 
             } catch (URISyntaxException e) {
                 throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GENERATE_URI_FOR_ITEM.toString(),e);
