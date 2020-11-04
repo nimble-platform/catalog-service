@@ -6,30 +6,25 @@ import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.exception.InvalidCategoryException;
 import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
+import eu.nimble.service.catalogue.index.ItemIndexClient;
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.statistics.ProductAndServiceStatistics;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
-import eu.nimble.service.catalogue.index.ItemIndexClient;
 import eu.nimble.service.catalogue.template.TemplateGenerator;
 import eu.nimble.service.catalogue.template.TemplateParser;
 import eu.nimble.service.catalogue.util.DataIntegratorUtil;
 import eu.nimble.service.catalogue.util.LanguageUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.catalogue.validation.CatalogueLineValidator;
-import eu.nimble.service.catalogue.validation.CatalogueValidator;
 import eu.nimble.service.catalogue.validation.ValidationMessages;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
-import eu.nimble.utility.Configuration;
-import eu.nimble.utility.ExecutionContext;
-import eu.nimble.utility.HibernateUtility;
-import eu.nimble.utility.JAXBUtility;
-import eu.nimble.utility.UblUtil;
+import eu.nimble.utility.*;
 import eu.nimble.utility.exception.NimbleException;
 import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
 import org.apache.commons.io.IOUtils;
@@ -42,7 +37,6 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.activation.MimetypesFileTypeMap;
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -307,78 +301,95 @@ public class CatalogueServiceImpl implements CatalogueService {
         return workbooks;
     }
 
-
     @Override
-    public CatalogueType parseCatalogue(InputStream catalogueTemplate, String uploadMode, PartyType party, Boolean includeVat) throws TemplateParseException{
+    public CatalogueType saveTemplate(InputStream catalogueTemplate, String uploadMode, PartyType party, Boolean includeVat, String catalogueId, CatalogueType existingCatalogue) throws TemplateParseException{
+        TemplateParser templateParser = new TemplateParser(party);
+        List<CatalogueLineType> parsedLines = templateParser.getCatalogueLines(catalogueTemplate, includeVat);
+
+        if (existingCatalogue == null) {
+            existingCatalogue = new CatalogueType();
+            existingCatalogue.setID(catalogueId);
+            existingCatalogue.setProviderParty(party);
+            existingCatalogue.setCatalogueLine(parsedLines);
+            existingCatalogue = addCatalogue(existingCatalogue, Configuration.Standard.UBL);
+
+        } else {
+            // initialize the catalogue lines with commodity classifications as the commodity classifications are being used
+            // when the existing lines match with the categories specified in the template
+            List<CatalogueLineType> lines = CatalogueLinePersistenceUtil.getCatalogueLinesWithCommodityClassifications(existingCatalogue.getUUID());
+            existingCatalogue.setCatalogueLine(lines);
+
+            // merged lines parsed from the template into the existing catalogue
+            List<String> binaryObjectsToDelete = mergeLines(existingCatalogue, uploadMode, parsedLines);
+            // ensure the integrity of the parsed lines
+            for (CatalogueLineType line : parsedLines) {
+                DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(line, existingCatalogue);
+            }
+
+            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(existingCatalogue.getProviderParty().getPartyIdentification().get(0).getID());
+            repositoryWrapper.updateEntity(existingCatalogue, null, binaryObjectsToDelete);
+
+            // TODO update the cache in asynchronous manner
+            existingCatalogue = CataloguePersistenceUtil.getCatalogueByUuid(existingCatalogue.getUUID(), true);
+            SpringBridge.getInstance().getCacheHelper().putCatalog(existingCatalogue);
+        }
+
+        return existingCatalogue;
+    }
+
+    public List<CatalogueLineType> parseTemplate(InputStream catalogueTemplate, PartyType party, Boolean includeVat) throws TemplateParseException{
         TemplateParser templateParser = new TemplateParser(party);
         List<CatalogueLineType> catalogueLines = templateParser.getCatalogueLines(catalogueTemplate, includeVat);
 
-        CatalogueType catalogue = getCatalogue("default", party.getPartyIdentification().get(0).getID());
-
-        if (catalogue == null) {
-            catalogue = new CatalogueType();
-            catalogue.setID("default");
-            catalogue.setProviderParty(party);
-            catalogue.setCatalogueLine(catalogueLines);
-        } else {
-            // each catalogue line should have a proper reference to the catalogue
-            // otherwise catalogue line validation fails
-            for (CatalogueLineType catalogueLine : catalogueLines) {
-                DocumentReferenceType docRef = new DocumentReferenceType();
-                docRef.setID(catalogue.getUUID());
-                catalogueLine.getGoodsItem().getItem().setCatalogueDocumentReference(docRef);
-            }
-            updateLinesForUploadMode(catalogue, uploadMode, catalogueLines);
-        }
-
         // validate the catalogue lines
-        for (CatalogueLineType catalogueLine : catalogue.getCatalogueLine()) {
-            CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogue.getUUID(), UblUtil.getCatalogueProviderPartyId(catalogue), catalogueLine);
+        for (CatalogueLineType catalogueLine : catalogueLines) {
+            CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(null, party.getPartyIdentification().get(0).getID(), catalogueLine);
             ValidationMessages errors = catalogueLineValidator.validateAll();
             if (errors.getErrorMessages().size() > 0) {
                 throw new NimbleException(errors.getErrorMessages(),errors.getErrorParameters());
             }
         }
 
-        return catalogue;
+        return catalogueLines;
     }
 
     /**
-     * Populates catalogue line list of the catalogue based on the given update mode.
+     * Updates the given catalogue based on the upload mode specified in the template-based publishing. As a result, returns the BinaryObject
      */
-    private void updateLinesForUploadMode(CatalogueType catalogue, String uploadMode, List<CatalogueLineType> catalogueLines) throws InvalidCategoryException,CatalogueServiceException {
+    public List<String> mergeLines(CatalogueType catalogue, String uploadMode, List<CatalogueLineType> newLines) throws InvalidCategoryException, CatalogueServiceException {
         List<CatalogueLineType> newCatalogueLines = new ArrayList<>();
+        List<String> binaryObjectUrisToBeDeleted = new ArrayList<>();
         if (uploadMode.compareToIgnoreCase("replace") == 0) {
             // since each catalogue line has the same categories, it is OK to get categories using the first one
-            CommodityClassificationType defaultCategory = DataIntegratorUtil.getDefaultCategories(catalogueLines.get(0));
-            List<String> categoriesUris = DataIntegratorUtil.getCategoryUris(catalogueLines.get(0));
+            CommodityClassificationType defaultCategory = DataIntegratorUtil.getDefaultCategories(newLines.get(0));
+            List<String> categoriesUris = DataIntegratorUtil.getCategoryUris(newLines.get(0));
             // catalogue lines which will be removed and will be replaced by the new ones
             List<CatalogueLineType> catalogueLinesToBeRemoved = new ArrayList<>();
-            for(CatalogueLineType catalogueLine:catalogue.getCatalogueLine()){
+            for (CatalogueLineType catalogueLine : catalogue.getCatalogueLine()) {
                 // firstly,both catalogue line should have the same number of categories,otherwise that means that they do not have the same categories.
-                if(catalogueLine.getGoodsItem().getItem().getCommodityClassification().size() == categoriesUris.size() + 1){
+                if (catalogueLine.getGoodsItem().getItem().getCommodityClassification().size() == categoriesUris.size() + 1) {
                     boolean remove = true;
                     // check catalogue line's categories
-                    for (CommodityClassificationType classificationType:catalogueLine.getGoodsItem().getItem().getCommodityClassification()){
-                        if(classificationType.getItemClassificationCode().getListID().contentEquals("Default")){
-                            if(!defaultCategory.getItemClassificationCode().getValue().contentEquals(classificationType.getItemClassificationCode().getValue())){
+                    for (CommodityClassificationType classificationType : catalogueLine.getGoodsItem().getItem().getCommodityClassification()) {
+                        if (classificationType.getItemClassificationCode().getListID().contentEquals("Default")) {
+                            if (!defaultCategory.getItemClassificationCode().getValue().contentEquals(classificationType.getItemClassificationCode().getValue())) {
                                 remove = false;
                                 break;
                             }
-                        } else if(!categoriesUris.contains(classificationType.getItemClassificationCode().getURI())){
+                        } else if (!categoriesUris.contains(classificationType.getItemClassificationCode().getURI())) {
                             remove = false;
                             break;
                         }
                     }
 
-                    if(remove){
+                    if (remove) {
                         catalogueLinesToBeRemoved.add(catalogueLine);
                     }
                 }
             }
 
             catalogue.getCatalogueLine().removeAll(catalogueLinesToBeRemoved);
-            catalogue.getCatalogueLine().addAll(catalogueLines);
+            catalogue.getCatalogueLine().addAll(newLines);
 
             // since the replace operation applies for the product with the specified categories
             // there may be multiple products with the same id at the end
@@ -386,37 +397,43 @@ public class CatalogueServiceImpl implements CatalogueService {
             List<String> productIds = new ArrayList<>();
             for (CatalogueLineType lineType : catalogue.getCatalogueLine()) {
                 String lineId = lineType.getGoodsItem().getItem().getManufacturersItemIdentification().getID();
-                if(productIds.contains(lineId)){
-                    throw new CatalogueServiceException(NimbleExceptionMessageCode.BAD_REQUEST_PRODUCT_WITH_DIFFERENT_CATEGORIES.toString(),Arrays.asList(lineId));
+                if (productIds.contains(lineId)) {
+                    throw new CatalogueServiceException(NimbleExceptionMessageCode.BAD_REQUEST_PRODUCT_WITH_DIFFERENT_CATEGORIES.toString(), Arrays.asList(lineId));
                 }
                 productIds.add(lineId);
             }
 
+            binaryObjectUrisToBeDeleted.addAll(CatalogueLinePersistenceUtil.getBinaryObjectUris(catalogueLinesToBeRemoved));
+
         } else {
 
             // add catalogue lines which do not match with the existing ones to the new catalogue line list
-            for(CatalogueLineType catalogueLine : catalogueLines){
+            for (CatalogueLineType catalogueLine : newLines) {
                 boolean isNewLine = true;
-                for(CatalogueLineType existingCatalogueLine : catalogue.getCatalogueLine()){
-                    if(catalogueLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID().contentEquals(
-                            existingCatalogueLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID())){
+                for (CatalogueLineType existingCatalogueLine : catalogue.getCatalogueLine()) {
+                    if (catalogueLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID().contentEquals(
+                            existingCatalogueLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID())) {
                         isNewLine = false;
                         break;
                     }
                 }
 
-                if(isNewLine){
+                if (isNewLine) {
                     newCatalogueLines.add(catalogueLine);
                 }
             }
 
             // find catalogue lines which we need to update
-            for(CatalogueLineType catalogueLine : catalogueLines){
-                for(CatalogueLineType existingCatalogueLine : catalogue.getCatalogueLine()){
-                    if(catalogueLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID().contentEquals(
-                            existingCatalogueLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID())){
+            for (CatalogueLineType catalogueLine : newLines) {
+                for (int i = 0; i < catalogue.getCatalogueLine().size(); i++) {
+                    CatalogueLineType existingCatalogueLine = catalogue.getCatalogueLine().get(i);
+                    if (catalogueLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID().contentEquals(
+                            existingCatalogueLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID())) {
                         // update existing catalogue line
-                        updateExistingCatalogueLine(existingCatalogueLine,catalogueLine);
+                        // first, fetch the complete line to access its lists
+                        existingCatalogueLine = CatalogueLinePersistenceUtil.getCatalogueLine(existingCatalogueLine.getHjid());
+                        updateExistingCatalogueLine(existingCatalogueLine, catalogueLine);
+                        catalogue.getCatalogueLine().set(i, existingCatalogueLine);
                     }
                 }
             }
@@ -424,6 +441,8 @@ public class CatalogueServiceImpl implements CatalogueService {
 
         // add new catalogue lines
         catalogue.getCatalogueLine().addAll(newCatalogueLines);
+
+        return binaryObjectUrisToBeDeleted;
     }
 
     @Override
@@ -563,7 +582,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
     @Override
     public CatalogueLineType addLineToCatalogue(String catalogueUuid, String catalogueProviderId, CatalogueLineType catalogueLine) throws InvalidCategoryException{
-        CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueByUuidWithLinesInitialized(catalogueUuid);
+        CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueWithLinesInitialized(catalogueUuid);
         catalogue.getCatalogueLine().add(catalogueLine);
 
         DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(catalogueLine,catalogue);

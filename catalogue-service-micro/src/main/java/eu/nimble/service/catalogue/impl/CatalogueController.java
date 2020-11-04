@@ -1,6 +1,6 @@
 package eu.nimble.service.catalogue.impl;
 
-import eu.nimble.service.catalogue.CatalogueService;
+import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
@@ -8,20 +8,24 @@ import eu.nimble.service.catalogue.index.ItemIndexClient;
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
+import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.LockPool;
 import eu.nimble.service.catalogue.util.CatalogueEvent;
+import eu.nimble.service.catalogue.util.DataIntegratorUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
 import eu.nimble.service.catalogue.validation.ValidationMessages;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyNameType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.*;
 import eu.nimble.utility.exception.BinaryContentException;
 import eu.nimble.utility.exception.NimbleException;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
+import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import eu.nimble.utility.serialization.TransactionEnabledSerializationUtility;
 import eu.nimble.utility.validation.IValidationUtil;
@@ -62,7 +66,7 @@ public class CatalogueController {
             .getLogger(CatalogueController.class);
 
     @Autowired
-    private CatalogueService service;
+    private CatalogueServiceImpl service;
     @Autowired
     private TransactionEnabledSerializationUtility serializationUtility;
     @Autowired
@@ -602,19 +606,18 @@ public class CatalogueController {
             try {
                 lockPool.getLockForParty(partyId).writeLock().lock();
 
-                // parse catalogue
-                catalogue = service.parseCatalogue(file.getInputStream(), uploadMode, party, includeVat);
 
-                // save catalogue
-                // check whether an insert or update operations is needed
-                if (catalogue.getHjid() == null) {
-                    catalogue = service.addCatalogue(catalogue, Configuration.Standard.UBL);
-                } else {
-                    if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogue.getUUID(),executionContext.getVatNumber())){
+                // parse catalogue
+                catalogue = CataloguePersistenceUtil.getCatalogueForParty("default", partyId);
+
+                if (catalogue != null) {
+                    if (!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogue.getUUID(), executionContext.getVatNumber())) {
                         throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(), Collections.singletonList(catalogue.getUUID()));
                     }
-                    catalogue = service.updateCatalogue(catalogue);
                 }
+
+                catalogue = service.saveTemplate(file.getInputStream(), uploadMode, party, includeVat, "default", catalogue);
+
             } finally {
                 lockPool.getLockForParty(partyId).writeLock().unlock();
             }

@@ -66,11 +66,8 @@ public interface CatalogueService {
 
     /**
      * Adds the catalogue given through the NIMBLE-specific, Excel-based template.
-     *
-     * @param catalogueTemplate
-     * @param party
      */
-    public CatalogueType parseCatalogue(InputStream catalogueTemplate, String uploadMode, PartyType party, Boolean includeVat);
+    public CatalogueType saveTemplate(InputStream catalogueTemplate, String uploadMode, PartyType party, Boolean includeVat, String catalogueId, CatalogueType existingCatalogue);
 
     /**
      * Adds the provided images to the relevant products in the specified catalogue of the specified party

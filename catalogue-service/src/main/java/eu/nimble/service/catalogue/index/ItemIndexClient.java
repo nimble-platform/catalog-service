@@ -64,8 +64,10 @@ public class ItemIndexClient {
                     logger.info("Indexed Catalogue successfully. uuid: {}, party id: {}", catalogue.getUUID(), catalogue.getProviderParty().getPartyIdentification().get(0).getID());
 
                 } else {
-                    logger.error("Failed to index Catalogue. uuid: {}, party id: {}, indexing call status: {}, message: {}",
-                            catalogue.getUUID(), catalogue.getProviderParty().getPartyIdentification().get(0).getID(), response.status(), IOUtils.toString(response.body().asInputStream()));
+                    logger.error("Failed to index Catalogue. uuid: {}, party id: {}, indexing call status: {}, message: {}, client: {}",
+                            catalogue.getUUID(), catalogue.getProviderParty().getPartyIdentification().get(0).getID(), response.status(), IOUtils.toString(response.body().asInputStream()),
+                            response.request().url()
+                    );
                 }
             }
             //response = SpringBridge.getInstance().getiIndexingServiceClient().postCatalogue(credentialsUtil.getBearerToken(),catalogue.getUUID(),indexItemsJson);

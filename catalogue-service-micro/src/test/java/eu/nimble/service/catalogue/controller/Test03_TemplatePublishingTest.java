@@ -219,6 +219,11 @@ public class Test03_TemplatePublishingTest {
         Assert.assertEquals(existingCatalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue().intValue(),20);
         Assert.assertEquals(existingCatalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getCurrencyID(),"EUR");
 
+        // check warranty
+        Assert.assertEquals(10, existingCatalogueLine.getWarrantyValidityPeriod().getDurationMeasure().getValue().intValue());
+        Assert.assertEquals(1, existingCatalogueLine.getWarrantyInformation().size());
+        Assert.assertEquals("Warranty info updated", existingCatalogueLine.getWarrantyInformation().get(0));
+
         // check whether the new product is added to the catalogue properly or not
 
         // check product names

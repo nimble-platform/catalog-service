@@ -2,14 +2,19 @@ package eu.nimble.service.catalogue.persistence.util;
 
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.lcpa.ItemLCPAInput;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.DocumentReferenceType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.persistence.binary.BinaryContentService;
+import org.hibernate.Hibernate;
 
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by suat on 31-Dec-18.
@@ -52,6 +57,28 @@ public class CatalogueLinePersistenceUtil {
             " lcpa.LCPAInput is not null AND" +
             " lcpa.LCPAOutput is null";
     private static final String QUERY_GET_ALL_CATALOGUELINES_CLURI = "SELECT cl.goodsItem.item FROM CatalogueLineType as cl";
+    private static final String QUERY_GET_IMAGE_URIS_IN_LINES =
+            "SELECT DISTINCT pi.uri FROM CatalogueLineType cl" +
+                    " JOIN cl.goodsItem.item.productImage pi" +
+                    " WHERE cl IN :lines";
+    private static final String QUERY_GET_ITEM_SPECIFICATION_DOCUMENT_URIS_IN_LINES =
+            "SELECT DISTINCT dr.attachment.embeddedDocumentBinaryObject.uri FROM CatalogueLineType cl" +
+            " JOIN cl.goodsItem.item.itemSpecificationDocumentReference dr" +
+            " WHERE cl IN :lines";
+    private static final String QUERY_GET_ITEM_CERTIFICATE_DOCUMENT_URIS_IN_LINES =
+            "SELECT DISTINCT dr.attachment.embeddedDocumentBinaryObject.uri FROM CatalogueLineType cl" +
+            " JOIN cl.goodsItem.item.certificate cer" +
+            " JOIN cer.documentReference dr" +
+            " WHERE cl IN :lines";
+
+    // lazy loading queries
+    public static final String QUERY_GET_CATALOGUE_LINES_WITH_COMMODITY_CLASSIFICATIONS =
+            "SELECT DISTINCT cl FROM CatalogueType c" +
+                    " JOIN c.catalogueLine cl" +
+                    " JOIN FETCH cl.goodsItem gi" +
+                    " JOIN FETCH gi.item item" +
+                    " JOIN FETCH item.commodityClassification" +
+                    " WHERE c.UUID = :uuid";
 
     public static Boolean checkCatalogueLineExistence(Long hjid) {
         long lineExistence = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_CHECK_EXISTENCE_BY_HJID, new String[]{"hjid"}, new Object[]{hjid});
@@ -144,5 +171,30 @@ public class CatalogueLinePersistenceUtil {
     // second one is the id of the party owning the catalogue line
     public static Object[] getCatalogueLineHjidAndPartyId(String catalogueUuid, String lineId){
         return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(QUERY_GET_HJID_AND_PARTY_ID_BY_CAT_UUID_AND_ID, new String[]{"catalogueUuid", "lineId"}, new Object[]{catalogueUuid, lineId});
+    }
+
+    /**
+     * Retrieves catalogue lines with commodity classifications initialized inside the item object, for the given initial lines.
+     */
+    public static List<CatalogueLineType> getCatalogueLinesWithCommodityClassifications(String uuid) {
+        return new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_CATALOGUE_LINES_WITH_COMMODITY_CLASSIFICATIONS,
+                new String[]{"uuid"}, new Object[]{uuid});
+    }
+
+
+    /**
+     * Returns binary content uris of the given catalogue lines. Extracts uris from all relevant collections inside the catalogue line or other subentities.
+     */
+    public static List<String> getBinaryObjectUris(List<CatalogueLineType> lines) {
+        List<String> uris = new ArrayList<>();
+        // uris for product images
+        uris.addAll(new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_IMAGE_URIS_IN_LINES, new String[]{"lines"}, new Object[]{lines}));
+
+        // uris for item specification documents
+        uris.addAll(new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_ITEM_SPECIFICATION_DOCUMENT_URIS_IN_LINES, new String[]{"lines"}, new Object[]{lines}));
+
+        // uris for the certificates
+        uris.addAll(new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_ITEM_CERTIFICATE_DOCUMENT_URIS_IN_LINES, new String[]{"lines"}, new Object[]{lines}));
+        return uris;
     }
 }

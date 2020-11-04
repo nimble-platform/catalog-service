@@ -2,14 +2,18 @@ package eu.nimble.service.catalogue.persistence.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.util.SpringBridge;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyIdentificationType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.JsonSerializationUtility;
+import eu.nimble.utility.persistence.GenericJPARepository;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
+import org.hibernate.Hibernate;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by suat on 07-Aug-18.

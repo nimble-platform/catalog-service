@@ -115,6 +115,11 @@ public class CataloguePersistenceUtil {
      Queries for lazy getters
      */
     public static final String QUERY_GET_CATALOGUE_WITH_LINES = "SELECT catalogue FROM CatalogueType catalogue JOIN FETCH catalogue.catalogueLine cl WHERE catalogue.UUID = :uuid";
+    public static final String QUERY_GET_CATALOGUE_BY_PARTY_ID_CATALOGUE_ID_WITH_LINES = "SELECT catalogue FROM CatalogueType catalogue" +
+            " JOIN FETCH catalogue.catalogueLine cl" +
+            " JOIN catalogue.providerParty as catalogue_provider_party" +
+            " JOIN catalogue_provider_party.partyIdentification partyIdentification" +
+            " WHERE catalogue.ID = :catalogueId AND partyIdentification.ID = :partyId";
 
     public static List<CatalogueType> getAllCatalogues() {
         return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_ALL_CATALOGUES);
@@ -275,7 +280,7 @@ public class CataloguePersistenceUtil {
         return catalogue;
     }
 
-    public static CatalogueType getCatalogueByUuidWithLinesInitialized(String catalogueUuid) {
+    public static CatalogueType getCatalogueWithLinesInitialized(String catalogueUuid) {
         return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(
                 CataloguePersistenceUtil.QUERY_GET_CATALOGUE_WITH_LINES,
                 new String[]{"uuid"},
@@ -288,6 +293,13 @@ public class CataloguePersistenceUtil {
 
     public static CatalogueType getCatalogueForParty(String catalogueId, String partyId, boolean lazyDisabled) {
         return new JPARepositoryFactory().forCatalogueRepository(lazyDisabled).getSingleEntity(QUERY_GET_FOR_PARTY, new String[]{"catalogueId", "partyId"}, new Object[]{catalogueId, partyId});
+    }
+
+    public static CatalogueType getCatalogueWithLinesInitialized(String partyId, String catalogueId) {
+        return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(
+                CataloguePersistenceUtil.QUERY_GET_CATALOGUE_BY_PARTY_ID_CATALOGUE_ID_WITH_LINES,
+                new String[]{"catalogueId", "partyId"},
+                new Object[]{catalogueId, partyId});
     }
 
     public static String getCatalogueUUid(String catalogueId, String partyId){
