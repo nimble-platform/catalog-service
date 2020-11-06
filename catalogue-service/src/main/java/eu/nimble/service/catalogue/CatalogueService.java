@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue;
 
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
+import eu.nimble.service.catalogue.model.catalogue.CatalogueIDResponse;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.catalogue.model.statistics.ProductAndServiceStatistics;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
@@ -105,6 +106,8 @@ public interface CatalogueService {
     List<String> getCatalogueIdsForParty(String partyId);
 
     List<Object[]> getCatalogueIdAndNameForParty(String partyId);
+
+    List<CatalogueIDResponse> getCatalogueNames(List<String> catalogueUuids);
 
     ProductAndServiceStatistics getProductAndServiceCount();
 

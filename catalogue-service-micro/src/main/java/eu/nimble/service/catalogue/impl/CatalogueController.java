@@ -6,26 +6,23 @@ import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
 import eu.nimble.service.catalogue.index.ItemIndexClient;
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
+import eu.nimble.service.catalogue.model.catalogue.CatalogueIDResponse;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
-import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.LockPool;
 import eu.nimble.service.catalogue.util.CatalogueEvent;
-import eu.nimble.service.catalogue.util.DataIntegratorUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
 import eu.nimble.service.catalogue.validation.ValidationMessages;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyNameType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.utility.*;
 import eu.nimble.utility.exception.BinaryContentException;
 import eu.nimble.utility.exception.NimbleException;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
-import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import eu.nimble.utility.serialization.TransactionEnabledSerializationUtility;
 import eu.nimble.utility.validation.IValidationUtil;
@@ -859,6 +856,35 @@ public class CatalogueController {
 
         log.info("Completed request to get catalogue uuid list for party: {}", partyId);
         return ResponseEntity.ok(catalogueIds);
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieves catalogue IDs for the given UUIDs.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved catalogue names successfully"),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 500, message = "Unexpected error while getting catalogue names")
+    })
+    @RequestMapping(value = "/catalogue/ids",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity getCatalogueIds(@ApiParam(value = "UUIDs of catalogues of which names to be retrieved", required = true) @RequestParam List<String> catalogueUuids,
+                                          @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        try {
+            // set request log of ExecutionContext
+            String requestLog = String.format("Incoming request to get ids for catalogues: %s", catalogueUuids);
+            executionContext.setRequestLog(requestLog);
+
+            log.info(requestLog);
+
+            List<CatalogueIDResponse> catalogueIds = service.getCatalogueNames(catalogueUuids);
+
+            log.info("Completed request to get catalogue ids for uuids: {}", catalogueUuids);
+            return ResponseEntity.ok(catalogueIds);
+
+        } catch (Exception e) {
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GET_CATALOGUE_IDS.toString(), catalogueUuids,e);
+        }
     }
 
     @CrossOrigin(origins = {"*"})

@@ -8,6 +8,7 @@ import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
 import eu.nimble.service.catalogue.index.ItemIndexClient;
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
+import eu.nimble.service.catalogue.model.catalogue.CatalogueIDResponse;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.statistics.ProductAndServiceStatistics;
@@ -674,6 +675,11 @@ public class CatalogueServiceImpl implements CatalogueService {
     @Override
     public List<String> getCatalogueIdsForParty(String partyId) {
         return CataloguePersistenceUtil.getCatalogueIdListsForParty(partyId);
+    }
+
+    @Override
+    public List<CatalogueIDResponse> getCatalogueNames(List<String> catalogueUuids) {
+        return CataloguePersistenceUtil.getCatalogueNames(catalogueUuids);
     }
 
     @Override

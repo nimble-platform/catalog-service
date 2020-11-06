@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.persistence.util;
 
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
+import eu.nimble.service.catalogue.model.catalogue.CatalogueIDResponse;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
@@ -46,7 +47,9 @@ public class CataloguePersistenceUtil {
     private static final String QUERY_GET_CATALOGUE_ID_AND_NAME_LIST_FOR_PARTY = "SELECT catalogue.ID,catalogue.UUID FROM CatalogueType as catalogue" +
             " JOIN catalogue.providerParty as catalogue_provider_party JOIN catalogue_provider_party.partyIdentification partyIdentification" +
             " WHERE partyIdentification.ID = :partyId";
-
+    private static final String QUERY_GET_IDS_BY_UUIDS =
+            "SELECT catalogue.UUID, catalogue.ID FROM CatalogueType catalogue" +
+            " WHERE catalogue.UUID in :uuids";
     private static final String QUERY_GET_CATALOGUE_LINES_BY_IDS =
             "SELECT catalogueLine FROM CatalogueType cat" +
                     " JOIN cat.catalogueLine catalogueLine" +
@@ -114,9 +117,11 @@ public class CataloguePersistenceUtil {
     /*
      Queries for lazy getters
      */
-    public static final String QUERY_GET_CATALOGUE_WITH_LINES = "SELECT catalogue FROM CatalogueType catalogue JOIN FETCH catalogue.catalogueLine cl WHERE catalogue.UUID = :uuid";
+    public static final String QUERY_GET_CATALOGUE_WITH_LINES =
+            "SELECT catalogue FROM CatalogueType catalogue" +
+            " LEFT JOIN FETCH catalogue.catalogueLine cl WHERE catalogue.UUID = :uuid";
     public static final String QUERY_GET_CATALOGUE_BY_PARTY_ID_CATALOGUE_ID_WITH_LINES = "SELECT catalogue FROM CatalogueType catalogue" +
-            " JOIN FETCH catalogue.catalogueLine cl" +
+            " LEFT JOIN FETCH catalogue.catalogueLine cl" +
             " JOIN catalogue.providerParty as catalogue_provider_party" +
             " JOIN catalogue_provider_party.partyIdentification partyIdentification" +
             " WHERE catalogue.ID = :catalogueId AND partyIdentification.ID = :partyId";
@@ -312,6 +317,20 @@ public class CataloguePersistenceUtil {
 
     public static String getCatalogueProviderId(String catalogueUuid ){
         return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity( QUERY_GET_PROVIDER_PARTY_ID_FOR_CATALOGUE_UUID,new String[]{"catalogueUuid"}, new Object[]{catalogueUuid});
+    }
+
+    public static List<CatalogueIDResponse> getCatalogueNames(List<String> uuids) {
+        if (uuids == null || uuids.size() == 0) {
+            return new ArrayList<>();
+        } else {
+            List<Object> dbResponse = new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_IDS_BY_UUIDS, new String[]{"uuids"}, new Object[]{uuids});
+            List<CatalogueIDResponse> results = new ArrayList<>();
+            for (Object resp : dbResponse) {
+                Object[] respElements = (Object[]) resp;
+                results.add(new CatalogueIDResponse((String) respElements[0], (String) respElements[1]));
+            }
+            return results;
+        }
     }
 
     public static List<ClauseType> getClausesForCatalogue(String uuid) {
