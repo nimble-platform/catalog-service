@@ -580,6 +580,7 @@ public class CatalogueController {
             @ApiParam(value = "Filled in excel-based template. An example filled in template can be found in: https://github.com/nimble-platform/catalog-service/tree/staging/catalogue-service-micro/src/main/resources/example_content/product_data_template.xlsx . Check the \"Information\" tab for detailed instructions. Furthermore, example instantiations can be found in the \"Product Properties Example\" and \"Trading and Delivery Terms Example\" tabs.", required = true) @RequestParam("file") MultipartFile file,
             @ApiParam(value = "Upload mode for the catalogue. Possible options are: append and replace", defaultValue = "append") @RequestParam(value = "uploadMode", defaultValue = "append") String uploadMode,
             @ApiParam(value = "Identifier of the party for which the catalogue will be published", required = true) @RequestParam("partyId") String partyId,
+            @ApiParam(value = "Identifier of the catalogue to which the products will be published", required = false, defaultValue = "default") @RequestParam(value = "catalogueId", defaultValue = "default") String catalogueId,
             @ApiParam(value = "Whether VAT should be set for the uploaded products or not", required = true) @RequestParam(value = "includeVat", defaultValue = "true") Boolean includeVat ,
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
             HttpServletRequest request) {
@@ -605,7 +606,7 @@ public class CatalogueController {
 
 
                 // parse catalogue
-                catalogue = CataloguePersistenceUtil.getCatalogueForParty("default", partyId);
+                catalogue = CataloguePersistenceUtil.getCatalogueForParty(catalogueId, partyId);
 
                 if (catalogue != null) {
                     if (!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogue.getUUID(), executionContext.getVatNumber())) {
@@ -613,7 +614,7 @@ public class CatalogueController {
                     }
                 }
 
-                catalogue = service.saveTemplate(file.getInputStream(), uploadMode, party, includeVat, "default", catalogue);
+                catalogue = service.saveTemplate(file.getInputStream(), uploadMode, party, includeVat, catalogueId, catalogue);
 
             } finally {
                 lockPool.getLockForParty(partyId).writeLock().unlock();
