@@ -5,8 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.PersonType;
 import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.email.EmailService;
+import eu.nimble.utility.validation.NimbleRole;
 import org.json.JSONObject;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
@@ -52,6 +55,36 @@ public class EmailSenderUtil {
 
         @Autowired
         private EmailService emailService;
+
+        /**
+         * Sends an email for the catalogue exchange request
+         * @param requestDetails the request details as text
+         * @param catalogueName the name of catalogue to be requested for exchange
+         * @param requesterCompanyName the requester company name
+         * @param catalogueProvider the party which provides the catalogue
+         * */
+        public void requestCatalogExchange(String requestDetails, String catalogueName, String requesterCompanyName, PartyType catalogueProvider){
+
+            // construct the email list
+            List<String> emailList = new ArrayList<>();
+            for (PersonType p : catalogueProvider.getPerson()) {
+                if (p.getRole().contains(NimbleRole.PUBLISHER.getName()) || p.getRole().contains(NimbleRole.COMPANY_ADMIN.getName())) {
+                    emailList.add(p.getContact().getElectronicMail());
+                }
+            }
+            // mail subject
+            String subject = "Request for catalog exchange";
+            // set variables for mail template
+            Context context = new Context();
+            context.setVariable("details", requestDetails);
+            context.setVariable("requesterCompanyName",requesterCompanyName);
+            context.setVariable("catalogName",catalogueName);
+            context.setVariable("platformName",platformName);
+            context.setVariable("partyName",catalogueProvider.getPartyName().get(0).getName().getValue());
+            context.setVariable("url", frontEndURL+"/#/dashboard");
+            // send the mail
+            emailService.send(emailList.toArray(new String[0]),subject,"catalog_exchange",context);
+        }
 
         public void offerProducts(String offerDetails, List<String> vatNumbers, List<String> catalogueUuids, List<String> lineIds, String companyName) throws IOException, UnirestException {
             String url = eFactoryAccessTokenUri;
