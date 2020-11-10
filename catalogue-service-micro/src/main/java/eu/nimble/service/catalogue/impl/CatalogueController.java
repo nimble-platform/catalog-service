@@ -233,7 +233,7 @@ public class CatalogueController {
             // get party for the person
             PartyType requesterParty = SpringBridge.getInstance().getiIdentityClientTyped().getPartyByPersonID(person.getID()).get(0);
             // get party for the catalog provider
-            PartyType catalogProvider = SpringBridge.getInstance().getiIdentityClientTyped().getParty(bearerToken,catalogueProviderPartyId);
+            PartyType catalogProvider = SpringBridge.getInstance().getiIdentityClientTyped().getParty(bearerToken,catalogueProviderPartyId,true);
 
             // send an email
             emailSenderUtil.requestCatalogExchange(requestDetails,catalogueIDResponses.get(0).getId(),requesterParty.getPartyName().get(0).getName().getValue(),catalogProvider);

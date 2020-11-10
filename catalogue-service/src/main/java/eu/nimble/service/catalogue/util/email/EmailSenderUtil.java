@@ -67,10 +67,18 @@ public class EmailSenderUtil {
 
             // construct the email list
             List<String> emailList = new ArrayList<>();
+            List<String> initialRepresentativeEmailList = new ArrayList<>();
             for (PersonType p : catalogueProvider.getPerson()) {
                 if (p.getRole().contains(NimbleRole.PUBLISHER.getName()) || p.getRole().contains(NimbleRole.COMPANY_ADMIN.getName())) {
                     emailList.add(p.getContact().getElectronicMail());
                 }
+                if(p.getRole().contains(NimbleRole.INITIAL_REPRESENTATIVE.getName())){
+                    initialRepresentativeEmailList.add(p.getContact().getElectronicMail());
+                }
+            }
+            // if there is no publisher and company admin, initial representative will take the email
+            if(emailList.size() == 0){
+                emailList = initialRepresentativeEmailList;
             }
             // mail subject
             String subject = "Request for catalog exchange";
