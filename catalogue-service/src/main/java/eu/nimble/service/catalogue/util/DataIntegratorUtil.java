@@ -20,6 +20,14 @@ public class DataIntegratorUtil {
 
     private static String defaultLanguage = "en";
 
+    /**
+     * This method synchronizes the catalogue's party (by persisting if a new party or uses an existing one) and updates the catalogue's party with the
+     * one managed in the database. Then, it calls the data integrity method for line.
+     *
+     * This method is supposed to be called for new catalogues
+     * @param catalogue
+     * @throws InvalidCategoryException
+     */
     public static void ensureCatalogueDataIntegrityAndEnhancement(CatalogueType catalogue) throws InvalidCategoryException {
         PartyType partyType = CatalogueDatabaseAdapter.syncPartyInUBLDB(catalogue.getProviderParty());
         catalogue.setProviderParty(partyType);
@@ -30,11 +38,15 @@ public class DataIntegratorUtil {
     }
 
     public static void ensureCatalogueLineDataIntegrityAndEnhancement(CatalogueLineType catalogueLine, CatalogueType catalogue) throws InvalidCategoryException {
-        catalogueLine.getGoodsItem().getItem().setManufacturerParty(catalogue.getProviderParty());
+        ensureCatalogueLineDataIntegrityAndEnhancement(catalogueLine, catalogue.getUUID(), catalogue.getProviderParty());
+    }
+
+    public static void ensureCatalogueLineDataIntegrityAndEnhancement(CatalogueLineType catalogueLine, String catalogueUuid, PartyType providerParty) {
+        catalogueLine.getGoodsItem().getItem().setManufacturerParty(providerParty);
         setDefaultCategories(catalogueLine);
         setParentCategories(catalogueLine.getGoodsItem().getItem().getCommodityClassification());
         checkCatalogueLineIDs(catalogueLine);
-        setCatalogueDocumentReference(catalogue.getUUID(),catalogueLine);
+        setCatalogueDocumentReference(catalogueUuid,catalogueLine);
         removePrecedingTrailingSpaces(catalogueLine);
     }
 

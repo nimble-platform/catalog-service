@@ -323,7 +323,10 @@ persistence:
     ubl:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
-        show_sql: true
+#        dialect: org.hibernate.dialect.PostgreSQLDialect
+#        show_sql: false
+#        hbm2ddl:
+#          auto: create-drop
 
 nimble:
   catalog:

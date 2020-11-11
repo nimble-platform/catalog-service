@@ -1,23 +1,26 @@
 package eu.nimble.service.catalogue.impl;
 
-import eu.nimble.service.catalogue.CatalogueService;
+import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.exception.CatalogueServiceException;
 import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
 import eu.nimble.service.catalogue.index.ItemIndexClient;
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
+import eu.nimble.service.catalogue.model.catalogue.CatalogueIDResponse;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.LockPool;
 import eu.nimble.service.catalogue.util.CatalogueEvent;
 import eu.nimble.service.catalogue.util.SpringBridge;
+import eu.nimble.service.catalogue.util.email.EmailSenderUtil;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
 import eu.nimble.service.catalogue.validation.ValidationMessages;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyNameType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.PersonType;
 import eu.nimble.utility.*;
 import eu.nimble.utility.exception.BinaryContentException;
 import eu.nimble.utility.exception.NimbleException;
@@ -25,7 +28,10 @@ import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import eu.nimble.utility.serialization.TransactionEnabledSerializationUtility;
 import eu.nimble.utility.validation.IValidationUtil;
-import io.swagger.annotations.*;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +65,7 @@ public class CatalogueController {
             .getLogger(CatalogueController.class);
 
     @Autowired
-    private CatalogueService service;
+    private CatalogueServiceImpl service;
     @Autowired
     private TransactionEnabledSerializationUtility serializationUtility;
     @Autowired
@@ -72,6 +78,8 @@ public class CatalogueController {
     private ItemIndexClient itemIndexClient;
     @Autowired
     private ExecutionContext executionContext;
+    @Autowired
+    private EmailSenderUtil emailSenderUtil;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves the default CataloguePaginationResponse for the specified party.")
@@ -186,6 +194,55 @@ public class CatalogueController {
 
         log.info("Completed request to get catalogue for standard: {}, uuid: {}", standard, uuid);
         return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogue));
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Sends a request (as a mail) for catalogue exchange to the catalogue provider")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Requested catalogue exchange successfully"),
+            @ApiResponse(code = 401, message = "Invalid role."),
+            @ApiResponse(code = 500, message = "Unexpected error while requesting catalogue exchange")
+    })
+    @RequestMapping(value = "/catalogue/exchange",
+            produces = {"application/json"},
+            method = RequestMethod.POST)
+    public ResponseEntity requestCatalogueExchange(@ApiParam(value = "The uuid of catalogue to be requested for the exchange", required = true) @RequestParam(value = "catalogueUuid",required = true) String catalogueUuid,
+                                               @ApiParam(value = "The details of the request") @RequestBody String requestDetails,
+                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to exchange catalogue: %s, offer details: %s",catalogueUuid,requestDetails);
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(),RoleConfig.REQUIRED_ROLES_CATALOGUE_READ)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
+        }
+
+        // get catalogue name
+        List<CatalogueIDResponse> catalogueIDResponses = service.getCatalogueNames(Arrays.asList(catalogueUuid));
+        if (catalogueIDResponses.size() == 0) {
+            throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(catalogueUuid));
+        }
+        // get catalogue provider id
+        String catalogueProviderPartyId = CataloguePersistenceUtil.getCatalogueProviderId(catalogueUuid);
+
+        try {
+            // get person using the given bearer token
+            PersonType person = SpringBridge.getInstance().getiIdentityClientTyped().getPerson(bearerToken);
+            // get party for the person
+            PartyType requesterParty = SpringBridge.getInstance().getiIdentityClientTyped().getPartyByPersonID(person.getID()).get(0);
+            // get party for the catalog provider
+            PartyType catalogProvider = SpringBridge.getInstance().getiIdentityClientTyped().getParty(bearerToken,catalogueProviderPartyId,true);
+
+            // send an email
+            emailSenderUtil.requestCatalogExchange(requestDetails,catalogueIDResponses.get(0).getId(),requesterParty.getPartyName().get(0).getName().getValue(),catalogProvider);
+        } catch (Exception e) {
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_REQUEST_CATALOGUE_EXCHANGE.toString(), Arrays.asList(catalogueUuid,requestDetails),e);
+        }
+
+        log.info("Completed the request to exchange catalogue: {}, offer details: {}",catalogueUuid,requestDetails);
+        return ResponseEntity.ok(null);
     }
 
     private <T> T parseCatalogue(String contentType, String serializedCatalogue, Configuration.Standard standard) throws IOException {
@@ -576,6 +633,7 @@ public class CatalogueController {
             @ApiParam(value = "Filled in excel-based template. An example filled in template can be found in: https://github.com/nimble-platform/catalog-service/tree/staging/catalogue-service-micro/src/main/resources/example_content/product_data_template.xlsx . Check the \"Information\" tab for detailed instructions. Furthermore, example instantiations can be found in the \"Product Properties Example\" and \"Trading and Delivery Terms Example\" tabs.", required = true) @RequestParam("file") MultipartFile file,
             @ApiParam(value = "Upload mode for the catalogue. Possible options are: append and replace", defaultValue = "append") @RequestParam(value = "uploadMode", defaultValue = "append") String uploadMode,
             @ApiParam(value = "Identifier of the party for which the catalogue will be published", required = true) @RequestParam("partyId") String partyId,
+            @ApiParam(value = "Identifier of the catalogue to which the products will be published", required = false, defaultValue = "default") @RequestParam(value = "catalogueId", defaultValue = "default") String catalogueId,
             @ApiParam(value = "Whether VAT should be set for the uploaded products or not", required = true) @RequestParam(value = "includeVat", defaultValue = "true") Boolean includeVat ,
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
             HttpServletRequest request) {
@@ -599,19 +657,18 @@ public class CatalogueController {
             try {
                 lockPool.getLockForParty(partyId).writeLock().lock();
 
-                // parse catalogue
-                catalogue = service.parseCatalogue(file.getInputStream(), uploadMode, party, includeVat);
 
-                // save catalogue
-                // check whether an insert or update operations is needed
-                if (catalogue.getHjid() == null) {
-                    catalogue = service.addCatalogue(catalogue, Configuration.Standard.UBL);
-                } else {
-                    if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogue.getUUID(),executionContext.getVatNumber())){
+                // parse catalogue
+                catalogue = CataloguePersistenceUtil.getCatalogueForParty(catalogueId, partyId);
+
+                if (catalogue != null) {
+                    if (!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogue.getUUID(), executionContext.getVatNumber())) {
                         throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(), Collections.singletonList(catalogue.getUUID()));
                     }
-                    catalogue = service.updateCatalogue(catalogue);
                 }
+
+                catalogue = service.saveTemplate(file.getInputStream(), uploadMode, party, includeVat, catalogueId, catalogue);
+
             } finally {
                 lockPool.getLockForParty(partyId).writeLock().unlock();
             }
@@ -620,7 +677,7 @@ public class CatalogueController {
             try {
                 catalogueURI = new URI(HttpResponseUtil.baseUrl(request) + catalogue.getUUID());
                 log.info("Completed the request to upload template. Added catalogue uuid: {}", catalogue.getUUID());
-                return ResponseEntity.created(catalogueURI).body(serializationUtility.serializeUBLObject(catalogue));
+                return ResponseEntity.created(catalogueURI).build();
 
             } catch (URISyntaxException e) {
                 throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GENERATE_URI_FOR_ITEM.toString(),e);
@@ -678,7 +735,7 @@ public class CatalogueController {
             method = RequestMethod.POST)
     public ResponseEntity uploadImages(
             @ApiParam(value = "The package compressed as a Zip file, including the images. An example image package can be found in: https://github.com/nimble-platform/catalog-service/tree/staging/catalogue-service-micro/src/main/resources/example_content/images.zip", required = true) @RequestParam("package") MultipartFile pack,
-            @ApiParam(value = "uuid of the catalogue to be retrieved.", required = true) @PathVariable("id") String id,
+            @ApiParam(value = "id of the catalogue to be retrieved.", required = true) @PathVariable("id") String id,
             @ApiParam(value = "Identifier of the party for which the catalogue will be updated", required = true) @RequestParam("partyId") String partyId,
             @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
         try {
@@ -692,11 +749,7 @@ public class CatalogueController {
                 throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
 
-            CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueForParty(id, partyId);
-
-            if (catalogue == null) {
-                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(id));
-            }
+            String catalogueUUid = CataloguePersistenceUtil.getCatalogueUUid(id, partyId);
 
             if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(id,executionContext.getVatNumber())){
                 throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(),Arrays.asList(id));
@@ -710,7 +763,7 @@ public class CatalogueController {
             ZipInputStream zis = null;
             try {
                 zis = new ZipInputStream(pack.getInputStream());
-                catalogue = service.addImagesToProducts(zis, catalogue);
+                service.addImagesToProducts(zis, catalogueUUid);
 
             } catch (IOException e) {
                 throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_GET_ZIP_PACKAGE.toString(),e);
@@ -727,10 +780,14 @@ public class CatalogueController {
             }
 
             log.info("Completed the request to upload images for catalogue: {}", id);
-            return ResponseEntity.ok().body(serializationUtility.serializeUBLObject(catalogue));
+            return ResponseEntity.ok().build();
 
         } catch (Exception e) {
-            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_UNEXPECTED_ERROR_WHILE_UPLOADING_IMAGES.toString(),Arrays.asList(id));
+            if (e instanceof NimbleException) {
+                throw e;
+            } else {
+                throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_UNEXPECTED_ERROR_WHILE_UPLOADING_IMAGES.toString(), Arrays.asList(id), e);
+            }
         }
     }
 
@@ -853,6 +910,35 @@ public class CatalogueController {
 
         log.info("Completed request to get catalogue uuid list for party: {}", partyId);
         return ResponseEntity.ok(catalogueIds);
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Retrieves catalogue IDs for the given UUIDs.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved catalogue names successfully"),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 500, message = "Unexpected error while getting catalogue names")
+    })
+    @RequestMapping(value = "/catalogue/ids",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity getCatalogueIds(@ApiParam(value = "UUIDs of catalogues of which names to be retrieved", required = true) @RequestParam List<String> catalogueUuids,
+                                          @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        try {
+            // set request log of ExecutionContext
+            String requestLog = String.format("Incoming request to get ids for catalogues: %s", catalogueUuids);
+            executionContext.setRequestLog(requestLog);
+
+            log.info(requestLog);
+
+            List<CatalogueIDResponse> catalogueIds = service.getCatalogueNames(catalogueUuids);
+
+            log.info("Completed request to get catalogue ids for uuids: {}", catalogueUuids);
+            return ResponseEntity.ok(catalogueIds);
+
+        } catch (Exception e) {
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GET_CATALOGUE_IDS.toString(), catalogueUuids,e);
+        }
     }
 
     @CrossOrigin(origins = {"*"})

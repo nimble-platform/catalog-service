@@ -347,7 +347,6 @@ public class CatalogueLineController {
         executionContext.setRequestLog(requestLog);
 
         log.info(requestLog);
-        CatalogueType catalogue;
         CatalogueLineType catalogueLine;
 
         String providerPartyID = null;
@@ -363,8 +362,6 @@ public class CatalogueLineController {
             }
             lockPool.getLockForParty(providerPartyID).writeLock().lock();
 
-            // get owning catalogue
-            catalogue = service.getCatalogue(catalogueUuid);
             if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogueUuid,executionContext.getVatNumber())){
                 throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(), Collections.singletonList(catalogueUuid));
             }
@@ -377,8 +374,8 @@ public class CatalogueLineController {
             }
 
             // validate the incoming content
-            CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogue, catalogueLine);
-            ValidationMessages errors = catalogueLineValidator.validate();
+            CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogueUuid, providerPartyID, catalogueLine);
+            ValidationMessages errors = catalogueLineValidator.validateAll();
             if (errors.getErrorMessages().size() > 0) {
                 throw new NimbleException(errors.getErrorMessages(),errors.getErrorParameters());
             }
@@ -392,7 +389,7 @@ public class CatalogueLineController {
             // check duplicate line
             boolean lineExists = CatalogueLinePersistenceUtil.checkCatalogueLineExistence(catalogueUuid, catalogueLine.getID());
             if (!lineExists) {
-                catalogueLine = service.addLineToCatalogue(catalogue, catalogueLine);
+                catalogueLine = service.addLineToCatalogue(catalogueUuid, providerPartyID, catalogueLine);
             } else {
                 throw new NimbleException(NimbleExceptionMessageCode.NOT_ACCEPTABLE_ALREADY_EXISTS.toString());
             }
@@ -479,14 +476,14 @@ public class CatalogueLineController {
                 throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(), Collections.singletonList(catalogueUuid));
             }
 
-            CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogue, catalogueLine);
+            CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(catalogue.getUUID(), UblUtil.getCatalogueProviderPartyId(catalogue), catalogueLine);
 
             if(!catalogueUuid.equals(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID())){
                 String newCatalogueUuid = catalogueUuid;
                 String oldCatalogueUuid = catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID();
 
                 catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().setID(newCatalogueUuid);
-                ValidationMessages validationMessages = catalogueLineValidator.validate();
+                ValidationMessages validationMessages = catalogueLineValidator.validateAll();
                 if (validationMessages.getErrorMessages().size() > 0) {
                     throw new NimbleException(validationMessages.getErrorMessages(),validationMessages.getErrorParameters());
                 }
@@ -512,7 +509,7 @@ public class CatalogueLineController {
                 return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogueLine));
             }else{
                 // validate the incoming content
-                ValidationMessages errors = catalogueLineValidator.validate();
+                ValidationMessages errors = catalogueLineValidator.validateAll();
                 if (errors.getErrorMessages().size() > 0) {
                     throw new NimbleException(errors.getErrorMessages(),errors.getErrorParameters());
                 }

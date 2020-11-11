@@ -278,7 +278,7 @@ public class IndexCategoryService {
                         results.add(IndexingWrapper.toCategory(indexCategory));
                     }
 
-                    logger.info("Retrieved {} categories successfully. query: {}", results.size(), query);
+                    logger.debug("Retrieved {} categories successfully. query: {}", results.size(), query);
                     return results;
 
                 } catch (IOException e) {

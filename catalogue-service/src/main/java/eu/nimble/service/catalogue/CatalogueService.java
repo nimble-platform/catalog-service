@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue;
 
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
+import eu.nimble.service.catalogue.model.catalogue.CatalogueIDResponse;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.catalogue.model.statistics.ProductAndServiceStatistics;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
@@ -66,20 +67,17 @@ public interface CatalogueService {
 
     /**
      * Adds the catalogue given through the NIMBLE-specific, Excel-based template.
-     *
-     * @param catalogueTemplate
-     * @param party
      */
-    public CatalogueType parseCatalogue(InputStream catalogueTemplate, String uploadMode, PartyType party, Boolean includeVat);
+    public CatalogueType saveTemplate(InputStream catalogueTemplate, String uploadMode, PartyType party, Boolean includeVat, String catalogueId, CatalogueType existingCatalogue);
 
     /**
-     * Adds the provided images to the relevant products in the catalogue.
+     * Adds the provided images to the relevant products in the specified catalogue of the specified party
      *
      * @param imagePackage
-     * @param catalogueType
+     * @param catalogueUuid
      * @return
      */
-    CatalogueType addImagesToProducts(ZipInputStream imagePackage, CatalogueType catalogueType);
+    void addImagesToProducts(ZipInputStream imagePackage, String catalogueUuid);
 
     CatalogueType removeAllImagesFromCatalogue(CatalogueType catalogueType);
 
@@ -97,7 +95,7 @@ public interface CatalogueService {
 
     <T> T getCatalogueLines(String catalogueId, List<String> catalogueLineIds);
 
-    CatalogueLineType addLineToCatalogue(CatalogueType catalogue, CatalogueLineType catalogueLine);
+    CatalogueLineType addLineToCatalogue(String catalogueUuid, String catalogueProviderId, CatalogueLineType catalogueLine);
 
     CatalogueLineType updateLinesCatalogue(String newCatalogueUuid, String oldeCatalogueUuid,CatalogueLineType catalogueLin);
 
@@ -108,6 +106,8 @@ public interface CatalogueService {
     List<String> getCatalogueIdsForParty(String partyId);
 
     List<Object[]> getCatalogueIdAndNameForParty(String partyId);
+
+    List<CatalogueIDResponse> getCatalogueNames(List<String> catalogueUuids);
 
     ProductAndServiceStatistics getProductAndServiceCount();
 

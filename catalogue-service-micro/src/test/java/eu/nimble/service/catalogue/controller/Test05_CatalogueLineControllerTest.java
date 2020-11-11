@@ -233,4 +233,34 @@ public class Test05_CatalogueLineControllerTest {
                 .content(catalogueLineJson);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isBadRequest()).andReturn();
     }
+
+    @Test
+    public void test12_addLineToNewCatalogue() throws Exception {
+        // add new catalogue
+        String catalogueJson = IOUtils.toString(Test01_CatalogueControllerTest.class.getResourceAsStream("/example_catalogue_test2.json"));
+        MockHttpServletRequestBuilder request = post("/catalogue/ubl")
+                .header("Authorization", TestConfig.sellerId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(catalogueJson);
+        MvcResult result = this.mockMvc.perform(request).andExpect(status().isCreated()).andReturn();
+        CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
+
+        // add new line
+        String catalogueLineJson = IOUtils.toString(Test05_CatalogueLineControllerTest.class.getResourceAsStream("/example_catalogue_line.json"));
+        CatalogueLineType catalogueLine = mapper.readValue(catalogueLineJson, CatalogueLineType.class);
+        catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().setID(catalogue.getUUID());
+        catalogueLineJson = mapper.writeValueAsString(catalogueLine);
+
+        request = post("/catalogue/" + catalogue.getUUID() + "/catalogueline")
+                .header("Authorization", TestConfig.sellerId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(catalogueLineJson);
+        this.mockMvc.perform(request).andDo(print()).andExpect(status().isCreated()).andReturn();
+
+        // delete catalogue
+        request = delete("/catalogue")
+                .header("Authorization",TestConfig.sellerId)
+                .param("partyId",TestConfig.sellerId);
+        this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+    }
 }

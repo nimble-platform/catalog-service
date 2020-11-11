@@ -23,22 +23,25 @@ public class CatalogueLineValidator {
 
     private List<String> errorMessages;
     private List<List<String>> errorParameters;
-    private CatalogueType owningCatalogue;
+    // UUID of the catalogue containing the line. Could be null in cases such as new template-based publishing and new catalogue creation
+    private String owningCatalogueUuid;
+    private String cataloguePartyId;
     private CatalogueLineType catalogueLine;
     private String extractedLineId;
 
-    public CatalogueLineValidator(CatalogueType catalogueType, CatalogueLineType catalogueLine) {
-        this(catalogueType, catalogueLine, new ArrayList<>(), new ArrayList<>());
+    public CatalogueLineValidator(String owningCatalogueUuid, String cataloguePartyId, CatalogueLineType catalogueLine) {
+        this(owningCatalogueUuid, cataloguePartyId, catalogueLine, new ArrayList<>(), new ArrayList<>());
     }
 
-    public CatalogueLineValidator(CatalogueType catalogueType, CatalogueLineType catalogueLine, List<String> errorMessages, List<List<String>> errorParameters) {
-        this.owningCatalogue = catalogueType;
+    public CatalogueLineValidator(String owningCatalogueUuid, String cataloguePartyId, CatalogueLineType catalogueLine, List<String> errorMessages, List<List<String>> errorParameters) {
+        this.owningCatalogueUuid = owningCatalogueUuid;
+        this.cataloguePartyId = cataloguePartyId;
         this.errorMessages = errorMessages;
         this.catalogueLine = catalogueLine;
         this.errorParameters = errorParameters;
     }
 
-    public ValidationMessages validate() {
+    public ValidationMessages validateAll() {
         // set the ID to be used during the subsequent validations
         extractedLineId = !Strings.isNullOrEmpty(catalogueLine.getID()) ? catalogueLine.getID() : catalogueLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID();
 
@@ -55,30 +58,30 @@ public class CatalogueLineValidator {
         return new ValidationMessages(errorMessages,errorParameters);
     }
 
-    private void idExists() {
+    public void idExists() {
         if (extractedLineId == null) {
             errorMessages.add(NimbleExceptionMessageCode.BAD_REQUEST_NO_ID_FOR_LINE.toString());
             errorParameters.add(new ArrayList<>());
         }
     }
 
-    private void idHasInvalidSpace() {
+    public void idHasInvalidSpace() {
         if (extractedLineId != null && extractedLineId.length() != extractedLineId.trim().length()) {
             errorMessages.add(NimbleExceptionMessageCode.BAD_REQUEST_PRECEDING_TRAILING_IN_ID.toString());
             errorParameters.add(Arrays.asList(extractedLineId));
         }
     }
-    private void checkReferenceToCatalogue() {
-        if(owningCatalogue.getUUID() != null){
+    public void checkReferenceToCatalogue() {
+        if(owningCatalogueUuid != null){
             ItemType item = catalogueLine.getGoodsItem().getItem();
-            if (!item.getCatalogueDocumentReference().getID().equals(owningCatalogue.getUUID())) {
+            if (!item.getCatalogueDocumentReference().getID().equals(owningCatalogueUuid)) {
                 errorMessages.add(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_REFERENCE.toString());
                 errorParameters.add(Arrays.asList(extractedLineId));
             }
         }
     }
 
-    private void manufacturerIdExists() {
+    public void manufacturerIdExists() {
         ItemType item = catalogueLine.getGoodsItem().getItem();
         if (Strings.isNullOrEmpty(item.getManufacturerParty().getPartyIdentification().get(0).getID())) {
             errorMessages.add(NimbleExceptionMessageCode.BAD_REQUEST_NO_MANUFACTURER_PARTY.toString());
@@ -86,7 +89,7 @@ public class CatalogueLineValidator {
         }
     }
 
-    private void lineIdManufacturerIdMatches() {
+    public void lineIdManufacturerIdMatches() {
         ItemType item = catalogueLine.getGoodsItem().getItem();
         if (!Strings.isNullOrEmpty(catalogueLine.getID()) && !Strings.isNullOrEmpty(item.getManufacturersItemIdentification().getID())) {
             if (!catalogueLine.getID().contentEquals(item.getManufacturersItemIdentification().getID())) {
@@ -96,7 +99,7 @@ public class CatalogueLineValidator {
         }
     }
 
-    private void checkProductNames() {
+    public void checkProductNames() {
         ItemType item = catalogueLine.getGoodsItem().getItem();
 
         boolean nameExists = false;
@@ -123,7 +126,7 @@ public class CatalogueLineValidator {
         });
     }
 
-    private void checkCommodityClassifications() {
+    public void checkCommodityClassifications() {
         ItemType item = catalogueLine.getGoodsItem().getItem();
         // check whether the item has at least one category
         if (item.getCommodityClassification().size() == 0) {
@@ -154,17 +157,16 @@ public class CatalogueLineValidator {
         }
     }
 
-    private void partyIdsMatch() {
+    public void partyIdsMatch() {
         ItemType item = catalogueLine.getGoodsItem().getItem();
-        String catalogueProviderPartyId = owningCatalogue.getProviderParty().getPartyIdentification().get(0).getID();
         String itemManufacturerPartyId = item.getManufacturerParty().getPartyIdentification().get(0).getID();
-        if (!catalogueProviderPartyId.contentEquals(itemManufacturerPartyId)) {
+        if (!this.cataloguePartyId.contentEquals(itemManufacturerPartyId)) {
             errorMessages.add(NimbleExceptionMessageCode.BAD_REQUEST_PARTY_IDS_DO_NOT_MATCH.toString());
-            errorParameters.add(Arrays.asList(extractedLineId, catalogueProviderPartyId, itemManufacturerPartyId));
+            errorParameters.add(Arrays.asList(extractedLineId, this.cataloguePartyId, itemManufacturerPartyId));
         }
     }
 
-    private void fileSizesLessThanTheMaximum() {
+    public void fileSizesLessThanTheMaximum() {
         // validate images
         int maxFileSize = SpringBridge.getInstance().getCatalogueServiceConfig().getMaxFileSize() * 1024 * 1024;
 

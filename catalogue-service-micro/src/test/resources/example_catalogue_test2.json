@@ -1,0 +1,96 @@
+{
+  "id": "test2",
+  "uuid": null,
+  "providerParty": {
+    "federationInstanceID": "TEST_INSTANCE",
+    "nace": [],
+    "description": [],
+    "brandName": [],
+    "partyName": [
+      {
+        "name": {
+          "value": "canCompany",
+          "languageID": "en"
+        }
+      }
+    ],
+    "partyIdentification": [
+      {
+        "id": "706"
+      }
+    ],
+    "websiteURI": "",
+    "industryClassificationCode": {
+      "name": "IndustryClassificationCode"
+    },
+    "ppapCompatibilityLevel": 1,
+    "preferredItemClassificationCode": [
+      {
+        "value": "0173-1#01-AEI956#006::eClass::Notebook::product"
+      }
+    ],
+    "mostRecentItemsClassificationCode": [
+      {
+        "value": "http://www.aidimme.es/FurnitureSectorOntology.owl#MDFBoard::FurnitureOntology::MDFBoard::product::1547034223954"
+      }
+    ],
+    "postalAddress": {
+      "streetName": "ODTU",
+      "buildingNumber": "",
+      "cityName": "Ankara",
+      "postalZone": "06800",
+      "country": {
+        "name": {
+          "value": "Turkey"
+        }
+      }
+    },
+    "partyTaxScheme": [
+      {
+        "taxScheme": {
+          "taxTypeCode": {
+            "value": "1234",
+            "name": "VAT"
+          }
+        }
+      }
+    ],
+    "contact": {
+      "otherCommunication": []
+    },
+    "person": [
+      {
+        "id": "379",
+        "firstName": "Suat",
+        "familyName": "Gonul",
+        "role": [],
+        "contact": {
+          "name": {
+            "languageID": "en"
+          },
+          "telephone": "",
+          "electronicMail": "suat@srdc.com.tr",
+          "otherCommunication": []
+        },
+        "roleItems": []
+      }
+    ],
+    "certificate": [],
+    "qualityIndicator": [
+      {
+        "qualityParameter": ""
+      }
+    ],
+    "ppapDocumentReference": [],
+    "documentReference": [],
+    "industrySector": [],
+    "purchaseTerms": {
+      "tradingTerms": [],
+      "deliveryTerms": [],
+      "paymentMeans": []
+    }
+  },
+  "issueDate": "",
+  "issueTime": "",
+  "catalogueLine": []
+}

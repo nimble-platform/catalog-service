@@ -172,4 +172,12 @@ public class IIndexingServiceClientFallbackMock extends IIndexingServiceClientFa
         }
         return null;
     }
+
+    public Response selectCode(String bearerToken, String query) {
+        return null;
+    }
+
+    public Response getProperty(String bearerToken, String uri) {
+        return null;
+    }
 }

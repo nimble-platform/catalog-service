@@ -42,6 +42,9 @@ public class ItemIndexClient {
         Response response;
         String indexItemsJson;
         try {
+            // retrieve all catalogue to be able to access all relevant lists
+            catalogue = CataloguePersistenceUtil.getCatalogueByUuid(catalogue.getUUID());
+
             List<ItemType> indexItems = new ArrayList<>();
             for (CatalogueLineType catalogueLine : catalogue.getCatalogueLine()) {
                 indexItems.add(IndexingWrapper.toIndexItem(catalogueLine));
@@ -64,9 +67,10 @@ public class ItemIndexClient {
                     logger.info("Indexed Catalogue successfully. uuid: {}, party id: {}", catalogue.getUUID(), catalogue.getProviderParty().getPartyIdentification().get(0).getID());
 
                 } else {
-                    String serializedCatalogue = JsonSerializationUtility.serializeEntitySilently(catalogue);
-                    logger.error("Failed to index Catalogue. uuid: {}, party id: {}, indexing call status: {}, message: {}\nCatalogue: {}",
-                            catalogue.getUUID(), catalogue.getProviderParty().getPartyIdentification().get(0).getID(), response.status(), IOUtils.toString(response.body().asInputStream()), serializedCatalogue);
+                    logger.error("Failed to index Catalogue. uuid: {}, party id: {}, indexing call status: {}, message: {}, client: {}",
+                            catalogue.getUUID(), catalogue.getProviderParty().getPartyIdentification().get(0).getID(), response.status(), IOUtils.toString(response.body().asInputStream()),
+                            response.request().url()
+                    );
                 }
             }
             //response = SpringBridge.getInstance().getiIndexingServiceClient().postCatalogue(credentialsUtil.getBearerToken(),catalogue.getUUID(),indexItemsJson);

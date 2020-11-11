@@ -160,6 +160,10 @@ public class TemplateParser {
 
                     Row propertyRow =  productPropertiesTab.getRow(rowIndex);
                     Cell cell = TemplateGenerator.getCellWithMissingCellPolicy(propertyRow, columnIndex);
+                    // make sure that mandatory properties are filled
+                    if(property.getRequired() != null && property.getRequired() && TemplateGenerator.getCellStringValue(cell).contentEquals("")){
+                        throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_MISSING_REQUIRED_PROPERTIES.toString(),Arrays.asList(property.getPreferredName(defaultLanguage)));
+                    }
                     // for Quantity properties, get the cell containing the unit information
                     Cell unitCell = null;
                     if(property.getDataType().contentEquals(TEMPLATE_DATA_TYPE_QUANTITY)){

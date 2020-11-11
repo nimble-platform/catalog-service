@@ -1,5 +1,8 @@
 package eu.nimble.service.catalogue.template;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.exception.InvalidCategoryException;
 import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
 import eu.nimble.service.catalogue.model.category.Category;
@@ -7,12 +10,14 @@ import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.model.category.Value;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
 import eu.nimble.service.catalogue.util.SpringBridge;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.AddressType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.DimensionType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemPropertyType;
+import eu.nimble.service.model.solr.owl.CodedType;
+import eu.nimble.service.model.solr.owl.PropertyType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
+import eu.nimble.utility.JsonSerializationUtility;
+import feign.Response;
+import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
@@ -21,6 +26,7 @@ import org.apache.poi.xssf.usermodel.*;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static eu.nimble.service.catalogue.template.TemplateConfig.*;
 /**
@@ -36,20 +42,24 @@ public class TemplateGenerator {
     private CellStyle editableStyle;
     private CellStyle tabCellStyle;
     private String defaultLanguage = "en";
+    private Sheet sourceList;
+    // fields to be used to add source lists to the sheet dynamically
+    private int sourceListCellIndex = 0;
+    private char sourceListColumn = 'H';
 
     public TemplateGenerator() {
         template = new XSSFWorkbook();
         createStyles();
     }
 
-    public Workbook generateTemplateForCategory(List<Category> categories,String templateLanguage) {
-        return generateTemplateForCategory(categories,templateLanguage,false);
+    public Workbook generateTemplateForCategory(List<Category> categories,String templateLanguage,String bearerToken) {
+        return generateTemplateForCategory(categories,templateLanguage,false,bearerToken);
     }
 
     /**
      * @param usePropertyId whether we should use property name or id while generating the excel
      * */
-    public Workbook generateTemplateForCategory(List<Category> categories,String templateLanguage, Boolean usePropertyId) {
+    public Workbook generateTemplateForCategory(List<Category> categories,String templateLanguage, Boolean usePropertyId, String bearerToken) {
         // set defaultLanguage
         defaultLanguage = templateLanguage;
         Sheet infoTab = template.createSheet(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TAB_INFORMATION.toString(), defaultLanguage));
@@ -60,11 +70,11 @@ public class TemplateGenerator {
         Sheet propertyDetailsTab = template.createSheet(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TAB_PROPERTY_DETAILS.toString(), defaultLanguage));
         Sheet valuesTab = template.createSheet(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TAB_ALLOWED_VALUES_FOR_PROPERTIES.toString(), defaultLanguage));
         Sheet metadataTab = template.createSheet(TemplateConfig.TEMPLATE_TAB_METADATA);
-        Sheet sourceList = template.createSheet(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TAB_SOURCE_LIST.toString(), defaultLanguage));
+        sourceList = template.createSheet(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TAB_SOURCE_LIST.toString(), defaultLanguage));
 
-        populateSourceList(sourceList);
+        populateSourceList();
         populateInfoTab(infoTab);
-        populateProductPropertiesTab(categories, propertiesTab, usePropertyId);
+        populateProductPropertiesTab(categories, propertiesTab, usePropertyId,bearerToken);
         populateProductPropertiesExampleTab(categories,propertiesExampleTab);
         populateTradingDeliveryTermsTab(tradingDeliveryTermsTab);
         populateTradingDeliveryTermsExampleTab(tradingDeliveryTermsTabExample);
@@ -75,9 +85,9 @@ public class TemplateGenerator {
         return template;
     }
 
-    public Workbook generateTemplateForCatalogueLines(List<CatalogueLineType> catalogueLines, List<Category> categories, String languageId) throws InvalidCategoryException {
+    public Workbook generateTemplateForCatalogueLines(List<CatalogueLineType> catalogueLines, List<Category> categories, String languageId,String bearerToken) throws InvalidCategoryException {
         // use property id while generating the excel
-        Workbook template = generateTemplateForCategory(categories,languageId, true);
+        Workbook template = generateTemplateForCategory(categories,languageId, true,bearerToken);
         fillProductPropertiesTab(template.getSheet(TemplateGenerator.getSheetName(TemplateTextCode.TEMPLATE_TAB_PRODUCT_PROPERTIES.toString(), defaultLanguage)),catalogueLines);
         fillTradingDeliveryTermsTab(template.getSheet(TemplateGenerator.getSheetName(TemplateTextCode.TEMPLATE_TAB_TRADING_DELIVERY_TERMS.toString(), defaultLanguage)),catalogueLines);
         fillCustomProperties(template.getSheet(TemplateGenerator.getSheetName(TemplateTextCode.TEMPLATE_TAB_PRODUCT_PROPERTIES.toString(), defaultLanguage)),catalogueLines,categories);
@@ -601,7 +611,7 @@ public class TemplateGenerator {
         infoTab.autoSizeColumn(0);
     }
 
-    private void populateProductPropertiesTab(List<Category> categories, Sheet productPropertiesTab, Boolean usePropertyId) {
+    private void populateProductPropertiesTab(List<Category> categories, Sheet productPropertiesTab, Boolean usePropertyId,String bearerToken) {
         // make first column read only
         productPropertiesTab.setDefaultColumnStyle(0,readOnlyStyle);
 
@@ -665,7 +675,7 @@ public class TemplateGenerator {
             cell = secondRow.createCell(columnOffset);
             cell.setCellValue(property.getPreferredName(defaultLanguage));
             cell.setCellStyle(boldCellStyle);
-            if(checkMandatory(property, cell)){
+            if(checkMandatory(property)){
                 productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(mandatoryCellStyle);
             }
             else {
@@ -747,7 +757,13 @@ public class TemplateGenerator {
                 // make thirdRow read only
                 thirdRowCell.setCellStyle(readOnlyStyle);
 
-                productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
+                if(checkMandatory(property)){
+                    productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(mandatoryCellStyle);
+                }
+                else {
+                    productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
+                }
+
                 fourthRow.createCell(columnOffset).setCellStyle(readOnlyStyle);
                 if (property.getDataType().equals("BOOLEAN")){
                     CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnOffset,columnOffset);
@@ -761,6 +777,44 @@ public class TemplateGenerator {
                     // empty cell
                     dataValidation.setEmptyCellAllowed(true);
                     productPropertiesTab.addValidationData(dataValidation);
+                }
+
+                // we assume that mandatory properties has predefined values. Therefore, create a source list for their predefined values
+                if(property.getRequired() != null && property.getRequired()){
+                    try{
+                        // retrieve property details
+                        Response response = SpringBridge.getInstance().getiIndexingServiceClient().getProperty(bearerToken, property.getId());
+                        String responseBody = IOUtils.toString(response.body().asInputStream());
+                        PropertyType propertyType = JsonSerializationUtility.deserializeContent(responseBody, new TypeReference<PropertyType>(){});
+                        // retrieve predefined options for the property
+                        String q = String.format("codedList:\"%s\"",propertyType.getCodeListId());
+                        response = SpringBridge.getInstance().getiIndexingServiceClient().selectCode(bearerToken, q);
+
+                        ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
+                        JsonNode responseJson = mapper.readTree(response.body().asInputStream());
+                        JsonNode result = responseJson.get("result");
+
+                        List<CodedType> codedTypes = JsonSerializationUtility.deserializeContent(result.toString(), new TypeReference<List<CodedType>>(){});
+                        // create the validation
+                        CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4,4,columnOffset,columnOffset);
+                        DataValidationHelper dataValidationHelper = productPropertiesTab.getDataValidationHelper();
+
+                        String constraints = String.format("TEMPLATE_%s_LIST",propertyType.getLabel().get("en"));
+
+                        DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(constraints);
+                        DataValidation dataValidation  = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
+                        dataValidation.setSuppressDropDownArrow(true);
+                        // error box
+                        dataValidation.setShowErrorBox(true);
+                        dataValidation.createErrorBox(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_INVALID_INPUT.toString(), defaultLanguage),SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_INVALID_INPUT_EXPLANATION.toString(), defaultLanguage));
+                        // empty cell
+                        dataValidation.setEmptyCellAllowed(false);
+                        productPropertiesTab.addValidationData(dataValidation);
+                        // extend source list
+                        extendSourceList(codedTypes.stream().map(codedType -> codedType.getLabel().get("en")).collect(Collectors.toList()), constraints);
+                    } catch (Exception e){
+                        throw new TemplateParseException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GENERATE_TEMPLATE.toString(),e);
+                    }
                 }
 
                 // check whether the property needs a unit
@@ -860,7 +914,7 @@ public class TemplateGenerator {
             cell = secondRow.createCell(columnOffset);
             cell.setCellValue(property.getPreferredName(defaultLanguage));
             cell.setCellStyle(boldCellStyle);
-            if(checkMandatory(property, cell)){
+            if(checkMandatory(property)){
                 productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellStyle(mandatoryCellStyle);
             }
             else {
@@ -1100,7 +1154,7 @@ public class TemplateGenerator {
             cell = secondRow.createCell(columnIndex);
             cell.setCellValue(property.getPreferredName(defaultLanguage));
             cell.setCellStyle(boldCellStyle);
-            if(checkMandatory(property, cell)){
+            if(checkMandatory(property)){
                 termsTab.getRow(4).createCell(columnIndex).setCellStyle(mandatoryCellStyle);
             }
             else {
@@ -1293,7 +1347,7 @@ public class TemplateGenerator {
             cell = secondRow.createCell(columnIndex);
             cell.setCellValue(property.getPreferredName(defaultLanguage));
             cell.setCellStyle(boldCellStyle);
-            if(checkMandatory(property, cell)){
+            if(checkMandatory(property)){
                 termsExampleTab.getRow(4).createCell(columnIndex).setCellStyle(mandatoryCellStyle);
             }
             else {
@@ -1707,78 +1761,78 @@ public class TemplateGenerator {
         template.setSheetHidden(template.getSheetIndex(metadataTab),true);
     }
 
-    private void populateSourceList(Sheet sourceList){
+    private void populateSourceList(){
         // values for boolean
-        sourceList.createRow(0).createCell(0).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_BOOLEAN_LIST.toString(), defaultLanguage));
-        sourceList.createRow(1).createCell(0).setCellValue("TRUE");
-        sourceList.createRow(2).createCell(0).setCellValue("FALSE");
+        sourceList.createRow(0).createCell(sourceListCellIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_BOOLEAN_LIST.toString(), defaultLanguage));
+        sourceList.createRow(1).createCell(sourceListCellIndex).setCellValue("TRUE");
+        sourceList.createRow(2).createCell(sourceListCellIndex++).setCellValue("FALSE");
 
         Name namedCell = template.createName();
         namedCell.setNameName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_BOOLEAN_LIST.toString(), defaultLanguage));
         namedCell.setRefersToFormula(TemplateConfig.TEMPLATE_BOOLEAN_REFERENCE);
 
         // values for incoterms
-        sourceList.getRow(0).createCell(1).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_INCOTERMS_LIST.toString(), defaultLanguage));
-        sourceList.getRow(1).createCell(1).setCellValue("CIF (Cost,Insurance and Freight)");
-        sourceList.getRow(2).createCell(1).setCellValue("CIP (Carriage and Insurance Paid to)");
-        sourceList.createRow(3).createCell(1).setCellValue("CFR (Cost and Freight)");
-        sourceList.createRow(4).createCell(1).setCellValue("CPT (Carriage paid to)");
-        sourceList.createRow(5).createCell(1).setCellValue("DAP (Delivered at Place)");
-        sourceList.createRow(6).createCell(1).setCellValue("DDP (Delivery Duty Paid)");
-        sourceList.createRow(7).createCell(1).setCellValue("DPU (Delivery at Place Unloaded)");
-        sourceList.createRow(8).createCell(1).setCellValue("EXW (Ex Works)");
-        sourceList.createRow(9).createCell(1).setCellValue("FAS (Free Alongside Ship)");
-        sourceList.createRow(10).createCell(1).setCellValue("FCA (Free Carrier)");
-        sourceList.createRow(11).createCell(1).setCellValue("FOB (Free on Board)");
+        sourceList.getRow(0).createCell(sourceListCellIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_INCOTERMS_LIST.toString(), defaultLanguage));
+        sourceList.getRow(1).createCell(sourceListCellIndex).setCellValue("CIF (Cost,Insurance and Freight)");
+        sourceList.getRow(2).createCell(sourceListCellIndex).setCellValue("CIP (Carriage and Insurance Paid to)");
+        sourceList.createRow(3).createCell(sourceListCellIndex).setCellValue("CFR (Cost and Freight)");
+        sourceList.createRow(4).createCell(sourceListCellIndex).setCellValue("CPT (Carriage paid to)");
+        sourceList.createRow(5).createCell(sourceListCellIndex).setCellValue("DAP (Delivered at Place)");
+        sourceList.createRow(6).createCell(sourceListCellIndex).setCellValue("DDP (Delivery Duty Paid)");
+        sourceList.createRow(7).createCell(sourceListCellIndex).setCellValue("DPU (Delivery at Place Unloaded)");
+        sourceList.createRow(8).createCell(sourceListCellIndex).setCellValue("EXW (Ex Works)");
+        sourceList.createRow(9).createCell(sourceListCellIndex).setCellValue("FAS (Free Alongside Ship)");
+        sourceList.createRow(10).createCell(sourceListCellIndex).setCellValue("FCA (Free Carrier)");
+        sourceList.createRow(11).createCell(sourceListCellIndex++).setCellValue("FOB (Free on Board)");
 
         namedCell = template.createName();
         namedCell.setNameName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_INCOTERMS_LIST.toString(), defaultLanguage));
         namedCell.setRefersToFormula(TemplateConfig.TEMPLATE_INCOTERMS_REFERENCE);
 
         // values for currency
-        sourceList.getRow(0).createCell(2).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_CURRENCY_LIST.toString(), defaultLanguage));
-        sourceList.getRow(1).createCell(2).setCellValue("EUR");
-        sourceList.getRow(2).createCell(2).setCellValue("USD");
-        sourceList.getRow(3).createCell(2).setCellValue("SEK");
+        sourceList.getRow(0).createCell(sourceListCellIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_CURRENCY_LIST.toString(), defaultLanguage));
+        sourceList.getRow(1).createCell(sourceListCellIndex).setCellValue("EUR");
+        sourceList.getRow(2).createCell(sourceListCellIndex).setCellValue("USD");
+        sourceList.getRow(3).createCell(sourceListCellIndex++).setCellValue("SEK");
 
         namedCell = template.createName();
         namedCell.setNameName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_CURRENCY_LIST.toString(), defaultLanguage));
         namedCell.setRefersToFormula(TemplateConfig.TEMPLATE_CURRENCY_REFERENCE);
 
         // values for dimensions
-        sourceList.getRow(0).createCell(3).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_DIMENSION_LIST.toString(), defaultLanguage));
-        sourceList.getRow(1).createCell(3).setCellValue("mm");
-        sourceList.getRow(2).createCell(3).setCellValue("cm");
-        sourceList.getRow(3).createCell(3).setCellValue("m");
+        sourceList.getRow(0).createCell(sourceListCellIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_DIMENSION_LIST.toString(), defaultLanguage));
+        sourceList.getRow(1).createCell(sourceListCellIndex).setCellValue("mm");
+        sourceList.getRow(2).createCell(sourceListCellIndex).setCellValue("cm");
+        sourceList.getRow(3).createCell(sourceListCellIndex++).setCellValue("m");
 
         namedCell = template.createName();
         namedCell.setNameName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_DIMENSION_LIST.toString(), defaultLanguage));
         namedCell.setRefersToFormula(TemplateConfig.TEMPLATE_DIMENSION_REFERENCE);
 
         // values for Warranty Validity Period
-        sourceList.getRow(0).createCell(4).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_WARRANTY_VALIDITY_LIST.toString(), defaultLanguage));
-        sourceList.getRow(1).createCell(4).setCellValue("year");
-        sourceList.getRow(2).createCell(4).setCellValue("month");
+        sourceList.getRow(0).createCell(sourceListCellIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_WARRANTY_VALIDITY_LIST.toString(), defaultLanguage));
+        sourceList.getRow(1).createCell(sourceListCellIndex).setCellValue("year");
+        sourceList.getRow(2).createCell(sourceListCellIndex++).setCellValue("month");
 
         namedCell = template.createName();
         namedCell.setNameName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_WARRANTY_VALIDITY_LIST.toString(), defaultLanguage));
         namedCell.setRefersToFormula(TemplateConfig.TEMPLATE_WARRANTY_REFERENCE);
 
         // values for Estimated Delivery Period
-        sourceList.getRow(0).createCell(5).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD.toString(), defaultLanguage));
-        sourceList.getRow(1).createCell(5).setCellValue("working days");
-        sourceList.getRow(2).createCell(5).setCellValue("days");
-        sourceList.getRow(3).createCell(5).setCellValue("weeks");
+        sourceList.getRow(0).createCell(sourceListCellIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD.toString(), defaultLanguage));
+        sourceList.getRow(1).createCell(sourceListCellIndex).setCellValue("working days");
+        sourceList.getRow(2).createCell(sourceListCellIndex).setCellValue("days");
+        sourceList.getRow(3).createCell(sourceListCellIndex++).setCellValue("weeks");
 
         namedCell = template.createName();
         namedCell.setNameName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_DELIVERY_PERIOD_LIST.toString(), defaultLanguage));
         namedCell.setRefersToFormula(TemplateConfig.TEMPLATE_DELIVERY_PERIOD_REFERENCE);
 
         // values for weight units
-        sourceList.getRow(0).createCell(6).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_WEIGHT_UNIT_LIST.toString(), defaultLanguage));
-        sourceList.getRow(1).createCell(6).setCellValue("g");
-        sourceList.getRow(2).createCell(6).setCellValue("kg");
-        sourceList.getRow(3).createCell(6).setCellValue("ton");
+        sourceList.getRow(0).createCell(sourceListCellIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_WEIGHT_UNIT_LIST.toString(), defaultLanguage));
+        sourceList.getRow(1).createCell(sourceListCellIndex).setCellValue("g");
+        sourceList.getRow(2).createCell(sourceListCellIndex).setCellValue("kg");
+        sourceList.getRow(3).createCell(sourceListCellIndex++).setCellValue("ton");
 
         namedCell = template.createName();
         namedCell.setNameName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_WEIGHT_UNIT_LIST.toString(), defaultLanguage));
@@ -1787,12 +1841,25 @@ public class TemplateGenerator {
         template.setSheetHidden(template.getSheetIndex(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TAB_SOURCE_LIST.toString(), defaultLanguage)),true);
     }
 
-    private boolean checkMandatory(Property property, Cell cell) {
-        if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION.toString(), defaultLanguage)) ||
-                property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_NAME.toString(), defaultLanguage))) {
-            return true;
+    private void extendSourceList(List<String> values, String listId){
+
+        int rowIndex = 0;
+        sourceList.getRow(rowIndex++).createCell(sourceListCellIndex).setCellValue(listId);
+        for (String value : values) {
+            sourceList.getRow(rowIndex++).createCell(sourceListCellIndex).setCellValue(value);
         }
-        return false;
+        sourceListCellIndex++;
+
+        Name namedCell = template.createName();
+        namedCell.setNameName(listId);
+        namedCell.setRefersToFormula(String.format("SourceList!$%s$2:$%s$4",sourceListColumn,sourceListColumn));
+        sourceListColumn++;
+    }
+
+    private boolean checkMandatory(Property property) {
+        return property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION.toString(), defaultLanguage)) ||
+                property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_NAME.toString(), defaultLanguage)) ||
+                (property.getRequired() != null && property.getRequired());
     }
 
     private Row getRow(Sheet sheet, int rowNum) {
