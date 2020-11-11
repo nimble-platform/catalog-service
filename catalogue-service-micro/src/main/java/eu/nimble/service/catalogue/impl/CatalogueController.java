@@ -13,12 +13,14 @@ import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.LockPool;
 import eu.nimble.service.catalogue.util.CatalogueEvent;
 import eu.nimble.service.catalogue.util.SpringBridge;
+import eu.nimble.service.catalogue.util.email.EmailSenderUtil;
 import eu.nimble.service.catalogue.validation.CatalogueValidator;
 import eu.nimble.service.catalogue.validation.ValidationMessages;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyNameType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.PersonType;
 import eu.nimble.utility.*;
 import eu.nimble.utility.exception.BinaryContentException;
 import eu.nimble.utility.exception.NimbleException;
@@ -76,6 +78,8 @@ public class CatalogueController {
     private ItemIndexClient itemIndexClient;
     @Autowired
     private ExecutionContext executionContext;
+    @Autowired
+    private EmailSenderUtil emailSenderUtil;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Retrieves the default CataloguePaginationResponse for the specified party.")
@@ -190,6 +194,55 @@ public class CatalogueController {
 
         log.info("Completed request to get catalogue for standard: {}, uuid: {}", standard, uuid);
         return ResponseEntity.ok(serializationUtility.serializeUBLObject(catalogue));
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Sends a request (as a mail) for catalogue exchange to the catalogue provider")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Requested catalogue exchange successfully"),
+            @ApiResponse(code = 401, message = "Invalid role."),
+            @ApiResponse(code = 500, message = "Unexpected error while requesting catalogue exchange")
+    })
+    @RequestMapping(value = "/catalogue/exchange",
+            produces = {"application/json"},
+            method = RequestMethod.POST)
+    public ResponseEntity requestCatalogueExchange(@ApiParam(value = "The uuid of catalogue to be requested for the exchange", required = true) @RequestParam(value = "catalogueUuid",required = true) String catalogueUuid,
+                                               @ApiParam(value = "The details of the request") @RequestBody String requestDetails,
+                                               @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to exchange catalogue: %s, offer details: %s",catalogueUuid,requestDetails);
+        executionContext.setRequestLog(requestLog);
+
+        log.info(requestLog);
+        // validate role
+        if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(),RoleConfig.REQUIRED_ROLES_CATALOGUE_READ)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
+        }
+
+        // get catalogue name
+        List<CatalogueIDResponse> catalogueIDResponses = service.getCatalogueNames(Arrays.asList(catalogueUuid));
+        if (catalogueIDResponses.size() == 0) {
+            throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(catalogueUuid));
+        }
+        // get catalogue provider id
+        String catalogueProviderPartyId = CataloguePersistenceUtil.getCatalogueProviderId(catalogueUuid);
+
+        try {
+            // get person using the given bearer token
+            PersonType person = SpringBridge.getInstance().getiIdentityClientTyped().getPerson(bearerToken);
+            // get party for the person
+            PartyType requesterParty = SpringBridge.getInstance().getiIdentityClientTyped().getPartyByPersonID(person.getID()).get(0);
+            // get party for the catalog provider
+            PartyType catalogProvider = SpringBridge.getInstance().getiIdentityClientTyped().getParty(bearerToken,catalogueProviderPartyId,true);
+
+            // send an email
+            emailSenderUtil.requestCatalogExchange(requestDetails,catalogueIDResponses.get(0).getId(),requesterParty.getPartyName().get(0).getName().getValue(),catalogProvider);
+        } catch (Exception e) {
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_REQUEST_CATALOGUE_EXCHANGE.toString(), Arrays.asList(catalogueUuid,requestDetails),e);
+        }
+
+        log.info("Completed the request to exchange catalogue: {}, offer details: {}",catalogueUuid,requestDetails);
+        return ResponseEntity.ok(null);
     }
 
     private <T> T parseCatalogue(String contentType, String serializedCatalogue, Configuration.Standard standard) throws IOException {

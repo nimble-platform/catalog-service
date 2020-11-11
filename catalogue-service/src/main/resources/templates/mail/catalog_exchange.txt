@@ -1,0 +1,11 @@
+Dear [(${partyName})],
+
+[(${requesterCompanyName})] would like to exchange your catalog: [(${catalogName})]
+
+[(${details})]
+
+If you would like to share your catalog, you can export it via the [(${platformName})] dashboard:
+[(${url})]
+
+Sincerely,
+[(${platformName})] Notification Service
