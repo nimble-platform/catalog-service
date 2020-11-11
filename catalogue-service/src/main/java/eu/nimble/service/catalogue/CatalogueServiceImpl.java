@@ -333,6 +333,10 @@ public class CatalogueServiceImpl implements CatalogueService {
             // TODO update the cache in asynchronous manner
             existingCatalogue = CataloguePersistenceUtil.getCatalogueByUuid(existingCatalogue.getUUID(), true);
             SpringBridge.getInstance().getCacheHelper().putCatalog(existingCatalogue);
+
+            // index the catalogue
+            // indexing is done after caching the catalogues as indexing needs complete catalogue
+            itemIndexClient.indexCatalogue(existingCatalogue);
         }
 
         return existingCatalogue;

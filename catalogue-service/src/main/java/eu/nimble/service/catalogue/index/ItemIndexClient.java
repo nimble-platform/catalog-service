@@ -42,6 +42,9 @@ public class ItemIndexClient {
         Response response;
         String indexItemsJson;
         try {
+            // retrieve all catalogue to be able to access all relevant lists
+            catalogue = CataloguePersistenceUtil.getCatalogueByUuid(catalogue.getUUID());
+
             List<ItemType> indexItems = new ArrayList<>();
             for (CatalogueLineType catalogueLine : catalogue.getCatalogueLine()) {
                 indexItems.add(IndexingWrapper.toIndexItem(catalogueLine));
