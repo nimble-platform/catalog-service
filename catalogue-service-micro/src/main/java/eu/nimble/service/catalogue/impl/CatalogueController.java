@@ -59,8 +59,6 @@ import java.util.zip.ZipInputStream;
 //@Transactional(transactionManager = "ubldbTransactionManager")
 public class CatalogueController {
 
-    private String defaultLanguage = "en";
-
     private static Logger log = LoggerFactory
             .getLogger(CatalogueController.class);
 
@@ -988,16 +986,6 @@ public class CatalogueController {
         } catch (Exception e) {
             throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_UNEXPECTED_ERROR_WHILE_ADDING_WHITE_BLACK_LIST.toString(),Arrays.asList(id),e);
         }
-    }
-
-    private ResponseEntity createErrorResponseEntity(String msg, HttpStatus status, Exception e) {
-        if (e != null) {
-            msg = msg + e.getMessage();
-            log.error(msg, e);
-        } else {
-            log.error(msg);
-        }
-        return ResponseEntity.status(status).body(msg);
     }
 
     private Configuration.Standard getStandardEnum(String standard) {
