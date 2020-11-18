@@ -89,10 +89,11 @@ public class CatalogueLineValidator {
         List<String> duplicatePropertyIds = catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty().stream()
                 .filter(itemPropertyType -> !StringUtils.isEmpty(itemPropertyType.getID()) && !propertyIds.add(itemPropertyType.getID()))
                 .map(ItemPropertyType::getID)
+                .distinct()
                 .collect(Collectors.toList());
         if(!duplicatePropertyIds.isEmpty()){
             errorMessages.add(NimbleExceptionMessageCode.BAD_REQUEST_MULTIPLE_VALUES_FOR_THE_PROPERTY.toString());
-            errorParameters.add(duplicatePropertyIds);
+            errorParameters.add(Arrays.asList(duplicatePropertyIds.toString(),extractedLineId));
         }
     }
 
