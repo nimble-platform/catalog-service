@@ -12,6 +12,7 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemPropertyType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
+import org.thymeleaf.util.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -54,6 +55,7 @@ public class CatalogueLineValidator {
         partyIdsMatch();
         fileSizesLessThanTheMaximum();
         checkReferenceToCatalogue();
+        checkDuplicateAdditionalProperties();
 
         return new ValidationMessages(errorMessages,errorParameters);
     }
@@ -78,6 +80,19 @@ public class CatalogueLineValidator {
                 errorMessages.add(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_REFERENCE.toString());
                 errorParameters.add(Arrays.asList(extractedLineId));
             }
+        }
+    }
+
+    public void checkDuplicateAdditionalProperties() {
+        Set<String> propertyIds = new HashSet<>();
+        // Set.add returns false if the element was already present in the set. Filter such elements
+        List<String> duplicatePropertyIds = catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty().stream()
+                .filter(itemPropertyType -> !StringUtils.isEmpty(itemPropertyType.getID()) && !propertyIds.add(itemPropertyType.getID()))
+                .map(ItemPropertyType::getID)
+                .collect(Collectors.toList());
+        if(!duplicatePropertyIds.isEmpty()){
+            errorMessages.add(NimbleExceptionMessageCode.BAD_REQUEST_MULTIPLE_VALUES_FOR_THE_PROPERTY.toString());
+            errorParameters.add(duplicatePropertyIds);
         }
     }
 
