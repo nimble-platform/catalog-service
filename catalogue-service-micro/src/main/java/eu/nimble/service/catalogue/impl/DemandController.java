@@ -105,7 +105,7 @@ public class DemandController {
             return ResponseEntity.ok().build();
 
         } catch (Exception e) {
-            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_CREATE_DEMAND.toString(), e);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_UPDATE_DEMAND.toString(), Collections.singletonList(demandHjid.toString()), e);
         }
     }
 
@@ -118,7 +118,7 @@ public class DemandController {
     })
     @RequestMapping(value = "/demands/{demandHjid}",
             method = RequestMethod.DELETE)
-    public ResponseEntity deleteDemand(@ApiParam(value = "hjid of the demand to be replaced with the given demand", required = true) @PathVariable Long demandHjid,
+    public ResponseEntity deleteDemand(@ApiParam(value = "hjid of the demand to be deleted", required = true) @PathVariable Long demandHjid,
                                        @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         try {
             // set request log of ExecutionContext
@@ -140,11 +140,11 @@ public class DemandController {
 
             demandService.deleteDemand(existingDemand);
 
-            logger.info("Completed request to update demand with hjid: {}", demandHjid);
+            logger.info("Completed request to delete demand with hjid: {}", demandHjid);
             return ResponseEntity.ok().build();
 
         } catch (Exception e) {
-            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_CREATE_DEMAND.toString(), e);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_DELETE_DEMAND.toString(), Collections.singletonList(demandHjid.toString()), e);
         }
     }
 
