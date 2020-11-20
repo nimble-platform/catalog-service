@@ -1,6 +1,8 @@
 package eu.nimble.service.catalogue.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.nimble.common.rest.identity.IIdentityClientTyped;
+import eu.nimble.common.rest.identity.IdentityClientTypedMockConfig;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.JsonSerializationUtility;
@@ -50,7 +52,7 @@ public class Test09_DemandControllerTest {
         String demandJson = IOUtils.toString(Test09_DemandControllerTest.class.getResourceAsStream("/demand/example_demand.json"));
 
         MockHttpServletRequestBuilder request = post("/demands")
-                .header("Authorization", TestConfig.sellerId)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(demandJson);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isCreated()).andReturn();
@@ -63,8 +65,7 @@ public class Test09_DemandControllerTest {
         Assert.assertEquals("product_image.jpeg", binaryObject.getFileName());
 
         // check metadata
-        Assert.assertEquals("a", demand.getMetadata().getOwnerUser());
-        Assert.assertEquals("c", demand.getMetadata().getOwnerCompany().get(1));
+        Assert.assertEquals(IdentityClientTypedMockConfig.sellerPartyID, demand.getMetadata().getOwnerCompany().get(0));
         Assert.assertNotNull(demand.getMetadata().getCreationDate());
         Assert.assertNotNull(demand.getMetadata().getModificationDate());
     }
@@ -78,7 +79,7 @@ public class Test09_DemandControllerTest {
         String demandJson = IOUtils.toString(Test09_DemandControllerTest.class.getResourceAsStream("/demand/example_demand_update.json"));
 
         MockHttpServletRequestBuilder request = put("/demands/" + demandHjid)
-                .header("Authorization", TestConfig.sellerId)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(demandJson);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
@@ -109,7 +110,7 @@ public class Test09_DemandControllerTest {
     @Test
     public void test3_deleteDemand() throws Exception {
         MockHttpServletRequestBuilder request = delete("/demands/" + demandHjid)
-                .header("Authorization", TestConfig.sellerId)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
                 .contentType(MediaType.APPLICATION_JSON);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
 

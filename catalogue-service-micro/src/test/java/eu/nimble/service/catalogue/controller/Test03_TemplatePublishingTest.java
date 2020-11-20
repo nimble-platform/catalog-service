@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.nimble.common.rest.identity.IdentityClientTypedMockConfig;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
@@ -52,7 +53,7 @@ public class Test03_TemplatePublishingTest {
     private ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
 
     final private String partyName = "alpCompany";
-    final private String partyId = "381";
+    final private String partyId = "706";
     final private String uploadMode = "replace";
     final private String uploadMode2 = "append";
 
@@ -91,7 +92,7 @@ public class Test03_TemplatePublishingTest {
                 .fileUpload("/catalogue/template/upload")
                 .file(mutipartFile)
                 .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
-                .header("Authorization", TestConfig.buyerId)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
                 .param("uploadMode",uploadMode)
                 .param("partyId",partyId)
                 .param("partyName",partyName))
@@ -179,7 +180,7 @@ public class Test03_TemplatePublishingTest {
                 .fileUpload("/catalogue/template/upload")
                 .file(mutipartFile)
                 .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
-                .header("Authorization", TestConfig.buyerId)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
                 .param("uploadMode",uploadMode2)
                 .param("partyId",partyId)
                 .param("partyName",partyName))
@@ -254,7 +255,7 @@ public class Test03_TemplatePublishingTest {
                 .fileUpload("/catalogue/template/upload")
                 .file(mutipartFile)
                 .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
-                .header("Authorization", TestConfig.buyerId)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
                 .param("uploadMode",uploadMode)
                 .param("partyId",partyId)
                 .param("partyName",partyName)

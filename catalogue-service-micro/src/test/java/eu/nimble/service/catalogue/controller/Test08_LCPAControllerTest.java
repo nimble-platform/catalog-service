@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.nimble.common.rest.identity.IdentityClientTypedMockConfig;
 import eu.nimble.service.catalogue.model.lcpa.ItemLCPAInput;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.LCPAOutputType;
@@ -52,7 +53,7 @@ public class Test08_LCPAControllerTest {
         String catalogueJson = IOUtils.toString(Test08_LCPAControllerTest.class.getResourceAsStream("/example_catalogue_LCPA_inputs.json"));
 
         MockHttpServletRequestBuilder request = post("/catalogue/ubl")
-                .header("Authorization", TestConfig.sellerId)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPartyID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(catalogueJson);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isCreated()).andReturn();
@@ -64,7 +65,7 @@ public class Test08_LCPAControllerTest {
     @Test
     public void test2_getProductsWithoutLCPAProcessing() throws Exception{
         MockHttpServletRequestBuilder request = get("/lcpa/products-with-lcpa-input")
-                .header("Authorization", TestConfig.buyerId);
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID);
 
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         List<ItemLCPAInput> inputs = mapper.readValue(result.getResponse().getContentAsString(),new TypeReference<List<ItemLCPAInput>>(){});
@@ -78,7 +79,7 @@ public class Test08_LCPAControllerTest {
         LCPAOutputType lcpaOutputType = getLCPAOutputType();
 
         MockHttpServletRequestBuilder request = patch("/lcpa/add-lcpa-output")
-                .header("Authorization", TestConfig.buyerId)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
                 .param("catalogueLineHjid",catalogueLineHjid)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(lcpaOutputType));
@@ -88,7 +89,7 @@ public class Test08_LCPAControllerTest {
         // try to get products without LCPA Processing
         // we should get no results since LCPA Output is added to the product
         request = get("/lcpa/products-with-lcpa-input")
-                .header("Authorization", TestConfig.buyerId);
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID);
 
         result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         List<ItemLCPAInput> inputs = mapper.readValue(result.getResponse().getContentAsString(),new TypeReference<List<ItemLCPAInput>>(){});
