@@ -1,5 +1,7 @@
 package eu.nimble.service.catalogue.impl;
 
+import eu.nimble.common.rest.identity.IIdentityClientTyped;
+import eu.nimble.common.rest.identity.model.PersonPartyTuple;
 import eu.nimble.service.catalogue.DemandService;
 import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
@@ -7,6 +9,7 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType;
 import eu.nimble.utility.ExecutionContext;
 import eu.nimble.utility.exception.NimbleException;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
+import eu.nimble.utility.persistence.resource.MetadataUtility;
 import eu.nimble.utility.validation.IValidationUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -33,6 +36,8 @@ public class DemandController {
     private IValidationUtil validationUtil;
     @Autowired
     private DemandService demandService;
+    @Autowired
+    private IIdentityClientTyped identityClient;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Creates a demand.")
@@ -57,6 +62,10 @@ public class DemandController {
             if (!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_CATALOGUE_WRITE)) {
                 throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
+
+            // inject party ids into the execution context to be used in the metadata
+            PersonPartyTuple personPartyTuple = identityClient.getPersonPartyTuple(bearerToken);
+            executionContext.setCompanyId(personPartyTuple.getCompanyID());
 
             demandService.saveDemand(demand);
 
@@ -94,11 +103,16 @@ public class DemandController {
             }
 
             // get the existing demand
-            DemandType existingDemand = new JPARepositoryFactory().forCatalogueRepository().getSingleEntityByHjid(DemandType.class, demandHjid);
+            // (lazy is disable below as the demand entity does not include any other collections to be fetched as a side effect)
+            DemandType existingDemand = new JPARepositoryFactory().forCatalogueRepository(true).getSingleEntityByHjid(DemandType.class, demandHjid);
             if (existingDemand == null) {
                 throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_DEMAND.toString(), Collections.singletonList(demandHjid.toString()));
             }
 
+            PersonPartyTuple personPartyTuple = identityClient.getPersonPartyTuple(bearerToken);
+            if (!MetadataUtility.isOwnerCompany(personPartyTuple.getCompanyID(), existingDemand.getMetadata())) {
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZER_INVALID_AUTHORIZATION.toString());
+            }
             demandService.updateDemand(existingDemand, demand);
 
             logger.info("Completed request to update demand with hjid: {}", demandHjid);
@@ -133,9 +147,14 @@ public class DemandController {
             }
 
             // get the existing demand
-            DemandType existingDemand = new JPARepositoryFactory().forCatalogueRepository().getSingleEntityByHjid(DemandType.class, demandHjid);
+            DemandType existingDemand = new JPARepositoryFactory().forCatalogueRepository(true).getSingleEntityByHjid(DemandType.class, demandHjid);
             if (existingDemand == null) {
                 throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_DEMAND.toString(), Collections.singletonList(demandHjid.toString()));
+            }
+
+            PersonPartyTuple personPartyTuple = identityClient.getPersonPartyTuple(bearerToken);
+            if (!MetadataUtility.isOwnerCompany(personPartyTuple.getCompanyID(), existingDemand.getMetadata())) {
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZER_INVALID_AUTHORIZATION.toString());
             }
 
             demandService.deleteDemand(existingDemand);

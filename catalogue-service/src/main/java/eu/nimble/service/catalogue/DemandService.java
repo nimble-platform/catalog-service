@@ -1,11 +1,18 @@
 package eu.nimble.service.catalogue;
 
+import eu.nimble.common.rest.identity.IIdentityClientTyped;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.MetadataType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
+import eu.nimble.utility.ExecutionContext;
 import eu.nimble.utility.UblUtil;
 import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
+import eu.nimble.utility.persistence.resource.MetadataUtility;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,7 +21,16 @@ import java.util.stream.Collectors;
  */
 @Component
 public class DemandService {
+    @Autowired
+    private IIdentityClientTyped identityClient;
+    @Autowired
+    private ExecutionContext executionContext;
+
     public DemandType saveDemand(DemandType demand) {
+
+        MetadataType metadata = MetadataUtility.createEntityMetadata(null, Collections.singletonList(executionContext.getCompanyId()));
+        demand.setMetadata(metadata);
+
         EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper();
         repositoryWrapper.persistEntity(demand, UblUtil.getBinaryObjectsFrom(demand));
         return demand;
@@ -28,6 +44,9 @@ public class DemandService {
 
         // replace each field
         UblUtil.copy(updatedDemand, existingDemand);
+
+        // update the metadata
+        MetadataUtility.updateEntityMetadata(existingDemand.getMetadata());
 
         // it is important to get the binary objects to be persisted after copying as the binary content service updates the given binary objects
         List<BinaryObjectType> binaryObjectsToPersist = UblUtil.getBinaryObjectsFrom(existingDemand);

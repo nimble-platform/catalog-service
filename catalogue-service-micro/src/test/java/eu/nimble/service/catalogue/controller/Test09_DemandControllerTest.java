@@ -56,17 +56,24 @@ public class Test09_DemandControllerTest {
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isCreated()).andReturn();
 
         demandHjid = Long.parseLong(result.getResponse().getContentAsString());
-        DemandType demand = repoFactory.forCatalogueRepository().getSingleEntityByHjid(DemandType.class, demandHjid);
+        DemandType demand = repoFactory.forCatalogueRepository(true).getSingleEntityByHjid(DemandType.class, demandHjid);
         Assert.assertEquals("Demand Title", demand.getTitle().getValue());
 
         BinaryObjectType binaryObject = binaryContentService.retrieveContent(demand.getAdditionalDocumentReference().getAttachment().getEmbeddedDocumentBinaryObject().getUri());
         Assert.assertEquals("product_image.jpeg", binaryObject.getFileName());
+
+        // check metadata
+        Assert.assertEquals("a", demand.getMetadata().getOwnerUser());
+        Assert.assertEquals("c", demand.getMetadata().getOwnerCompany().get(1));
+        Assert.assertNotNull(demand.getMetadata().getCreationDate());
+        Assert.assertNotNull(demand.getMetadata().getModificationDate());
     }
 
     @Test
     public void test2_updateDemand() throws Exception {
         DemandType demand = repoFactory.forCatalogueRepository().getSingleEntityByHjid(DemandType.class, demandHjid);
         String initialBinaryContentUri = demand.getAdditionalDocumentReference().getAttachment().getEmbeddedDocumentBinaryObject().getUri();
+        String initialModificationDate = demand.getMetadata().getModificationDate().toString();
 
         String demandJson = IOUtils.toString(Test09_DemandControllerTest.class.getResourceAsStream("/demand/example_demand_update.json"));
 
@@ -78,6 +85,7 @@ public class Test09_DemandControllerTest {
 
         demand = repoFactory.forCatalogueRepository().getSingleEntityByHjid(DemandType.class, demandHjid);
         String newBinaryContentUri = demand.getAdditionalDocumentReference().getAttachment().getEmbeddedDocumentBinaryObject().getUri();
+        String newModificationDate = demand.getMetadata().getModificationDate().toString();
 
         Assert.assertEquals("Demand Title 2", demand.getTitle().getValue());
         Assert.assertEquals("Demand Description 2", demand.getDescription().getValue());
@@ -93,6 +101,9 @@ public class Test09_DemandControllerTest {
         // check that the new binary content is the updated one
         binaryObject = binaryContentService.retrieveContent(newBinaryContentUri);
         Assert.assertEquals("product_image2.jpeg", binaryObject.getFileName());
+
+        // check modification dates are different
+        Assert.assertNotEquals(initialModificationDate, newModificationDate);
     }
 
     @Test
