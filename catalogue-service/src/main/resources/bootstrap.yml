@@ -324,7 +324,7 @@ persistence:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
 #        dialect: org.hibernate.dialect.PostgreSQLDialect
-#        show_sql: false
+#        show_sql: true
 #        hbm2ddl:
 #          auto: create-drop
 

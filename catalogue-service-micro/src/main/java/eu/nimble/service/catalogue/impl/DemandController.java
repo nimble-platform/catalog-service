@@ -5,8 +5,11 @@ import eu.nimble.common.rest.identity.model.PersonPartyTuple;
 import eu.nimble.service.catalogue.DemandService;
 import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
+import eu.nimble.service.catalogue.persistence.util.DemandPersistenceUtil;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.MetadataType;
 import eu.nimble.utility.ExecutionContext;
+import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.exception.NimbleException;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.persistence.resource.MetadataUtility;
@@ -25,6 +28,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
+import java.util.List;
 
 @Controller
 public class DemandController {
@@ -78,6 +82,40 @@ public class DemandController {
     }
 
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Creates a demand.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Created the demand instance successfully", response = DemandType.class),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 500, message = "Unexpected error while creating the demand"),
+    })
+    @RequestMapping(value = "/demands",
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getDemandsForCompany(@ApiParam(value = "Identifier of the company of which demands to be retrieved.", required = true) @RequestParam String companyId,
+                                       @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        try {
+            // set request log of ExecutionContext
+            String requestLog = String.format("Incoming request to get demands for party: %s", companyId);
+            executionContext.setRequestLog(requestLog);
+
+            logger.info(requestLog);
+
+            // validate role
+            if (!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_CATALOGUE_WRITE)) {
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
+            }
+
+            List<DemandType> demands = DemandPersistenceUtil.getDemandsForParty(companyId);
+
+            logger.info("Completed request to get demands for party: {}", companyId);
+            return ResponseEntity.status(HttpStatus.OK).body(JsonSerializationUtility.getObjectMapper(5).writeValueAsString(demands));
+
+        } catch (Exception e) {
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_GET_DEMANDS.toString(), Collections.singletonList(companyId), e);
+        }
+    }
+
+    @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Updates a demand.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Updated the demand instance successfully", response = DemandType.class),
@@ -92,7 +130,7 @@ public class DemandController {
                                        @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         try {
             // set request log of ExecutionContext
-            String requestLog = String.format("Incoming request to update the demand with hjid: {}", demandHjid);
+            String requestLog = String.format("Incoming request to update the demand with hjid: %d", demandHjid);
             executionContext.setRequestLog(requestLog);
 
             logger.info(requestLog);
@@ -103,7 +141,7 @@ public class DemandController {
             }
 
             // get the existing demand
-            // (lazy is disable below as the demand entity does not include any other collections to be fetched as a side effect)
+            // (lazy loading is disabled below as the demand entity does not include any other collections to be fetched as a side effect)
             DemandType existingDemand = new JPARepositoryFactory().forCatalogueRepository(true).getSingleEntityByHjid(DemandType.class, demandHjid);
             if (existingDemand == null) {
                 throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_DEMAND.toString(), Collections.singletonList(demandHjid.toString()));
@@ -136,7 +174,7 @@ public class DemandController {
                                        @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         try {
             // set request log of ExecutionContext
-            String requestLog = String.format("Incoming request to delete the demand with hjid: {}", demandHjid);
+            String requestLog = String.format("Incoming request to delete the demand with hjid: %d", demandHjid);
             executionContext.setRequestLog(requestLog);
 
             logger.info(requestLog);
@@ -166,5 +204,6 @@ public class DemandController {
             throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_DELETE_DEMAND.toString(), Collections.singletonList(demandHjid.toString()), e);
         }
     }
+
 
 }

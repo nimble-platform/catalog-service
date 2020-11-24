@@ -1,8 +1,10 @@
 package eu.nimble.service.catalogue.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.common.rest.identity.IIdentityClientTyped;
 import eu.nimble.common.rest.identity.IdentityClientTypedMockConfig;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.JsonSerializationUtility;
@@ -24,9 +26,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import java.util.List;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -116,5 +118,36 @@ public class Test09_DemandControllerTest {
 
         DemandType demand = repoFactory.forCatalogueRepository().getSingleEntityByHjid(DemandType.class, demandHjid);
         Assert.assertEquals(null, demand);
+    }
+
+    @Test
+    public void test4_getDemandsForParty() throws Exception {
+        String demandJson = IOUtils.toString(Test09_DemandControllerTest.class.getResourceAsStream("/demand/example_demand.json"));
+        String demandJson2 = IOUtils.toString(Test09_DemandControllerTest.class.getResourceAsStream("/demand/example_demand2.json"));
+
+        // add first demand
+        MockHttpServletRequestBuilder request = post("/demands")
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(demandJson);
+        this.mockMvc.perform(request).andDo(print()).andExpect(status().isCreated()).andReturn();
+
+        // add second demand
+        request = post("/demands")
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(demandJson2);
+        this.mockMvc.perform(request).andDo(print()).andExpect(status().isCreated()).andReturn();
+
+        // get demands
+        request = get("/demands")
+                .param("companyId", IdentityClientTypedMockConfig.sellerPartyID)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
+                .contentType(MediaType.APPLICATION_JSON);
+        MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+        List<DemandType> demands = mapper.readValue(result.getResponse().getContentAsString(),new TypeReference<List<DemandType>>() {});
+
+        Assert.assertEquals(2, demands.size());
+        Assert.assertEquals("Demand Title 2", demands.get(0).getTitle().getValue());
     }
 }
