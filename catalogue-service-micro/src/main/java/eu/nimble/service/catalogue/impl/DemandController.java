@@ -1,5 +1,7 @@
 package eu.nimble.service.catalogue.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import eu.nimble.common.rest.identity.IIdentityClientTyped;
 import eu.nimble.common.rest.identity.model.PersonPartyTuple;
 import eu.nimble.service.catalogue.DemandService;
@@ -13,6 +15,7 @@ import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.exception.NimbleException;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.persistence.resource.MetadataUtility;
+import eu.nimble.utility.serialization.ubl.MetadataTypeMixin;
 import eu.nimble.utility.validation.IValidationUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -27,6 +30,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -107,8 +111,13 @@ public class DemandController {
 
             List<DemandType> demands = DemandPersistenceUtil.getDemandsForParty(companyId);
 
+            ObjectMapper mapper = JsonSerializationUtility.getObjectMapper(5);
+            SimpleModule dateModule = new SimpleModule();
+            mapper.addMixIn(MetadataType.class, MetadataTypeMixin.class);
+            mapper.registerModule(dateModule);
+
             logger.info("Completed request to get demands for party: {}", companyId);
-            return ResponseEntity.status(HttpStatus.OK).body(JsonSerializationUtility.getObjectMapper(5).writeValueAsString(demands));
+            return ResponseEntity.status(HttpStatus.OK).body(mapper.writeValueAsString(demands));
 
         } catch (Exception e) {
             throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_GET_DEMANDS.toString(), Collections.singletonList(companyId), e);
@@ -146,6 +155,15 @@ public class DemandController {
             if (existingDemand == null) {
                 throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_DEMAND.toString(), Collections.singletonList(demandHjid.toString()));
             }
+            // check the metadata modification date to prevent an outdated object to be used in the update operation
+            if (demand.getMetadata() == null || demand.getMetadata().getModificationDate() == null) {
+                throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_NO_METADATA_OR_MODIFICATION_DATE.toString(),
+                        Arrays.asList(DemandType.class.getName(), demandHjid.toString()));
+            }
+            if (existingDemand.getMetadata().getModificationDate().getMillisecond() != demand.getMetadata().getModificationDate().getMillisecond()) {
+                throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_MODIFICATION_DATE.toString(),
+                        Arrays.asList(demand.getMetadata().getModificationDate().getMillisecond() + "", DemandType.class.getName(), demandHjid.toString()));
+            }
 
             PersonPartyTuple personPartyTuple = identityClient.getPersonPartyTuple(bearerToken);
             if (!MetadataUtility.isOwnerCompany(personPartyTuple.getCompanyID(), existingDemand.getMetadata())) {
@@ -156,6 +174,8 @@ public class DemandController {
             logger.info("Completed request to update demand with hjid: {}", demandHjid);
             return ResponseEntity.ok().build();
 
+        } catch (NimbleException e) {
+            throw e;
         } catch (Exception e) {
             throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_UPDATE_DEMAND.toString(), Collections.singletonList(demandHjid.toString()), e);
         }

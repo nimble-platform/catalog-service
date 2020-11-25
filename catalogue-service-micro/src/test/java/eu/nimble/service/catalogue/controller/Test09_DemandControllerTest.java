@@ -4,8 +4,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.common.rest.identity.IIdentityClientTyped;
 import eu.nimble.common.rest.identity.IdentityClientTypedMockConfig;
+import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.MetadataType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
@@ -26,6 +28,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -51,7 +58,7 @@ public class Test09_DemandControllerTest {
 
     @Test
     public void test1_createDemand() throws Exception {
-        String demandJson = IOUtils.toString(Test09_DemandControllerTest.class.getResourceAsStream("/demand/example_demand.json"));
+        String demandJson = IOUtils.toString(Test09_DemandControllerTest.class.getResourceAsStream("/demand/demand.json"));
 
         MockHttpServletRequestBuilder request = post("/demands")
                 .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
@@ -74,28 +81,53 @@ public class Test09_DemandControllerTest {
 
     @Test
     public void test2_updateDemand() throws Exception {
-        DemandType demand = repoFactory.forCatalogueRepository().getSingleEntityByHjid(DemandType.class, demandHjid);
-        String initialBinaryContentUri = demand.getAdditionalDocumentReference().getAttachment().getEmbeddedDocumentBinaryObject().getUri();
-        String initialModificationDate = demand.getMetadata().getModificationDate().toString();
+        DemandType existingDemand = repoFactory.forCatalogueRepository().getSingleEntityByHjid(DemandType.class, demandHjid);
+        String initialBinaryContentUri = existingDemand.getAdditionalDocumentReference().getAttachment().getEmbeddedDocumentBinaryObject().getUri();
+        XMLGregorianCalendar initialModificationDate = existingDemand.getMetadata().getModificationDate();
 
-        String demandJson = IOUtils.toString(Test09_DemandControllerTest.class.getResourceAsStream("/demand/example_demand_update.json"));
+        String updateDemandJson = IOUtils.toString(Test09_DemandControllerTest.class.getResourceAsStream("/demand/demand_update_without_metadata.json"));
+        DemandType updateDemand = mapper.readValue(updateDemandJson, DemandType.class);
 
+        // try to update demand without sending any included metadata
         MockHttpServletRequestBuilder request = put("/demands/" + demandHjid)
                 .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(demandJson);
+                .content(updateDemandJson);
+        this.mockMvc.perform(request).andDo(print()).andExpect(status().isBadRequest()).andReturn();
+
+        // try to update demand with metadata including an incorrect modification date
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.setTime(new Date(1));
+        XMLGregorianCalendar date = DatatypeFactory.newInstance().newXMLGregorianCalendar(cal);
+        MetadataType metadata = new MetadataType();
+        metadata.setModificationDate(date);
+        updateDemand.setMetadata(metadata);
+        updateDemandJson = JsonSerializationUtility.getObjectMapper(4).writeValueAsString(updateDemand);
+        request = put("/demands/" + demandHjid)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(updateDemandJson);
+        this.mockMvc.perform(request).andDo(print()).andExpect(status().isBadRequest()).andReturn();
+
+        // update with the correct modification date
+        updateDemand.getMetadata().setModificationDate(initialModificationDate);
+        updateDemandJson = JsonSerializationUtility.getObjectMapper(4).writeValueAsString(updateDemand);
+        request = put("/demands/" + demandHjid)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(updateDemandJson);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
 
-        demand = repoFactory.forCatalogueRepository().getSingleEntityByHjid(DemandType.class, demandHjid);
-        String newBinaryContentUri = demand.getAdditionalDocumentReference().getAttachment().getEmbeddedDocumentBinaryObject().getUri();
-        String newModificationDate = demand.getMetadata().getModificationDate().toString();
+        existingDemand = repoFactory.forCatalogueRepository().getSingleEntityByHjid(DemandType.class, demandHjid);
+        String newBinaryContentUri = existingDemand.getAdditionalDocumentReference().getAttachment().getEmbeddedDocumentBinaryObject().getUri();
+        String newModificationDate = existingDemand.getMetadata().getModificationDate().toString();
 
-        Assert.assertEquals("Demand Title 2", demand.getTitle().getValue());
-        Assert.assertEquals("Demand Description 2", demand.getDescription().getValue());
-        Assert.assertEquals("Spain", demand.getCountry().getName().getValue());
-        Assert.assertEquals("ES", demand.getCountry().getIdentificationCode().getValue());
-        Assert.assertEquals("2020-12-21", demand.getDueDate().toString());
-        Assert.assertEquals("product_image2.jpeg", demand.getAdditionalDocumentReference().getAttachment().getEmbeddedDocumentBinaryObject().getFileName());
+        Assert.assertEquals("Demand Title 2", existingDemand.getTitle().getValue());
+        Assert.assertEquals("Demand Description 2", existingDemand.getDescription().getValue());
+        Assert.assertEquals("Spain", existingDemand.getCountry().getName().getValue());
+        Assert.assertEquals("ES", existingDemand.getCountry().getIdentificationCode().getValue());
+        Assert.assertEquals("2020-12-21", existingDemand.getDueDate().toString());
+        Assert.assertEquals("product_image2.jpeg", existingDemand.getAdditionalDocumentReference().getAttachment().getEmbeddedDocumentBinaryObject().getFileName());
 
         // check that the existing binary content is deleted
         BinaryObjectType binaryObject = binaryContentService.retrieveContent(initialBinaryContentUri);
@@ -106,7 +138,7 @@ public class Test09_DemandControllerTest {
         Assert.assertEquals("product_image2.jpeg", binaryObject.getFileName());
 
         // check modification dates are different
-        Assert.assertNotEquals(initialModificationDate, newModificationDate);
+        Assert.assertNotEquals(initialModificationDate.toString(), newModificationDate);
     }
 
     @Test
@@ -122,8 +154,8 @@ public class Test09_DemandControllerTest {
 
     @Test
     public void test4_getDemandsForParty() throws Exception {
-        String demandJson = IOUtils.toString(Test09_DemandControllerTest.class.getResourceAsStream("/demand/example_demand.json"));
-        String demandJson2 = IOUtils.toString(Test09_DemandControllerTest.class.getResourceAsStream("/demand/example_demand2.json"));
+        String demandJson = IOUtils.toString(Test09_DemandControllerTest.class.getResourceAsStream("/demand/demand.json"));
+        String demandJson2 = IOUtils.toString(Test09_DemandControllerTest.class.getResourceAsStream("/demand/demand2.json"));
 
         // add first demand
         MockHttpServletRequestBuilder request = post("/demands")
