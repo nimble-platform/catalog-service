@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue;
 
 import eu.nimble.common.rest.identity.IIdentityClientTyped;
+import eu.nimble.service.catalogue.persistence.util.DemandPersistenceUtil;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.MetadataType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
@@ -32,6 +33,9 @@ public class DemandService {
 
         BinaryContentAwareRepositoryWrapper repositoryWrapper = new BinaryContentAwareRepositoryWrapper();
         repositoryWrapper.persistEntity(demand, UblUtil.getBinaryObjectsFrom(demand));
+
+        // populate the index entry for the new demand
+        DemandPersistenceUtil.indexDemandText(demand);
         return demand;
     }
 
@@ -52,6 +56,9 @@ public class DemandService {
 
         // update the demand
         repositoryWrapper.updateEntity(existingDemand, binaryObjectsToPersist, binaryContentUrisToDelete);
+
+        // populate the index entry for the new demand
+        DemandPersistenceUtil.indexDemandText(existingDemand);
         return existingDemand;
     }
 
