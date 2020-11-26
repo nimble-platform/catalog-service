@@ -9,8 +9,6 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.DimensionType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemPropertyType;
 import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
-import eu.nimble.utility.persistence.resource.Resource;
-import eu.nimble.utility.persistence.resource.ResourcePersistenceUtility;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -30,9 +28,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -137,19 +132,6 @@ public class Test03_TemplatePublishingTest {
         Assert.assertSame(usagePropertyExists,true);
         // check incoterms
         Assert.assertSame(true,catalogueLineType3.getGoodsItem().getDeliveryTerms().getIncoterms().equals(incoterms));
-
-        boolean checkEntityIds = Boolean.valueOf(TestConfig.checkEntityIds);
-        if(checkEntityIds) {
-            // check that resources have been managed properly
-            List<Resource> allResources = ResourcePersistenceUtility.getAllResources();
-            Set<Long> catalogueIds = resourceValidationUtil.extractAllHjidsExcludingPartyRelatedOnes(catalogue);
-
-            Set<Long> managedIds = new HashSet<>();
-            for (Resource resource : allResources) {
-                managedIds.add(resource.getEntityId());
-            }
-            Assert.assertTrue("Managed ids do not contain the catalogue ids", managedIds.containsAll(catalogueIds));
-        }
 
         // check whether VAT is set for the products
         Assert.assertEquals(1, catalogueLineType1.getRequiredItemLocationQuantity().getApplicableTaxCategory().size());

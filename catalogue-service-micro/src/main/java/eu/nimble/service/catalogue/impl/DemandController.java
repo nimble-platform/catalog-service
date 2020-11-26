@@ -14,7 +14,7 @@ import eu.nimble.utility.ExecutionContext;
 import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.exception.NimbleException;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
-import eu.nimble.utility.persistence.resource.MetadataUtility;
+import eu.nimble.utility.persistence.repository.MetadataUtility;
 import eu.nimble.utility.serialization.ubl.MetadataTypeMixin;
 import eu.nimble.utility.validation.IValidationUtil;
 import io.swagger.annotations.ApiOperation;

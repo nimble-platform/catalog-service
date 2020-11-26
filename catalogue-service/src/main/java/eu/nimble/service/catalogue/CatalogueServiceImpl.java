@@ -7,8 +7,8 @@ import eu.nimble.service.catalogue.exception.InvalidCategoryException;
 import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
 import eu.nimble.service.catalogue.exception.TemplateParseException;
 import eu.nimble.service.catalogue.index.ItemIndexClient;
-import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.catalogue.CatalogueIDResponse;
+import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.statistics.ProductAndServiceStatistics;
@@ -19,15 +19,15 @@ import eu.nimble.service.catalogue.template.TemplateParser;
 import eu.nimble.service.catalogue.util.DataIntegratorUtil;
 import eu.nimble.service.catalogue.util.LanguageUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
-import eu.nimble.service.catalogue.validation.CatalogueLineValidator;
-import eu.nimble.service.catalogue.validation.ValidationMessages;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CommodityClassificationType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.*;
-import eu.nimble.utility.exception.NimbleException;
-import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
+import eu.nimble.utility.persistence.repository.BinaryContentAwareRepositoryWrapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
@@ -89,7 +89,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     public CatalogueType updateCatalogue(CatalogueType catalogue) throws InvalidCategoryException {
         logger.info("Catalogue with uuid: {} will be updated", catalogue.getUUID());
         DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(catalogue);
-        EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogue.getProviderParty().getPartyIdentification().get(0).getID());
+        BinaryContentAwareRepositoryWrapper repositoryWrapper = new BinaryContentAwareRepositoryWrapper();
         catalogue = repositoryWrapper.updateEntity(catalogue);
         // cache catalog
         SpringBridge.getInstance().getCacheHelper().putCatalog(catalogue);
@@ -147,7 +147,7 @@ public class CatalogueServiceImpl implements CatalogueService {
             DataIntegratorUtil.ensureCatalogueDataIntegrityAndEnhancement(ublCatalogue);
 
             // persist the catalogue in relational DB
-            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(ublCatalogue.getProviderParty().getPartyIdentification().get(0).getID());
+            BinaryContentAwareRepositoryWrapper repositoryWrapper = new BinaryContentAwareRepositoryWrapper();
             catalogue = repositoryWrapper.updateEntityForPersistCases((T) ublCatalogue);
             // cache catalog
             SpringBridge.getInstance().getCacheHelper().putCatalog((CatalogueType) catalogue);
@@ -229,7 +229,7 @@ public class CatalogueServiceImpl implements CatalogueService {
             Long catalogueHjid = CataloguePersistenceUtil.getCatalogueHjid(uuid);
 
             if (catalogueHjid != null) {
-                EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper();
+                BinaryContentAwareRepositoryWrapper repositoryWrapper = new BinaryContentAwareRepositoryWrapper();
                 repositoryWrapper.deleteEntityByHjid(CatalogueType.class, catalogueHjid);
                 // remove catalog from cache
                 SpringBridge.getInstance().getCacheHelper().removeCatalog(uuid);
@@ -327,7 +327,7 @@ public class CatalogueServiceImpl implements CatalogueService {
                 DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(line, existingCatalogue);
             }
 
-            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(existingCatalogue.getProviderParty().getPartyIdentification().get(0).getID());
+            BinaryContentAwareRepositoryWrapper repositoryWrapper = new BinaryContentAwareRepositoryWrapper();
             repositoryWrapper.updateEntity(existingCatalogue, null, binaryObjectsToDelete);
 
             // TODO update the cache in asynchronous manner
@@ -570,12 +570,12 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public CatalogueLineType addLineToCatalogue(String catalogueUuid, String catalogueProviderId, CatalogueLineType catalogueLine) throws InvalidCategoryException{
+    public CatalogueLineType addLineToCatalogue(String catalogueUuid, CatalogueLineType catalogueLine) throws InvalidCategoryException{
         CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueWithLinesInitialized(catalogueUuid);
         catalogue.getCatalogueLine().add(catalogueLine);
 
         DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(catalogueLine,catalogue);
-        EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueProviderId);
+        BinaryContentAwareRepositoryWrapper repositoryWrapper = new BinaryContentAwareRepositoryWrapper();
         catalogue = repositoryWrapper.updateEntity(catalogue, UblUtil.getBinaryObjectsFrom(catalogueLine));
 
         // cache catalog
@@ -600,10 +600,10 @@ public class CatalogueServiceImpl implements CatalogueService {
             .filter(line -> line.getHjid().equals(hjidLine))
             .findFirst().get();
 
-        EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(newcatalogue.getProviderParty().getPartyIdentification().get(0).getID());
+        BinaryContentAwareRepositoryWrapper repositoryWrapper = new BinaryContentAwareRepositoryWrapper();
 
         // clear uris of the binary contents belonging to the catalogue line
-        repositoryWrapper.clearBinaryObjectUris(catalogueLine);
+//        repositoryWrapper.clearBinaryObjectUris(catalogueLine);
 
         oldcatalogue.getCatalogueLine().remove(catLine);
         catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().setID(newCatalogueUuid);
@@ -630,7 +630,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     public CatalogueLineType updateCatalogueLine(CatalogueLineType catalogueLine) throws InvalidCategoryException{
         CatalogueType catalogue = getCatalogue(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID());
         DataIntegratorUtil.ensureCatalogueLineDataIntegrityAndEnhancement(catalogueLine, catalogue);
-        EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID());
+        BinaryContentAwareRepositoryWrapper repositoryWrapper = new BinaryContentAwareRepositoryWrapper();
         catalogueLine = repositoryWrapper.updateEntity(catalogueLine);
 
         // index the line
@@ -647,7 +647,7 @@ public class CatalogueServiceImpl implements CatalogueService {
 
         if (lineHjidAndPartyId != null) {
             Long hjid = (Long) lineHjidAndPartyId[0];
-            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper((String) lineHjidAndPartyId[1]);
+            BinaryContentAwareRepositoryWrapper repositoryWrapper = new BinaryContentAwareRepositoryWrapper();
             repositoryWrapper.deleteEntityByHjid(CatalogueLineType.class, hjid);
 
             // delete indexed item

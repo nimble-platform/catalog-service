@@ -6,12 +6,11 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.MetadataType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.utility.ExecutionContext;
 import eu.nimble.utility.UblUtil;
-import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
-import eu.nimble.utility.persistence.resource.MetadataUtility;
+import eu.nimble.utility.persistence.repository.BinaryContentAwareRepositoryWrapper;
+import eu.nimble.utility.persistence.repository.MetadataUtility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,13 +30,13 @@ public class DemandService {
         MetadataType metadata = MetadataUtility.createEntityMetadata(null, Collections.singletonList(executionContext.getCompanyId()));
         demand.setMetadata(metadata);
 
-        EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper();
+        BinaryContentAwareRepositoryWrapper repositoryWrapper = new BinaryContentAwareRepositoryWrapper();
         repositoryWrapper.persistEntity(demand, UblUtil.getBinaryObjectsFrom(demand));
         return demand;
     }
 
     public DemandType updateDemand(DemandType existingDemand, DemandType updatedDemand) {
-        EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper();
+        BinaryContentAwareRepositoryWrapper repositoryWrapper = new BinaryContentAwareRepositoryWrapper();
 
         // get binary objects to be deleted
         List<String> binaryContentUrisToDelete = UblUtil.getBinaryObjectsFrom(existingDemand).stream().map(BinaryObjectType::getUri).collect(Collectors.toList());
@@ -61,7 +60,7 @@ public class DemandService {
         List<String> binaryObjectUris = UblUtil.getBinaryObjectsFrom(demand).stream().map(BinaryObjectType::getUri).collect(Collectors.toList());
 
         // delete the entity
-        EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper();
+        BinaryContentAwareRepositoryWrapper repositoryWrapper = new BinaryContentAwareRepositoryWrapper();
         repositoryWrapper.deleteEntityByHjid(DemandType.class, demand.getHjid(), binaryObjectUris);
     }
 }
