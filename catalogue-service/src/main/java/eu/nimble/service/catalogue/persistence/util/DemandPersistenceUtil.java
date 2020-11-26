@@ -14,6 +14,6 @@ public class DemandPersistenceUtil {
                     " ORDER BY metadata.modificationDateItem DESC";
 
     public static List<DemandType> getDemandsForParty(String companyId) {
-        return new JPARepositoryFactory().forCatalogueRepository().getEntities(QUERY_GET_DEMANDS_FOR_COMPANY, new String[]{"companyId"}, new Object[]{companyId});
+        return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_DEMANDS_FOR_COMPANY, new String[]{"companyId"}, new Object[]{companyId});
     }
 }
