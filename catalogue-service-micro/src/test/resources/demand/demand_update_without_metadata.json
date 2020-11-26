@@ -1,12 +1,16 @@
 {
-  "title": {
-    "value": "Demand Title 2",
-    "languageID": "en"
-  },
-  "description": {
-    "value": "Demand Description 2",
-    "languageID": "en"
-  },
+  "title": [
+    {
+      "value": "Demand Title up",
+      "languageID": "en"
+    }
+  ],
+  "description": [
+    {
+      "value": "Demand Description 2",
+      "languageID": "en"
+    }
+  ],
   "itemClassificationCode": {
     "value": "0173-1#01-AKJ051#013",
     "name": "MDF, melamine-resin faced",

@@ -1,12 +1,20 @@
 {
-  "title": {
-    "value": "Demand Title",
-    "languageID": "en"
-  },
-  "description": {
-    "value": "Demand Description",
-    "languageID": "en"
-  },
+  "title": [
+    {
+      "value": "Demand Title",
+      "languageID": "en"
+    },
+    {
+      "value": "Demand Title es",
+      "languageID": "es"
+    }
+  ],
+  "description": [
+    {
+      "value": "Demand Description",
+      "languageID": "en"
+    }
+  ],
   "itemClassificationCode": {
     "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-AAC168#005",
     "name": "Automotive technology",

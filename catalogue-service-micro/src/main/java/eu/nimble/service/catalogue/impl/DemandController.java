@@ -111,10 +111,7 @@ public class DemandController {
 
             List<DemandType> demands = DemandPersistenceUtil.getDemandsForParty(companyId);
 
-            ObjectMapper mapper = JsonSerializationUtility.getObjectMapper(5);
-            SimpleModule dateModule = new SimpleModule();
-            mapper.addMixIn(MetadataType.class, MetadataTypeMixin.class);
-            mapper.registerModule(dateModule);
+            ObjectMapper mapper = JsonSerializationUtility.getObjectMapper(1);
 
             logger.info("Completed request to get demands for party: {}", companyId);
             return ResponseEntity.status(HttpStatus.OK).body(mapper.writeValueAsString(demands));

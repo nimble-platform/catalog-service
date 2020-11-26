@@ -68,7 +68,7 @@ public class Test09_DemandControllerTest {
 
         demandHjid = Long.parseLong(result.getResponse().getContentAsString());
         DemandType demand = repoFactory.forCatalogueRepository(true).getSingleEntityByHjid(DemandType.class, demandHjid);
-        Assert.assertEquals("Demand Title", demand.getTitle().getValue());
+        Assert.assertEquals("Demand Title", demand.getTitle().get(0).getValue());
 
         BinaryObjectType binaryObject = binaryContentService.retrieveContent(demand.getAdditionalDocumentReference().getAttachment().getEmbeddedDocumentBinaryObject().getUri());
         Assert.assertEquals("product_image.jpeg", binaryObject.getFileName());
@@ -118,12 +118,13 @@ public class Test09_DemandControllerTest {
                 .content(updateDemandJson);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
 
-        existingDemand = repoFactory.forCatalogueRepository().getSingleEntityByHjid(DemandType.class, demandHjid);
+        existingDemand = repoFactory.forCatalogueRepository(true).getSingleEntityByHjid(DemandType.class, demandHjid);
         String newBinaryContentUri = existingDemand.getAdditionalDocumentReference().getAttachment().getEmbeddedDocumentBinaryObject().getUri();
         String newModificationDate = existingDemand.getMetadata().getModificationDate().toString();
 
-        Assert.assertEquals("Demand Title 2", existingDemand.getTitle().getValue());
-        Assert.assertEquals("Demand Description 2", existingDemand.getDescription().getValue());
+        Assert.assertEquals(1, existingDemand.getTitle().size());
+        Assert.assertEquals("Demand Title up", existingDemand.getTitle().get(0).getValue());
+        Assert.assertEquals("Demand Description 2", existingDemand.getDescription().get(0).getValue());
         Assert.assertEquals("Spain", existingDemand.getCountry().getName().getValue());
         Assert.assertEquals("ES", existingDemand.getCountry().getIdentificationCode().getValue());
         Assert.assertEquals("2020-12-21", existingDemand.getDueDate().toString());
@@ -180,6 +181,6 @@ public class Test09_DemandControllerTest {
         List<DemandType> demands = mapper.readValue(result.getResponse().getContentAsString(),new TypeReference<List<DemandType>>() {});
 
         Assert.assertEquals(2, demands.size());
-        Assert.assertEquals("Demand Title 2", demands.get(0).getTitle().getValue());
+        Assert.assertEquals("Demand Title 2", demands.get(0).getTitle().get(0).getValue());
     }
 }
