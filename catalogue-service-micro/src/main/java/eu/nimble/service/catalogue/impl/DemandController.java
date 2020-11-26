@@ -157,7 +157,8 @@ public class DemandController {
                 throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_NO_METADATA_OR_MODIFICATION_DATE.toString(),
                         Arrays.asList(DemandType.class.getName(), demandHjid.toString()));
             }
-            if (existingDemand.getMetadata().getModificationDate().getMillisecond() != demand.getMetadata().getModificationDate().getMillisecond()) {
+            if (existingDemand.getMetadata().getModificationDate().toGregorianCalendar().getTimeInMillis() !=
+                    demand.getMetadata().getModificationDate().toGregorianCalendar().getTimeInMillis()) {
                 throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_MODIFICATION_DATE.toString(),
                         Arrays.asList(demand.getMetadata().getModificationDate().getMillisecond() + "", DemandType.class.getName(), demandHjid.toString()));
             }
