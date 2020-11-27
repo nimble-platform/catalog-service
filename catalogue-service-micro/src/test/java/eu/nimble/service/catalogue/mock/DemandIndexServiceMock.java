@@ -1,0 +1,22 @@
+package eu.nimble.service.catalogue.mock;
+
+import eu.nimble.service.catalogue.DemandIndexService;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+@Component
+@Profile("test")
+public class DemandIndexServiceMock implements DemandIndexService {
+    @Override
+    public void indexDemandText(DemandType demand) {
+
+    }
+
+    @Override
+    public List<DemandType> searchDemand(String queryTerm, String language, Integer pageNo, Integer limit) {
+        return null;
+    }
+}

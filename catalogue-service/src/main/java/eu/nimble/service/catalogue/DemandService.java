@@ -25,6 +25,8 @@ public class DemandService {
     private IIdentityClientTyped identityClient;
     @Autowired
     private ExecutionContext executionContext;
+    @Autowired
+    private DemandIndexService demandIndexService;
 
     public DemandType saveDemand(DemandType demand) {
 
@@ -35,7 +37,7 @@ public class DemandService {
         repositoryWrapper.persistEntity(demand, UblUtil.getBinaryObjectsFrom(demand));
 
         // populate the index entry for the new demand
-        DemandPersistenceUtil.indexDemandText(demand);
+        demandIndexService.indexDemandText(demand);
         return demand;
     }
 
@@ -58,7 +60,7 @@ public class DemandService {
         repositoryWrapper.updateEntity(existingDemand, binaryObjectsToPersist, binaryContentUrisToDelete);
 
         // populate the index entry for the new demand
-        DemandPersistenceUtil.indexDemandText(existingDemand);
+        demandIndexService.indexDemandText(existingDemand);
         return existingDemand;
     }
 

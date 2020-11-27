@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import eu.nimble.common.rest.identity.IIdentityClientTyped;
 import eu.nimble.common.rest.identity.model.PersonPartyTuple;
+import eu.nimble.service.catalogue.DemandIndexService;
 import eu.nimble.service.catalogue.DemandService;
 import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
@@ -30,6 +31,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -46,6 +48,8 @@ public class DemandController {
     private DemandService demandService;
     @Autowired
     private IIdentityClientTyped identityClient;
+    @Autowired
+    private DemandIndexService demandIndexService;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Creates a demand.")
@@ -86,7 +90,8 @@ public class DemandController {
     }
 
     @CrossOrigin(origins = {"*"})
-    @ApiOperation(value = "", notes = "Creates a demand.")
+    @ApiOperation(value = "", notes = "Queries demands. It works in two modes. Demands are either retrieved for a specific company or they are queried " +
+            "with a query term")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Created the demand instance successfully", response = DemandType.class),
             @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
@@ -95,11 +100,15 @@ public class DemandController {
     @RequestMapping(value = "/demands",
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getDemandsForCompany(@ApiParam(value = "Identifier of the company of which demands to be retrieved.", required = true) @RequestParam String companyId,
-                                       @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+    public ResponseEntity getDemands(@ApiParam(value = "Identifier of the company of which demands to be retrieved.") @RequestParam(required = false) String companyId,
+                                     @ApiParam(value = "Search query term.") @RequestParam(required = false) String query,
+                                     @ApiParam(value = "Query language") @RequestParam(required = false) String lang,
+                                     @ApiParam(value = "Page no, which used as the offset to retrieve demands. It's also used to calculate the offset for the results", defaultValue = "0") @RequestParam(defaultValue = "0", required = false) Integer pageNo,
+                                     @ApiParam(value = "Number of demands to be retrieved", defaultValue = "10") @RequestParam(defaultValue = "10", required = false) Integer limit,
+                                     @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         try {
             // set request log of ExecutionContext
-            String requestLog = String.format("Incoming request to get demands for party: %s", companyId);
+            String requestLog = String.format("Incoming request to get demands for party: %s, query term: %s, lang: %s, page no: %d, limit: %d", companyId, query, lang, pageNo, limit);
             executionContext.setRequestLog(requestLog);
 
             logger.info(requestLog);
@@ -109,11 +118,19 @@ public class DemandController {
                 throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
 
-            List<DemandType> demands = DemandPersistenceUtil.getDemandsForParty(companyId);
-
+            List<DemandType> demands = new ArrayList<>();
+            if (companyId != null || query != null) {
+                if (companyId != null) {
+                    demands = DemandPersistenceUtil.getDemandsForParty(companyId, pageNo, limit);
+                } else if (query != null) {
+                    demands = demandIndexService.searchDemand(query, lang, pageNo, limit);
+                }
+            } else {
+                throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_MISSING_QUERY_TERM_AND_COMPANY_ID.toString());
+            }
             ObjectMapper mapper = JsonSerializationUtility.getObjectMapper(1);
 
-            logger.info("Completed request to get demands for party: {}", companyId);
+            logger.info("Completed request to get demands for party: {}, query term: {}, lang: {}, page no: {}, limit: {}", companyId, query, lang, pageNo, limit);
             return ResponseEntity.status(HttpStatus.OK).body(mapper.writeValueAsString(demands));
 
         } catch (Exception e) {

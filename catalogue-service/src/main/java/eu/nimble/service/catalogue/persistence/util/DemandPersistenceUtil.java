@@ -1,9 +1,8 @@
 package eu.nimble.service.catalogue.persistence.util;
 
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType;
-import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
-import eu.nimble.utility.persistence.GenericJPARepositoryImpl;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
+import io.swagger.models.auth.In;
 
 import java.util.List;
 
@@ -14,22 +13,15 @@ public class DemandPersistenceUtil {
                     " JOIN metadata.ownerCompanyItems ownerCompanies" +
                     " WHERE ownerCompanies.item = :companyId" +
                     " ORDER BY metadata.modificationDateItem DESC";
-    private static final String QUERY_INSERT_INDEX_DATA = "UPDATE demand_type SET search_index = to_tsvector('%s') WHERE hjid = :hjid";
+    private static final String QUERY_GET_DEMANDS_FOR_HJIDS = "SELECT demand FROM DemandType demand WHERE demand.hjid IN :hjids";
 
 
-    public static List<DemandType> getDemandsForParty(String companyId) {
-        return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_DEMANDS_FOR_COMPANY, new String[]{"companyId"}, new Object[]{companyId});
+    public static List<DemandType> getDemandsForParty(String companyId, Integer pageNo, Integer limit) {
+        return new JPARepositoryFactory().forCatalogueRepository(true)
+                .getEntities(QUERY_GET_DEMANDS_FOR_COMPANY, new String[]{"companyId"}, new Object[]{companyId}, limit, limit * pageNo);
     }
 
-    public static void indexDemandText(DemandType demand) {
-        StringBuilder indexData = new StringBuilder();
-        for (TextType title : demand.getTitle()) {
-            indexData.append(title.getValue()).append(" ");
-        }
-        for (TextType description : demand.getDescription()) {
-            indexData.append(description.getValue()).append(" ");
-        }
-        String query = String.format(QUERY_INSERT_INDEX_DATA, indexData.toString());
-        new JPARepositoryFactory().forCatalogueRepository().executeUpdate(query, new String[]{"hjid"}, new Object[]{demand.getHjid()}, true);
+    public static List<DemandType> getDemandsForHjids(List<Long> hjids) {
+        return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_DEMANDS_FOR_HJIDS, new String[]{"hjids"}, new Object[]{hjids});
     }
 }
