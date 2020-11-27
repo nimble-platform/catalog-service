@@ -2,7 +2,6 @@ package eu.nimble.service.catalogue.persistence.util;
 
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
-import io.swagger.models.auth.In;
 
 import java.util.List;
 

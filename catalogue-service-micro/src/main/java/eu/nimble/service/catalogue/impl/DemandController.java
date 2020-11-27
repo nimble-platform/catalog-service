@@ -90,6 +90,38 @@ public class DemandController {
     }
 
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Creates a demand.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Created the demand instance successfully", response = DemandType.class),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 500, message = "Unexpected error while creating the demand"),
+    })
+    @RequestMapping(value = "/demands/{demandHjid}",
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getDemand(@ApiParam(value = "Serialized form of DemandType instance.", required = true) @PathVariable Long demandHjid,
+                                    @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        try {
+            // set request log of ExecutionContext
+            String requestLog = String.format("Incoming request to get demand with hjid: %d", demandHjid);
+            executionContext.setRequestLog(requestLog);
+
+            logger.info(requestLog);
+
+            DemandType demand = demandService.getDemand(demandHjid);
+            if (demand == null) {
+                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_DEMAND.toString(), Collections.singletonList(demandHjid.toString()));
+            }
+
+            logger.info("Completed request to get demand with hjid: {}", demandHjid);
+            return ResponseEntity.status(HttpStatus.OK).body(JsonSerializationUtility.getObjectMapper(1).writeValueAsString(demand));
+
+        } catch (Exception e) {
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_CREATE_DEMAND.toString(), e);
+        }
+    }
+
+    @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Queries demands. It works in two modes. Demands are either retrieved for a specific company or they are queried " +
             "with a query term")
     @ApiResponses(value = {
@@ -112,11 +144,6 @@ public class DemandController {
             executionContext.setRequestLog(requestLog);
 
             logger.info(requestLog);
-
-            // validate role
-            if (!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_CATALOGUE_WRITE)) {
-                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
-            }
 
             List<DemandType> demands = new ArrayList<>();
             if (companyId != null || query != null) {

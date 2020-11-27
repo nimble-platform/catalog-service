@@ -11,7 +11,9 @@ import eu.nimble.utility.persistence.repository.BinaryContentAwareRepositoryWrap
 import eu.nimble.utility.persistence.repository.MetadataUtility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,6 +41,15 @@ public class DemandService {
         // populate the index entry for the new demand
         demandIndexService.indexDemandText(demand);
         return demand;
+    }
+
+    public DemandType getDemand(Long hjid) {
+        List<DemandType> demands = DemandPersistenceUtil.getDemandsForHjids(Arrays.asList(hjid));
+        if (demands != null && demands.size() > 0) {
+            return demands.get(0);
+        } else {
+            return null;
+        }
     }
 
     public DemandType updateDemand(DemandType existingDemand, DemandType updatedDemand) {
