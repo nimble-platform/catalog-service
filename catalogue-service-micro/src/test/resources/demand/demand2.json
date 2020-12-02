@@ -17,13 +17,11 @@
     "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-AAC168#005",
     "listID": "eClass"
   },
-  "country": {
-    "name": {
-      "value": "Turkey"
-    },
-    "identificationCode": {
-      "value": "TR"
-    }
+  "buyerCountry": {
+    "value": "TR"
+  },
+  "deliveryCountry": {
+    "value": "TR"
   },
   "additionalDocumentReference": {
     "attachment": {

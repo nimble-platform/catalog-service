@@ -75,6 +75,7 @@ public class Test09_DemandControllerTest {
 
         // check metadata
         Assert.assertEquals(IdentityClientTypedMockConfig.sellerPartyID, demand.getMetadata().getOwnerCompany().get(0));
+        Assert.assertEquals("TR", demand.getDeliveryCountry().getValue());
         Assert.assertNotNull(demand.getMetadata().getCreationDate());
         Assert.assertNotNull(demand.getMetadata().getModificationDate());
     }
@@ -125,8 +126,8 @@ public class Test09_DemandControllerTest {
         Assert.assertEquals(1, existingDemand.getTitle().size());
         Assert.assertEquals("Demand Title up", existingDemand.getTitle().get(0).getValue());
         Assert.assertEquals("Demand Description 2", existingDemand.getDescription().get(0).getValue());
-        Assert.assertEquals("Spain", existingDemand.getCountry().getName().getValue());
-        Assert.assertEquals("ES", existingDemand.getCountry().getIdentificationCode().getValue());
+        Assert.assertEquals("TR", existingDemand.getBuyerCountry().getValue());
+        Assert.assertEquals("ES", existingDemand.getDeliveryCountry().getValue());
         Assert.assertEquals("2020-12-21", existingDemand.getDueDate().toString());
         Assert.assertEquals("product_image2.jpeg", existingDemand.getAdditionalDocumentReference().getAttachment().getEmbeddedDocumentBinaryObject().getFileName());
 

@@ -17,13 +17,11 @@
     "uri": "http://www.nimble-project.org/resource/eclass/22292802",
     "listID": "eClass"
   },
-  "country": {
-    "name": {
-      "value": "Spain"
-    },
-    "identificationCode": {
-      "value": "ES"
-    }
+  "buyerCountry": {
+    "value": "TR"
+  },
+  "deliveryCountry": {
+    "value": "ES"
   },
   "additionalDocumentReference": {
     "attachment": {
