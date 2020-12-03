@@ -64,7 +64,6 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
             }
         }
         String indexData = String.join(" || ", vectorParts);
-        System.out.println(indexData);
 
         String query = String.format(QUERY_INSERT_INDEX_DATA, indexData);
         new JPARepositoryFactory().forCatalogueRepository().executeUpdate(query, new String[]{"hjid"}, new Object[]{demand.getHjid()}, true);

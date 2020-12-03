@@ -8,6 +8,7 @@ import eu.nimble.service.catalogue.DemandIndexService;
 import eu.nimble.service.catalogue.DemandService;
 import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
+import eu.nimble.service.catalogue.model.demand.DemandPaginationResponse;
 import eu.nimble.service.catalogue.persistence.util.DemandPersistenceUtil;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.MetadataType;
@@ -30,7 +31,15 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.xml.sax.helpers.DefaultHandler;
 
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -80,6 +89,15 @@ public class DemandController {
             executionContext.setCompanyId(personPartyTuple.getCompanyID());
 
             demandService.saveDemand(demand);
+
+//            JAXBContext jc = JAXBContext.newInstance(DemandType.class);
+//            SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+//            Schema schema = sf.newSchema(new File("customer.xsd"));
+//
+//
+//            Marshaller marshaller = jc.createMarshaller();
+//            marshaller.setSchema(schema);
+//            marshaller.marshal(demand, new DefaultHandler());
 
             logger.info("Completed request to create demand");
             return ResponseEntity.status(HttpStatus.CREATED).body(demand.getHjid());
@@ -145,10 +163,14 @@ public class DemandController {
 
             logger.info(requestLog);
 
-            List<DemandType> demands = new ArrayList<>();
+            List<DemandType> demands;
+            int demandCount;
+            DemandPaginationResponse response = null;
             if (companyId != null || query != null) {
                 if (companyId != null) {
                     demands = DemandPersistenceUtil.getDemandsForParty(companyId, pageNo, limit);
+                    demandCount = DemandPersistenceUtil.getDemandCount(companyId);
+                    response = new DemandPaginationResponse(demandCount, demands);
                 } else if (query != null) {
                     demands = demandIndexService.searchDemand(query, lang, pageNo, limit);
                 }
@@ -158,7 +180,7 @@ public class DemandController {
             ObjectMapper mapper = JsonSerializationUtility.getObjectMapper(1);
 
             logger.info("Completed request to get demands for party: {}, query term: {}, lang: {}, page no: {}, limit: {}", companyId, query, lang, pageNo, limit);
-            return ResponseEntity.status(HttpStatus.OK).body(mapper.writeValueAsString(demands));
+            return ResponseEntity.status(HttpStatus.OK).body(mapper.writeValueAsString(response));
 
         } catch (Exception e) {
             throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_GET_DEMANDS.toString(), Collections.singletonList(companyId), e);
