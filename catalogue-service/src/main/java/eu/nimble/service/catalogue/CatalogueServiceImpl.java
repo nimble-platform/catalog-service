@@ -342,22 +342,6 @@ public class CatalogueServiceImpl implements CatalogueService {
         return existingCatalogue;
     }
 
-    public List<CatalogueLineType> parseTemplate(InputStream catalogueTemplate, PartyType party, Boolean includeVat) throws TemplateParseException{
-        TemplateParser templateParser = new TemplateParser(party);
-        List<CatalogueLineType> catalogueLines = templateParser.getCatalogueLines(catalogueTemplate, includeVat);
-
-        // validate the catalogue lines
-        for (CatalogueLineType catalogueLine : catalogueLines) {
-            CatalogueLineValidator catalogueLineValidator = new CatalogueLineValidator(null, party.getPartyIdentification().get(0).getID(), catalogueLine);
-            ValidationMessages errors = catalogueLineValidator.validateAll();
-            if (errors.getErrorMessages().size() > 0) {
-                throw new NimbleException(errors.getErrorMessages(),errors.getErrorParameters());
-            }
-        }
-
-        return catalogueLines;
-    }
-
     /**
      * Updates the given catalogue based on the upload mode specified in the template-based publishing. As a result, returns the BinaryObject
      */

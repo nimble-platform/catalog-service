@@ -677,10 +677,4 @@ public class CatalogueLineController {
         log.info("Completed the request to offer products, catalogue uuids: {}, line ids: {}, vat numbers: {}, offer details: {}",catalogueUuids,lineIds,vatNumbers,offerDetails);
         return ResponseEntity.ok(null);
     }
-
-    private ResponseEntity createErrorResponseEntity(String msg, HttpStatus status, Exception e) {
-        msg = msg + "\n" + e.getMessage();
-        log.error(msg, e);
-        return ResponseEntity.status(status).body(msg);
-    }
 }
