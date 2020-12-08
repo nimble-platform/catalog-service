@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
+import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.exception.InvalidCategoryException;
 import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
@@ -12,6 +13,7 @@ import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.util.DataIntegratorUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.catalogue.util.migration.r10.VatMigrationUtility;
+import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
 import eu.nimble.utility.ExecutionContext;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
@@ -48,6 +50,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by suat on 28-Jan-19.
@@ -66,6 +69,8 @@ public class AdminController {
     private CatalogueIndexLoader catalogueIndexLoader;
     @Autowired
     private ItemIndexClient itemIndexClient;
+    @Autowired
+    private IndexCategoryService indexCategoryService;
     @Autowired
     private CatalogueService catalogueService;
 
@@ -365,7 +370,9 @@ public class AdminController {
 
             for (CatalogueLineType catalogueLine : catalogue.getCatalogueLine()) {
                 try {
-                    List<CommodityClassificationType> missingParentCategories = DataIntegratorUtil.getParentCategories(catalogueLine.getGoodsItem().getItem().getCommodityClassification());
+                    List<CodeType> missingParentCategories = indexCategoryService.getParentCategories(
+                            catalogueLine.getGoodsItem().getItem().getCommodityClassification().stream().map(CommodityClassificationType::getItemClassificationCode).collect(Collectors.toList())
+                    );
                     if(missingParentCategories.size() != 0){
                         catalogueUuids.add(catalogue.getUUID());
                         lineIds.add(catalogueLine.getID());

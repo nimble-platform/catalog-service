@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue;
 
 import eu.nimble.common.rest.identity.IIdentityClientTyped;
 import eu.nimble.service.catalogue.persistence.util.DemandPersistenceUtil;
+import eu.nimble.service.catalogue.util.DataIntegratorUtil;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.MetadataType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
@@ -31,6 +32,7 @@ public class DemandService {
     private DemandIndexService demandIndexService;
 
     public DemandType saveDemand(DemandType demand) {
+        DataIntegratorUtil.enhanceDemandWithParentCategories(demand);
 
         MetadataType metadata = MetadataUtility.createEntityMetadata(null, Collections.singletonList(executionContext.getCompanyId()));
         demand.setMetadata(metadata);
@@ -53,6 +55,9 @@ public class DemandService {
     }
 
     public DemandType updateDemand(DemandType existingDemand, DemandType updatedDemand) {
+        // add parent categories for the available one
+        DataIntegratorUtil.enhanceDemandWithParentCategories(updatedDemand);
+
         BinaryContentAwareRepositoryWrapper repositoryWrapper = new BinaryContentAwareRepositoryWrapper();
 
         // get binary objects to be deleted
