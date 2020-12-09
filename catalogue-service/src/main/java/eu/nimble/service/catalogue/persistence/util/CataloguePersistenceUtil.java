@@ -11,6 +11,7 @@ import eu.nimble.utility.persistence.JPARepositoryFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by suat on 31-Dec-18.
@@ -216,7 +217,9 @@ public class CataloguePersistenceUtil {
 
         if (limit != 0) {
             // get all catalogue line ids
-            catalogueLineHjids = new JPARepositoryFactory().forCatalogueRepository().getEntities(queryData.query, queryData.parameterNames.toArray(new String[0]), queryData.parameterValues.toArray(), null, null, queryData.isNativeQuery);
+            // map repository response to Long to make sure that the line hjids have Long data type for both native and non-native queries
+            catalogueLineHjids = new JPARepositoryFactory().forCatalogueRepository().getEntities(queryData.query, queryData.parameterNames.toArray(new String[0]), queryData.parameterValues.toArray(), null, null, queryData.isNativeQuery)
+                    .stream().map(value -> Long.parseLong(String.valueOf(value))).collect(Collectors.toList());
             // set the size of catalogue lines
             size = catalogueLineHjids.size();
             // update catalogue line ids according to the offset
