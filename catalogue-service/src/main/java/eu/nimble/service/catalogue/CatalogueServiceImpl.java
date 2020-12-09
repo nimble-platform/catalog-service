@@ -10,6 +10,7 @@ import eu.nimble.service.catalogue.index.ItemIndexClient;
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.catalogue.CatalogueIDResponse;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
+import eu.nimble.service.catalogue.model.catalogue.ProductStatus;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.model.statistics.ProductAndServiceStatistics;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
@@ -187,16 +188,16 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public CataloguePaginationResponse getCataloguePaginationResponse(String catalogueId, String partyId, String categoryName,String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset) {
-        return getCataloguePaginationResponse(catalogueId,partyId,categoryName,Configuration.Standard.UBL,searchText,languageId,sortOption,limit,offset);
+    public CataloguePaginationResponse getCataloguePaginationResponse(String catalogueId, String partyId, String categoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, ProductStatus productStatus, int limit, int offset) {
+        return getCataloguePaginationResponse(catalogueId,partyId,categoryName,Configuration.Standard.UBL,searchText,languageId,sortOption,productStatus,limit,offset);
     }
 
     @Override
-    public <T> T getCataloguePaginationResponse(String catalogueId, String partyId,String categoryName, Configuration.Standard standard,String searchText,String languageId,CatalogueLineSortOptions sortOption, int limit, int offset) {
+    public <T> T getCataloguePaginationResponse(String catalogueId, String partyId,String categoryName, Configuration.Standard standard,String searchText,String languageId,CatalogueLineSortOptions sortOption,ProductStatus productStatus, int limit, int offset) {
         T catalogueResponse = null;
 
         if (standard == Configuration.Standard.UBL) {
-            catalogueResponse = (T) CataloguePersistenceUtil.getCatalogueLinesForParty(catalogueId, partyId,categoryName,searchText,languageId,sortOption,limit,offset);
+            catalogueResponse = (T) CataloguePersistenceUtil.getCatalogueLinesForParty(catalogueId, partyId,categoryName,searchText,languageId,sortOption,productStatus,limit,offset);
 
         } else if (standard == Configuration.Standard.MODAML) {
             logger.warn("Getting CataloguePaginationResponse with catalogue id and party id from MODAML repository is not implemented yet");

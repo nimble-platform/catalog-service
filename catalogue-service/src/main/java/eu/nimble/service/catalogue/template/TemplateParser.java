@@ -115,7 +115,7 @@ public class TemplateParser {
             results.add(clt);
 
             classifications.addAll(getCommodityClassification(categories));
-            parseFixedProperties(productPropertiesTab, rowNum, item);
+            parseFixedProperties(productPropertiesTab, rowNum, clt);
             itemProperties.addAll(getCategoryRelatedItemProperties(categories, rowNum));
             itemProperties.addAll(0, getCustomItemProperties(categories, rowNum));
 
@@ -338,7 +338,7 @@ public class TemplateParser {
         return itemProperties;
     }
 
-    private void parseFixedProperties(Sheet productPropertiesTab, int rowIndex, ItemType item) throws TemplateParseException {
+    private void parseFixedProperties(Sheet productPropertiesTab, int rowIndex, CatalogueLineType catalogueLineType) throws TemplateParseException {
         Row propertiesRow = productPropertiesTab.getRow(rowIndex);
         List<Property> properties = TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage);
         int columnIndex = 1;
@@ -351,28 +351,30 @@ public class TemplateParser {
                 }
                 ItemIdentificationType itemId = new ItemIdentificationType();
                 itemId.setID((String) parseCell(cell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION.toString(), defaultLanguage), TemplateConfig.TEMPLATE_DATA_TYPE_TEXT , false));
-                item.setManufacturersItemIdentification(itemId);
+                catalogueLineType.getGoodsItem().getItem().setManufacturersItemIdentification(itemId);
 
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_NAME.toString(), defaultLanguage))) {
                 if(TemplateGenerator.getCellStringValue(cell).contentEquals("")){
-                    throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_NO_NAME_FOR_ITEM.toString(),Arrays.asList(item.getManufacturersItemIdentification().getID()));
+                    throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_NO_NAME_FOR_ITEM.toString(),Arrays.asList(catalogueLineType.getGoodsItem().getItem().getManufacturersItemIdentification().getID()));
                 }
                 List<TextType> productNames = (List<TextType>) parseCell(cell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_NAME.toString(), defaultLanguage),TEMPLATE_DATA_TYPE_MULTILINGUAL_TEXT , true);
 
                 for(TextType productName: productNames) {
-                    item.getName().add(productName);
+                    catalogueLineType.getGoodsItem().getItem().getName().add(productName);
                 }
+            } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_STATUS.toString(), defaultLanguage))) {
+                catalogueLineType.setProductStatusType((String) parseCell(cell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_STATUS.toString(), defaultLanguage), TemplateConfig.TEMPLATE_DATA_TYPE_TEXT , false));
 
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION.toString(), defaultLanguage))) {
                 List<TextType> productDescriptions = (List<TextType>) parseCell(cell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION.toString(), defaultLanguage),TEMPLATE_DATA_TYPE_MULTILINGUAL_TEXT , true);
                 // be sure that each item name has a corresponding item description
-                for(TextType itemName: item.getName()){
+                for(TextType itemName: catalogueLineType.getGoodsItem().getItem().getName()){
                     boolean descriptionFound = false;
                     for(TextType itemDescription: productDescriptions){
                         // there is a description for the name
                         if(itemName.getLanguageID().contentEquals(itemDescription.getLanguageID())){
                             descriptionFound = true;
-                            item.getDescription().add(itemDescription);
+                            catalogueLineType.getGoodsItem().getItem().getDescription().add(itemDescription);
                             productDescriptions.remove(itemDescription);
                             break;
                         }
@@ -381,7 +383,7 @@ public class TemplateParser {
                     if(!descriptionFound){
                         TextType text = new TextType();
                         text.setLanguageID(itemName.getLanguageID());
-                        item.getDescription().add(text);
+                        catalogueLineType.getGoodsItem().getItem().getDescription().add(text);
                     }
                 }
                 // add name-description pair for the remaining descriptions
@@ -391,11 +393,11 @@ public class TemplateParser {
                         TextType description = new TextType();
                         description.setValue(itemDescription.getValue());
                         description.setLanguageID(itemDescription.getLanguageID());
-                        item.getDescription().add(description);
+                        catalogueLineType.getGoodsItem().getItem().getDescription().add(description);
                         // create a name
                         TextType name = new TextType();
                         name.setLanguageID(itemDescription.getLanguageID());
-                        item.getName().add(name);
+                        catalogueLineType.getGoodsItem().getItem().getName().add(name);
                     }
                 }
             }  /*else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PRODUCT_DATA_SHEET)) {
@@ -423,7 +425,7 @@ public class TemplateParser {
             }*/ else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WIDTH.toString(), defaultLanguage))) {
                 Cell unitCell = TemplateGenerator.getCellWithMissingCellPolicy(propertiesRow, ++columnIndex);
                 // just to initialize the dimension array
-                item.getDimension();
+                catalogueLineType.getGoodsItem().getItem().getDimension();
                 List<QuantityType> widths;
                 try {
                     widths = (List<QuantityType>) parseCell(productPropertiesTab,cell,unitCell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WIDTH.toString(), defaultLanguage), TEMPLATE_DATA_TYPE_QUANTITY , true);
@@ -434,7 +436,7 @@ public class TemplateParser {
                     DimensionType dimension = new DimensionType();
                     dimension.setAttributeID("Width");
                     dimension.setMeasure(width);
-                    item.getDimension().add(dimension);
+                    catalogueLineType.getGoodsItem().getItem().getDimension().add(dimension);
                 }
 
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_LENGTH.toString(), defaultLanguage))) {
@@ -449,7 +451,7 @@ public class TemplateParser {
                     DimensionType dimension = new DimensionType();
                     dimension.setAttributeID("Length");
                     dimension.setMeasure(width);
-                    item.getDimension().add(dimension);
+                    catalogueLineType.getGoodsItem().getItem().getDimension().add(dimension);
                 }
 
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_HEIGHT.toString(), defaultLanguage))) {
@@ -464,7 +466,7 @@ public class TemplateParser {
                     DimensionType dimension = new DimensionType();
                     dimension.setAttributeID("Height");
                     dimension.setMeasure(width);
-                    item.getDimension().add(dimension);
+                    catalogueLineType.getGoodsItem().getItem().getDimension().add(dimension);
                 }
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WEIGHT.toString(), defaultLanguage))) {
                 Cell unitCell = TemplateGenerator.getCellWithMissingCellPolicy(propertiesRow, ++columnIndex);
@@ -478,7 +480,7 @@ public class TemplateParser {
                     DimensionType dimension = new DimensionType();
                     dimension.setAttributeID("Weight");
                     dimension.setMeasure(width);
-                    item.getDimension().add(dimension);
+                    catalogueLineType.getGoodsItem().getItem().getDimension().add(dimension);
                 }
             }
             columnIndex++;

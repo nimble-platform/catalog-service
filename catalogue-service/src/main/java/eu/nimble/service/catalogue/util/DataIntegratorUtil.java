@@ -1,7 +1,9 @@
 package eu.nimble.service.catalogue.util;
 
+import com.google.common.base.Strings;
 import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.exception.InvalidCategoryException;
+import eu.nimble.service.catalogue.model.catalogue.ProductStatus;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
@@ -48,6 +50,13 @@ public class DataIntegratorUtil {
         checkCatalogueLineIDs(catalogueLine);
         setCatalogueDocumentReference(catalogueUuid,catalogueLine);
         removePrecedingTrailingSpaces(catalogueLine);
+        setCatalogueLineStatus(catalogueLine);
+    }
+
+    private static void setCatalogueLineStatus(CatalogueLineType catalogueLineType){
+        if(Strings.isNullOrEmpty(catalogueLineType.getProductStatusType())){
+            catalogueLineType.setProductStatusType(ProductStatus.PUBLISHED.toString());
+        }
     }
 
     public static void setParentCategories(List<CommodityClassificationType> commodityClassifications) throws InvalidCategoryException {
