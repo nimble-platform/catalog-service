@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
+import eu.nimble.service.catalogue.model.catalogue.ProductStatus;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ClauseType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
@@ -338,6 +339,21 @@ public class Test01_CatalogueControllerTest {
         Assert.assertEquals(0,cataloguePaginationResponse.getCatalogueLines().size());
         Assert.assertEquals(2,cataloguePaginationResponse.getCategoryNames().size());
 
+    }
+
+    @Test
+    public void test63_getDefaultCataloguePagination() throws Exception {
+        MockHttpServletRequestBuilder request = get("/catalogue/"+TestConfig.sellerId+"/pagination")
+                .header("Authorization", TestConfig.buyerId)
+                .param("catalogueId","default")
+                .param("limit","10")
+                .param("offset","0")
+                .param("status", ProductStatus.DRAFT.toString());
+        MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+        CataloguePaginationResponse cataloguePaginationResponse = mapper.readValue(result.getResponse().getContentAsString(), CataloguePaginationResponse.class);
+
+        Assert.assertEquals(1,cataloguePaginationResponse.getSize());
+        Assert.assertEquals(1,cataloguePaginationResponse.getCatalogueLines().size());
     }
 
 
