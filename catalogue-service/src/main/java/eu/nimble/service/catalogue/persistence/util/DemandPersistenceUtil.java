@@ -2,7 +2,10 @@ package eu.nimble.service.catalogue.persistence.util;
 
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
+import org.ehcache.shadow.org.terracotta.context.query.QueryBuilder;
 
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.util.ArrayList;
 import java.util.List;
 
 public class DemandPersistenceUtil {

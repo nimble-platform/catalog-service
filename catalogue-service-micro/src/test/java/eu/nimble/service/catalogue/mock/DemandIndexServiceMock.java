@@ -16,7 +16,12 @@ public class DemandIndexServiceMock implements DemandIndexService {
     }
 
     @Override
-    public List<DemandType> searchDemand(String queryTerm, String language, Integer pageNo, Integer limit) {
+    public List<DemandType> searchDemand(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry, Integer pageNo, Integer limit) {
         return null;
+    }
+
+    @Override
+    public int getDemandCount(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry) {
+        return 0;
     }
 }

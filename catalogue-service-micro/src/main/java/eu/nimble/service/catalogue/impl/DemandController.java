@@ -1,7 +1,6 @@
 package eu.nimble.service.catalogue.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import eu.nimble.common.rest.identity.IIdentityClientTyped;
 import eu.nimble.common.rest.identity.model.PersonPartyTuple;
 import eu.nimble.service.catalogue.DemandIndexService;
@@ -9,15 +8,12 @@ import eu.nimble.service.catalogue.DemandService;
 import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
 import eu.nimble.service.catalogue.model.demand.DemandPaginationResponse;
-import eu.nimble.service.catalogue.persistence.util.DemandPersistenceUtil;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.MetadataType;
 import eu.nimble.utility.ExecutionContext;
 import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.exception.NimbleException;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.persistence.repository.MetadataUtility;
-import eu.nimble.utility.serialization.ubl.MetadataTypeMixin;
 import eu.nimble.utility.validation.IValidationUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -31,16 +27,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.xml.sax.helpers.DefaultHandler;
 
-import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
-import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -153,6 +140,10 @@ public class DemandController {
     public ResponseEntity getDemands(@ApiParam(value = "Identifier of the company of which demands to be retrieved.") @RequestParam(required = false) String companyId,
                                      @ApiParam(value = "Search query term.") @RequestParam(required = false) String query,
                                      @ApiParam(value = "Query language") @RequestParam(required = false) String lang,
+                                     @ApiParam(value = "Demand category") @RequestParam(required = false) String categoryUri,
+                                     @ApiParam(value = "Latest due date. Demands of which due dates are equal or earlier than the provided date are retrieved") @RequestParam(required = false) String dueDate,
+                                     @ApiParam(value = "Buyer country") @RequestParam(required = false) String buyerCountry,
+                                     @ApiParam(value = "Delivery country") @RequestParam(required = false) String deliveryCountry,
                                      @ApiParam(value = "Page no, which used as the offset to retrieve demands. It's also used to calculate the offset for the results", defaultValue = "0") @RequestParam(defaultValue = "0", required = false) Integer pageNo,
                                      @ApiParam(value = "Number of demands to be retrieved", defaultValue = "10") @RequestParam(defaultValue = "10", required = false) Integer limit,
                                      @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
@@ -165,18 +156,10 @@ public class DemandController {
 
             List<DemandType> demands;
             int demandCount;
-            DemandPaginationResponse response = null;
-            if (companyId != null || query != null) {
-                if (companyId != null) {
-                    demands = DemandPersistenceUtil.getDemandsForParty(companyId, pageNo, limit);
-                    demandCount = DemandPersistenceUtil.getDemandCount(companyId);
-                    response = new DemandPaginationResponse(demandCount, demands);
-                } else if (query != null) {
-                    demands = demandIndexService.searchDemand(query, lang, pageNo, limit);
-                }
-            } else {
-                throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_MISSING_QUERY_TERM_AND_COMPANY_ID.toString());
-            }
+            DemandPaginationResponse response;
+            demandCount = demandIndexService.getDemandCount(query, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry);
+            demands = demandIndexService.searchDemand(query, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry, pageNo, limit);
+            response = new DemandPaginationResponse(demandCount, demands);
             ObjectMapper mapper = JsonSerializationUtility.getObjectMapper(1);
 
             logger.info("Completed request to get demands for party: {}, query term: {}, lang: {}, page no: {}, limit: {}", companyId, query, lang, pageNo, limit);

@@ -13,9 +13,30 @@ public interface DemandIndexService {
     void indexDemandText(DemandType demand);
 
     /**
-     * Retrieves demand information with the query term
+     * Retrieves {@link DemandType} instances for the given query parameters
      * @param queryTerm
-     * @param language
+     * @param lang
+     * @param companyId
+     * @param categoryUri
+     * @param dueDate indicates' the latest due date for demands to be considered
+     * @param buyerCountry
+     * @param deliveryCountry
+     * @param pageNo
+     * @param limit
+     * @return
      */
-    List<DemandType> searchDemand(String queryTerm, String language, Integer pageNo, Integer limit);
+    List<DemandType> searchDemand(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry, Integer pageNo, Integer limit);
+
+    /**
+     * Retrieves number of {@link DemandType}s for the given query parameters
+     * @param queryTerm
+     * @param lang
+     * @param companyId
+     * @param categoryUri
+     * @param dueDate indicates' the latest due date for demands to be considered
+     * @param buyerCountry
+     * @param deliveryCountry
+     * @return
+     */
+    int getDemandCount(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry);
 }
