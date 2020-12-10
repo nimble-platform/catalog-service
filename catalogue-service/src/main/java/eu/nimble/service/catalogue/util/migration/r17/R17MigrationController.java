@@ -2,6 +2,7 @@ package eu.nimble.service.catalogue.util.migration.r17;
 
 import eu.nimble.service.catalogue.UnitManager;
 import eu.nimble.service.catalogue.config.RoleConfig;
+import eu.nimble.service.catalogue.model.catalogue.ProductStatus;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
@@ -308,6 +309,36 @@ public class R17MigrationController {
         }
 
         logger.info("Completed request to update price options");
+        return ResponseEntity.ok(null);
+    }
+
+    @ApiOperation(value = "", notes = "Set the status of catalogue lines to PUBLISHED")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Set the status of catalogue lines successfully"),
+            @ApiResponse(code = 401, message = "Invalid role")
+    })
+    @RequestMapping(value = "/r17/migration/catalogueline-status",
+            produces = {"application/json"},
+            method = RequestMethod.PATCH)
+    public ResponseEntity setCatalogueLineStatus(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken
+    ) throws IOException {
+        logger.info("Incoming request to set status for catalogue lines");
+
+        if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+        }
+
+        GenericJPARepository catalogueRepo = new JPARepositoryFactory().forCatalogueRepository(true);
+
+        List<CatalogueLineType> catalogueLineTypes = catalogueRepo.getEntities(CatalogueLineType.class);
+
+        for (CatalogueLineType catalogueLine : catalogueLineTypes) {
+            catalogueLine.setProductStatusType(ProductStatus.PUBLISHED.toString());
+
+            catalogueRepo.updateEntity(catalogueLine);
+        }
+
+        logger.info("Completed request to set status for catalogue lines");
         return ResponseEntity.ok(null);
     }
 }

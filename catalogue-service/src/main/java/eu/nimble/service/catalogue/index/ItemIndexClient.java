@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.index;
 
 import eu.nimble.common.rest.indexing.IIndexingServiceClient;
+import eu.nimble.service.catalogue.model.catalogue.ProductStatus;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.util.CredentialsUtil;
 import eu.nimble.service.model.solr.item.ItemType;
@@ -47,6 +48,10 @@ public class ItemIndexClient {
 
             List<ItemType> indexItems = new ArrayList<>();
             for (CatalogueLineType catalogueLine : catalogue.getCatalogueLine()) {
+                // Catalogue lines with DRAFT status should not be indexed
+                if(catalogueLine.getProductStatusType().contentEquals(ProductStatus.DRAFT.toString())){
+                    continue;
+                }
                 indexItems.add(IndexingWrapper.toIndexItem(catalogueLine));
             }
             indexItemsJson = JsonSerializationUtility.getObjectMapper().writeValueAsString(indexItems);
@@ -94,6 +99,10 @@ public class ItemIndexClient {
     public void indexCatalogueLine(CatalogueLineType catalogueLine) {
         if(!indexingSync) {
             logger.info("Synchronization with Solr disabled. Won't index the catalogue line");
+            return;
+        }
+        // Catalogue lines with DRAFT status should not be indexed
+        if(catalogueLine.getProductStatusType().contentEquals(ProductStatus.DRAFT.toString())){
             return;
         }
 
