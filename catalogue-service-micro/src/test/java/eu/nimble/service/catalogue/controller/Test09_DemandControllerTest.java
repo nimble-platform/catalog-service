@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.common.rest.identity.IIdentityClientTyped;
 import eu.nimble.common.rest.identity.IdentityClientTypedMockConfig;
+import eu.nimble.service.catalogue.persistence.util.DemandPersistenceUtil;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType;
@@ -72,6 +73,13 @@ public class Test09_DemandControllerTest {
 
         BinaryObjectType binaryObject = binaryContentService.retrieveContent(demand.getAdditionalDocumentReference().getAttachment().getEmbeddedDocumentBinaryObject().getUri());
         Assert.assertEquals("product_image.jpeg", binaryObject.getFileName());
+
+        // check categories
+        Assert.assertEquals(4, demand.getItemClassificationCode().size());
+        Assert.assertTrue(demand.getItemClassificationCode().stream().anyMatch(code -> code.getValue().contentEquals("http://www.nimble-project.org/resource/eclass#0173-1#01-ACH237#011")));
+        Assert.assertTrue(demand.getItemClassificationCode().stream().anyMatch(code -> code.getValue().contentEquals("http://www.nimble-project.org/resource/eclass#0173-1#01-AAA647#005")));
+        Assert.assertTrue(demand.getItemClassificationCode().stream().anyMatch(code -> code.getValue().contentEquals("http://www.nimble-project.org/resource/eclass#0173-1#01-AJZ801#008")));
+        Assert.assertTrue(demand.getItemClassificationCode().stream().anyMatch(code -> code.getValue().contentEquals("http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ049#008")));
 
         // check metadata
         Assert.assertEquals(IdentityClientTypedMockConfig.sellerPartyID, demand.getMetadata().getOwnerCompany().get(0));
@@ -174,12 +182,7 @@ public class Test09_DemandControllerTest {
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isCreated()).andReturn();
 
         // get demands
-        request = get("/demands")
-                .param("companyId", IdentityClientTypedMockConfig.sellerPartyID)
-                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
-                .contentType(MediaType.APPLICATION_JSON);
-        MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
-        List<DemandType> demands = mapper.readValue(result.getResponse().getContentAsString(),new TypeReference<List<DemandType>>() {});
+        List<DemandType> demands = DemandPersistenceUtil.getDemandsForParty(IdentityClientTypedMockConfig.sellerPartyID, 0, 10);
 
         Assert.assertEquals(2, demands.size());
         Assert.assertEquals("Demand Title 2", demands.get(0).getTitle().get(0).getValue());

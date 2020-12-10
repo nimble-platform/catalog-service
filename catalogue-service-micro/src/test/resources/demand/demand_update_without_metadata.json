@@ -11,12 +11,14 @@
       "languageID": "en"
     }
   ],
-  "itemClassificationCode": {
-    "value": "0173-1#01-AKJ051#013",
-    "name": "MDF, melamine-resin faced",
-    "uri": "http://www.nimble-project.org/resource/eclass/22292802",
-    "listID": "eClass"
-  },
+  "itemClassificationCode": [
+    {
+      "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-ACH237#011",
+      "name": "MDF, painted",
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-ACH237#011",
+      "listID": "eClass"
+    }
+  ],
   "buyerCountry": {
     "value": "TR"
   },

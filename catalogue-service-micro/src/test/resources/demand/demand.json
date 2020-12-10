@@ -15,12 +15,14 @@
       "languageID": "en"
     }
   ],
-  "itemClassificationCode": {
-    "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-AAC168#005",
-    "name": "Automotive technology",
-    "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-AAC168#005",
-    "listID": "eClass"
-  },
+  "itemClassificationCode": [
+    {
+      "value": "http://www.nimble-project.org/resource/eclass#0173-1#01-ACH237#011",
+      "name": "MDF, painted",
+      "uri": "http://www.nimble-project.org/resource/eclass#0173-1#01-ACH237#011",
+      "listID": "eClass"
+    }
+  ],
   "buyerCountry": {
     "value": "TR"
   },
