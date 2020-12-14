@@ -111,6 +111,11 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
         if (companyId != null) {
             // join metadata and owner company tables
             query.append(", metadata_type m, metadata_type_owner_company__0 o");
+        } else {
+            // if company id is not queried, join the metadata table just for id queries to be used in sorting
+            if (queryType == DemandQueryType.HJID) {
+                query.append(", metadata_type m");
+            }
         }
         if (categoryUri != null) {
             // join code table
@@ -142,7 +147,14 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
             query.append(", to_tsquery('").append(lang).append("','").append(queryTerm).append("') query");
         }
 
-        query.append(" WHERE");
+        if (queryTerm != null || companyId != null || categoryUri != null || dueDate != null || buyerCountry != null || deliveryCountry != null) {
+            query.append(" WHERE");
+        } else {
+            if (queryType == DemandQueryType.HJID) {
+                query.append(" WHERE");
+            }
+        }
+        boolean previousCriteria = false;
         List<String> queryParameters = new ArrayList<>();
         List<Object> queryValues = new ArrayList<>();
 
@@ -152,12 +164,19 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
             query.append(" o.item = :companyId");
             queryParameters.add("companyId");
             queryValues.add(companyId);
+            previousCriteria = true;
+        } else {
+            if (queryType == DemandQueryType.HJID) {
+                query.append(" m.hjid = d.metadata_demand_type_hjid");
+                previousCriteria = true;
+            }
         }
 
         if (categoryUri != null) {
-            if (queryParameters.size() > 0) {
+            if (previousCriteria) {
                 query.append(" AND");
             }
+            previousCriteria = true;
             query.append(" d.hjid = c.item_classification_code_dem_0").append(" AND");
             query.append(" c.uri = :categoryUri");
             queryParameters.add("categoryUri");
@@ -165,18 +184,20 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
         }
 
         if (dueDate != null) {
-            if (queryParameters.size() > 0) {
+            if (previousCriteria) {
                 query.append(" AND");
             }
+            previousCriteria = true;
             query.append(" d.due_date_item <= TO_DATE(:dueDate, 'YYYY-MM-DD')");
             queryParameters.add("dueDate");
             queryValues.add(dueDate);
         }
 
         if (deliveryCountry != null) {
-            if (queryParameters.size() > 0) {
+            if (previousCriteria) {
                 query.append(" AND");
             }
+            previousCriteria = true;
             query.append(" d.delivery_country_demand_type_0 = c2.hjid").append(" AND");
             query.append(" c2.value_ = :deliveryCountry");
             queryParameters.add("deliveryCountry");
@@ -184,9 +205,10 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
         }
 
         if (buyerCountry != null) {
-            if (queryParameters.size() > 0) {
+            if (previousCriteria) {
                 query.append(" AND");
             }
+            previousCriteria = true;
             query.append(" d.buyer_country_demand_type_hj_0 = c3.hjid").append(" AND");
             query.append(" c3.value_ = :buyerCountry");
             queryParameters.add("buyerCountry");
@@ -194,13 +216,18 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
         }
 
         if (queryTerm != null) {
-            if (queryParameters.size() > 0) {
+            if (previousCriteria) {
                 query.append(" AND");
             }
-
             query.append(" search_index @@ query");
-            if (queryType.equals(DemandQueryType.HJID)) {
-                query.append(" ORDER BY ts_rank_cd(search_index, query)");
+        }
+
+        // sorting is enabled if the query gets demand ids
+        if (queryType.equals(DemandQueryType.HJID)) {
+            if (queryTerm != null) {
+                query.append(" ORDER BY ts_rank_cd(search_index, query) DESC, m.creation_date_item DESC");
+            } else {
+                query.append(" ORDER BY m.creation_date_item DESC");
             }
         }
 
