@@ -12,6 +12,7 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.CommodityClassifica
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DocumentReferenceType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
+import org.apache.commons.lang3.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,7 @@ public class DataIntegratorUtil {
     }
 
     private static void setCatalogueLineStatus(CatalogueLineType catalogueLineType){
-        if(Strings.isNullOrEmpty(catalogueLineType.getProductStatusType())){
+        if(Strings.isNullOrEmpty(catalogueLineType.getProductStatusType()) || !EnumUtils.isValidEnum(ProductStatus.class,catalogueLineType.getProductStatusType())){
             catalogueLineType.setProductStatusType(ProductStatus.PUBLISHED.toString());
         }
     }
