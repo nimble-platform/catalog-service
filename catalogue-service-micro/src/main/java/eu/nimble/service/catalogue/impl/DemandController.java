@@ -149,7 +149,7 @@ public class DemandController {
                                      @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         try {
             // set request log of ExecutionContext
-            String requestLog = String.format("Incoming request to get demands for party: %s, query term: %s, lang: %s, page no: %d, limit: %d", companyId, query, lang, pageNo, limit);
+            String requestLog = String.format("Incoming request to get demands for party: %s, query term: %s, lang: %s, category: %s, due date: %s, buyer country: %s, delivery country: %s, page no: %d, limit: %d", companyId, query, lang, categoryUri, dueDate, buyerCountry, deliveryCountry, pageNo, limit);
             executionContext.setRequestLog(requestLog);
 
             logger.info(requestLog);
@@ -157,12 +157,20 @@ public class DemandController {
             List<DemandType> demands;
             int demandCount;
             DemandPaginationResponse response;
+            // normalize the query term
+            if (query != null) {
+                if (query.trim().contentEquals("")) {
+                    query = null;
+                } else {
+                    query = query.trim();
+                }
+            }
             demandCount = demandIndexService.getDemandCount(query, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry);
             demands = demandIndexService.searchDemand(query, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry, pageNo, limit);
             response = new DemandPaginationResponse(demandCount, demands);
             ObjectMapper mapper = JsonSerializationUtility.getObjectMapper(1);
 
-            logger.info("Completed request to get demands for party: {}, query term: {}, lang: {}, page no: {}, limit: {}", companyId, query, lang, pageNo, limit);
+            logger.info("Completed request to get demands for party: {}, query term: {}, lang: {}, category: {}, due date: {}, buyer country: {}, delivery country: {}, page no: {}, limit: {}", companyId, query, lang, categoryUri, dueDate, buyerCountry, deliveryCountry, pageNo, limit);
             return ResponseEntity.status(HttpStatus.OK).body(mapper.writeValueAsString(response));
 
         } catch (Exception e) {
