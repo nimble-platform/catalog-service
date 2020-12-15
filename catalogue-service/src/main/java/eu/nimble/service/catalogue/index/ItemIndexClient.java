@@ -50,6 +50,8 @@ public class ItemIndexClient {
             for (CatalogueLineType catalogueLine : catalogue.getCatalogueLine()) {
                 // Catalogue lines with DRAFT status should not be indexed
                 if(catalogueLine.getProductStatusType().contentEquals(ProductStatus.DRAFT.toString())){
+                    // delete the catalogue line from the index
+                    deleteCatalogueLine(catalogueLine.getHjid());
                     continue;
                 }
                 indexItems.add(IndexingWrapper.toIndexItem(catalogueLine));
@@ -103,6 +105,8 @@ public class ItemIndexClient {
         }
         // Catalogue lines with DRAFT status should not be indexed
         if(catalogueLine.getProductStatusType().contentEquals(ProductStatus.DRAFT.toString())){
+            // delete the catalogue line from the index
+            deleteCatalogueLine(catalogueLine.getHjid());
             return;
         }
 
