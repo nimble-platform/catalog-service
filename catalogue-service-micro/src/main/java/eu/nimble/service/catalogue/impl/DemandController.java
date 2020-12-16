@@ -7,6 +7,7 @@ import eu.nimble.service.catalogue.DemandIndexService;
 import eu.nimble.service.catalogue.DemandService;
 import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
+import eu.nimble.service.catalogue.model.demand.DemandCategoryResult;
 import eu.nimble.service.catalogue.model.demand.DemandPaginationResponse;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType;
 import eu.nimble.utility.ExecutionContext;
@@ -145,8 +146,7 @@ public class DemandController {
                                      @ApiParam(value = "Buyer country") @RequestParam(required = false) String buyerCountry,
                                      @ApiParam(value = "Delivery country") @RequestParam(required = false) String deliveryCountry,
                                      @ApiParam(value = "Page no, which used as the offset to retrieve demands. It's also used to calculate the offset for the results", defaultValue = "0") @RequestParam(defaultValue = "0", required = false) Integer pageNo,
-                                     @ApiParam(value = "Number of demands to be retrieved", defaultValue = "10") @RequestParam(defaultValue = "10", required = false) Integer limit,
-                                     @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+                                     @ApiParam(value = "Number of demands to be retrieved", defaultValue = "10") @RequestParam(defaultValue = "10", required = false) Integer limit) {
         try {
             // set request log of ExecutionContext
             String requestLog = String.format("Incoming request to get demands for party: %s, query term: %s, lang: %s, category: %s, due date: %s, buyer country: %s, delivery country: %s, page no: %d, limit: %d", companyId, query, lang, categoryUri, dueDate, buyerCountry, deliveryCountry, pageNo, limit);
@@ -158,13 +158,7 @@ public class DemandController {
             int demandCount;
             DemandPaginationResponse response;
             // normalize the query term
-            if (query != null) {
-                if (query.trim().contentEquals("")) {
-                    query = null;
-                } else {
-                    query = query.trim();
-                }
-            }
+            query = normalizeQueryTerm(query);
             demandCount = demandIndexService.getDemandCount(query, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry);
             demands = demandIndexService.searchDemand(query, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry, pageNo, limit);
             response = new DemandPaginationResponse(demandCount, demands);
@@ -280,5 +274,49 @@ public class DemandController {
         }
     }
 
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Get demand categories and associated demand counts.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved demand categories successfully", response = DemandType.class),
+            @ApiResponse(code = 500, message = "Unexpected error while getting demand categories"),
+    })
+    @RequestMapping(value = "/demand-categories",
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getCategories(@ApiParam(value = "Identifier of the company of which demands to be retrieved.") @RequestParam(required = false) String companyId,
+                                        @ApiParam(value = "Search query term.") @RequestParam(required = false) String query,
+                                        @ApiParam(value = "Query language") @RequestParam(required = false) String lang,
+                                        @ApiParam(value = "Demand category") @RequestParam(required = false) String categoryUri,
+                                        @ApiParam(value = "Latest due date. Demands of which due dates are equal or earlier than the provided date are retrieved") @RequestParam(required = false) String dueDate,
+                                        @ApiParam(value = "Buyer country") @RequestParam(required = false) String buyerCountry,
+                                        @ApiParam(value = "Delivery country") @RequestParam(required = false) String deliveryCountry) {
+        try {
+            // set request log of ExecutionContext
+            String requestLog = String.format("Incoming request to get demand categories for party: %s, query term: %s, lang: %s, category: %s, due date: %s, buyer country: %s, delivery country: %s", companyId, query, lang, categoryUri, dueDate, buyerCountry, deliveryCountry);
+            executionContext.setRequestLog(requestLog);
 
+            logger.info(requestLog);
+
+            // normalize the query term
+            query = normalizeQueryTerm(query);
+            List<DemandCategoryResult> categories = demandIndexService.getDemandCategories(query, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry);
+
+            logger.info("Completed request to get demand categories for party: {}, query term: {}, lang: {}, category: {}, due date: {}, buyer country: {}, delivery country: {}", companyId, query, lang, categoryUri, dueDate, buyerCountry, deliveryCountry);
+            return ResponseEntity.status(HttpStatus.OK).body(categories);
+
+        } catch (Exception e) {
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_GET_DEMANDS.toString(), Collections.singletonList(companyId), e);
+        }
+    }
+
+    private String normalizeQueryTerm(String query) {
+        if (query != null) {
+            if (query.trim().contentEquals("")) {
+                query = null;
+            } else {
+                query = query.trim();
+            }
+        }
+        return query;
+    }
 }

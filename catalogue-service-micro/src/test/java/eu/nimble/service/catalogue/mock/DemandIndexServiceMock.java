@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.mock;
 
 import eu.nimble.service.catalogue.DemandIndexService;
+import eu.nimble.service.catalogue.model.demand.DemandCategoryResult;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -23,5 +24,10 @@ public class DemandIndexServiceMock implements DemandIndexService {
     @Override
     public int getDemandCount(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry) {
         return 0;
+    }
+
+    @Override
+    public List<DemandCategoryResult> getDemandCategories(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry) {
+        return null;
     }
 }

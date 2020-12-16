@@ -1,7 +1,7 @@
 package eu.nimble.service.catalogue;
 
+import eu.nimble.service.catalogue.model.demand.DemandCategoryResult;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType;
-import org.hibernate.dialect.Ingres9Dialect;
 
 import java.util.List;
 
@@ -39,4 +39,6 @@ public interface DemandIndexService {
      * @return
      */
     int getDemandCount(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry);
+
+    List<DemandCategoryResult> getDemandCategories(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry);
 }
