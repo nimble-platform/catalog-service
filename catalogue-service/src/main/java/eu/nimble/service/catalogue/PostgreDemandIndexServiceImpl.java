@@ -1,20 +1,22 @@
 package eu.nimble.service.catalogue;
 
-import eu.nimble.service.catalogue.model.demand.DemandCategoryResult;
+import eu.nimble.service.catalogue.category.IndexCategoryService;
+import eu.nimble.service.catalogue.model.category.Category;
+import eu.nimble.service.catalogue.model.demand.DemandFacetResponse;
+import eu.nimble.service.catalogue.model.demand.DemandFacetValue;
 import eu.nimble.service.catalogue.persistence.util.DemandPersistenceUtil;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -32,6 +34,9 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
     }
 
     private static final Logger logger = LoggerFactory.getLogger(PostgreDemandIndexServiceImpl.class);
+
+    @Autowired
+    private IndexCategoryService indexCategoryService;
 
     @Override
     public void indexDemandText(DemandType demand) {
@@ -73,7 +78,9 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
     public List<DemandType> searchDemand(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry,
                                          Integer pageNo, Integer limit) {
 
-        DemandRetrievalQuery query = constructDemandRetrievalQuery(DemandQueryType.HJID, queryTerm, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry);
+        DemandRetrievalQuery query = constructDemandRetrievalQuery(
+                DemandQueryType.HJID, queryTerm, lang, companyId, categoryUri != null ? Collections.singletonList(categoryUri) : null, dueDate, buyerCountry, deliveryCountry
+        );
         List<BigInteger> results = new JPARepositoryFactory().forCatalogueRepository()
                 .getEntities(query.query, query.queryParameters.toArray(new String[query.queryParameters.size()]), query.queryValues.toArray(), limit, pageNo * limit, true);
         if (results.size() > 0) {
@@ -92,27 +99,54 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
 
     @Override
     public int getDemandCount(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry) {
-        DemandRetrievalQuery query = constructDemandRetrievalQuery(DemandQueryType.COUNT, queryTerm, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry);
+        DemandRetrievalQuery query = constructDemandRetrievalQuery(
+                DemandQueryType.COUNT, queryTerm, lang, companyId, categoryUri != null ? Collections.singletonList(categoryUri) : null, dueDate, buyerCountry, deliveryCountry
+        );
         BigInteger count = new JPARepositoryFactory().forCatalogueRepository()
                 .getSingleEntity(query.query, query.queryParameters.toArray(new String[query.queryParameters.size()]), query.queryValues.toArray(), true);
         return count.intValue();
     }
 
     @Override
-    public List<DemandCategoryResult> getDemandCategories(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry) {
-        DemandRetrievalQuery query = constructDemandRetrievalQuery(DemandQueryType.CATEGORY, queryTerm, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry);
+    public List<DemandFacetResponse> getDemandFacets(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry) {
+        List<DemandFacetResponse> facetResponses = new ArrayList<>();
+
+        // categories
+        // use parent categories of the category for the category query as we want to get parent categories in the results also
+        List<String> allUris = new ArrayList<>();
+        List<String> wrappedSingleUri = new ArrayList<>();
+        if (categoryUri != null) {
+            List<Category> parentCategories = indexCategoryService.getParentCategories(categoryUri);
+            List<Category> childrenCategories = indexCategoryService.getChildrenCategories(categoryUri);
+            allUris = parentCategories.stream().map(Category::getCategoryUri).collect(Collectors.toList());
+            allUris.addAll(childrenCategories.stream().map(Category::getCategoryUri).collect(Collectors.toList()));
+            wrappedSingleUri.add(categoryUri);
+        }
+        DemandRetrievalQuery query = constructDemandRetrievalQuery(DemandQueryType.CATEGORY, queryTerm, lang, companyId, allUris, dueDate, buyerCountry, deliveryCountry);
+        facetResponses.add(constructDemandFacetResponse("Category", query));
+        // delivery country
+        query = constructDemandRetrievalQuery(DemandQueryType.DELIVERY_COUNTRY, queryTerm, lang, companyId, wrappedSingleUri, dueDate, buyerCountry, deliveryCountry);
+        facetResponses.add(constructDemandFacetResponse("Delivery Country", query));
+        // buyer country
+        query = constructDemandRetrievalQuery(DemandQueryType.BUYER_COUNTRY, queryTerm, lang, companyId, wrappedSingleUri, dueDate, buyerCountry, deliveryCountry);
+        facetResponses.add(constructDemandFacetResponse("Buyer Country", query));
+
+        return facetResponses;
+    }
+
+    private DemandFacetResponse constructDemandFacetResponse(String facetName, DemandRetrievalQuery query ) {
         List<Object> dbResults = new JPARepositoryFactory().forCatalogueRepository()
                 .getEntities(query.query, query.queryParameters.toArray(new String[query.queryParameters.size()]), query.queryValues.toArray(), true);
-        List<DemandCategoryResult> results = new ArrayList<>();
+        List<DemandFacetValue> facetResults = new ArrayList<>();
         for (Object result : dbResults) {
             Object[] castedResult = (Object[]) result;
-            results.add(new DemandCategoryResult((String) castedResult[0], ((BigInteger) castedResult[1]).intValue()));
+            facetResults.add(new DemandFacetValue((String) castedResult[0], ((BigInteger) castedResult[1]).intValue()));
         }
-        return results;
+        return new DemandFacetResponse(facetName, facetResults);
     }
 
     private static DemandRetrievalQuery constructDemandRetrievalQuery(
-            DemandQueryType queryType, String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry
+            DemandQueryType queryType, String queryTerm, String lang, String companyId, List<String> categoryUris, String dueDate, String buyerCountry, String deliveryCountry
     ) {
         StringBuilder query = new StringBuilder("SELECT");
         if (queryType == DemandQueryType.HJID) {
@@ -121,6 +155,10 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
             query.append(" COUNT(d.hjid)");
         } else if (queryType == DemandQueryType.CATEGORY) {
             query.append(" c.uri, COUNT(c.uri)");
+        } else if (queryType == DemandQueryType.BUYER_COUNTRY) {
+            query.append(" c3.value_, COUNT(c3.value_)");
+        } else if (queryType == DemandQueryType.DELIVERY_COUNTRY) {
+            query.append(" c2.value_, COUNT(c2.value_)");
         }
         query.append(" FROM demand_type d");
 
@@ -133,15 +171,15 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
                 query.append(", metadata_type m");
             }
         }
-        if (categoryUri != null || queryType == DemandQueryType.CATEGORY) {
+        if (CollectionUtils.isNotEmpty(categoryUris) || queryType == DemandQueryType.CATEGORY) {
             // join code table
             query.append(", code_type c");
         }
-        if (deliveryCountry != null) {
+        if (deliveryCountry != null || queryType == DemandQueryType.DELIVERY_COUNTRY) {
             // join code table
             query.append(", code_type c2");
         }
-        if (buyerCountry != null) {
+        if (buyerCountry != null || queryType == DemandQueryType.BUYER_COUNTRY) {
             // join code table
             query.append(", code_type c3");
         }
@@ -163,10 +201,11 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
             query.append(", to_tsquery('").append(lang).append("','").append(queryTerm).append("') query");
         }
 
-        if (queryTerm != null || companyId != null || categoryUri != null || dueDate != null || buyerCountry != null || deliveryCountry != null) {
+        // where statement
+        if (queryTerm != null || companyId != null || CollectionUtils.isNotEmpty(categoryUris) || dueDate != null || buyerCountry != null || deliveryCountry != null) {
             query.append(" WHERE");
         } else {
-            if (queryType == DemandQueryType.HJID || queryType == DemandQueryType.CATEGORY) {
+            if (queryType == DemandQueryType.HJID || queryType == DemandQueryType.CATEGORY || queryType == DemandQueryType.DELIVERY_COUNTRY || queryType == DemandQueryType.BUYER_COUNTRY) {
                 query.append(" WHERE");
             }
         }
@@ -188,16 +227,20 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
             }
         }
 
-        if (categoryUri != null || queryType == DemandQueryType.CATEGORY) {
+        if (CollectionUtils.isNotEmpty(categoryUris) || queryType == DemandQueryType.CATEGORY) {
             if (previousCriteria) {
                 query.append(" AND");
             }
             previousCriteria = true;
             query.append(" d.hjid = c.item_classification_code_dem_0");
-            if (categoryUri != null) {
-                query.append(" AND c.uri = :categoryUri");
-                queryParameters.add("categoryUri");
-                queryValues.add(categoryUri);
+            if (CollectionUtils.isNotEmpty(categoryUris)) {
+                List<String> oredCategories = new ArrayList<>();
+                for (int i = 0; i < categoryUris.size(); i++) {
+                    oredCategories.add("c.uri = :categoryUri" + i);
+                    queryParameters.add("categoryUri" + i);
+                    queryValues.add(categoryUris.get(i));
+                }
+                query.append(" AND (").append(String.join(" OR ", oredCategories)).append(" )");
             }
         }
 
@@ -220,6 +263,13 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
             query.append(" c2.value_ = :deliveryCountry");
             queryParameters.add("deliveryCountry");
             queryValues.add(deliveryCountry);
+        } else {
+            if (queryType == DemandQueryType.DELIVERY_COUNTRY) {
+                if (previousCriteria) {
+                    query.append(" AND");
+                }
+                query.append(" d.delivery_country_demand_type_0 = c2.hjid");
+            }
         }
 
         if (buyerCountry != null) {
@@ -231,6 +281,13 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
             query.append(" c3.value_ = :buyerCountry");
             queryParameters.add("buyerCountry");
             queryValues.add(buyerCountry);
+        } else {
+            if (queryType == DemandQueryType.BUYER_COUNTRY) {
+                if (previousCriteria) {
+                    query.append(" AND");
+                }
+                query.append(" d.buyer_country_demand_type_hj_0 = c3.hjid");
+            }
         }
 
         if (queryTerm != null) {
@@ -247,8 +304,12 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
             } else {
                 query.append(" ORDER BY m.creation_date_item DESC");
             }
-        } else if(queryType == DemandQueryType.CATEGORY) {
+        } else if (queryType == DemandQueryType.CATEGORY) {
             query.append(" GROUP BY c.uri");
+        } else if (queryType == DemandQueryType.DELIVERY_COUNTRY) {
+            query.append(" GROUP BY c2.value_");
+        } else if (queryType == DemandQueryType.BUYER_COUNTRY) {
+            query.append(" GROUP BY c3.value_");
         }
 
         DemandRetrievalQuery result = new DemandRetrievalQuery();
@@ -268,5 +329,7 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
 enum DemandQueryType {
     COUNT,
     HJID,
-    CATEGORY
+    CATEGORY,
+    BUYER_COUNTRY,
+    DELIVERY_COUNTRY
 }

@@ -130,6 +130,10 @@ public class IndexCategoryService {
 
     public List<Category> getParentCategories(String taxonomyId, String categoryId) throws InvalidCategoryException {
         String categoryUri = constructUri(taxonomyId, categoryId);
+        return this.getParentCategories(categoryUri);
+    }
+
+    public List<Category> getParentCategories(String categoryUri) {
         List<ClassType> parentIndexCategories = getParentIndexCategories(categoryUri);
 
         // transform to Catalogue category model

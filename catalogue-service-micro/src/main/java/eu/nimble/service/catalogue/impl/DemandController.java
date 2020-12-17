@@ -7,7 +7,8 @@ import eu.nimble.service.catalogue.DemandIndexService;
 import eu.nimble.service.catalogue.DemandService;
 import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
-import eu.nimble.service.catalogue.model.demand.DemandCategoryResult;
+import eu.nimble.service.catalogue.model.demand.DemandFacetResponse;
+import eu.nimble.service.catalogue.model.demand.DemandFacetValue;
 import eu.nimble.service.catalogue.model.demand.DemandPaginationResponse;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType;
 import eu.nimble.utility.ExecutionContext;
@@ -275,37 +276,37 @@ public class DemandController {
     }
 
     @CrossOrigin(origins = {"*"})
-    @ApiOperation(value = "", notes = "Get demand categories and associated demand counts.")
+    @ApiOperation(value = "", notes = "Gets demand facets.")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Retrieved demand categories successfully", response = DemandType.class),
-            @ApiResponse(code = 500, message = "Unexpected error while getting demand categories"),
+            @ApiResponse(code = 200, message = "Retrieved demand facets successfully", response = DemandType.class),
+            @ApiResponse(code = 500, message = "Unexpected error while getting demand facets"),
     })
-    @RequestMapping(value = "/demand-categories",
+    @RequestMapping(value = "/demand-facets",
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity getCategories(@ApiParam(value = "Identifier of the company of which demands to be retrieved.") @RequestParam(required = false) String companyId,
-                                        @ApiParam(value = "Search query term.") @RequestParam(required = false) String query,
-                                        @ApiParam(value = "Query language") @RequestParam(required = false) String lang,
-                                        @ApiParam(value = "Demand category") @RequestParam(required = false) String categoryUri,
-                                        @ApiParam(value = "Latest due date. Demands of which due dates are equal or earlier than the provided date are retrieved") @RequestParam(required = false) String dueDate,
-                                        @ApiParam(value = "Buyer country") @RequestParam(required = false) String buyerCountry,
-                                        @ApiParam(value = "Delivery country") @RequestParam(required = false) String deliveryCountry) {
+    public ResponseEntity getFacets(@ApiParam(value = "Identifier of the company of which demands to be retrieved.") @RequestParam(required = false) String companyId,
+                                    @ApiParam(value = "Search query term.") @RequestParam(required = false) String query,
+                                    @ApiParam(value = "Query language") @RequestParam(required = false) String lang,
+                                    @ApiParam(value = "Demand category") @RequestParam(required = false) String categoryUri,
+                                    @ApiParam(value = "Latest due date. Demands of which due dates are equal or earlier than the provided date are retrieved") @RequestParam(required = false) String dueDate,
+                                    @ApiParam(value = "Buyer country") @RequestParam(required = false) String buyerCountry,
+                                    @ApiParam(value = "Delivery country") @RequestParam(required = false) String deliveryCountry) {
         try {
             // set request log of ExecutionContext
-            String requestLog = String.format("Incoming request to get demand categories for party: %s, query term: %s, lang: %s, category: %s, due date: %s, buyer country: %s, delivery country: %s", companyId, query, lang, categoryUri, dueDate, buyerCountry, deliveryCountry);
+            String requestLog = String.format("Incoming request to get demand facets for party: %s, query term: %s, lang: %s, category: %s, due date: %s, buyer country: %s, delivery country: %s", companyId, query, lang, categoryUri, dueDate, buyerCountry, deliveryCountry);
             executionContext.setRequestLog(requestLog);
 
             logger.info(requestLog);
 
             // normalize the query term
             query = normalizeQueryTerm(query);
-            List<DemandCategoryResult> categories = demandIndexService.getDemandCategories(query, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry);
+            List<DemandFacetResponse> facets = demandIndexService.getDemandFacets(query, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry);
 
-            logger.info("Completed request to get demand categories for party: {}, query term: {}, lang: {}, category: {}, due date: {}, buyer country: {}, delivery country: {}", companyId, query, lang, categoryUri, dueDate, buyerCountry, deliveryCountry);
-            return ResponseEntity.status(HttpStatus.OK).body(categories);
+            logger.info("Completed request to get demand facets for party: {}, query term: {}, lang: {}, category: {}, due date: {}, buyer country: {}, delivery country: {}", companyId, query, lang, categoryUri, dueDate, buyerCountry, deliveryCountry);
+            return ResponseEntity.status(HttpStatus.OK).body(facets);
 
         } catch (Exception e) {
-            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_GET_DEMANDS.toString(), Collections.singletonList(companyId), e);
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_GET_DEMAND_FACETS.toString(), e);
         }
     }
 
