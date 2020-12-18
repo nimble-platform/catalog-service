@@ -362,8 +362,6 @@ public class TemplateParser {
                 for(TextType productName: productNames) {
                     catalogueLineType.getGoodsItem().getItem().getName().add(productName);
                 }
-            } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_STATUS.toString(), defaultLanguage))) {
-                catalogueLineType.setProductStatusType((String) parseCell(cell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_STATUS.toString(), defaultLanguage), TemplateConfig.TEMPLATE_DATA_TYPE_TEXT , false));
 
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION.toString(), defaultLanguage))) {
                 List<TextType> productDescriptions = (List<TextType>) parseCell(cell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION.toString(), defaultLanguage),TEMPLATE_DATA_TYPE_MULTILINGUAL_TEXT , true);
