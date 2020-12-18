@@ -19,12 +19,14 @@ import eu.nimble.service.catalogue.validation.CatalogueValidator;
 import eu.nimble.service.catalogue.validation.ValidationMessages;
 import eu.nimble.service.model.modaml.catalogue.TEXCatalogType;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyNameType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PersonType;
 import eu.nimble.utility.*;
 import eu.nimble.utility.exception.BinaryContentException;
 import eu.nimble.utility.exception.NimbleException;
+import eu.nimble.utility.persistence.GenericJPARepository;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import eu.nimble.utility.serialization.TransactionEnabledSerializationUtility;
@@ -46,11 +48,15 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Catalogue level REST services. A catalogue is a collection of products or services on which various business processes
@@ -987,6 +993,57 @@ public class CatalogueController {
 
         } catch (Exception e) {
             throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_UNEXPECTED_ERROR_WHILE_ADDING_WHITE_BLACK_LIST.toString(),Arrays.asList(id),e);
+        }
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Updates the status of products included in the given catalogues")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Updated product status successfully"),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token"),
+            @ApiResponse(code = 500, message = "Unexpected error while updating product status")
+    })
+    @RequestMapping(value = "/catalogue/product-status",
+            method = RequestMethod.PUT,
+            produces = {"application/json"})
+    public void changeProductStatusForCatalogues(
+            @ApiParam(value = "Identifier of the party for which the product status to be updated", required = true) @RequestParam(value = "partyId", required = true) String partyId,
+            @ApiParam(value = "Product status") @RequestParam(value = "status",required = true) ProductStatus productStatus,
+            @ApiParam(value = "Identifier of the catalogues. (catalogue.id)", required = true) @RequestParam(value = "ids", required = true) List<String> ids,
+            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken,
+            HttpServletResponse response) {
+
+        // set request log of ExecutionContext
+        String requestLog = String.format("Incoming request to update product status for party: %s, ids: %s, published: %s", partyId,ids,productStatus);
+        executionContext.setRequestLog(requestLog);
+
+        try {
+            log.info(requestLog);
+
+            // validate role
+            if(!validationUtil.validateRole(bearerToken,executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_TO_EXPORT_CATALOGUE)) {
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
+            }
+
+            GenericJPARepository catalogueRepo = new JPARepositoryFactory().forCatalogueRepository(true);
+            for (String id : ids) {
+                CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueForParty(id, partyId);
+                if(catalogue != null){
+                    if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogue.getUUID(),executionContext.getVatNumber())){
+                        throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(), Collections.singletonList(catalogue.getUUID()));
+                    }
+                    for (CatalogueLineType catalogueLine : catalogue.getCatalogueLine()) {
+                        catalogueLine.setProductStatusType(productStatus.toString());
+
+                        catalogueRepo.updateEntity(catalogueLine);
+                    }
+                    itemIndexClient.indexCatalogue(catalogue);
+                }
+            }
+            log.info("Completed request to update product status for party: {}, ids: {}, published: {}", partyId, ids,productStatus);
+
+        } catch(Exception e) {
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_CHANGE_PRODUCT_STATUS_FOR_CATALOGUES.toString(),Arrays.asList(partyId, ids.toString(), productStatus.toString()),e);
         }
     }
 
