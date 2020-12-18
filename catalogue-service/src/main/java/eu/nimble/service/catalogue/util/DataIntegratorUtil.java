@@ -56,7 +56,7 @@ public class DataIntegratorUtil {
 
     private static void setCatalogueLineStatus(CatalogueLineType catalogueLineType){
         if(Strings.isNullOrEmpty(catalogueLineType.getProductStatusType()) || !EnumUtils.isValidEnum(ProductStatus.class,catalogueLineType.getProductStatusType())){
-            catalogueLineType.setProductStatusType(ProductStatus.PUBLISHED.toString());
+            catalogueLineType.setProductStatusType(ProductStatus.DRAFT.toString());
         }
     }
 
