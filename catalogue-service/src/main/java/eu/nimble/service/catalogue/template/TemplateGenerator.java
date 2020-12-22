@@ -691,7 +691,7 @@ public class TemplateGenerator {
             }
             else{
                 thirdRowCell.setCellValue(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY) ? TemplateConfig.TEMPLATE_QUANTITY_VALUE
-                        : dataType.contentEquals("AMOUNT") ? "AMOUNT VALUE"
+                        : dataType.contentEquals(TEMPLATE_DATA_TYPE_AMOUNT) ? TEMPLATE_DATA_TYPE_AMOUNT_VALUE
                         : dataType);
             }
             // make thirdRow read only
@@ -752,7 +752,7 @@ public class TemplateGenerator {
                 // if its data type is Quantity or Amount, we should add Value to its data type to have a consistent template view
                 String dataType = normalizeDataTypeForTemplate(property);
                 thirdRowCell.setCellValue(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY) ? TemplateConfig.TEMPLATE_QUANTITY_VALUE
-                        : dataType.contentEquals("AMOUNT") ? "AMOUNT VALUE"
+                        : dataType.contentEquals(TEMPLATE_DATA_TYPE_AMOUNT) ? TEMPLATE_DATA_TYPE_AMOUNT_VALUE
                         : dataType);
                 // make thirdRow read only
                 thirdRowCell.setCellStyle(readOnlyStyle);
@@ -818,7 +818,7 @@ public class TemplateGenerator {
                 }
 
                 // check whether the property needs a unit
-                if(property.getDataType().equals("AMOUNT")){
+                if(property.getDataType().equals(TEMPLATE_DATA_TYPE_AMOUNT)){
                     // quantity unit
                     productPropertiesTab.getRow(0).createCell(++columnOffset).setCellStyle(readOnlyStyle);
                     cell = secondRow.createCell(columnOffset);
@@ -930,7 +930,7 @@ public class TemplateGenerator {
             }
             else{
                 thirdRowCell.setCellValue(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY) ? TemplateConfig.TEMPLATE_QUANTITY_VALUE
-                        : dataType.contentEquals("AMOUNT") ? "AMOUNT VALUE"
+                        : dataType.contentEquals(TEMPLATE_DATA_TYPE_AMOUNT) ? TEMPLATE_DATA_TYPE_AMOUNT_VALUE
                         : dataType);
             }
             // make thirdRow read only
@@ -1025,7 +1025,7 @@ public class TemplateGenerator {
                 // if its data type is Quantity or Amount, we should add Value to its data type to have a consistent template view
                 String dataType = normalizeDataTypeForTemplate(property);
                 thirdRowCell.setCellValue(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY) ? TemplateConfig.TEMPLATE_QUANTITY_VALUE
-                        : dataType.contentEquals("AMOUNT") ? "AMOUNT VALUE"
+                        : dataType.contentEquals(TEMPLATE_DATA_TYPE_AMOUNT) ? TEMPLATE_DATA_TYPE_AMOUNT_VALUE
                         : dataType);
                 // make thirdRow read only
                 thirdRowCell.setCellStyle(readOnlyStyle);
@@ -1046,7 +1046,7 @@ public class TemplateGenerator {
                 }
 
                 // check whether the property needs a unit
-                if(property.getDataType().equals("AMOUNT")){
+                if(property.getDataType().equals(TEMPLATE_DATA_TYPE_AMOUNT)){
                     // quantity unit
                     productPropertiesExampleTab.getRow(0).createCell(++columnOffset).setCellStyle(readOnlyStyle);
                     cell = secondRow.createCell(columnOffset);
@@ -1169,14 +1169,14 @@ public class TemplateGenerator {
                 thirdRowCell.setCellValue(TemplateConfig.TEMPLATE_DATA_TYPE_TEXT);
             } else{
                 thirdRowCell.setCellValue(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY) ? TemplateConfig.TEMPLATE_QUANTITY_VALUE
-                        : dataType.contentEquals("AMOUNT") ? "AMOUNT VALUE"
+                        : dataType.contentEquals(TEMPLATE_DATA_TYPE_AMOUNT) ? TEMPLATE_DATA_TYPE_AMOUNT_VALUE
                         : dataType);
             }
             // make thirdRow read only
             thirdRowCell.setCellStyle(readOnlyStyle);
             fourthRow.createCell(columnIndex).setCellStyle(readOnlyStyle);
             // check whether the property needs a unit
-            if(property.getDataType().equals("AMOUNT")){
+            if(property.getDataType().equals(TEMPLATE_DATA_TYPE_AMOUNT)){
                 // quantity unit
                 termsTab.getRow(0).createCell(++columnIndex).setCellStyle(readOnlyStyle);
                 cell = secondRow.createCell(columnIndex);
@@ -1362,7 +1362,7 @@ public class TemplateGenerator {
                 thirdRowCell.setCellValue(TemplateConfig.TEMPLATE_DATA_TYPE_TEXT);
             } else{
                 thirdRowCell.setCellValue(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY) ? TemplateConfig.TEMPLATE_QUANTITY_VALUE
-                        : dataType.contentEquals("AMOUNT") ? "AMOUNT VALUE"
+                        : dataType.contentEquals(TEMPLATE_DATA_TYPE_AMOUNT) ? TEMPLATE_DATA_TYPE_AMOUNT_VALUE
                         : dataType);
             }
             // make thirdRow read only
@@ -1554,7 +1554,7 @@ public class TemplateGenerator {
                 termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("weeks");
             }
             // check whether the property needs a unit
-            if(property.getDataType().equals("AMOUNT")){
+            if(property.getDataType().equals(TEMPLATE_DATA_TYPE_AMOUNT)){
                 termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("4");
                 termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("6");
                 termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("1");
