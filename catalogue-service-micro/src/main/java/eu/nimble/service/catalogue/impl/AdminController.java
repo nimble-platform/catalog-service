@@ -20,6 +20,7 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CommodityClassificationType;
 import eu.nimble.utility.exception.NimbleException;
 import eu.nimble.utility.persistence.GenericJPARepository;
+import eu.nimble.utility.persistence.GenericJPARepositoryImpl;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.validation.IValidationUtil;
 import feign.Response;
@@ -390,5 +391,44 @@ public class AdminController {
 
         logger.info("Completed request to get catalogue lines with missing parent categories");
         return ResponseEntity.ok(jsonObject.toString());
+    }
+
+    @ApiOperation(value = "", notes = "Deletes entities for the given class")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Deleted the entities successfully"),
+            @ApiResponse(code = 404, message = "There does not exist a class for the given class name"),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token")
+    })
+    @RequestMapping(value = "/entities",
+            produces = {"application/json"},
+            method = RequestMethod.DELETE)
+    public ResponseEntity deleteEntities(@ApiParam(value = "Entity type of which instance to be deleted e.g. eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType", required = true) @RequestParam(value = "className", required = true) String className,
+                                         @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken
+    ) {
+        // set request log of ExecutionContext
+        String requestLog = String.format("Deleting the entities with className: %s", className);
+        executionContext.setRequestLog(requestLog);
+
+        logger.info(requestLog);
+
+        // validate role
+        if (!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_CATALOGUE_WRITE)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
+        }
+
+        Class objectClass = null;
+        try {
+            objectClass = Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            throw new NimbleException("", Arrays.asList(className), e);
+        }
+
+        // delete the object
+        GenericJPARepositoryImpl repo = new JPARepositoryFactory().forCatalogueRepository();
+        List<Object> entities = repo.getEntities(objectClass);
+        entities.forEach(entity -> repo.deleteEntity(entity));
+
+        logger.info("Deleted entities with className: {}", className);
+        return ResponseEntity.ok(null);
     }
 }
