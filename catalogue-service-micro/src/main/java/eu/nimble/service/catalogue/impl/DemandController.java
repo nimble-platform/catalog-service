@@ -165,11 +165,12 @@ public class DemandController {
             demandCount = demandIndexService.getDemandCount(query, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry);
             demands = demandIndexService.searchDemand(query, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry, pageNo, limit);
             response = new DemandPaginationResponse(demandCount, demands);
-            ObjectMapper mapper = JsonSerializationUtility.getObjectMapper(1);
+            // TODO enable this and do not include image content in the actual results
+//            ObjectMapper mapper = JsonSerializationUtility.getObjectMapper(1);
 
             logger.info("Completed request to get demands for party: {}, query term: {}, lang: {}, category: {}, due date: {}, buyer country: {}, delivery country: {}, page no: {}, limit: {}", companyId, query, lang, categoryUri, dueDate, buyerCountry, deliveryCountry, pageNo, limit);
-            return ResponseEntity.status(HttpStatus.OK).body(mapper.writeValueAsString(response));
 
+            return ResponseEntity.status(HttpStatus.OK).body(JsonSerializationUtility.getObjectMapper().writeValueAsString(response));
         } catch (Exception e) {
             throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_GET_DEMANDS.toString(), Collections.singletonList(companyId), e);
         }
