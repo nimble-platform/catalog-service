@@ -311,8 +311,8 @@ public class Test01_CatalogueControllerTest {
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         CataloguePaginationResponse cataloguePaginationResponse = mapper.readValue(result.getResponse().getContentAsString(), CataloguePaginationResponse.class);
 
-        Assert.assertEquals(1,cataloguePaginationResponse.getSize());
-        Assert.assertEquals(1,cataloguePaginationResponse.getCatalogueLines().size());
+        Assert.assertEquals(5,cataloguePaginationResponse.getSize());
+        Assert.assertEquals(5,cataloguePaginationResponse.getCatalogueLines().size());
     }
 
 
