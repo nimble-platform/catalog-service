@@ -10,6 +10,8 @@ import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
 import eu.nimble.service.catalogue.model.demand.DemandFacetResponse;
 import eu.nimble.service.catalogue.model.demand.DemandFacetValue;
 import eu.nimble.service.catalogue.model.demand.DemandPaginationResponse;
+import eu.nimble.service.catalogue.persistence.util.DemandPersistenceUtil;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandInterestCount;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType;
 import eu.nimble.utility.ExecutionContext;
 import eu.nimble.utility.JsonSerializationUtility;
@@ -307,6 +309,60 @@ public class DemandController {
 
         } catch (Exception e) {
             throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_GET_DEMAND_FACETS.toString(), e);
+        }
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Submits a demand interest count.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Saved the interest activity successfully", response = DemandType.class),
+            @ApiResponse(code = 500, message = "Unexpected error while saving the demand interest activity"),
+    })
+    @RequestMapping(value = "/demands/{demandHjid}/visit",
+            method = RequestMethod.POST)
+    public ResponseEntity addDemandVisitCount(@ApiParam(value = "Demand hjid.", required = true) @PathVariable(required = true) Long demandHjid,
+                                              @ApiParam(value = "Identifier of the visitor company.", required = true) @RequestParam(required = true) String visitorCompanyId,
+                                              @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        try {
+            // set request log of ExecutionContext
+            String requestLog = String.format("Incoming request to save interest activity for demand: %d by %s", demandHjid, visitorCompanyId);
+            executionContext.setRequestLog(requestLog);
+
+            logger.info(requestLog);
+
+            DemandPersistenceUtil.saveDemandInterestActivity(demandHjid, visitorCompanyId);
+
+            logger.info("to save interest activity for demand: {} by {}", demandHjid, visitorCompanyId);
+            return ResponseEntity.status(HttpStatus.OK).build();
+
+        } catch (Exception e) {
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_SAVE_DEMAND_INTEREST_ACTIVITY.toString(), Arrays.asList(demandHjid.toString(), visitorCompanyId), e);
+        }
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Gets .")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved interest counts successfully", response = DemandType.class),
+            @ApiResponse(code = 500, message = "Unexpected error while saving the demand interest activity"),
+    })
+    @RequestMapping(value = "/demands/interest-counts",
+            method = RequestMethod.GET)
+    public ResponseEntity getDemandInterestCounts(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        try {
+            // set request log of ExecutionContext
+            String requestLog = String.format("Incoming request to get interest counts");
+            executionContext.setRequestLog(requestLog);
+
+            logger.info(requestLog);
+
+            List<DemandInterestCount> interestCounts = DemandPersistenceUtil.getInterestCounts();
+
+            logger.info("Incoming request to get interest counts");
+            return ResponseEntity.status(HttpStatus.OK).body(interestCounts);
+
+        } catch (Exception e) {
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_GET_INTEREST_COUNTS.toString(), e);
         }
     }
 
