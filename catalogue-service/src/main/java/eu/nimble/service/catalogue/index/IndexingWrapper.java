@@ -38,8 +38,8 @@ public class IndexingWrapper {
     private static final Logger logger = LoggerFactory.getLogger(IndexingWrapper.class);
 
     private static final String XSD_NS = "http://www.w3.org/2001/XMLSchema#";
-
     private static final List<String> languagePriorityForCustomProperties = Arrays.asList("en", "es", "de", "tr", "it");
+    private static final String circularEconomyCertificateGroup = "Circular Economy (Environment / Sustainability)";
 
     public static ItemType toIndexItem(CatalogueLineType catalogueLine) {
         ItemType indexItem = new ItemType();
@@ -61,6 +61,7 @@ public class IndexingWrapper {
         });
         indexItem.setApplicableCountries(getCountries(catalogueLine));
         indexItem.setCertificateType(getCertificates(catalogueLine));
+        indexItem.setCertificateName(getCertificates(catalogueLine));
         indexItem.setPermittedParties(new HashSet<>(CataloguePersistenceUtil.getPermittedParties(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID())));
         indexItem.setRestrictedParties(new HashSet<>(CataloguePersistenceUtil.getRestrictedParties(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID())));
         AmountValidator amountValidator = new AmountValidator(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount());
@@ -233,6 +234,16 @@ public class IndexingWrapper {
             certificates.add(certificate.getCertificateType());
         }
         return certificates;
+    }
+
+    private static Set<String> getCircularEconomyRelatedCertificateNames(CatalogueLineType catalogueLine) {
+        Set<String> certificateNames = new HashSet<>();
+        catalogueLine.getGoodsItem().getItem().getCertificate().stream()
+                .filter(cert -> cert.getCertificateType().contentEquals("Circular Economy (Environment / Sustainability)"))
+                .forEach(cert -> {
+            certificateNames.add(cert.getCertificateTypeCode().getName());
+        });
+        return certificateNames;
     }
 
     private static Set<String> getImageUris(CatalogueLineType catalogueLine) {
