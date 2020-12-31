@@ -61,7 +61,7 @@ public class IndexingWrapper {
         });
         indexItem.setApplicableCountries(getCountries(catalogueLine));
         indexItem.setCertificateType(getCertificates(catalogueLine));
-        indexItem.setCertificateName(getCertificates(catalogueLine));
+        indexItem.setCertificateCode(getCircularEconomyRelatedCertificateNames(catalogueLine));
         indexItem.setPermittedParties(new HashSet<>(CataloguePersistenceUtil.getPermittedParties(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID())));
         indexItem.setRestrictedParties(new HashSet<>(CataloguePersistenceUtil.getRestrictedParties(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID())));
         AmountValidator amountValidator = new AmountValidator(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount());
@@ -239,7 +239,7 @@ public class IndexingWrapper {
     private static Set<String> getCircularEconomyRelatedCertificateNames(CatalogueLineType catalogueLine) {
         Set<String> certificateNames = new HashSet<>();
         catalogueLine.getGoodsItem().getItem().getCertificate().stream()
-                .filter(cert -> cert.getCertificateType().contentEquals("Circular Economy (Environment / Sustainability)"))
+                .filter(cert -> cert.getCertificateType().contentEquals(circularEconomyCertificateGroup))
                 .forEach(cert -> {
             certificateNames.add(cert.getCertificateTypeCode().getName());
         });
@@ -458,8 +458,7 @@ public class IndexingWrapper {
         indexParty.setId(party.getHjid().toString());
         indexParty.setUri(party.getHjid().toString());
 
-        // TODO currently we do not support multilingual certificate types
-        party.getCertificate().stream().forEach(certificate -> indexParty.addCertificateType("", certificate.getCertificateTypeCode().getName()));
+        indexParty.setCertificateCode(getCircularEconomyRelatedCertificateNames(party));
         if(party.getPpapCompatibilityLevel() != null) {
             indexParty.setPpapComplianceLevel(party.getPpapCompatibilityLevel().intValue());
         }
@@ -489,5 +488,15 @@ public class IndexingWrapper {
             }
         });
         return indexParty;
+    }
+
+    private static Set<String> getCircularEconomyRelatedCertificateNames(PartyType party) {
+        Set<String> certificateNames = new HashSet<>();
+        party.getCertificate().stream()
+                .filter(cert -> cert.getCertificateType().contentEquals(circularEconomyCertificateGroup))
+                .forEach(cert -> {
+                    certificateNames.add(cert.getCertificateTypeCode().getName());
+                });
+        return certificateNames;
     }
 }
