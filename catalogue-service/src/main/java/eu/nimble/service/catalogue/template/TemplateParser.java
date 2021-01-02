@@ -629,22 +629,6 @@ public class TemplateParser {
                         catalogueLine.getGoodsItem().getDeliveryTerms().setTransportModeCode(transportModeCode);
                     }
 
-                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_APPLICABLE_ADDRESS_COUNTRY.toString(), defaultLanguage) )) {
-                    List<AddressType> applicableAddressList = new ArrayList<>();
-                    cell = TemplateGenerator.getCellWithMissingCellPolicy(row, columnIndex);
-                    List<String> countries = parseMultiValues(cell);
-                    for(String addr : countries) {
-                        AddressType address = new AddressType();
-                        applicableAddressList.add(address);
-                        CountryType country = new CountryType();
-                        TextType cName = new TextType();
-                        cName.setLanguageID(defaultLanguage);
-                        cName.setValue(addr);
-                        country.setName(cName);
-                        address.setCountry(country);
-                    }
-                    catalogueLine.getRequiredItemLocationQuantity().setApplicableTerritoryAddress(applicableAddressList);
-
                 } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PACKAGING_TYPE.toString(), defaultLanguage) )) {
                     cell = TemplateGenerator.getCellWithMissingCellPolicy(row, columnIndex);
                     CodeType packagingType = new CodeType();

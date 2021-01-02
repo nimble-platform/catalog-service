@@ -59,7 +59,6 @@ public class IndexingWrapper {
                 catalogueServiceLanguages.forEach(languageId -> indexItem.addLabel(languageId,productNames.get(0).getValue()));
             }
         });
-        indexItem.setApplicableCountries(getCountries(catalogueLine));
         indexItem.setCertificateType(getCertificates(catalogueLine));
         indexItem.setPermittedParties(new HashSet<>(CataloguePersistenceUtil.getPermittedParties(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID())));
         indexItem.setRestrictedParties(new HashSet<>(CataloguePersistenceUtil.getRestrictedParties(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID())));
@@ -217,14 +216,6 @@ public class IndexingWrapper {
             // no need to fill the classifications list
         }
         indexItem.setClassificationUri(classificationUris);
-    }
-
-    private static Set<String> getCountries(CatalogueLineType catalogueLine) {
-        Set<String> countries = new HashSet<>();
-        for(AddressType address : catalogueLine.getRequiredItemLocationQuantity().getApplicableTerritoryAddress()) {
-            address.getCountry().getName();
-        }
-        return countries;
     }
 
     private static Set<String> getCertificates(CatalogueLineType catalogueLine) {

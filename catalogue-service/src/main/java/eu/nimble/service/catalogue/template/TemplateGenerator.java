@@ -290,16 +290,6 @@ public class TemplateGenerator {
                 unitCell.setCellStyle(editableStyle);
                 cell.setCellStyle(editableStyle);
             }
-            // applicable address country
-            List<String> countries = new ArrayList<>();
-            for(AddressType address:catalogueLine.getRequiredItemLocationQuantity().getApplicableTerritoryAddress()){
-                countries.add(address.getCountry().getName().getValue());
-            }
-            cell = row.createCell(columnIndex++);
-            cell.setCellValue(getMultiValueRepresentation(countries,TemplateConfig.TEMPLATE_DATA_TYPE_TEXT));
-            if(rowIndex == 4){
-                cell.setCellStyle(editableStyle);
-            }
             // transport mode
             cell = row.createCell(columnIndex++);
             if(catalogueLine.getGoodsItem().getDeliveryTerms().getTransportModeCode() != null){
@@ -1106,24 +1096,24 @@ public class TemplateGenerator {
         cell = getCellWithMissingCellPolicy(topRow, 12);
         cell.setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_DELIVERY_TERMS.toString(), defaultLanguage));
         cell.setCellStyle(boldCellStyle);
-        cra = new CellRangeAddress(0, 0, 12, 17);
+        cra = new CellRangeAddress(0, 0, 12, 16);
         termsTab.addMergedRegion(cra);
 
         // packaging block
-        cell = getCellWithMissingCellPolicy(topRow, 18);
+        cell = getCellWithMissingCellPolicy(topRow, 17);
         cell.setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PACKAGING.toString(), defaultLanguage));
         cell.setCellStyle(boldCellStyle);
-        cra = new CellRangeAddress(0, 0, 18, 20);
+        cra = new CellRangeAddress(0, 0, 17, 19);
         termsTab.addMergedRegion(cra);
 
         // customization block
-        cell = getCellWithMissingCellPolicy(topRow, 21);
+        cell = getCellWithMissingCellPolicy(topRow, 20);
         cell.setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_CUSTOMIZATION.toString(), defaultLanguage));
         cell.setCellStyle(boldCellStyle);
 
         // spare part block
         if(SpringBridge.getInstance().getCatalogueServiceConfig().getSparePartEnabled()){
-            cell = getCellWithMissingCellPolicy(topRow, 22);
+            cell = getCellWithMissingCellPolicy(topRow, 21);
             cell.setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_SPARE_PART.toString(), defaultLanguage));
             cell.setCellStyle(boldCellStyle);
         }
@@ -1300,24 +1290,24 @@ public class TemplateGenerator {
         cell = getCellWithMissingCellPolicy(topRow, 12);
         cell.setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_DELIVERY_TERMS.toString(), defaultLanguage));
         cell.setCellStyle(boldCellStyle);
-        cra = new CellRangeAddress(0, 0, 12, 17);
+        cra = new CellRangeAddress(0, 0, 12, 16);
         termsExampleTab.addMergedRegion(cra);
 
         // packaging block
-        cell = getCellWithMissingCellPolicy(topRow, 18);
+        cell = getCellWithMissingCellPolicy(topRow, 17);
         cell.setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PACKAGING.toString(), defaultLanguage));
         cell.setCellStyle(boldCellStyle);
-        cra = new CellRangeAddress(0, 0, 18, 20);
+        cra = new CellRangeAddress(0, 0, 17, 19);
         termsExampleTab.addMergedRegion(cra);
 
         // customization block
-        cell = getCellWithMissingCellPolicy(topRow, 21);
+        cell = getCellWithMissingCellPolicy(topRow, 20);
         cell.setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_CUSTOMIZATION.toString(), defaultLanguage));
         cell.setCellStyle(boldCellStyle);
 
         // spare part block
         if(SpringBridge.getInstance().getCatalogueServiceConfig().getSparePartEnabled()){
-            cell = getCellWithMissingCellPolicy(topRow, 22);
+            cell = getCellWithMissingCellPolicy(topRow, 21);
             cell.setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_SPARE_PART.toString(), defaultLanguage));
             cell.setCellStyle(boldCellStyle);
         }
@@ -1413,11 +1403,6 @@ public class TemplateGenerator {
                 termsExampleTab.getRow(4).getCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_EXAMPLE_MINIMUM_ORDER_QUANTITY_UNIT.toString(), defaultLanguage));
                 termsExampleTab.getRow(5).createCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_EXAMPLE_MINIMUM_ORDER_QUANTITY_UNIT.toString(), defaultLanguage));
                 termsExampleTab.getRow(6).createCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_EXAMPLE_MINIMUM_ORDER_QUANTITY_UNIT.toString(), defaultLanguage));
-            }
-            else if(property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_APPLICABLE_ADDRESS_COUNTRY.toString(), defaultLanguage))){
-                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("China");
-                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("Turkey");
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("Spain|France");
             }
             else if(property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_TRANSPORT_MODE.toString(), defaultLanguage))){
                 termsExampleTab.getRow(4).getCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PLASTIC_HEAD_MALLET_TRANSPORT_MODE.toString(), defaultLanguage));
