@@ -428,46 +428,4 @@ public class IndexingWrapper {
         indexProperty.setLanguages(indexProperty.getLabel().keySet());
         return indexProperty;
     }
-
-    public static eu.nimble.service.model.solr.party.PartyType toIndexParty(PartyType party) {
-        eu.nimble.service.model.solr.party.PartyType indexParty = new eu.nimble.service.model.solr.party.PartyType();
-        party.getBrandName().forEach(name -> indexParty.addBrandName(name.getLanguageID(), name.getValue()));
-        indexParty.setLegalName(party.getPartyName().get(0).getName().getValue());
-        String originLang = party.getPostalAddress().getCountry().getName().getLanguageID() != null ? party.getPostalAddress().getCountry().getName().getLanguageID() : "";
-        indexParty.addOrigin(originLang, party.getPostalAddress().getCountry().getName().getValue());
-        indexParty.setId(party.getHjid().toString());
-        indexParty.setUri(party.getHjid().toString());
-
-        // TODO currently we do not support multilingual certificate types
-        party.getCertificate().stream().forEach(certificate -> indexParty.addCertificateType("", certificate.getCertificateTypeCode().getName()));
-        if(party.getPpapCompatibilityLevel() != null) {
-            indexParty.setPpapComplianceLevel(party.getPpapCompatibilityLevel().intValue());
-        }
-        // TODO currently we do not support multilingual ppap document types
-        party.getPpapDocumentReference().forEach(ppapDocument -> indexParty.addPpapDocumentType("", ppapDocument.getDocumentType()));
-
-        // get trust scores
-        party.getQualityIndicator().forEach(qualityIndicator -> {
-            if(qualityIndicator.getQualityParameter() != null && qualityIndicator.getQuantity() != null) {
-                if(qualityIndicator.getQualityParameter().contentEquals(QualityIndicatorParameter.COMPANY_RATING.toString())) {
-                    indexParty.setTrustRating(qualityIndicator.getQuantity().getValue().doubleValue());
-                } else if(qualityIndicator.getQualityParameter().contentEquals(QualityIndicatorParameter.TRUST_SCORE.toString())) {
-                    indexParty.setTrustScore(qualityIndicator.getQuantity().getValue().doubleValue());
-                } else if(qualityIndicator.getQualityParameter().contentEquals(QualityIndicatorParameter.DELIVERY_PACKAGING.toString())) {
-                    indexParty.setTrustDeliveryPackaging(qualityIndicator.getQuantity().getValue().doubleValue());
-                } else if(qualityIndicator.getQualityParameter().contentEquals(QualityIndicatorParameter.FULFILLMENT_OF_TERMS.toString())) {
-                    indexParty.setTrustFullfillmentOfTerms(qualityIndicator.getQuantity().getValue().doubleValue());
-                } else if(qualityIndicator.getQualityParameter().contentEquals(QualityIndicatorParameter.SELLER_COMMUNICATION.toString())) {
-                    indexParty.setTrustSellerCommunication(qualityIndicator.getQuantity().getValue().doubleValue());
-                } else if(qualityIndicator.getQualityParameter().contentEquals(QualityIndicatorParameter.NUMBER_OF_TRANSACTIONS.toString())) {
-                    indexParty.setTrustNumberOfTransactions(qualityIndicator.getQuantity().getValue().doubleValue());
-                } else if(qualityIndicator.getQualityParameter().contentEquals(QualityIndicatorParameter.TRADING_VOLUME.toString())) {
-                    indexParty.setTrustTradingVolume(qualityIndicator.getQuantity().getValue().doubleValue());
-                } else if(qualityIndicator.getQualityParameter().contentEquals(QualityIndicatorParameter.Number_OF_EVALUATIONS.toString())) {
-                    indexParty.setTrustNumberOfEvaluations(qualityIndicator.getQuantity().getValue().doubleValue());
-                }
-            }
-        });
-        return indexParty;
-    }
 }

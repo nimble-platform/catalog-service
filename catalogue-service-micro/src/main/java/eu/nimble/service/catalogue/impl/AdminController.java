@@ -26,7 +26,6 @@ import eu.nimble.utility.validation.IValidationUtil;
 import feign.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import eu.nimble.service.catalogue.index.PartyIndexClient;
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.util.migration.r8.CatalogueIndexLoader;
 import eu.nimble.service.model.solr.item.ItemType;
@@ -64,8 +63,6 @@ public class AdminController {
     @Value("${nimble.indexing.url}")
     private String indexingUrl;
     
-    @Autowired
-    private PartyIndexClient partyIndexClient;
     @Autowired
     private CatalogueIndexLoader catalogueIndexLoader;
     @Autowired
