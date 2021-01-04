@@ -14,6 +14,7 @@ import eu.nimble.service.model.ubl.commonbasiccomponents.AmountType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
+import eu.nimble.utility.country.CountryUtil;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.*;
@@ -685,8 +686,8 @@ public class TemplateParser {
             Integer vatRate = null;
             if(includeVat){
                 AddressType address = line.getGoodsItem().getItem().getManufacturerParty().getPostalAddress();
-                    if(address != null && address.getCountry() != null  && address.getCountry().getName() != null){
-                        String country = line.getGoodsItem().getItem().getManufacturerParty().getPostalAddress().getCountry().getName().getValue();
+                    if(address != null && address.getCountry() != null  && address.getCountry().getIdentificationCode() != null){
+                        String country = CountryUtil.getCountryNameByISOCode(line.getGoodsItem().getItem().getManufacturerParty().getPostalAddress().getCountry().getIdentificationCode().getValue());
                         vatRate = defaultVats.get(country);
                     }
 
