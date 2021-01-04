@@ -246,7 +246,7 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
                 query.append(" AND");
             }
             previousCriteria = true;
-            query.append(" d.due_date_item <= TO_DATE(:dueDate, 'YYYY-MM-DD')");
+            query.append(" d.due_date_item >= TO_DATE(:dueDate, 'YYYY-MM-DD')");
             queryParameters.add("dueDate");
             queryValues.add(dueDate);
         }
