@@ -7,10 +7,7 @@ import eu.nimble.service.catalogue.model.catalogue.ProductStatus;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.CommodityClassificationType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.DocumentReferenceType;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.PartyType;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
 import org.apache.commons.lang3.EnumUtils;
 
@@ -18,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class DataIntegratorUtil {
 
@@ -61,10 +59,20 @@ public class DataIntegratorUtil {
     }
 
     public static void setParentCategories(List<CommodityClassificationType> commodityClassifications) throws InvalidCategoryException {
+        // get all parents for the given commodity classifications
+        IndexCategoryService csm = SpringBridge.getInstance().getIndexCategoryService();
+        List<CodeType> parentCategories = csm.getParentCategories(
+                commodityClassifications
+                        .stream()
+                        .map(CommodityClassificationType::getItemClassificationCode)
+                        .collect(Collectors.toList()));
+
         // add parents of the selected category to commodity classifications of the item
-        for(CommodityClassificationType cct : getParentCategories(commodityClassifications)){
+        parentCategories.forEach(cat -> {
+            CommodityClassificationType cct = new CommodityClassificationType();
+            cct.setItemClassificationCode(cat);
             commodityClassifications.add(cct);
-        }
+        });
     }
 
     private static void setCatalogueDocumentReference(String catalogueUUID,CatalogueLineType catalogueLine){
@@ -115,42 +123,7 @@ public class DataIntegratorUtil {
         }
     }
 
-    public static List<CommodityClassificationType> getParentCategories(List<CommodityClassificationType> commodityClassifications) throws InvalidCategoryException {
-        // get uris of the given categories
-        List<String> uris = new ArrayList<>();
-        for(CommodityClassificationType commodityClassificationType:commodityClassifications){
-            if(commodityClassificationType.getItemClassificationCode().getURI() != null){
-                uris.add(commodityClassificationType.getItemClassificationCode().getURI());
-            }
-        }
-        List<CommodityClassificationType> commodityClassificationTypeList = new ArrayList<>();
-        // find parents of the selected categories
-        for(CommodityClassificationType cct : commodityClassifications){
-            // Default/custom categories have no parents
-            if(cct.getItemClassificationCode().getListID().contentEquals("Default") || cct.getItemClassificationCode().getListID().contentEquals("Custom")){
-                continue;
-            }
-            IndexCategoryService csm = SpringBridge.getInstance().getIndexCategoryService();
-            List<Category> parentCategories = csm.getParentCategories(cct.getItemClassificationCode().getListID(),cct.getItemClassificationCode().getValue());
-
-            for(int i = 0; i< parentCategories.size();i++){
-                Category category = parentCategories.get(i);
-                CommodityClassificationType commodityClassificationType = new CommodityClassificationType();
-                CodeType codeType = new CodeType();
-                codeType.setValue(category.getId());
-                codeType.setName(category.getPreferredName(defaultLanguage));
-                codeType.setListID(category.getTaxonomyId());
-                codeType.setURI(category.getCategoryUri());
-                commodityClassificationType.setItemClassificationCode(codeType);
-                // check whether it is one of the given categories or it is already added to the list
-                if(!commodityClassificationTypeList.contains(commodityClassificationType) && !uris.contains(commodityClassificationType.getItemClassificationCode().getURI())){
-                    commodityClassificationTypeList.add(commodityClassificationType);
-                }
-            }
-        }
-        return commodityClassificationTypeList;
-    }
-
+    // TODO move this method to a persistence util
     public static List<CommodityClassificationType> getLeafCategories(List<CommodityClassificationType> commodityClassifications) throws InvalidCategoryException {
         // get uris of the given categories
         List<String> categoryUris = new ArrayList<>();
@@ -251,11 +224,22 @@ public class DataIntegratorUtil {
                 uris.add(classificationType.getItemClassificationCode().getURI());
             }
         }
-        List<CommodityClassificationType> parentCategories = getParentCategories(catalogueLine.getGoodsItem().getItem().getCommodityClassification());
-        // get uri of parent categories
-        for(CommodityClassificationType classificationType:parentCategories){
-            uris.add(classificationType.getItemClassificationCode().getURI());
-        }
+
+        IndexCategoryService csm = SpringBridge.getInstance().getIndexCategoryService();
+        List<CodeType> parentCategories = csm.getParentCategories(
+                catalogueLine.getGoodsItem().getItem().getCommodityClassification()
+                        .stream()
+                        .map(CommodityClassificationType::getItemClassificationCode)
+                        .collect(Collectors.toList()));
+
+        // add parent category uris to the uris of existing categories
+        parentCategories.forEach(cat -> uris.add(cat.getURI()));
         return uris;
+    }
+
+    public static void enhanceDemandWithParentCategories(DemandType demand) {
+        IndexCategoryService csm = SpringBridge.getInstance().getIndexCategoryService();
+        List<CodeType> parentCategories = csm.getParentCategories(demand.getItemClassificationCode());
+        demand.getItemClassificationCode().addAll(parentCategories);
     }
 }

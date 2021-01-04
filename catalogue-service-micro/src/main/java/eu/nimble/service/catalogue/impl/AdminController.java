@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.service.catalogue.CatalogueService;
+import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.exception.InvalidCategoryException;
 import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
@@ -12,18 +13,19 @@ import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.catalogue.util.DataIntegratorUtil;
 import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.catalogue.util.migration.r10.VatMigrationUtility;
+import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
 import eu.nimble.utility.ExecutionContext;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CommodityClassificationType;
 import eu.nimble.utility.exception.NimbleException;
 import eu.nimble.utility.persistence.GenericJPARepository;
+import eu.nimble.utility.persistence.GenericJPARepositoryImpl;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.validation.IValidationUtil;
 import feign.Response;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import eu.nimble.service.catalogue.index.PartyIndexClient;
 import eu.nimble.service.catalogue.model.category.Property;
 import eu.nimble.service.catalogue.util.migration.r8.CatalogueIndexLoader;
 import eu.nimble.service.model.solr.item.ItemType;
@@ -48,6 +50,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by suat on 28-Jan-19.
@@ -61,11 +64,11 @@ public class AdminController {
     private String indexingUrl;
     
     @Autowired
-    private PartyIndexClient partyIndexClient;
-    @Autowired
     private CatalogueIndexLoader catalogueIndexLoader;
     @Autowired
     private ItemIndexClient itemIndexClient;
+    @Autowired
+    private IndexCategoryService indexCategoryService;
     @Autowired
     private CatalogueService catalogueService;
 
@@ -365,7 +368,9 @@ public class AdminController {
 
             for (CatalogueLineType catalogueLine : catalogue.getCatalogueLine()) {
                 try {
-                    List<CommodityClassificationType> missingParentCategories = DataIntegratorUtil.getParentCategories(catalogueLine.getGoodsItem().getItem().getCommodityClassification());
+                    List<CodeType> missingParentCategories = indexCategoryService.getParentCategories(
+                            catalogueLine.getGoodsItem().getItem().getCommodityClassification().stream().map(CommodityClassificationType::getItemClassificationCode).collect(Collectors.toList())
+                    );
                     if(missingParentCategories.size() != 0){
                         catalogueUuids.add(catalogue.getUUID());
                         lineIds.add(catalogueLine.getID());
@@ -383,5 +388,44 @@ public class AdminController {
 
         logger.info("Completed request to get catalogue lines with missing parent categories");
         return ResponseEntity.ok(jsonObject.toString());
+    }
+
+    @ApiOperation(value = "", notes = "Deletes entities for the given class")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Deleted the entities successfully"),
+            @ApiResponse(code = 404, message = "There does not exist a class for the given class name"),
+            @ApiResponse(code = 401, message = "Invalid token. No user was found for the provided token")
+    })
+    @RequestMapping(value = "/entities",
+            produces = {"application/json"},
+            method = RequestMethod.DELETE)
+    public ResponseEntity deleteEntities(@ApiParam(value = "Entity type of which instance to be deleted e.g. eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType", required = true) @RequestParam(value = "className", required = true) String className,
+                                         @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken
+    ) {
+        // set request log of ExecutionContext
+        String requestLog = String.format("Deleting the entities with className: %s", className);
+        executionContext.setRequestLog(requestLog);
+
+        logger.info(requestLog);
+
+        // validate role
+        if (!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_CATALOGUE_WRITE)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
+        }
+
+        Class objectClass = null;
+        try {
+            objectClass = Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            throw new NimbleException("", Arrays.asList(className), e);
+        }
+
+        // delete the object
+        GenericJPARepositoryImpl repo = new JPARepositoryFactory().forCatalogueRepository();
+        List<Object> entities = repo.getEntities(objectClass);
+        entities.forEach(entity -> repo.deleteEntity(entity));
+
+        logger.info("Deleted entities with className: {}", className);
+        return ResponseEntity.ok(null);
     }
 }

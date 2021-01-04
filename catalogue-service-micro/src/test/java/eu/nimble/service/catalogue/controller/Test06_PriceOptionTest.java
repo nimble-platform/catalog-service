@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.nimble.common.rest.identity.IdentityClientTypedMockConfig;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PriceOptionType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
@@ -45,11 +46,11 @@ public class Test06_PriceOptionTest {
         // create a catalogue line first
         String catalogueLineJson = IOUtils.toString(Test05_CatalogueLineControllerTest.class.getResourceAsStream("/example_catalogue_line.json"));
         CatalogueLineType line = mapper.readValue(catalogueLineJson, CatalogueLineType.class);
-        line.getGoodsItem().getItem().getCatalogueDocumentReference().setID(Test05_CatalogueLineControllerTest.defaultCatalogueId);
+        line.getGoodsItem().getItem().getCatalogueDocumentReference().setID(Test05_CatalogueLineControllerTest.secondCatalogueId);
         catalogueLineJson = mapper.writeValueAsString(line);
 
-        MockHttpServletRequestBuilder request = post("/catalogue/" + Test05_CatalogueLineControllerTest.defaultCatalogueId + "/catalogueline")
-                .header("Authorization", TestConfig.buyerId)
+        MockHttpServletRequestBuilder request = post("/catalogue/" + Test05_CatalogueLineControllerTest.secondCatalogueId + "/catalogueline")
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(catalogueLineJson);
         MvcResult result = this.mockMvc.perform(request).andReturn();
@@ -60,8 +61,8 @@ public class Test06_PriceOptionTest {
         String priceOptionJson = IOUtils.toString(Test06_PriceOptionTest.class.getResourceAsStream("/example_price_option.json"));
 
         // post pricing option
-        request = post("/catalogue/" + Test05_CatalogueLineControllerTest.defaultCatalogueId + "/catalogueline/" + line.getID() + "/price-options")
-                .header("Authorization", TestConfig.buyerId)
+        request = post("/catalogue/" + Test05_CatalogueLineControllerTest.secondCatalogueId + "/catalogueline/" + line.getID() + "/price-options")
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(priceOptionJson);
         result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isCreated()).andReturn();
@@ -77,8 +78,8 @@ public class Test06_PriceOptionTest {
         priceOption.getIncoterms().set(1, updatedIncoterm);
         priceOption.getAdditionalItemProperty().get(0).getValue().set(1, textType);
 
-        MockHttpServletRequestBuilder request = put("/catalogue/" + Test05_CatalogueLineControllerTest.defaultCatalogueId + "/catalogueline/" + catalogueLine.getID() + "/price-options")
-                .header("Authorization", TestConfig.buyerId)
+        MockHttpServletRequestBuilder request = put("/catalogue/" + Test05_CatalogueLineControllerTest.secondCatalogueId + "/catalogueline/" + catalogueLine.getID() + "/price-options")
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(priceOption));
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
@@ -93,15 +94,15 @@ public class Test06_PriceOptionTest {
     @Test
     public void test3_deletePriceOption() throws Exception {
         // delete the option
-        MockHttpServletRequestBuilder request = delete("/catalogue/" + Test05_CatalogueLineControllerTest.defaultCatalogueId + "/catalogueline/price-options/" + priceOption.getHjid())
+        MockHttpServletRequestBuilder request = delete("/catalogue/" + Test05_CatalogueLineControllerTest.secondCatalogueId + "/catalogueline/price-options/" + priceOption.getHjid())
                 .param("lineId",catalogueLine.getID())
-                .header("Authorization", TestConfig.buyerId);
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
 
         // get catalogue line
-        request = get("/catalogue/" + Test05_CatalogueLineControllerTest.defaultCatalogueId + "/catalogueline")
+        request = get("/catalogue/" + Test05_CatalogueLineControllerTest.secondCatalogueId + "/catalogueline")
                 .param("lineId",catalogueLine.getID())
-                .header("Authorization", TestConfig.buyerId);
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID);
         MvcResult result = this.mockMvc.perform(request).andReturn();
         CatalogueLineType catalogueLine = mapper.readValue(result.getResponse().getContentAsString(), CatalogueLineType.class);
 

@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue.util.migration.r10;
 import eu.nimble.service.catalogue.util.migration.r9.MultilingualTextTypeCreator;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.TaxCategoryType;
+import eu.nimble.utility.country.CountryUtil;
 import eu.nimble.utility.persistence.GenericJPARepository;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
 import org.slf4j.Logger;
@@ -39,7 +40,7 @@ public class VatMigrationUtility {
                 continue;
             }
 
-            String country = line.getGoodsItem().getItem().getManufacturerParty().getPostalAddress().getCountry().getName().getValue();
+            String country = CountryUtil.getCountryNameByISOCode(line.getGoodsItem().getItem().getManufacturerParty().getPostalAddress().getCountry().getIdentificationCode().getValue());
             Integer vatRate = defaultVats.get(country);
             if(vatRate == null) {
                 vatRate = 20;

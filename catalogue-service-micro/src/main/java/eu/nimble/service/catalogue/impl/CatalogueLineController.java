@@ -389,7 +389,7 @@ public class CatalogueLineController {
             // check duplicate line
             boolean lineExists = CatalogueLinePersistenceUtil.checkCatalogueLineExistence(catalogueUuid, catalogueLine.getID());
             if (!lineExists) {
-                catalogueLine = service.addLineToCatalogue(catalogueUuid, providerPartyID, catalogueLine);
+                catalogueLine = service.addLineToCatalogue(catalogueUuid, catalogueLine);
             } else {
                 throw new NimbleException(NimbleExceptionMessageCode.NOT_ACCEPTABLE_ALREADY_EXISTS.toString());
             }
@@ -488,12 +488,6 @@ public class CatalogueLineController {
                     throw new NimbleException(validationMessages.getErrorMessages(),validationMessages.getErrorParameters());
                 }
 
-                // validate the entity ids
-                boolean hjidsBelongToCompany = resourceValidationUtil.hjidsBelongsToParty(catalogueLine, catalogue.getProviderParty().getPartyIdentification().get(0).getID(), Configuration.Standard.UBL.toString());
-                if(!hjidsBelongToCompany) {
-                    throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_HJIDS_IN_LINE.toString(),Arrays.asList(catalogueLineJson));
-                }
-
                 // consider the case of an updated line id conflicting with the id of an existing line
                 boolean lineExists = CatalogueLinePersistenceUtil.checkCatalogueLineExistence(catalogueUuid, catalogueLine.getID(), catalogueLine.getHjid());
 
@@ -512,12 +506,6 @@ public class CatalogueLineController {
                 ValidationMessages errors = catalogueLineValidator.validateAll();
                 if (errors.getErrorMessages().size() > 0) {
                     throw new NimbleException(errors.getErrorMessages(),errors.getErrorParameters());
-                }
-
-                // validate the entity ids
-                boolean hjidsBelongToCompany = resourceValidationUtil.hjidsBelongsToParty(catalogueLine, catalogue.getProviderParty().getPartyIdentification().get(0).getID(), Configuration.Standard.UBL.toString());
-                if(!hjidsBelongToCompany) {
-                    throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_HJIDS_IN_LINE.toString(),Arrays.asList(catalogueLineJson));
                 }
 
                 // consider the case of an updated line id conflicting with the id of an existing line

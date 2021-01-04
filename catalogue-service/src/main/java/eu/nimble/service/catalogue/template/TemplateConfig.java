@@ -167,12 +167,6 @@ public class TemplateConfig {
         prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
         properties.add(prop);
 
-        // applicable address territory country
-        prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_APPLICABLE_ADDRESS_COUNTRY.toString(), language) , language);
-        prop.setDataType(TEMPLATE_DATA_TYPE_TEXT);
-        properties.add(prop);
-
         // applicable address territory city
         /*prop = new Property();
         prop.setPreferredName(TEMPLATE_TRADING_DELIVERY_APPLICABLE_ADDRESS_CITY);
