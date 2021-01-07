@@ -9,6 +9,7 @@ import eu.nimble.service.catalogue.persistence.util.CatalogueDatabaseAdapter;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
+import org.apache.commons.lang3.EnumUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,8 +53,8 @@ public class DataIntegratorUtil {
     }
 
     private static void setCatalogueLineStatus(CatalogueLineType catalogueLineType){
-        if(Strings.isNullOrEmpty(catalogueLineType.getProductStatusType())){
-            catalogueLineType.setProductStatusType(ProductStatus.PUBLISHED.toString());
+        if(Strings.isNullOrEmpty(catalogueLineType.getProductStatusType()) || !EnumUtils.isValidEnum(ProductStatus.class,catalogueLineType.getProductStatusType())){
+            catalogueLineType.setProductStatusType(ProductStatus.DRAFT.toString());
         }
     }
 

@@ -358,7 +358,7 @@ public class IndexCategoryService {
             if(code.getListID().contentEquals("Default") || code.getListID().contentEquals("Custom")){
                 continue;
             }
-            List<Category> parentCategories = getParentCategories(code.getListID(), code.getValue());
+            List<Category> parentCategories = getParentCategories(code.getURI());
 
             for(int i = 0; i< parentCategories.size();i++){
                 Category category = parentCategories.get(i);

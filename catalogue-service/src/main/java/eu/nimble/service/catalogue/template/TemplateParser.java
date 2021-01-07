@@ -14,6 +14,7 @@ import eu.nimble.service.model.ubl.commonbasiccomponents.AmountType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
+import eu.nimble.utility.country.CountryUtil;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.*;
@@ -362,8 +363,6 @@ public class TemplateParser {
                 for(TextType productName: productNames) {
                     catalogueLineType.getGoodsItem().getItem().getName().add(productName);
                 }
-            } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_STATUS.toString(), defaultLanguage))) {
-                catalogueLineType.setProductStatusType((String) parseCell(cell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_STATUS.toString(), defaultLanguage), TemplateConfig.TEMPLATE_DATA_TYPE_TEXT , false));
 
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION.toString(), defaultLanguage))) {
                 List<TextType> productDescriptions = (List<TextType>) parseCell(cell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION.toString(), defaultLanguage),TEMPLATE_DATA_TYPE_MULTILINGUAL_TEXT , true);
@@ -631,22 +630,6 @@ public class TemplateParser {
                         catalogueLine.getGoodsItem().getDeliveryTerms().setTransportModeCode(transportModeCode);
                     }
 
-                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_APPLICABLE_ADDRESS_COUNTRY.toString(), defaultLanguage) )) {
-                    List<AddressType> applicableAddressList = new ArrayList<>();
-                    cell = TemplateGenerator.getCellWithMissingCellPolicy(row, columnIndex);
-                    List<String> countries = parseMultiValues(cell);
-                    for(String addr : countries) {
-                        AddressType address = new AddressType();
-                        applicableAddressList.add(address);
-                        CountryType country = new CountryType();
-                        TextType cName = new TextType();
-                        cName.setLanguageID(defaultLanguage);
-                        cName.setValue(addr);
-                        country.setName(cName);
-                        address.setCountry(country);
-                    }
-                    catalogueLine.getRequiredItemLocationQuantity().setApplicableTerritoryAddress(applicableAddressList);
-
                 } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PACKAGING_TYPE.toString(), defaultLanguage) )) {
                     cell = TemplateGenerator.getCellWithMissingCellPolicy(row, columnIndex);
                     CodeType packagingType = new CodeType();
@@ -703,8 +686,8 @@ public class TemplateParser {
             Integer vatRate = null;
             if(includeVat){
                 AddressType address = line.getGoodsItem().getItem().getManufacturerParty().getPostalAddress();
-                    if(address != null && address.getCountry() != null  && address.getCountry().getName() != null){
-                        String country = line.getGoodsItem().getItem().getManufacturerParty().getPostalAddress().getCountry().getName().getValue();
+                    if(address != null && address.getCountry() != null  && address.getCountry().getIdentificationCode() != null){
+                        String country = CountryUtil.getCountryNameByISOCode(line.getGoodsItem().getItem().getManufacturerParty().getPostalAddress().getCountry().getIdentificationCode().getValue());
                         vatRate = defaultVats.get(country);
                     }
 
