@@ -21,7 +21,6 @@ import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 import eu.nimble.service.model.ubl.extension.ItemPropertyValueQualifier;
-import eu.nimble.service.model.ubl.extension.QualityIndicatorParameter;
 import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.exception.NimbleException;
 import org.slf4j.Logger;
@@ -59,7 +58,7 @@ public class IndexingWrapper {
                 catalogueServiceLanguages.forEach(languageId -> indexItem.addLabel(languageId,productNames.get(0).getValue()));
             }
         });
-        indexItem.setCertificateType(getCertificates(catalogueLine));
+        indexItem.setCertificateType(getProductServiceCertificates(catalogueLine));
         indexItem.setCircularEconomyCertificates(getCircularEconomyRelatedCertificateNames(catalogueLine));
         indexItem.setPermittedParties(new HashSet<>(CataloguePersistenceUtil.getPermittedParties(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID())));
         indexItem.setRestrictedParties(new HashSet<>(CataloguePersistenceUtil.getRestrictedParties(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID())));
@@ -219,12 +218,14 @@ public class IndexingWrapper {
         indexItem.setClassificationUri(classificationUris);
     }
 
-    private static Set<String> getCertificates(CatalogueLineType catalogueLine) {
-        Set<String> certificates = new HashSet<>();
-        for(CertificateType certificate : catalogueLine.getGoodsItem().getItem().getCertificate()) {
-            certificates.add(certificate.getCertificateType());
-        }
-        return certificates;
+    private static Set<String> getProductServiceCertificates(CatalogueLineType catalogueLine) {
+        Set<String> certificateNames = new HashSet<>();
+        catalogueLine.getGoodsItem().getItem().getCertificate().stream()
+                .filter(cert -> !cert.getCertificateType().contentEquals(circularEconomyCertificateGroup))
+                .forEach(cert -> {
+                    certificateNames.add(cert.getCertificateTypeCode().getName());
+                });
+        return certificateNames;
     }
 
     private static Set<String> getCircularEconomyRelatedCertificateNames(CatalogueLineType catalogueLine) {
