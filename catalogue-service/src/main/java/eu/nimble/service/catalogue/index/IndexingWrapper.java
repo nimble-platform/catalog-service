@@ -60,7 +60,7 @@ public class IndexingWrapper {
             }
         });
         indexItem.setCertificateType(getCertificates(catalogueLine));
-        indexItem.setCertificateCode(getCircularEconomyRelatedCertificateNames(catalogueLine));
+        indexItem.setCircularEconomyCertificates(getCircularEconomyRelatedCertificateNames(catalogueLine));
         indexItem.setPermittedParties(new HashSet<>(CataloguePersistenceUtil.getPermittedParties(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID())));
         indexItem.setRestrictedParties(new HashSet<>(CataloguePersistenceUtil.getRestrictedParties(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID())));
         AmountValidator amountValidator = new AmountValidator(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount());
