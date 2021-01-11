@@ -7,6 +7,7 @@ public class Taxonomy {
     private String id;
     private String namespace;
     private List<String> serviceRootCategories;
+    private List<String> productRootCategories;
 
     public String getId() {
         return id;
@@ -30,5 +31,13 @@ public class Taxonomy {
 
     public void setServiceRootCategories(List<String> serviceRootCategories) {
         this.serviceRootCategories = serviceRootCategories;
+    }
+
+    public List<String> getProductRootCategories() {
+        return this.productRootCategories;
+    }
+
+    public void setProductRootCategories(final List<String> productRootCategories) {
+        this.productRootCategories = productRootCategories;
     }
 }
