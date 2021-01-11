@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.index;
 
 import com.google.common.base.Strings;
+import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.category.Taxonomy;
 import eu.nimble.service.catalogue.category.TaxonomyQueryInterface;
 import eu.nimble.service.catalogue.category.eclass.EClassTaxonomyQueryImpl;
@@ -269,6 +270,7 @@ public class IndexingWrapper {
         category.setDefinition(getLabelListFromMap(indexCategory.getDescription()));
         category.setPreferredName(getLabelListFromMap(indexCategory.getLabel()));
         category.setRemark(getSingleLabel(indexCategory.getComment()));
+        category.setRootCategoryUri(IndexCategoryService.getRootCategoryUri(indexCategory));
         if(indexCategory.getLevel() != null) {
             category.setLevel(indexCategory.getLevel());
         }

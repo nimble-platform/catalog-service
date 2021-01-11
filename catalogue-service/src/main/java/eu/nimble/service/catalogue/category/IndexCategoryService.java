@@ -336,6 +336,21 @@ public class IndexCategoryService {
     }
 
     /**
+     * Finds the root category uri for the given category.
+     * */
+    public static String getRootCategoryUri(ClassType classType){
+        // the given category is the root category since it does not have any parent category
+        if(classType.getAllParents() == null){
+            return classType.getUri();
+        }
+        // find the root category
+        Optional<String> rootCategoryUri = classType.getAllParents().stream().filter(parentCategoryUri-> SpringBridge.getInstance().getTaxonomyManager().getRootCategories().contains(parentCategoryUri)).findFirst();
+        if (rootCategoryUri.isPresent())
+            return rootCategoryUri.get();
+        return null;
+    }
+
+    /**
      * Finds all parents for all the codes representing a category.
      * NOTE THAT returned results do not contain codes corresponding the given ones
      *
