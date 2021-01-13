@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.common.rest.identity.IIdentityClientTyped;
 import eu.nimble.common.rest.identity.IdentityClientTypedMockConfig;
+import eu.nimble.service.catalogue.model.demand.DemandLastSeenResponse;
 import eu.nimble.service.catalogue.persistence.util.DemandPersistenceUtil;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
@@ -172,8 +173,9 @@ public class Test09_DemandControllerTest {
                 .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(demandJson);
-        this.mockMvc.perform(request).andDo(print()).andExpect(status().isCreated()).andReturn();
-
+        MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isCreated()).andReturn();
+        // set the demand hjid for the future tests
+        demandHjid = Long.parseLong(result.getResponse().getContentAsString());
         // add second demand
         request = post("/demands")
                 .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
@@ -186,5 +188,27 @@ public class Test09_DemandControllerTest {
 
         Assert.assertEquals(2, demands.size());
         Assert.assertEquals("Demand Title 2", demands.get(0).getTitle().get(0).getValue());
+    }
+
+    @Test
+    public void test5_addLastSeenDemand() throws Exception {
+        MockHttpServletRequestBuilder request = post("/demands/last-seen")
+                .header("Authorization", IdentityClientTypedMockConfig.buyerUserID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.valueOf(demandHjid));
+        this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+    }
+
+    @Test
+    public void test6_getDemandLastSeenResponse() throws Exception {
+        MockHttpServletRequestBuilder request = get("/demands/last-seen/response")
+                .header("Authorization", IdentityClientTypedMockConfig.buyerUserID)
+                .contentType(MediaType.APPLICATION_JSON);
+        MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
+
+        DemandLastSeenResponse demandLastSeenResponse = mapper.readValue(result.getResponse().getContentAsString(), DemandLastSeenResponse.class);
+
+        Assert.assertEquals(1, demandLastSeenResponse.getNewDemandCount());
+        Assert.assertEquals(demandHjid, demandLastSeenResponse.getLastSeenDemandId());
     }
 }
