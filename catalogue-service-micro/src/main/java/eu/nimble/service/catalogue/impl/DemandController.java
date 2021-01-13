@@ -1,6 +1,5 @@
 package eu.nimble.service.catalogue.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.nimble.common.rest.identity.IIdentityClientTyped;
 import eu.nimble.common.rest.identity.model.PersonPartyTuple;
 import eu.nimble.service.catalogue.DemandIndexService;
@@ -8,10 +7,11 @@ import eu.nimble.service.catalogue.DemandService;
 import eu.nimble.service.catalogue.config.RoleConfig;
 import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
 import eu.nimble.service.catalogue.model.demand.DemandFacetResponse;
-import eu.nimble.service.catalogue.model.demand.DemandFacetValue;
+import eu.nimble.service.catalogue.model.demand.DemandLastSeenResponse;
 import eu.nimble.service.catalogue.model.demand.DemandPaginationResponse;
 import eu.nimble.service.catalogue.persistence.util.DemandPersistenceUtil;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandInterestCount;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandLastSeenInfo;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType;
 import eu.nimble.utility.ExecutionContext;
 import eu.nimble.utility.JsonSerializationUtility;
@@ -364,6 +364,80 @@ public class DemandController {
 
         } catch (Exception e) {
             throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_GET_INTEREST_COUNTS.toString(), e);
+        }
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Saves the last seen demand id for the user.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Saved the last seen demand id successfully", response = DemandType.class),
+            @ApiResponse(code = 500, message = "Unexpected error while saving the last seen demand id"),
+    })
+    @RequestMapping(value = "/demands/last-seen",
+            method = RequestMethod.POST)
+    public ResponseEntity addLastSeenDemand(@ApiParam(value = "Demand id", required = true) @RequestBody Long lastSeenDemandId,
+                                            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        try {
+            // set request log of ExecutionContext
+            String requestLog = String.format("Incoming request to save last seen demand id for %s",lastSeenDemandId);
+            executionContext.setRequestLog(requestLog);
+
+            logger.info(requestLog);
+
+            PersonPartyTuple personPartyTuple = identityClient.getPersonPartyTuple(bearerToken);
+            // get last seen demand info
+            DemandLastSeenInfo demandLastSeenInfo = DemandPersistenceUtil.getLastSeenDemandId(personPartyTuple.getPersonID());
+            // save the last seen demand id
+            if (demandLastSeenInfo == null) {
+                demandLastSeenInfo = new DemandLastSeenInfo();
+                demandLastSeenInfo.setLastSeenDemandID(lastSeenDemandId);
+                demandLastSeenInfo.setPersonID(personPartyTuple.getPersonID());
+            } else {
+                if (demandLastSeenInfo.getLastSeenDemandID() < lastSeenDemandId) {
+                    demandLastSeenInfo.setLastSeenDemandID(lastSeenDemandId);
+                }
+            }
+
+            new JPARepositoryFactory().forCatalogueRepository().updateEntity(demandLastSeenInfo);
+
+            logger.info("Completed request to save last seen demand id for {}",lastSeenDemandId);
+            return ResponseEntity.status(HttpStatus.OK).build();
+
+        } catch (Exception e) {
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_ADD_LAST_SEEN_DEMAND.toString(),Arrays.asList(String.valueOf(lastSeenDemandId)),e);
+        }
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Gets demand last seen response for the user.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved demand last seen response successfully", response = DemandType.class),
+            @ApiResponse(code = 500, message = "Unexpected error while retrieving the demand last seen response for the user"),
+    })
+    @RequestMapping(value = "/demands/last-seen/response",
+            method = RequestMethod.GET)
+    public ResponseEntity getDemandLastSeenResponse(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        try {
+            // set request log of ExecutionContext
+            String requestLog = String.format("Incoming request to retrieve demand last seen response for the user");
+            executionContext.setRequestLog(requestLog);
+
+            logger.info(requestLog);
+
+            PersonPartyTuple personPartyTuple = identityClient.getPersonPartyTuple(bearerToken);
+            // get demand last seen info
+            DemandLastSeenInfo demandLastSeenInfo = DemandPersistenceUtil.getLastSeenDemandId(personPartyTuple.getPersonID());
+            Long lastSeenDemandId = demandLastSeenInfo != null ? demandLastSeenInfo.getLastSeenDemandID() : null;
+            // get new demand count
+            int count = DemandPersistenceUtil.getNewDemandsCount(personPartyTuple.getCompanyID(), lastSeenDemandId);
+            // create the response
+            DemandLastSeenResponse demandLastSeenResponse = new DemandLastSeenResponse(lastSeenDemandId, count);
+
+            logger.info("Completed request to retrieve demand last seen response for the user");
+            return ResponseEntity.status(HttpStatus.OK).body(demandLastSeenResponse);
+
+        } catch (Exception e) {
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_GET_DEMAND_LAST_SEEN_RESPONSE.toString(), e);
         }
     }
 
