@@ -416,7 +416,8 @@ public class DemandController {
     })
     @RequestMapping(value = "/demands/last-seen/response",
             method = RequestMethod.GET)
-    public ResponseEntity getDemandLastSeenResponse(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+    public ResponseEntity getDemandLastSeenResponse(@ApiParam(value = "Latest due date. Demands of which due dates are equal or earlier than the provided date are considered") @RequestParam(required = false) String dueDate,
+                                                    @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
         try {
             // set request log of ExecutionContext
             String requestLog = String.format("Incoming request to retrieve demand last seen response for the user");
@@ -429,7 +430,7 @@ public class DemandController {
             DemandLastSeenInfo demandLastSeenInfo = DemandPersistenceUtil.getLastSeenDemandId(personPartyTuple.getPersonID());
             Long lastSeenDemandId = demandLastSeenInfo != null ? demandLastSeenInfo.getLastSeenDemandID() : null;
             // get new demand count
-            int count = DemandPersistenceUtil.getNewDemandsCount(personPartyTuple.getCompanyID(), lastSeenDemandId);
+            int count = DemandPersistenceUtil.getNewDemandsCount(personPartyTuple.getCompanyID(), lastSeenDemandId,dueDate);
             // create the response
             DemandLastSeenResponse demandLastSeenResponse = new DemandLastSeenResponse(lastSeenDemandId, count);
 
