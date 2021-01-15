@@ -18,6 +18,7 @@ import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 import eu.nimble.utility.JsonSerializationUtility;
 import feign.Response;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
@@ -1843,7 +1844,9 @@ public class TemplateGenerator {
             // get the name of property
             String propertyName = propertyIdPreferredNameMap.get(propertyId);
             // replace property id with property name
-            cell.setCellValue(propertyName);
+            if(StringUtils.isNotEmpty(propertyName)){
+                cell.setCellValue(propertyName);
+            }
         }
     }
 
