@@ -320,18 +320,13 @@ public class TemplateGenerator {
 
     private void fillCustomProperties(Sheet productPropertiesTab, List<CatalogueLineType> catalogueLines, List<Category> categories) {
         // find the offset for the custom properties
-        int totalCategoryPropertyNumber = 0;
+        int categoryColumnNumber = 0;
         for (Category category : categories) {
             if (category.getProperties() != null) {
-                for (Property property : category.getProperties()) {
-                    totalCategoryPropertyNumber++;
-                    if (property.getDataType().contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)) {
-                        totalCategoryPropertyNumber++;
-                    }
-                }
+                categoryColumnNumber += getColumnCountForCategory(category);
             }
         }
-        int customPropertyColumnIndex = 4 + TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage).size() + totalCategoryPropertyNumber;
+        int customPropertyColumnIndex = 5 + TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage).size() + categoryColumnNumber;
 
         int rowIndex = FIRST_EDITABLE_ROW_INDEX;
         for (CatalogueLineType catalogueLine : catalogueLines) {
