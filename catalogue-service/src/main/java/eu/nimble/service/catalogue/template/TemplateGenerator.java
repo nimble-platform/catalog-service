@@ -99,13 +99,12 @@ public class TemplateGenerator {
     }
 
     private void fillProductPropertiesTab(Sheet productPropertiesTab, List<CatalogueLineType> catalogueLines) {
-        // 5th row is the first editable row
-        int rowIndex = 4;
+        int rowIndex = FIRST_EDITABLE_ROW_INDEX;
 
         for (CatalogueLineType catalogueLine : catalogueLines) {
             Row row;
-            // we have already created a row for rowIndex = 4, use it
-            if (rowIndex == 4) {
+            // we have already created a row for rowIndex = FIRST_EDITABLE_ROW_INDEX, use it
+            if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
                 row = productPropertiesTab.getRow(rowIndex);
             } else {
                 row = productPropertiesTab.createRow(rowIndex);
@@ -115,21 +114,21 @@ public class TemplateGenerator {
             // manufacturer item identification
             Cell cell = row.createCell(1);
             cell.setCellValue(catalogueLine.getID());
-            if (rowIndex == 4) {
+            if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
                 cell.setCellStyle(mandatoryCellStyle);
             }
 
             // name
             cell = row.createCell(2);
             cell.setCellValue(this.getMultiValueText(catalogueLine.getGoodsItem().getItem().getName()));
-            if (rowIndex == 4) {
+            if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
                 cell.setCellStyle(mandatoryCellStyle);
             }
 
             // description
             cell = row.createCell(3);
             cell.setCellValue(this.getMultiValueText(catalogueLine.getGoodsItem().getItem().getDescription()));
-            if (rowIndex == 4) {
+            if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
                 cell.setCellStyle(editableStyle);
             }
 
@@ -152,7 +151,7 @@ public class TemplateGenerator {
                 if (dimensionType.getMeasure().getValue() != null) {
                     cell.setCellValue(new DecimalFormat(".00").format(dimensionType.getMeasure().getValue()));
                 }
-                if (rowIndex == 4) {
+                if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
                     cell.setCellStyle(editableStyle);
                 }
             }
@@ -161,13 +160,12 @@ public class TemplateGenerator {
     }
 
     private void fillTradingDeliveryTermsTab(Sheet termsTab, List<CatalogueLineType> catalogueLines) {
-        // 5th row is the first editable row
-        int rowIndex = 4;
+        int rowIndex = FIRST_EDITABLE_ROW_INDEX;
 
         for (CatalogueLineType catalogueLine : catalogueLines) {
             Row row;
-            // we have already created a row for rowIndex = 4, use it
-            if (rowIndex == 4) {
+            // we have already created a row for rowIndex = FIRST_EDITABLE_ROW_INDEX, use it
+            if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
                 row = termsTab.getRow(rowIndex);
             } else {
                 row = termsTab.createRow(rowIndex);
@@ -179,7 +177,7 @@ public class TemplateGenerator {
             // manufacturer item identification
             Cell cell = row.createCell(columnIndex++);
             cell.setCellValue(catalogueLine.getID());
-            if (rowIndex == 4) {
+            if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
                 cell.setCellStyle(mandatoryCellStyle);
             }
 
@@ -192,7 +190,7 @@ public class TemplateGenerator {
             if (catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue() != null) {
                 cell.setCellValue(new DecimalFormat(".00").format(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue()));
             }
-            if (rowIndex == 4) {
+            if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
                 cell.setCellStyle(editableStyle);
                 unitCell.setCellStyle(editableStyle);
             }
@@ -206,7 +204,7 @@ public class TemplateGenerator {
             if (catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getValue() != null) {
                 cell.setCellValue(new DecimalFormat(".00").format(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getValue()));
             }
-            if (rowIndex == 4) {
+            if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
                 unitCell.setCellStyle(editableStyle);
                 cell.setCellStyle(editableStyle);
             }
@@ -222,7 +220,7 @@ public class TemplateGenerator {
                     cell.setCellValue(new DecimalFormat(".00").format(catalogueLine.getMinimumOrderQuantity().getValue()));
                 }
             }
-            if (rowIndex == 4) {
+            if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
                 cell.setCellStyle(editableStyle);
                 unitCell.setCellStyle(editableStyle);
             }
@@ -231,7 +229,7 @@ public class TemplateGenerator {
             cell = row.createCell(columnIndex++);
             String freeSample = catalogueLine.isFreeOfChargeIndicator() == null ? "" : catalogueLine.isFreeOfChargeIndicator() ? "TRUE" : "FALSE";
             cell.setCellValue(freeSample);
-            if (rowIndex == 4) {
+            if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
                 cell.setCellStyle(editableStyle);
             }
 
@@ -244,7 +242,7 @@ public class TemplateGenerator {
             if (catalogueLine.getWarrantyValidityPeriod().getDurationMeasure().getValue() != null) {
                 cell.setCellValue(new DecimalFormat(".00").format(catalogueLine.getWarrantyValidityPeriod().getDurationMeasure().getValue()));
             }
-            if (rowIndex == 4) {
+            if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
                 unitCell.setCellStyle(editableStyle);
                 cell.setCellStyle(editableStyle);
             }
@@ -252,14 +250,14 @@ public class TemplateGenerator {
             // warranty information
             cell = row.createCell(columnIndex++);
             cell.setCellValue(getMultiValueRepresentation(catalogueLine.getWarrantyInformation(), TemplateConfig.TEMPLATE_DATA_TYPE_STRING));
-            if (rowIndex == 4) {
+            if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
                 cell.setCellStyle(editableStyle);
             }
 
             // incoterms
             cell = row.createCell(columnIndex++);
             cell.setCellValue(catalogueLine.getGoodsItem().getDeliveryTerms().getIncoterms());
-            if (rowIndex == 4) {
+            if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
                 cell.setCellStyle(editableStyle);
             }
 
@@ -271,7 +269,7 @@ public class TemplateGenerator {
             }
             cell = row.createCell(columnIndex++);
             cell.setCellValue(getMultiValueRepresentation(values, TemplateConfig.TEMPLATE_DATA_TYPE_TEXT));
-            if (rowIndex == 4) {
+            if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
                 cell.setCellStyle(editableStyle);
             }
             // estimated delivery period
@@ -283,7 +281,7 @@ public class TemplateGenerator {
             if (catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure().getValue() != null) {
                 cell.setCellValue(new DecimalFormat(".00").format(catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure().getValue()));
             }
-            if (rowIndex == 4) {
+            if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
                 unitCell.setCellStyle(editableStyle);
                 cell.setCellStyle(editableStyle);
             }
@@ -292,13 +290,13 @@ public class TemplateGenerator {
             if (catalogueLine.getGoodsItem().getDeliveryTerms().getTransportModeCode() != null) {
                 cell.setCellValue(catalogueLine.getGoodsItem().getDeliveryTerms().getTransportModeCode().getValue());
             }
-            if (rowIndex == 4) {
+            if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
                 cell.setCellStyle(editableStyle);
             }
             // packaging type
             cell = row.createCell(columnIndex++);
             cell.setCellValue(catalogueLine.getGoodsItem().getContainingPackage().getPackagingTypeCode().getValue());
-            if (rowIndex == 4) {
+            if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
                 cell.setCellStyle(editableStyle);
             }
             // package quantity
@@ -310,7 +308,7 @@ public class TemplateGenerator {
             if (catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getValue() != null) {
                 cell.setCellValue(new DecimalFormat(".00").format(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getValue()));
             }
-            if (rowIndex == 4) {
+            if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
                 unitCell.setCellStyle(editableStyle);
                 cell.setCellStyle(editableStyle);
             }
@@ -334,7 +332,7 @@ public class TemplateGenerator {
         }
         int customPropertyColumnIndex = 4 + TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage).size() + totalCategoryPropertyNumber;
 
-        int rowIndex = 4;
+        int rowIndex = FIRST_EDITABLE_ROW_INDEX;
         for (CatalogueLineType catalogueLine : catalogueLines) {
             int propertyColumnIndex = customPropertyColumnIndex;
             for (ItemPropertyType itemProperty : catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty()) {
@@ -388,7 +386,7 @@ public class TemplateGenerator {
             }
         }
 
-        int rowIndex = 4;
+        int rowIndex = FIRST_EDITABLE_ROW_INDEX;
         for (CatalogueLineType catalogueLine : catalogueLines) {
             for (ItemPropertyType itemProperty : catalogueLine.getGoodsItem().getItem().getAdditionalItemProperty()) {
                 // consider category properties
@@ -410,7 +408,7 @@ public class TemplateGenerator {
                             // we need to set unit as well
                             Cell unitCell = productPropertiesTab.getRow(rowIndex).createCell(++columnIndex);
                             unitCell.setCellValue(itemProperty.getValueQuantity().get(0).getUnitCode());
-                            if (rowIndex == 4) {
+                            if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
                                 cell.setCellStyle(editableStyle);
                                 unitCell.setCellStyle(editableStyle);
                             }
@@ -418,19 +416,19 @@ public class TemplateGenerator {
                     } else if (dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_MULTILINGUAL_TEXT)) {
                         Cell cell = productPropertiesTab.getRow(rowIndex).createCell(columnIndex);
                         cell.setCellValue(getMultiValueText(itemProperty.getValue()));
-                        if (rowIndex == 4) {
+                        if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
                             cell.setCellStyle(editableStyle);
                         }
                     } else if (dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_BOOLEAN)) {
                         Cell cell = productPropertiesTab.getRow(rowIndex).createCell(columnIndex);
                         cell.setCellValue(getMultiValueText(itemProperty.getValue(), false));
-                        if (rowIndex == 4) {
+                        if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
                             cell.setCellStyle(editableStyle);
                         }
                     } else if (dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_NUMBER)) {
                         Cell cell = productPropertiesTab.getRow(rowIndex).createCell(columnIndex);
                         cell.setCellValue(getMultiValueRepresentation(itemProperty.getValueDecimal(), TemplateConfig.TEMPLATE_DATA_TYPE_NUMBER));
-                        if (rowIndex == 4) {
+                        if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
                             cell.setCellStyle(editableStyle);
                         }
                     }
@@ -663,9 +661,9 @@ public class TemplateGenerator {
             cell.setCellValue(property.getPreferredName(defaultLanguage));
             cell.setCellStyle(boldCellStyle);
             if (checkMandatory(property)) {
-                productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(mandatoryCellStyle);
+                productPropertiesTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnOffset).setCellStyle(mandatoryCellStyle);
             } else {
-                productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
+                productPropertiesTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnOffset).setCellStyle(editableStyle);
             }
             Cell thirdRowCell = thirdRow.createCell(columnOffset);
             // get data type of the property
@@ -684,7 +682,7 @@ public class TemplateGenerator {
 
             fourthRow.createCell(columnOffset).setCellStyle(readOnlyStyle);
             if (property.getDataType().equals("BOOLEAN")) {
-                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4, 4, columnOffset, columnOffset);
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(FIRST_EDITABLE_ROW_INDEX, FIRST_EDITABLE_ROW_INDEX, columnOffset, columnOffset);
                 DataValidationHelper dataValidationHelper = productPropertiesTab.getDataValidationHelper();
                 DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_BOOLEAN_LIST.toString(), defaultLanguage));
                 DataValidation dataValidation = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
@@ -706,9 +704,9 @@ public class TemplateGenerator {
                 cell.setCellStyle(readOnlyStyle);
                 cell = fourthRow.createCell(columnOffset);
                 cell.setCellStyle(readOnlyStyle);
-                productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
+                productPropertiesTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnOffset).setCellStyle(editableStyle);
 
-                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4, 4, columnOffset, columnOffset);
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(FIRST_EDITABLE_ROW_INDEX, FIRST_EDITABLE_ROW_INDEX, columnOffset, columnOffset);
                 DataValidationHelper dataValidationHelper = productPropertiesTab.getDataValidationHelper();
                 String constraints = property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WEIGHT.toString(), defaultLanguage)) ? SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_WEIGHT_UNIT_LIST.toString(), defaultLanguage) : SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_DIMENSION_LIST.toString(), defaultLanguage);
                 DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(constraints);
@@ -743,14 +741,14 @@ public class TemplateGenerator {
                 thirdRowCell.setCellStyle(readOnlyStyle);
 
                 if (checkMandatory(property)) {
-                    productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(mandatoryCellStyle);
+                    productPropertiesTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnOffset).setCellStyle(mandatoryCellStyle);
                 } else {
-                    productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
+                    productPropertiesTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnOffset).setCellStyle(editableStyle);
                 }
 
                 fourthRow.createCell(columnOffset).setCellStyle(readOnlyStyle);
                 if (property.getDataType().equals("BOOLEAN")) {
-                    CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4, 4, columnOffset, columnOffset);
+                    CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(FIRST_EDITABLE_ROW_INDEX, FIRST_EDITABLE_ROW_INDEX, columnOffset, columnOffset);
                     DataValidationHelper dataValidationHelper = productPropertiesTab.getDataValidationHelper();
                     DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_BOOLEAN_LIST.toString(), defaultLanguage));
                     DataValidation dataValidation = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
@@ -782,7 +780,7 @@ public class TemplateGenerator {
                         List<CodedType> codedTypes = JsonSerializationUtility.deserializeContent(result.toString(), new TypeReference<List<CodedType>>() {
                         });
                         // create the validation
-                        CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4, 4, columnOffset, columnOffset);
+                        CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(FIRST_EDITABLE_ROW_INDEX, FIRST_EDITABLE_ROW_INDEX, columnOffset, columnOffset);
                         DataValidationHelper dataValidationHelper = productPropertiesTab.getDataValidationHelper();
 
                         String constraints = String.format("TEMPLATE_%s_LIST", propertyType.getLabel().get("en"));
@@ -814,7 +812,7 @@ public class TemplateGenerator {
                     cell.setCellStyle(readOnlyStyle);
                     cell = fourthRow.createCell(columnOffset);
                     cell.setCellStyle(readOnlyStyle);
-                    productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
+                    productPropertiesTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnOffset).setCellStyle(editableStyle);
                 } else if (property.getDataType().equals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)) {
                     // quantity unit
                     productPropertiesTab.getRow(0).createCell(++columnOffset).setCellStyle(readOnlyStyle);
@@ -825,7 +823,7 @@ public class TemplateGenerator {
                     cell.setCellStyle(readOnlyStyle);
                     cell = fourthRow.createCell(columnOffset);
                     cell.setCellStyle(readOnlyStyle);
-                    productPropertiesTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
+                    productPropertiesTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnOffset).setCellStyle(editableStyle);
                 }
                 fourthRow.getCell(columnOffset).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
                 columnOffset++;
@@ -900,9 +898,9 @@ public class TemplateGenerator {
             cell.setCellValue(property.getPreferredName(defaultLanguage));
             cell.setCellStyle(boldCellStyle);
             if (checkMandatory(property)) {
-                productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellStyle(mandatoryCellStyle);
+                productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnOffset).setCellStyle(mandatoryCellStyle);
             } else {
-                productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
+                productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnOffset).setCellStyle(editableStyle);
             }
             Cell thirdRowCell = thirdRow.createCell(columnOffset);
             // get data type of the property
@@ -922,44 +920,44 @@ public class TemplateGenerator {
             fourthRow.createCell(columnOffset).setCellStyle(readOnlyStyle);
 
             if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION.toString(), defaultLanguage))) {
-                productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue("Product_id1");
-                productPropertiesExampleTab.createRow(5).createCell(columnOffset).setCellValue("Product_id2");
-                productPropertiesExampleTab.createRow(6).createCell(columnOffset).setCellValue("Product_id3");
+                productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnOffset).setCellValue("Product_id1");
+                productPropertiesExampleTab.createRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnOffset).setCellValue("Product_id2");
+                productPropertiesExampleTab.createRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnOffset).setCellValue("Product_id3");
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_NAME.toString(), defaultLanguage))) {
-                productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PLASTIC_HEAD_MALLET.toString(), defaultLanguage));
-                productPropertiesExampleTab.getRow(5).createCell(columnOffset).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_IRON_HEAD_MALLET.toString(), defaultLanguage));
-                productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_WOOD_HEAD_MALLET.toString(), defaultLanguage));
+                productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnOffset).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PLASTIC_HEAD_MALLET.toString(), defaultLanguage));
+                productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnOffset).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_IRON_HEAD_MALLET.toString(), defaultLanguage));
+                productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnOffset).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_WOOD_HEAD_MALLET.toString(), defaultLanguage));
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION.toString(), defaultLanguage))) {
-                productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PLASTIC_HEAD_MALLET_DESCRIPTION.toString(), defaultLanguage));
-                productPropertiesExampleTab.getRow(5).createCell(columnOffset).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_IRON_HEAD_MALLET_DESCRIPTION.toString(), defaultLanguage));
-                productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_WOOD_HEAD_MALLET_DESCRIPTION.toString(), defaultLanguage));
+                productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnOffset).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PLASTIC_HEAD_MALLET_DESCRIPTION.toString(), defaultLanguage));
+                productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnOffset).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_IRON_HEAD_MALLET_DESCRIPTION.toString(), defaultLanguage));
+                productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnOffset).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_WOOD_HEAD_MALLET_DESCRIPTION.toString(), defaultLanguage));
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WIDTH.toString(), defaultLanguage)) || property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_LENGTH.toString(), defaultLanguage)) || property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_HEIGHT.toString(), defaultLanguage)) || property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WEIGHT.toString(), defaultLanguage))) {
                 String exampleUnit = "cm";
                 if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WIDTH.toString(), defaultLanguage))) {
-                    productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue("3");
-                    productPropertiesExampleTab.getRow(5).createCell(columnOffset).setCellValue("78");
-                    productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("80");
-                    productPropertiesExampleTab.getRow(5).createCell(++columnOffset).setCellValue("cm");
-                    productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("mm");
+                    productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnOffset).setCellValue("3");
+                    productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnOffset).setCellValue("78");
+                    productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnOffset).setCellValue("80");
+                    productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(++columnOffset).setCellValue("cm");
+                    productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnOffset).setCellValue("mm");
                 } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_LENGTH.toString(), defaultLanguage))) {
-                    productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue("4");
-                    productPropertiesExampleTab.getRow(5).createCell(columnOffset).setCellValue("35");
-                    productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("40");
-                    productPropertiesExampleTab.getRow(5).createCell(++columnOffset).setCellValue("mm");
-                    productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("mm");
+                    productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnOffset).setCellValue("4");
+                    productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnOffset).setCellValue("35");
+                    productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnOffset).setCellValue("40");
+                    productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(++columnOffset).setCellValue("mm");
+                    productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnOffset).setCellValue("mm");
                 } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_HEIGHT.toString(), defaultLanguage))) {
-                    productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue("2");
-                    productPropertiesExampleTab.getRow(5).createCell(columnOffset).setCellValue("3");
-                    productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("320");
-                    productPropertiesExampleTab.getRow(5).createCell(++columnOffset).setCellValue("cm");
-                    productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("mm");
+                    productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnOffset).setCellValue("2");
+                    productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnOffset).setCellValue("3");
+                    productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnOffset).setCellValue("320");
+                    productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(++columnOffset).setCellValue("cm");
+                    productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnOffset).setCellValue("mm");
                 } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WEIGHT.toString(), defaultLanguage))) {
                     exampleUnit = "g";
-                    productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellValue("20");
-                    productPropertiesExampleTab.getRow(5).createCell(columnOffset).setCellValue("30");
-                    productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue("300");
-                    productPropertiesExampleTab.getRow(5).createCell(++columnOffset).setCellValue(exampleUnit);
-                    productPropertiesExampleTab.getRow(6).createCell(columnOffset).setCellValue(exampleUnit);
+                    productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnOffset).setCellValue("20");
+                    productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnOffset).setCellValue("30");
+                    productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnOffset).setCellValue("300");
+                    productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(++columnOffset).setCellValue(exampleUnit);
+                    productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnOffset).setCellValue(exampleUnit);
                 }
                 // quantity unit
                 cell = secondRow.createCell(columnOffset);
@@ -969,9 +967,9 @@ public class TemplateGenerator {
                 cell.setCellStyle(readOnlyStyle);
                 cell = fourthRow.createCell(columnOffset);
                 cell.setCellStyle(readOnlyStyle);
-                productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
+                productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnOffset).setCellStyle(editableStyle);
 
-                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4, 4, columnOffset, columnOffset);
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(FIRST_EDITABLE_ROW_INDEX, FIRST_EDITABLE_ROW_INDEX, columnOffset, columnOffset);
                 DataValidationHelper dataValidationHelper = productPropertiesExampleTab.getDataValidationHelper();
                 String constraints = property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WEIGHT.toString(), defaultLanguage)) ? SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_WEIGHT_UNIT_LIST.toString(), defaultLanguage) : SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_DIMENSION_LIST.toString(), defaultLanguage);
                 DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(constraints);
@@ -984,8 +982,8 @@ public class TemplateGenerator {
                 dataValidation.setEmptyCellAllowed(true);
                 productPropertiesExampleTab.addValidationData(dataValidation);
 
-                productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellValue(exampleUnit);
-                productPropertiesExampleTab.getRow(4).getCell(columnOffset).setCellStyle(editableStyle);
+                productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnOffset).setCellValue(exampleUnit);
+                productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnOffset).setCellStyle(editableStyle);
             }
             columnOffset++;
         }
@@ -1006,10 +1004,10 @@ public class TemplateGenerator {
                         : dataType);
                 // make thirdRow read only
                 thirdRowCell.setCellStyle(readOnlyStyle);
-                productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
+                productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnOffset).setCellStyle(editableStyle);
                 fourthRow.createCell(columnOffset).setCellStyle(readOnlyStyle);
                 if (property.getDataType().equals("BOOLEAN")) {
-                    CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4, 4, columnOffset, columnOffset);
+                    CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(FIRST_EDITABLE_ROW_INDEX, FIRST_EDITABLE_ROW_INDEX, columnOffset, columnOffset);
                     DataValidationHelper dataValidationHelper = productPropertiesExampleTab.getDataValidationHelper();
                     DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_BOOLEAN_LIST.toString(), defaultLanguage));
                     DataValidation dataValidation = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
@@ -1033,7 +1031,7 @@ public class TemplateGenerator {
                     cell.setCellStyle(readOnlyStyle);
                     cell = fourthRow.createCell(columnOffset);
                     cell.setCellStyle(readOnlyStyle);
-                    productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
+                    productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnOffset).setCellStyle(editableStyle);
                 } else if (property.getDataType().equals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)) {
                     // quantity unit
                     productPropertiesExampleTab.getRow(0).createCell(++columnOffset).setCellStyle(readOnlyStyle);
@@ -1044,7 +1042,7 @@ public class TemplateGenerator {
                     cell.setCellStyle(readOnlyStyle);
                     cell = fourthRow.createCell(columnOffset);
                     cell.setCellStyle(readOnlyStyle);
-                    productPropertiesExampleTab.getRow(4).createCell(columnOffset).setCellStyle(editableStyle);
+                    productPropertiesExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnOffset).setCellStyle(editableStyle);
                 }
                 fourthRow.getCell(columnOffset).setCellValue(property.getUnit() != null ? property.getUnit().getShortName() : "");
                 columnOffset++;
@@ -1131,9 +1129,9 @@ public class TemplateGenerator {
             cell.setCellValue(property.getPreferredName(defaultLanguage));
             cell.setCellStyle(boldCellStyle);
             if (checkMandatory(property)) {
-                termsTab.getRow(4).createCell(columnIndex).setCellStyle(mandatoryCellStyle);
+                termsTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnIndex).setCellStyle(mandatoryCellStyle);
             } else {
-                termsTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
+                termsTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnIndex).setCellStyle(editableStyle);
             }
             Cell thirdRowCell = thirdRow.createCell(columnIndex);
             // get data type of the property
@@ -1161,9 +1159,9 @@ public class TemplateGenerator {
                 cell.setCellStyle(readOnlyStyle);
                 cell = fourthRow.createCell(columnIndex);
                 cell.setCellStyle(readOnlyStyle);
-                termsTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
+                termsTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnIndex).setCellStyle(editableStyle);
 
-                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4, 4, columnIndex, columnIndex);
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(FIRST_EDITABLE_ROW_INDEX, FIRST_EDITABLE_ROW_INDEX, columnIndex, columnIndex);
                 DataValidationHelper dataValidationHelper = termsTab.getDataValidationHelper();
                 DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_CURRENCY_LIST.toString(), defaultLanguage));
                 DataValidation dataValidation = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
@@ -1184,11 +1182,11 @@ public class TemplateGenerator {
                 cell.setCellStyle(readOnlyStyle);
                 cell = fourthRow.createCell(columnIndex);
                 cell.setCellStyle(readOnlyStyle);
-                termsTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
+                termsTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnIndex).setCellStyle(editableStyle);
             }
             // dropdown menu for incoterms
             if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_INCOTERMS.toString(), defaultLanguage))) {
-                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4, 4, columnIndex, columnIndex);
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(FIRST_EDITABLE_ROW_INDEX, FIRST_EDITABLE_ROW_INDEX, columnIndex, columnIndex);
                 DataValidationHelper dataValidationHelper = termsTab.getDataValidationHelper();
                 DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_INCOTERMS_LIST.toString(), defaultLanguage));
                 DataValidation dataValidation = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
@@ -1201,7 +1199,7 @@ public class TemplateGenerator {
                 termsTab.addValidationData(dataValidation);
 
             } else if (property.getDataType().equals("BOOLEAN")) {
-                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4, 4, columnIndex, columnIndex);
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(FIRST_EDITABLE_ROW_INDEX, FIRST_EDITABLE_ROW_INDEX, columnIndex, columnIndex);
                 DataValidationHelper dataValidationHelper = termsTab.getDataValidationHelper();
                 DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_BOOLEAN_LIST.toString(), defaultLanguage));
                 DataValidation dataValidation = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
@@ -1213,7 +1211,7 @@ public class TemplateGenerator {
                 dataValidation.setEmptyCellAllowed(true);
                 termsTab.addValidationData(dataValidation);
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_WARRANTY_VALIDITY_PERIOD.toString(), defaultLanguage))) {
-                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4, 4, columnIndex, columnIndex);
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(FIRST_EDITABLE_ROW_INDEX, FIRST_EDITABLE_ROW_INDEX, columnIndex, columnIndex);
                 DataValidationHelper dataValidationHelper = termsTab.getDataValidationHelper();
                 DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_WARRANTY_VALIDITY_LIST.toString(), defaultLanguage));
                 DataValidation dataValidation = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
@@ -1225,7 +1223,7 @@ public class TemplateGenerator {
                 dataValidation.setEmptyCellAllowed(true);
                 termsTab.addValidationData(dataValidation);
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD.toString(), defaultLanguage))) {
-                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4, 4, columnIndex, columnIndex);
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(FIRST_EDITABLE_ROW_INDEX, FIRST_EDITABLE_ROW_INDEX, columnIndex, columnIndex);
                 DataValidationHelper dataValidationHelper = termsTab.getDataValidationHelper();
                 DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_DELIVERY_PERIOD_LIST.toString(), defaultLanguage));
                 DataValidation dataValidation = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
@@ -1319,9 +1317,9 @@ public class TemplateGenerator {
             cell.setCellValue(property.getPreferredName(defaultLanguage));
             cell.setCellStyle(boldCellStyle);
             if (checkMandatory(property)) {
-                termsExampleTab.getRow(4).createCell(columnIndex).setCellStyle(mandatoryCellStyle);
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnIndex).setCellStyle(mandatoryCellStyle);
             } else {
-                termsExampleTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnIndex).setCellStyle(editableStyle);
             }
             Cell thirdRowCell = thirdRow.createCell(columnIndex);
             // get data type of the property
@@ -1341,13 +1339,13 @@ public class TemplateGenerator {
 
             // fill cells with example values
             if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION.toString(), defaultLanguage))) {
-                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("Product_id1");
-                termsExampleTab.createRow(5).createCell(columnIndex).setCellValue("Product_id2");
-                termsExampleTab.createRow(6).createCell(columnIndex).setCellValue("Product_id3");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnIndex).setCellValue("Product_id1");
+                termsExampleTab.createRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnIndex).setCellValue("Product_id2");
+                termsExampleTab.createRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnIndex).setCellValue("Product_id3");
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PRICE_BASE_QUANTITY.toString(), defaultLanguage))) {
-                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("1");
-                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("1");
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("1");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnIndex).setCellValue("1");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnIndex).setCellValue("1");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnIndex).setCellValue("1");
                 // quantity unit
                 termsExampleTab.getRow(0).createCell(++columnIndex).setCellStyle(readOnlyStyle);
                 cell = secondRow.createCell(columnIndex);
@@ -1357,16 +1355,16 @@ public class TemplateGenerator {
                 cell.setCellStyle(readOnlyStyle);
                 cell = fourthRow.createCell(columnIndex);
                 cell.setCellStyle(readOnlyStyle);
-                termsExampleTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnIndex).setCellStyle(editableStyle);
 
-                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_EXAMPLE_MINIMUM_ORDER_QUANTITY_UNIT.toString(), defaultLanguage));
-                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_EXAMPLE_MINIMUM_ORDER_QUANTITY_UNIT.toString(), defaultLanguage));
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_EXAMPLE_MINIMUM_ORDER_QUANTITY_UNIT.toString(), defaultLanguage));
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_EXAMPLE_MINIMUM_ORDER_QUANTITY_UNIT.toString(), defaultLanguage));
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_EXAMPLE_MINIMUM_ORDER_QUANTITY_UNIT.toString(), defaultLanguage));
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_EXAMPLE_MINIMUM_ORDER_QUANTITY_UNIT.toString(), defaultLanguage));
 
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_MINIMUM_ORDER_QUANTITY.toString(), defaultLanguage))) {
-                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("3000");
-                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("3000");
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("1000");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnIndex).setCellValue("3000");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnIndex).setCellValue("3000");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnIndex).setCellValue("1000");
                 // quantity unit
                 termsExampleTab.getRow(0).createCell(++columnIndex).setCellStyle(readOnlyStyle);
                 cell = secondRow.createCell(columnIndex);
@@ -1376,31 +1374,31 @@ public class TemplateGenerator {
                 cell.setCellStyle(readOnlyStyle);
                 cell = fourthRow.createCell(columnIndex);
                 cell.setCellStyle(readOnlyStyle);
-                termsExampleTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnIndex).setCellStyle(editableStyle);
 
-                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_EXAMPLE_MINIMUM_ORDER_QUANTITY_UNIT.toString(), defaultLanguage));
-                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_EXAMPLE_MINIMUM_ORDER_QUANTITY_UNIT.toString(), defaultLanguage));
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_EXAMPLE_MINIMUM_ORDER_QUANTITY_UNIT.toString(), defaultLanguage));
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_EXAMPLE_MINIMUM_ORDER_QUANTITY_UNIT.toString(), defaultLanguage));
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_EXAMPLE_MINIMUM_ORDER_QUANTITY_UNIT.toString(), defaultLanguage));
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_EXAMPLE_MINIMUM_ORDER_QUANTITY_UNIT.toString(), defaultLanguage));
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_TRANSPORT_MODE.toString(), defaultLanguage))) {
-                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PLASTIC_HEAD_MALLET_TRANSPORT_MODE.toString(), defaultLanguage));
-                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_IRON_HEAD_MALLET_TRANSPORT_MODE.toString(), defaultLanguage));
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_WOOD_HEAD_MALLET_TRANSPORT_MODE.toString(), defaultLanguage));
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PLASTIC_HEAD_MALLET_TRANSPORT_MODE.toString(), defaultLanguage));
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_IRON_HEAD_MALLET_TRANSPORT_MODE.toString(), defaultLanguage));
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_WOOD_HEAD_MALLET_TRANSPORT_MODE.toString(), defaultLanguage));
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PACKAGING_TYPE.toString(), defaultLanguage))) {
-                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PLASTIC_HEAD_MALLET_PACKAGING_TYPE.toString(), defaultLanguage));
-                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_IRON_HEAD_MALLET_PACKAGING_TYPE.toString(), defaultLanguage));
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_WOOD_HEAD_MALLET_PACKAGING_TYPE.toString(), defaultLanguage));
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PLASTIC_HEAD_MALLET_PACKAGING_TYPE.toString(), defaultLanguage));
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_IRON_HEAD_MALLET_PACKAGING_TYPE.toString(), defaultLanguage));
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_WOOD_HEAD_MALLET_PACKAGING_TYPE.toString(), defaultLanguage));
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_CUSTOMIZABLE.toString(), defaultLanguage))) {
-                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue(true);
-                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue(true);
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue(false);
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnIndex).setCellValue(true);
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnIndex).setCellValue(true);
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnIndex).setCellValue(false);
             } else if (SpringBridge.getInstance().getCatalogueServiceConfig().getSparePartEnabled() && property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_SPARE_PART.toString(), defaultLanguage))) {
-                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue(false);
-                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue(true);
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue(false);
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnIndex).setCellValue(false);
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnIndex).setCellValue(true);
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnIndex).setCellValue(false);
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PACKAGE_QUANTITY.toString(), defaultLanguage))) {
-                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("10");
-                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("30");
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("1");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnIndex).setCellValue("10");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnIndex).setCellValue("30");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnIndex).setCellValue("1");
                 // quantity unit
                 termsExampleTab.getRow(0).createCell(++columnIndex).setCellStyle(readOnlyStyle);
                 cell = secondRow.createCell(columnIndex);
@@ -1410,15 +1408,15 @@ public class TemplateGenerator {
                 cell.setCellStyle(readOnlyStyle);
                 cell = fourthRow.createCell(columnIndex);
                 cell.setCellStyle(readOnlyStyle);
-                termsExampleTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnIndex).setCellStyle(editableStyle);
 
-                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_EXAMPLE_PACKAGE_QUANTITY_UNIT.toString(), defaultLanguage));
-                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_EXAMPLE_PACKAGE_QUANTITY_UNIT.toString(), defaultLanguage));
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_EXAMPLE_PACKAGE_QUANTITY_UNIT.toString(), defaultLanguage));
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_EXAMPLE_PACKAGE_QUANTITY_UNIT.toString(), defaultLanguage));
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_EXAMPLE_PACKAGE_QUANTITY_UNIT.toString(), defaultLanguage));
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnIndex).setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_EXAMPLE_PACKAGE_QUANTITY_UNIT.toString(), defaultLanguage));
             }
             // dropdown menu for incoterms
             else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_INCOTERMS.toString(), defaultLanguage))) {
-                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4, 4, columnIndex, columnIndex);
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(FIRST_EDITABLE_ROW_INDEX, FIRST_EDITABLE_ROW_INDEX, columnIndex, columnIndex);
                 DataValidationHelper dataValidationHelper = termsExampleTab.getDataValidationHelper();
                 DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_INCOTERMS_LIST.toString(), defaultLanguage));
                 DataValidation dataValidation = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
@@ -1430,11 +1428,11 @@ public class TemplateGenerator {
                 dataValidation.setEmptyCellAllowed(true);
                 termsExampleTab.addValidationData(dataValidation);
 
-                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("CIF (Cost,Insurance and Freight)");
-                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("FOB (Free on Board)");
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("DPU (Delivery at Place Unloaded)");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnIndex).setCellValue("CIF (Cost,Insurance and Freight)");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnIndex).setCellValue("FOB (Free on Board)");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnIndex).setCellValue("DPU (Delivery at Place Unloaded)");
             } else if (property.getDataType().equals("BOOLEAN")) {
-                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4, 4, columnIndex, columnIndex);
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(FIRST_EDITABLE_ROW_INDEX, FIRST_EDITABLE_ROW_INDEX, columnIndex, columnIndex);
                 DataValidationHelper dataValidationHelper = termsExampleTab.getDataValidationHelper();
                 DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_BOOLEAN_LIST.toString(), defaultLanguage));
                 DataValidation dataValidation = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
@@ -1446,13 +1444,13 @@ public class TemplateGenerator {
                 dataValidation.setEmptyCellAllowed(true);
                 termsExampleTab.addValidationData(dataValidation);
 
-                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("TRUE");
-                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("FALSE");
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("FALSE");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnIndex).setCellValue("TRUE");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnIndex).setCellValue("FALSE");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnIndex).setCellValue("FALSE");
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_WARRANTY_VALIDITY_PERIOD.toString(), defaultLanguage))) {
-                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("1");
-                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("3");
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("2");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnIndex).setCellValue("1");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnIndex).setCellValue("3");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnIndex).setCellValue("2");
                 // quantity unit
                 termsExampleTab.getRow(0).createCell(++columnIndex).setCellStyle(readOnlyStyle);
                 cell = secondRow.createCell(columnIndex);
@@ -1462,9 +1460,9 @@ public class TemplateGenerator {
                 cell.setCellStyle(readOnlyStyle);
                 cell = fourthRow.createCell(columnIndex);
                 cell.setCellStyle(readOnlyStyle);
-                termsExampleTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnIndex).setCellStyle(editableStyle);
 
-                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4, 4, columnIndex, columnIndex);
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(FIRST_EDITABLE_ROW_INDEX, FIRST_EDITABLE_ROW_INDEX, columnIndex, columnIndex);
                 DataValidationHelper dataValidationHelper = termsExampleTab.getDataValidationHelper();
                 DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_WARRANTY_VALIDITY_LIST.toString(), defaultLanguage));
                 DataValidation dataValidation = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
@@ -1476,13 +1474,13 @@ public class TemplateGenerator {
                 dataValidation.setEmptyCellAllowed(true);
                 termsExampleTab.addValidationData(dataValidation);
 
-                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("year");
-                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("month");
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("month");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnIndex).setCellValue("year");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnIndex).setCellValue("month");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnIndex).setCellValue("month");
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD.toString(), defaultLanguage))) {
-                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("1");
-                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("4");
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("2");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnIndex).setCellValue("1");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnIndex).setCellValue("4");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnIndex).setCellValue("2");
                 // quantity unit
                 termsExampleTab.getRow(0).createCell(++columnIndex).setCellStyle(readOnlyStyle);
                 termsExampleTab.getRow(1).createCell(columnIndex).setCellStyle(readOnlyStyle);
@@ -1490,9 +1488,9 @@ public class TemplateGenerator {
                 cell.setCellValue(TemplateConfig.TEMPLATE_QUANTITY_UNIT);
                 cell.setCellStyle(readOnlyStyle);
                 termsExampleTab.getRow(3).createCell(columnIndex).setCellStyle(readOnlyStyle);
-                termsExampleTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnIndex).setCellStyle(editableStyle);
 
-                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4, 4, columnIndex, columnIndex);
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(FIRST_EDITABLE_ROW_INDEX, FIRST_EDITABLE_ROW_INDEX, columnIndex, columnIndex);
                 DataValidationHelper dataValidationHelper = termsExampleTab.getDataValidationHelper();
                 DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_DELIVERY_PERIOD_LIST.toString(), defaultLanguage));
                 DataValidation dataValidation = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
@@ -1504,15 +1502,15 @@ public class TemplateGenerator {
                 dataValidation.setEmptyCellAllowed(true);
                 termsExampleTab.addValidationData(dataValidation);
 
-                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("working days");
-                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("days");
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("weeks");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnIndex).setCellValue("working days");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnIndex).setCellValue("days");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnIndex).setCellValue("weeks");
             }
             // check whether the property needs a unit
             if (property.getDataType().equals(TEMPLATE_DATA_TYPE_AMOUNT)) {
-                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("4");
-                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("6");
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("1");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnIndex).setCellValue("4");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnIndex).setCellValue("6");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnIndex).setCellValue("1");
 
                 // quantity unit
                 termsExampleTab.getRow(0).createCell(++columnIndex).setCellStyle(readOnlyStyle);
@@ -1521,9 +1519,9 @@ public class TemplateGenerator {
                 cell.setCellValue("CURRENCY");
                 cell.setCellStyle(readOnlyStyle);
                 termsExampleTab.getRow(3).createCell(columnIndex).setCellStyle(readOnlyStyle);
-                termsExampleTab.getRow(4).createCell(columnIndex).setCellStyle(editableStyle);
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).createCell(columnIndex).setCellStyle(editableStyle);
 
-                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4, 4, columnIndex, columnIndex);
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(FIRST_EDITABLE_ROW_INDEX, FIRST_EDITABLE_ROW_INDEX, columnIndex, columnIndex);
                 DataValidationHelper dataValidationHelper = termsExampleTab.getDataValidationHelper();
                 DataValidationConstraint dataValidationConstraint = dataValidationHelper.createFormulaListConstraint(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_CURRENCY_LIST.toString(), defaultLanguage));
                 DataValidation dataValidation = dataValidationHelper.createValidation(dataValidationConstraint, cellRangeAddressList);
@@ -1535,9 +1533,9 @@ public class TemplateGenerator {
                 dataValidation.setEmptyCellAllowed(true);
                 termsExampleTab.addValidationData(dataValidation);
 
-                termsExampleTab.getRow(4).getCell(columnIndex).setCellValue("EUR");
-                termsExampleTab.getRow(5).createCell(columnIndex).setCellValue("USD");
-                termsExampleTab.getRow(6).createCell(columnIndex).setCellValue("SEK");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX).getCell(columnIndex).setCellValue("EUR");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 1).createCell(columnIndex).setCellValue("USD");
+                termsExampleTab.getRow(FIRST_EDITABLE_ROW_INDEX + 2).createCell(columnIndex).setCellValue("SEK");
             }
             columnIndex++;
         }

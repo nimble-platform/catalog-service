@@ -102,8 +102,8 @@ public class TemplateParser {
         List<String> productIds = new ArrayList<>();
 
         int catalogSize = productPropertiesTab.getLastRowNum();
-        // first four rows contains fixed values
-        for (int rowNum = 4; rowNum <= catalogSize; rowNum++) {
+        // parse the sheet starting from the first editable row
+        for (int rowNum = FIRST_EDITABLE_ROW_INDEX; rowNum <= catalogSize; rowNum++) {
             CatalogueLineType clt = new CatalogueLineType();
             GoodsItemType goodsItem = new GoodsItemType();
             ItemType item = new ItemType();
@@ -491,7 +491,7 @@ public class TemplateParser {
         for (CatalogueLineType catalogueLine : catalogueLines) {
             ItemType item = catalogueLine.getGoodsItem().getItem();
             // find row corresponding to the provided item
-            int rowIndex = 4;
+            int rowIndex = FIRST_EDITABLE_ROW_INDEX;
             Row row = null;
             Cell cell;
             String value;
