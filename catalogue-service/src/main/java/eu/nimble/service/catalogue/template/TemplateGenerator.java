@@ -2118,7 +2118,7 @@ public class TemplateGenerator {
         return null;
     }
 
-    private int getColumnCountForCategory(Category category) {
+    public static int getColumnCountForCategory(Category category) {
         int propertiesSize = 0;
         List<Property> properties = getPropertiesToBeIncludedInTemplate(category);
         for (Property property : properties) {

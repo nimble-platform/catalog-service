@@ -253,14 +253,7 @@ public class TemplateParser {
         // find the offset for the custom properties
         int totalCategoryPropertyNumber = 0;
         for (Category category : categories) {
-            List<Property> categoryProperties = TemplateGenerator.getPropertiesToBeIncludedInTemplate(category);
-            for (Property property : categoryProperties) {
-                // for quantity properties, since there are two columns (value and unit), we should increment total property number by two
-                if (property.getDataType().contentEquals(TEMPLATE_DATA_TYPE_QUANTITY)) {
-                    totalCategoryPropertyNumber++;
-                }
-                totalCategoryPropertyNumber++;
-            }
+            totalCategoryPropertyNumber += TemplateGenerator.getColumnCountForCategory(category);
         }
         int fixedPropNumber = TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage).size() + 4;
         int customPropertyNum = productPropertiesTab.getRow(1).getLastCellNum() - (totalCategoryPropertyNumber + fixedPropNumber + 1);
