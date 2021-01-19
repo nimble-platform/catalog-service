@@ -326,7 +326,7 @@ public class TemplateGenerator {
                 categoryColumnNumber += getColumnCountForCategory(category);
             }
         }
-        int customPropertyColumnIndex = 5 + TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage).size() + categoryColumnNumber;
+        int customPropertyColumnIndex = getColumnCountForFixedPropertiesInProductPropertyTab(defaultLanguage) + categoryColumnNumber;
 
         int rowIndex = FIRST_EDITABLE_ROW_INDEX;
         for (CatalogueLineType catalogueLine : catalogueLines) {
@@ -612,7 +612,7 @@ public class TemplateGenerator {
         productPropertiesTab.addMergedRegion(cra);
 
         // create the titles for categories
-        int columnOffset = TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage).size() + 5;
+        int columnOffset = getColumnCountForFixedPropertiesInProductPropertyTab(defaultLanguage);
         for (int i = 0; i < categories.size(); i++) {
             List<Property> properties = getPropertiesToBeIncludedInTemplate(categories.get(i));
             if (properties.size() > 0) {
@@ -849,7 +849,7 @@ public class TemplateGenerator {
         productPropertiesExampleTab.addMergedRegion(cra);
 
         // create the titles for categories
-        int columnOffset = TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage).size() + 5;
+        int columnOffset = getColumnCountForFixedPropertiesInProductPropertyTab(defaultLanguage);
         for (int i = 0; i < categories.size(); i++) {
             List<Property> properties = getPropertiesToBeIncludedInTemplate(categories.get(i));
             if (properties.size() > 0) {
@@ -2119,17 +2119,26 @@ public class TemplateGenerator {
     }
 
     public static int getColumnCountForCategory(Category category) {
-        int propertiesSize = 0;
-        List<Property> properties = getPropertiesToBeIncludedInTemplate(category);
-        for (Property property : properties) {
-            propertiesSize++;
-            if (property.getDataType().contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)) {
-                propertiesSize++;
-            }
-        }
-        return propertiesSize;
+        return getColumnCountForProperties(getPropertiesToBeIncludedInTemplate(category));
     }
 
+    public static int getColumnCountForProperties(List<Property> properties){
+        int columnCount = 0;
+        if(properties != null){
+            for (Property property : properties) {
+                columnCount++;
+                if (property.getDataType().contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY)) {
+                    columnCount++;
+                }
+            }
+        }
+
+        return columnCount;
+    }
+
+    public static int getColumnCountForFixedPropertiesInProductPropertyTab(String defaultLanguage){
+        return getColumnCountForProperties(TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage)) + NUMBER_OF_RESERVED_COLUMNS_FOR_PRODUCT_PROPERTY_TAB;
+    }
     public static List<Property> getPropertiesToBeIncludedInTemplate(Category category) {
         List<Property> properties = new ArrayList<>();
         if (category.getProperties() != null) {

@@ -255,9 +255,9 @@ public class TemplateParser {
         for (Category category : categories) {
             totalCategoryPropertyNumber += TemplateGenerator.getColumnCountForCategory(category);
         }
-        int fixedPropNumber = TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage).size() + 4;
-        int customPropertyNum = productPropertiesTab.getRow(1).getLastCellNum() - (totalCategoryPropertyNumber + fixedPropNumber + 1);
-        int columnIndex = 1 + fixedPropNumber + totalCategoryPropertyNumber;
+        int fixedPropNumber = TemplateGenerator.getColumnCountForFixedPropertiesInProductPropertyTab(defaultLanguage);
+        int customPropertyNum = productPropertiesTab.getRow(1).getLastCellNum() - (totalCategoryPropertyNumber + fixedPropNumber);
+        int columnIndex = fixedPropNumber + totalCategoryPropertyNumber;
 
         // traverse the custom properties
         for (int i = 0; i < customPropertyNum; i++) {
