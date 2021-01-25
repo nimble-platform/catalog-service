@@ -73,8 +73,7 @@ public class IndexingWrapper {
             if(!quantityValidator.bothFieldsPopulated()) {
                 throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
-            indexItem.setBaseQuantity(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getValue().doubleValue());
-            indexItem.setBaseQuantityUnit(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getUnitCode());
+            indexItem.addBaseQuantity(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getUnitCode(), Arrays.asList(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getValue().doubleValue()));
         }
         QuantityValidator quantityValidator = new QuantityValidator(catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure());
         if(quantityValidator.bothFieldsPopulated()) {
