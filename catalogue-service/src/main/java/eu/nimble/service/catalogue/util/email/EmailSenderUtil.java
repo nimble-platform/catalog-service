@@ -67,18 +67,27 @@ public class EmailSenderUtil {
 
             // construct the email list
             List<String> emailList = new ArrayList<>();
-            List<String> initialRepresentativeEmailList = new ArrayList<>();
+            // sales officers, monitor or legal representative receive the email notification
+            List<String> legalRepresentativeEmailList = new ArrayList<>();
+            List<String> monitorEmailList = new ArrayList<>();
             for (PersonType p : catalogueProvider.getPerson()) {
-                if (p.getRole().contains(NimbleRole.PUBLISHER.getName()) || p.getRole().contains(NimbleRole.COMPANY_ADMIN.getName())) {
+                if (p.getRole().contains(NimbleRole.SALES_OFFICER.getName())) {
                     emailList.add(p.getContact().getElectronicMail());
                 }
-                if(p.getRole().contains(NimbleRole.INITIAL_REPRESENTATIVE.getName())){
-                    initialRepresentativeEmailList.add(p.getContact().getElectronicMail());
+                if(p.getRole().contains(NimbleRole.MONITOR.getName())){
+                    monitorEmailList.add(p.getContact().getElectronicMail());
+                }
+                if(p.getRole().contains(NimbleRole.LEGAL_REPRESENTATIVE.getName())){
+                    legalRepresentativeEmailList.add(p.getContact().getElectronicMail());
                 }
             }
-            // if there is no publisher and company admin, initial representative will take the email
             if(emailList.size() == 0){
-                emailList = initialRepresentativeEmailList;
+                // if there is no users with Sales Officer role, then, send it to monitors
+                if(monitorEmailList.size() > 0)
+                    emailList = monitorEmailList;
+                // if there is no users with Monitor role, then, send it to legal representative
+                else
+                    emailList = legalRepresentativeEmailList;
             }
             // mail subject
             String subject = "Request for catalog exchange";
