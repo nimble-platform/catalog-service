@@ -63,7 +63,7 @@ public class EmailSenderUtil {
          * @param requesterCompanyName the requester company name
          * @param catalogueProvider the party which provides the catalogue
          * */
-        public void requestCatalogExchange(String requestDetails, String catalogueName, String requesterCompanyName, PartyType catalogueProvider){
+        public void requestCatalogExchange(String requestDetails, String catalogueName, String requesterCompanyName,PersonType requesterUser, PartyType catalogueProvider){
 
             // construct the email list
             List<String> emailList = new ArrayList<>();
@@ -94,13 +94,14 @@ public class EmailSenderUtil {
             // set variables for mail template
             Context context = new Context();
             context.setVariable("details", requestDetails);
+            context.setVariable("requesterUserName",String.format("%s %s",requesterUser.getFirstName(),requesterUser.getFamilyName()));
             context.setVariable("requesterCompanyName",requesterCompanyName);
             context.setVariable("catalogName",catalogueName);
             context.setVariable("platformName",platformName);
             context.setVariable("partyName",catalogueProvider.getPartyName().get(0).getName().getValue());
             context.setVariable("url", frontEndURL+"/#/dashboard");
             // send the mail
-            emailService.send(emailList.toArray(new String[0]),subject,"catalog_exchange",context);
+            emailService.send(emailList.toArray(new String[0]), new String[]{requesterUser.getContact().getElectronicMail()},subject,"catalog_exchange",context);
         }
 
         public void offerProducts(String offerDetails, List<String> vatNumbers, List<String> catalogueUuids, List<String> lineIds, String companyName) throws IOException, UnirestException {

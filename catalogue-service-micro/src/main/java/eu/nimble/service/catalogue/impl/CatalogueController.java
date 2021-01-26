@@ -242,7 +242,7 @@ public class CatalogueController {
             PartyType catalogProvider = SpringBridge.getInstance().getiIdentityClientTyped().getParty(bearerToken,catalogueProviderPartyId,true);
 
             // send an email
-            emailSenderUtil.requestCatalogExchange(requestDetails,catalogueIDResponses.get(0).getId(),requesterParty.getPartyName().get(0).getName().getValue(),catalogProvider);
+            emailSenderUtil.requestCatalogExchange(requestDetails,catalogueIDResponses.get(0).getId(),requesterParty.getPartyName().get(0).getName().getValue(),person,catalogProvider);
         } catch (Exception e) {
             throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_REQUEST_CATALOGUE_EXCHANGE.toString(), Arrays.asList(catalogueUuid,requestDetails),e);
         }
