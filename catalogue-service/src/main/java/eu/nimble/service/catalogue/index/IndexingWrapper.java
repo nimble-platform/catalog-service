@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 public class IndexingWrapper {
     private static final Logger logger = LoggerFactory.getLogger(IndexingWrapper.class);
 
+    private static final String NON_PUBLIC_INFORMATION_PRICE_ID = "DEFAULT_PRICE";
     private static final String XSD_NS = "http://www.w3.org/2001/XMLSchema#";
     private static final List<String> languagePriorityForCustomProperties = Arrays.asList("en", "es", "de", "tr", "it");
     private static final String circularEconomyCertificateGroup = "Circular Economy (Environment / Sustainability)";
@@ -74,6 +75,9 @@ public class IndexingWrapper {
                 throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
             indexItem.addBaseQuantity(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getUnitCode(), Arrays.asList(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getValue().doubleValue()));
+        }
+        if(catalogueLine.getNonPublicInformation() != null && catalogueLine.getNonPublicInformation().stream().filter(nonPublicInformationType -> nonPublicInformationType.getID().contentEquals(NON_PUBLIC_INFORMATION_PRICE_ID)).findAny().isPresent()){
+            indexItem.setPriceHidden(true);
         }
         QuantityValidator quantityValidator = new QuantityValidator(catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure());
         if(quantityValidator.bothFieldsPopulated()) {
