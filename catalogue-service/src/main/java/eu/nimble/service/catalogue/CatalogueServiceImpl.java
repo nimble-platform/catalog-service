@@ -188,16 +188,16 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
-    public CataloguePaginationResponse getCataloguePaginationResponse(String catalogueId, String partyId, String categoryName, String searchText, String languageId, CatalogueLineSortOptions sortOption, ProductStatus productStatus, int limit, int offset) {
-        return getCataloguePaginationResponse(catalogueId,partyId,categoryName,Configuration.Standard.UBL,searchText,languageId,sortOption,productStatus,limit,offset);
+    public CataloguePaginationResponse getCataloguePaginationResponse(String catalogueId, String partyId, String categoryUri, String searchText, String languageId, CatalogueLineSortOptions sortOption, ProductStatus productStatus, int limit, int offset) {
+        return getCataloguePaginationResponse(catalogueId,partyId,categoryUri,Configuration.Standard.UBL,searchText,languageId,sortOption,productStatus,limit,offset);
     }
 
     @Override
-    public <T> T getCataloguePaginationResponse(String catalogueId, String partyId,String categoryName, Configuration.Standard standard,String searchText,String languageId,CatalogueLineSortOptions sortOption,ProductStatus productStatus, int limit, int offset) {
+    public <T> T getCataloguePaginationResponse(String catalogueId, String partyId,String categoryUri, Configuration.Standard standard,String searchText,String languageId,CatalogueLineSortOptions sortOption,ProductStatus productStatus, int limit, int offset) {
         T catalogueResponse = null;
 
         if (standard == Configuration.Standard.UBL) {
-            catalogueResponse = (T) CataloguePersistenceUtil.getCatalogueLinesForParty(catalogueId, partyId,categoryName,searchText,languageId,sortOption,productStatus,limit,offset);
+            catalogueResponse = (T) CataloguePersistenceUtil.getCatalogueLinesForParty(catalogueId, partyId,categoryUri,searchText,languageId,sortOption,productStatus,limit,offset);
 
         } else if (standard == Configuration.Standard.MODAML) {
             logger.warn("Getting CataloguePaginationResponse with catalogue id and party id from MODAML repository is not implemented yet");

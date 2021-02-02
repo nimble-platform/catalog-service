@@ -104,7 +104,7 @@ public class CatalogueController {
                                                         @ApiParam(value = "Offset of the first catalogue line among all catalogue lines of the default catalogue for the party",required = true) @RequestParam(value = "offset",required = true) Integer offset,
                                                         @ApiParam(value = "Text to be used to filter the catalogue lines.Item name and description will be searched for the given text.") @RequestParam(value = "searchText",required = false) String searchText,
                                                         @ApiParam(value = "Identifier for the language of search text such as en and tr") @RequestParam(value = "languageId",required = false) String languageId,
-                                                        @ApiParam(value = "Name of the category which is used to filter catalogue lines.Catalogue lines are added to the response if and only if they contain the given category.") @RequestParam(value = "categoryName",required = false) String categoryName,
+                                                        @ApiParam(value = "Uri of the category which is used to filter catalogue lines.Catalogue lines are added to the response if and only if they contain the given category.") @RequestParam(value = "categoryUri",required = false) String categoryUri,
                                                         @ApiParam(value = "Option used to sort catalogue lines") @RequestParam(value = "sortOption",required = false) CatalogueLineSortOptions sortOption,
                                                         @ApiParam(value = "Product status") @RequestParam(value = "status",required = false) ProductStatus productStatus,
                                                         @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
@@ -139,7 +139,7 @@ public class CatalogueController {
         CataloguePaginationResponse cataloguePaginationResponse;
 
         try {
-            cataloguePaginationResponse = service.getCataloguePaginationResponse(catalogueId, partyId,categoryName,searchText,languageId,sortOption,productStatus,limit,offset);
+            cataloguePaginationResponse = service.getCataloguePaginationResponse(catalogueId, partyId,categoryUri,searchText,languageId,sortOption,productStatus,limit,offset);
         } catch (Exception e) {
             throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_CATALOGUE_PAGINATION_RESPONSE.toString(), Arrays.asList(partyId, catalogueId),e);
         }

@@ -261,7 +261,7 @@ public class Test01_CatalogueControllerTest {
         Assert.assertEquals(createdCatalogueId,cataloguePaginationResponse.getCatalogueUuid());
         Assert.assertEquals(5,cataloguePaginationResponse.getSize());
         Assert.assertEquals(5,cataloguePaginationResponse.getCatalogueLines().size());
-        Assert.assertEquals(2,cataloguePaginationResponse.getCategoryNames().size());
+        Assert.assertEquals(1,cataloguePaginationResponse.getCategoryUris().size());
 
     }
 
@@ -278,7 +278,7 @@ public class Test01_CatalogueControllerTest {
 
         Assert.assertEquals(5,cataloguePaginationResponse.getSize());
         Assert.assertEquals(2,cataloguePaginationResponse.getCatalogueLines().size());
-        Assert.assertEquals(2,cataloguePaginationResponse.getCategoryNames().size());
+        Assert.assertEquals(1,cataloguePaginationResponse.getCategoryUris().size());
         Assert.assertEquals(1200,cataloguePaginationResponse.getCatalogueLines().get(0).getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue().intValue());
     }
 
@@ -289,14 +289,14 @@ public class Test01_CatalogueControllerTest {
                 .param("catalogueId","default")
                 .param("limit","2")
                 .param("offset","0")
-                .param("categoryName","Notebook")
+                .param("categoryUri","http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ313#005")
                 .param("sortOption", CatalogueLineSortOptions.PRICE_LOW_TO_HIGH.toString());
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         CataloguePaginationResponse cataloguePaginationResponse = mapper.readValue(result.getResponse().getContentAsString(), CataloguePaginationResponse.class);
 
         Assert.assertEquals(0,cataloguePaginationResponse.getSize());
         Assert.assertEquals(0,cataloguePaginationResponse.getCatalogueLines().size());
-        Assert.assertEquals(2,cataloguePaginationResponse.getCategoryNames().size());
+        Assert.assertEquals(1,cataloguePaginationResponse.getCategoryUris().size());
 
     }
 
