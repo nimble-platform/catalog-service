@@ -1617,6 +1617,7 @@
         "hjid": null
       },
       "priceOption": [],
+      "productStatusType": "DRAFT",
       "goodsItem": {
         "id": "f450b263-8443-43c2-ae79-fbb08c4cc339",
         "item": {

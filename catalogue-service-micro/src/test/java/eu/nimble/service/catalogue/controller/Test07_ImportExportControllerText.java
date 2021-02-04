@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.nimble.common.rest.identity.IdentityClientTypedMockConfig;
 import eu.nimble.service.catalogue.CatalogueServiceImpl;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.utility.JsonSerializationUtility;
@@ -47,7 +48,7 @@ public class Test07_ImportExportControllerText {
     public void test1_generateTemplateForCatalogue() throws Exception {
         // get the catalogue
         MockHttpServletRequestBuilder request = get("/catalogue/ubl/" + Test03_TemplatePublishingTest.catalogueUUID)
-                .header("Authorization", TestConfig.buyerId);
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
         Assert.assertEquals(Test03_TemplatePublishingTest.catalogueUUID, catalogue.getUUID());
@@ -65,7 +66,7 @@ public class Test07_ImportExportControllerText {
     public void test2_generateTemplateForCatalogueWithTransportService() throws Exception {
         // get the catalogue
         MockHttpServletRequestBuilder request = get("/catalogue/ubl/" + Test01_CatalogueControllerTest.createdCatalogueWithTransportServiceId)
-                .header("Authorization", TestConfig.buyerId);
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
         Assert.assertEquals(Test01_CatalogueControllerTest.createdCatalogueWithTransportServiceId, catalogue.getUUID());

@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.nimble.common.rest.identity.IdentityClientTypedMockConfig;
 import eu.nimble.service.catalogue.persistence.util.CatalogueLinePersistenceUtil;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
@@ -61,7 +62,7 @@ public class Test04_BinaryContentTest {
         String catalogueJson = IOUtils.toString(Test01_CatalogueControllerTest.class.getResourceAsStream("/example_catalogue_binary_content.json"));
 
         MockHttpServletRequestBuilder request = post("/catalogue/ubl")
-                .header("Authorization", TestConfig.buyerId)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPartyID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(catalogueJson);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isCreated()).andReturn();
@@ -77,20 +78,20 @@ public class Test04_BinaryContentTest {
 
     /*
         We create a copy of the catalogue which is published previously.
-        Its id will be 'test' and it is important to set uri of product image so that there will be two references to the same binary content.
+        Its id will be 'Binary Content Catalogue Test' and it is important to set uri of product image so that there will be two references to the same binary content.
      */
     @Test
     public void test11_postJsonCatalogue() throws Exception {
         String catalogueJson = IOUtils.toString(Test01_CatalogueControllerTest.class.getResourceAsStream("/example_catalogue_binary_content.json"));
         // update the catalogue's id and product image uri
         CatalogueType catalogue = mapper.readValue(catalogueJson, CatalogueType.class);
-        catalogue.setID("test");
+        catalogue.setID("Binary Content Catalogue Test");
         catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().get(0).setUri(firstProductImageUri);
 
         catalogueJson = mapper.writeValueAsString(catalogue);
 
         MockHttpServletRequestBuilder request = post("/catalogue/ubl")
-                .header("Authorization", TestConfig.buyerId)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPartyID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(catalogueJson);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isCreated()).andReturn();
@@ -103,7 +104,7 @@ public class Test04_BinaryContentTest {
     @Test
     public void test12_retrieveBinaryContent() throws Exception {
         MockHttpServletRequestBuilder request = get("/binary-content")
-                .header("Authorization", TestConfig.buyerId)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPartyID)
                 .param("uri", firstProductImageUri);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
 
@@ -115,7 +116,7 @@ public class Test04_BinaryContentTest {
     public void test13_updateJsonCatalogue() throws Exception {
         // get the catalogue
         MockHttpServletRequestBuilder request = get("/catalogue/UBL/"+ catalogueUuid)
-                .header("Authorization", TestConfig.buyerId);
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPartyID);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         CatalogueType catalogue = mapper.readValue(result.getResponse().getContentAsString(), CatalogueType.class);
 
@@ -130,7 +131,7 @@ public class Test04_BinaryContentTest {
         catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().add(binaryObject);
 
         request = put("/catalogue/UBL")
-                .header("Authorization", TestConfig.buyerId)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPartyID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(catalogue));
         result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
@@ -149,7 +150,7 @@ public class Test04_BinaryContentTest {
     @Test
     public void test14_retrieveBinaryContent() throws Exception {
         MockHttpServletRequestBuilder request = get("/binary-content")
-                .header("Authorization", TestConfig.buyerId)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPartyID)
                 .param("uri", firstProductImageUri);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
     }
@@ -157,7 +158,7 @@ public class Test04_BinaryContentTest {
     @Test
     public void test15_retrieveBinaryContent() throws Exception {
         MockHttpServletRequestBuilder request = get("/binary-content")
-                .header("Authorization", TestConfig.buyerId)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPartyID)
                 .param("uri", secondProductImageUri);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
 
@@ -168,14 +169,14 @@ public class Test04_BinaryContentTest {
     @Test
     public void test16_deleteImagesInsideCatalogue() throws Exception {
         MockHttpServletRequestBuilder request = get("/catalogue/delete-images")
-                .param("partyId",TestConfig.buyerId)
+                .param("partyId",IdentityClientTypedMockConfig.sellerPartyID)
                 .param("ids",catalogueId)
-                .header("Authorization", TestConfig.buyerId);
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPartyID);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
 
         // try to get product image
         request = get("/binary-content")
-                .header("Authorization", TestConfig.buyerId)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPartyID)
                 .param("uri", secondProductImageUri);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isNotFound()).andReturn();
     }
@@ -191,18 +192,18 @@ public class Test04_BinaryContentTest {
         MvcResult result = this.mockMvc.perform(MockMvcRequestBuilders
                 .fileUpload("/catalogue/"+catalogueId+"/image/upload")
                 .file(mutipartFile)
-                .param("partyId",TestConfig.buyerId)
+                .param("partyId",IdentityClientTypedMockConfig.sellerPartyID)
                 .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
-                .header("Authorization", TestConfig.buyerId)).andExpect(status().isOk()).andReturn();
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPartyID)).andExpect(status().isOk()).andReturn();
 
         // check the number of product images
-        CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueForParty(catalogueId, TestConfig.buyerId);
+        CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueForParty(catalogueId, IdentityClientTypedMockConfig.sellerPartyID);
         Assert.assertEquals(1,catalogue.getCatalogueLine().size());
         Assert.assertEquals(2,catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().size());
         // try to get product images
         for(BinaryObjectType binaryObjectType:catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage()){
             MockHttpServletRequestBuilder request = get("/binary-content")
-                    .header("Authorization", TestConfig.buyerId)
+                    .header("Authorization", IdentityClientTypedMockConfig.sellerPartyID)
                     .param("uri", binaryObjectType.getUri());
             this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
             // save the uri and the content of the first product image
@@ -226,17 +227,17 @@ public class Test04_BinaryContentTest {
         MvcResult result = this.mockMvc.perform(MockMvcRequestBuilders
                 .fileUpload("/catalogue/"+catalogueId+"/image/upload")
                 .file(mutipartFile)
-                .param("partyId",TestConfig.buyerId)
+                .param("partyId",IdentityClientTypedMockConfig.sellerPartyID)
                 .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
-                .header("Authorization", TestConfig.buyerId)).andExpect(status().isOk()).andReturn();
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPartyID)).andExpect(status().isOk()).andReturn();
 
         // check the number of product images
-        CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueForParty(catalogueId, TestConfig.buyerId);
+        CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueForParty(catalogueId, IdentityClientTypedMockConfig.sellerPartyID);
         Assert.assertEquals(1,catalogue.getCatalogueLine().size());
         Assert.assertEquals(2,catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage().size());
         // try to get original image
         MockHttpServletRequestBuilder request = get("/binary-content")
-                .header("Authorization", TestConfig.buyerId)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPartyID)
                 .param("uri", firstProductImageUri);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isNotFound()).andReturn();
 
@@ -245,7 +246,7 @@ public class Test04_BinaryContentTest {
         for(BinaryObjectType binaryObjectType:catalogue.getCatalogueLine().get(0).getGoodsItem().getItem().getProductImage()){
             if(binaryObjectType.getFileName().contentEquals(productImageName)){
                 request = get("/binary-content")
-                        .header("Authorization", TestConfig.buyerId)
+                        .header("Authorization", IdentityClientTypedMockConfig.sellerPartyID)
                         .param("uri", binaryObjectType.getUri());
                 this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
                 // check whether the content is updated or not
@@ -260,11 +261,11 @@ public class Test04_BinaryContentTest {
     @Test
     public void test20_deleteCatalogue() throws Exception {
         MockHttpServletRequestBuilder request = delete("/catalogue/ubl/" + catalogueUuid)
-                .header("Authorization", TestConfig.buyerId);
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPartyID);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
 
         request = get("/catalogue/ubl/" + catalogueUuid)
-                .header("Authorization", TestConfig.buyerId);
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPartyID);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isNotFound()).andReturn();
     }
 }

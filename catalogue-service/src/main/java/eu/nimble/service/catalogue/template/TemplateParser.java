@@ -14,6 +14,7 @@ import eu.nimble.service.model.ubl.commonbasiccomponents.AmountType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
+import eu.nimble.utility.country.CountryUtil;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.*;
@@ -42,6 +43,7 @@ public class TemplateParser {
     private String defaultLanguage = "en";
 
     static Map<String, Integer> defaultVats = new HashMap<>();
+
     static {
         defaultVats.put("Germany", 19);
         defaultVats.put("Italy", 22);
@@ -53,7 +55,7 @@ public class TemplateParser {
         this.party = party;
     }
 
-    public List<CatalogueLineType> getCatalogueLines(InputStream catalogueTemplate, Boolean includeVat) throws TemplateParseException,InvalidCategoryException {
+    public List<CatalogueLineType> getCatalogueLines(InputStream catalogueTemplate, Boolean includeVat) throws TemplateParseException, InvalidCategoryException {
         OPCPackage pkg = null;
         try {
             pkg = OPCPackage.open(catalogueTemplate);
@@ -72,7 +74,7 @@ public class TemplateParser {
             }
         }
 
-        List<CatalogueLineType> results =  parseProductPropertiesTab();
+        List<CatalogueLineType> results = parseProductPropertiesTab();
         parseTermsTab(results, includeVat);
 
         return results;
@@ -82,9 +84,9 @@ public class TemplateParser {
         // get template language
         Sheet metadataTab = wb.getSheet(TemplateConfig.TEMPLATE_TAB_METADATA);
         Row metadataRow = metadataTab.getRow(2);
-        if(metadataRow != null) {
+        if (metadataRow != null) {
             Cell cell = TemplateGenerator.getCellWithMissingCellPolicy(metadataRow, 0);
-            if(cell != null) {
+            if (cell != null) {
                 defaultLanguage = TemplateGenerator.getCellStringValue(metadataTab.getRow(2).getCell(0));
             }
         }
@@ -92,7 +94,7 @@ public class TemplateParser {
             defaultLanguage = "en";
         }
 
-        Sheet productPropertiesTab = wb.getSheet(TemplateGenerator.getSheetName(TemplateTextCode.TEMPLATE_TAB_PRODUCT_PROPERTIES.toString(),defaultLanguage));
+        Sheet productPropertiesTab = wb.getSheet(TemplateGenerator.getSheetName(TemplateTextCode.TEMPLATE_TAB_PRODUCT_PROPERTIES.toString(), defaultLanguage));
         List<Category> categories = getTemplateCategories(metadataTab);
         List<CatalogueLineType> results = new ArrayList<>();
 
@@ -100,8 +102,8 @@ public class TemplateParser {
         List<String> productIds = new ArrayList<>();
 
         int catalogSize = productPropertiesTab.getLastRowNum();
-        // first four rows contains fixed values
-        for (int rowNum = 4; rowNum <= catalogSize; rowNum++) {
+        // parse the sheet starting from the first editable row
+        for (int rowNum = FIRST_EDITABLE_ROW_INDEX; rowNum <= catalogSize; rowNum++) {
             CatalogueLineType clt = new CatalogueLineType();
             GoodsItemType goodsItem = new GoodsItemType();
             ItemType item = new ItemType();
@@ -115,14 +117,14 @@ public class TemplateParser {
             results.add(clt);
 
             classifications.addAll(getCommodityClassification(categories));
-            parseFixedProperties(productPropertiesTab, rowNum, item);
+            parseFixedProperties(productPropertiesTab, rowNum, clt);
             itemProperties.addAll(getCategoryRelatedItemProperties(categories, rowNum));
             itemProperties.addAll(0, getCustomItemProperties(categories, rowNum));
 
             String productId = item.getManufacturersItemIdentification().getID();
             // throw an exception if the same id is used for multiple products
-            if(productIds.contains(productId)){
-                throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_MULTIPLE_PRODUCTS_IN_TEMPLATE.toString(),Arrays.asList(productId));
+            if (productIds.contains(productId)) {
+                throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_MULTIPLE_PRODUCTS_IN_TEMPLATE.toString(), Arrays.asList(productId));
             }
             productIds.add(productId);
         }
@@ -146,30 +148,30 @@ public class TemplateParser {
     }
 
     private List<ItemPropertyType> getCategoryRelatedItemProperties(List<Category> categories, int rowIndex) throws TemplateParseException {
-        Sheet productPropertiesTab = wb.getSheet(TemplateGenerator.getSheetName(TemplateTextCode.TEMPLATE_TAB_PRODUCT_PROPERTIES.toString(),defaultLanguage));
+        Sheet productPropertiesTab = wb.getSheet(TemplateGenerator.getSheetName(TemplateTextCode.TEMPLATE_TAB_PRODUCT_PROPERTIES.toString(), defaultLanguage));
         List<ItemPropertyType> additionalItemProperties = new ArrayList<>();
         for (Category category : categories) {
-            if(category.getProperties() != null){
+            if (category.getProperties() != null) {
                 for (Property property : category.getProperties()) {
                     // check unit
                     // if the user provided unit for a number data type
-                    Integer columnIndex = TemplateGenerator.findCellIndexForProperty(productPropertiesTab,property.getPreferredName(),category.getPreferredName());
-                    if(columnIndex == null) {
+                    Integer columnIndex = TemplateGenerator.findCellIndexForProperty(productPropertiesTab, property.getPreferredName(), category.getPreferredName());
+                    if (columnIndex == null) {
                         continue;
                     }
 
-                    Row propertyRow =  productPropertiesTab.getRow(rowIndex);
+                    Row propertyRow = productPropertiesTab.getRow(rowIndex);
                     Cell cell = TemplateGenerator.getCellWithMissingCellPolicy(propertyRow, columnIndex);
                     // make sure that mandatory properties are filled
-                    if(property.getRequired() != null && property.getRequired() && TemplateGenerator.getCellStringValue(cell).contentEquals("")){
-                        throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_MISSING_REQUIRED_PROPERTIES.toString(),Arrays.asList(property.getPreferredName(defaultLanguage)));
+                    if (property.getRequired() != null && property.getRequired() && TemplateGenerator.getCellStringValue(cell).contentEquals("")) {
+                        throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_MISSING_REQUIRED_PROPERTIES.toString(), Arrays.asList(property.getPreferredName(defaultLanguage)));
                     }
                     // for Quantity properties, get the cell containing the unit information
                     Cell unitCell = null;
-                    if(property.getDataType().contentEquals(TEMPLATE_DATA_TYPE_QUANTITY)){
-                        unitCell = TemplateGenerator.getCellWithMissingCellPolicy(propertyRow, columnIndex+1);
+                    if (property.getDataType().contentEquals(TEMPLATE_DATA_TYPE_QUANTITY)) {
+                        unitCell = TemplateGenerator.getCellWithMissingCellPolicy(propertyRow, columnIndex + 1);
                     }
-                    List<Object> values = (List<Object>) parseCell(productPropertiesTab,cell,unitCell,property.getPreferredName(defaultLanguage), property.getDataType(), true);
+                    List<Object> values = (List<Object>) parseCell(productPropertiesTab, cell, unitCell, property.getPreferredName(defaultLanguage), property.getDataType(), true);
                     if (values.isEmpty()) {
                         continue;
                     }
@@ -183,14 +185,13 @@ public class TemplateParser {
     }
 
 
-
-    private ItemPropertyType getItemPropertyFromCategoryProperty(Category category, Property property, Object values) throws TemplateParseException{
+    private ItemPropertyType getItemPropertyFromCategoryProperty(Category category, Property property, Object values) throws TemplateParseException {
         ItemPropertyType itemProp = new ItemPropertyType();
         CodeType associatedClassificationCode = new CodeType();
         itemProp.setItemClassificationCode(associatedClassificationCode);
 
         // copy names of Property to itemProp
-        for(TextType textType: property.getPreferredName()){
+        for (TextType textType : property.getPreferredName()) {
             TextType text = new TextType();
             text.setLanguageID(textType.getLanguageID());
             text.setValue(textType.getValue());
@@ -234,7 +235,7 @@ public class TemplateParser {
             itemProp.setValueQuantity(quantities);
 
         } else {
-            for(TextType text: (List<TextType>) values) {
+            for (TextType text : (List<TextType>) values) {
                 itemProp.getValue().add(text);
             }
         }
@@ -246,24 +247,17 @@ public class TemplateParser {
     }
 
     private List<ItemPropertyType> getCustomItemProperties(List<Category> categories, int rowIndex) throws TemplateParseException {
-        Sheet productPropertiesTab = wb.getSheet(TemplateGenerator.getSheetName(TemplateTextCode.TEMPLATE_TAB_PRODUCT_PROPERTIES.toString(),defaultLanguage));
+        Sheet productPropertiesTab = wb.getSheet(TemplateGenerator.getSheetName(TemplateTextCode.TEMPLATE_TAB_PRODUCT_PROPERTIES.toString(), defaultLanguage));
         List<ItemPropertyType> itemProperties = new ArrayList<>();
 
         // find the offset for the custom properties
         int totalCategoryPropertyNumber = 0;
         for (Category category : categories) {
-            List<Property> categoryProperties = TemplateGenerator.getPropertiesToBeIncludedInTemplate(category);
-            for(Property property : categoryProperties){
-                // for quantity properties, since there are two columns (value and unit), we should increment total property number by two
-                if(property.getDataType().contentEquals(TEMPLATE_DATA_TYPE_QUANTITY)){
-                    totalCategoryPropertyNumber++;
-                }
-                totalCategoryPropertyNumber++;
-            }
+            totalCategoryPropertyNumber += TemplateGenerator.getColumnCountForCategory(category);
         }
-        int fixedPropNumber = TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage).size()+4;
-        int customPropertyNum = productPropertiesTab.getRow(1).getLastCellNum() - (totalCategoryPropertyNumber + fixedPropNumber + 1);
-        int columnIndex = 1 + fixedPropNumber + totalCategoryPropertyNumber;
+        int fixedPropNumber = TemplateGenerator.getColumnCountForFixedPropertiesInProductPropertyTab(defaultLanguage);
+        int customPropertyNum = productPropertiesTab.getRow(1).getLastCellNum() - (totalCategoryPropertyNumber + fixedPropNumber);
+        int columnIndex = fixedPropNumber + totalCategoryPropertyNumber;
 
         // traverse the custom properties
         for (int i = 0; i < customPropertyNum; i++) {
@@ -272,23 +266,23 @@ public class TemplateParser {
             Row row = productPropertiesTab.getRow(1);
             List<TextType> propertyNames = new ArrayList<>();
             List<String> propertyNamesString = parseMultiValues(TemplateGenerator.getCellWithMissingCellPolicy(row, columnIndex));
-            for(String propertyNameString: propertyNamesString){
+            for (String propertyNameString : propertyNamesString) {
                 // remove all the leading and trailing spaces
                 propertyNameString = propertyNameString.trim();
                 String languageId;
                 String textValue;
                 // if the value's length is smaller than 3, it does not have any language id
-                if(propertyNameString.length() >= 3){
-                    String languageIdWithAtSign = propertyNameString.substring(propertyNameString.length()-3);
+                if (propertyNameString.length() >= 3) {
+                    String languageIdWithAtSign = propertyNameString.substring(propertyNameString.length() - 3);
                     // if no language id is provided, use en by default
-                    if(languageIdWithAtSign.charAt(0) != '@'){
+                    if (languageIdWithAtSign.charAt(0) != '@') {
                         languageId = "en";
                         textValue = propertyNameString;
-                    } else{
+                    } else {
                         languageId = languageIdWithAtSign.substring(1);
-                        textValue = propertyNameString.substring(0,propertyNameString.length()-3);
+                        textValue = propertyNameString.substring(0, propertyNameString.length() - 3);
                     }
-                } else{
+                } else {
                     languageId = "en";
                     textValue = propertyNameString;
                 }
@@ -302,15 +296,15 @@ public class TemplateParser {
             row = productPropertiesTab.getRow(2);
             String dataType = TemplateGenerator.getCellStringValue(TemplateGenerator.getCellWithMissingCellPolicy(row, columnIndex));
             // custom properties can not have TEXT data type
-            if(dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_TEXT)){
+            if (dataType.contentEquals(TemplateConfig.TEMPLATE_DATA_TYPE_TEXT)) {
                 throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_WRONG_DATA_TYPE_FOR_CUSTOM_PROPERTIES.toString());
             }
             dataType = TemplateGenerator.denormalizeDataTypeFromTemplate(dataType);
 
             // get the cell containing unit information
             Cell unitCell = null;
-            if(dataType.contentEquals(TEMPLATE_DATA_TYPE_QUANTITY)){
-                unitCell = TemplateGenerator.getCellWithMissingCellPolicy(productPropertiesTab.getRow(rowIndex), columnIndex+1);
+            if (dataType.contentEquals(TEMPLATE_DATA_TYPE_QUANTITY)) {
+                unitCell = TemplateGenerator.getCellWithMissingCellPolicy(productPropertiesTab.getRow(rowIndex), columnIndex + 1);
                 // if it is a quantity property, then we need to increase i by one
                 i++;
             }
@@ -321,7 +315,7 @@ public class TemplateParser {
 
             // get the values for the custom property
             Cell cell = TemplateGenerator.getCellWithMissingCellPolicy(productPropertiesTab.getRow(rowIndex), columnIndex);
-            List<Object> values = (List<Object>) parseCell(productPropertiesTab,cell,unitCell,property.getPreferredName(defaultLanguage), property.getDataType(), true);
+            List<Object> values = (List<Object>) parseCell(productPropertiesTab, cell, unitCell, property.getPreferredName(defaultLanguage), property.getDataType(), true);
             if (values.isEmpty()) {
                 columnIndex++;
                 continue;
@@ -330,7 +324,7 @@ public class TemplateParser {
             itemProperties.add(getItemPropertyFromCategoryProperty(null, property, values));
             columnIndex++;
             // for quantity properties,increment column index by one
-            if(dataType.contentEquals(TEMPLATE_DATA_TYPE_QUANTITY)){
+            if (dataType.contentEquals(TEMPLATE_DATA_TYPE_QUANTITY)) {
                 columnIndex++;
             }
         }
@@ -338,7 +332,7 @@ public class TemplateParser {
         return itemProperties;
     }
 
-    private void parseFixedProperties(Sheet productPropertiesTab, int rowIndex, ItemType item) throws TemplateParseException {
+    private void parseFixedProperties(Sheet productPropertiesTab, int rowIndex, CatalogueLineType catalogueLineType) throws TemplateParseException {
         Row propertiesRow = productPropertiesTab.getRow(rowIndex);
         List<Property> properties = TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage);
         int columnIndex = 1;
@@ -346,56 +340,56 @@ public class TemplateParser {
             Property property = properties.get(i);
             Cell cell = TemplateGenerator.getCellWithMissingCellPolicy(propertiesRow, columnIndex);
             if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION.toString(), defaultLanguage))) {
-                if(TemplateGenerator.getCellStringValue(cell).contentEquals("")){
+                if (TemplateGenerator.getCellStringValue(cell).contentEquals("")) {
                     throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_NO_MANUFACTURER_ITEM_IDENTIFICATION.toString());
                 }
                 ItemIdentificationType itemId = new ItemIdentificationType();
-                itemId.setID((String) parseCell(cell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION.toString(), defaultLanguage), TemplateConfig.TEMPLATE_DATA_TYPE_TEXT , false));
-                item.setManufacturersItemIdentification(itemId);
+                itemId.setID((String) parseCell(cell, SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION.toString(), defaultLanguage), TemplateConfig.TEMPLATE_DATA_TYPE_TEXT, false));
+                catalogueLineType.getGoodsItem().getItem().setManufacturersItemIdentification(itemId);
 
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_NAME.toString(), defaultLanguage))) {
-                if(TemplateGenerator.getCellStringValue(cell).contentEquals("")){
-                    throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_NO_NAME_FOR_ITEM.toString(),Arrays.asList(item.getManufacturersItemIdentification().getID()));
+                if (TemplateGenerator.getCellStringValue(cell).contentEquals("")) {
+                    throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_NO_NAME_FOR_ITEM.toString(), Arrays.asList(catalogueLineType.getGoodsItem().getItem().getManufacturersItemIdentification().getID()));
                 }
-                List<TextType> productNames = (List<TextType>) parseCell(cell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_NAME.toString(), defaultLanguage),TEMPLATE_DATA_TYPE_MULTILINGUAL_TEXT , true);
+                List<TextType> productNames = (List<TextType>) parseCell(cell, SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_NAME.toString(), defaultLanguage), TEMPLATE_DATA_TYPE_MULTILINGUAL_TEXT, true);
 
-                for(TextType productName: productNames) {
-                    item.getName().add(productName);
+                for (TextType productName : productNames) {
+                    catalogueLineType.getGoodsItem().getItem().getName().add(productName);
                 }
 
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION.toString(), defaultLanguage))) {
-                List<TextType> productDescriptions = (List<TextType>) parseCell(cell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION.toString(), defaultLanguage),TEMPLATE_DATA_TYPE_MULTILINGUAL_TEXT , true);
+                List<TextType> productDescriptions = (List<TextType>) parseCell(cell, SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION.toString(), defaultLanguage), TEMPLATE_DATA_TYPE_MULTILINGUAL_TEXT, true);
                 // be sure that each item name has a corresponding item description
-                for(TextType itemName: item.getName()){
+                for (TextType itemName : catalogueLineType.getGoodsItem().getItem().getName()) {
                     boolean descriptionFound = false;
-                    for(TextType itemDescription: productDescriptions){
+                    for (TextType itemDescription : productDescriptions) {
                         // there is a description for the name
-                        if(itemName.getLanguageID().contentEquals(itemDescription.getLanguageID())){
+                        if (itemName.getLanguageID().contentEquals(itemDescription.getLanguageID())) {
                             descriptionFound = true;
-                            item.getDescription().add(itemDescription);
+                            catalogueLineType.getGoodsItem().getItem().getDescription().add(itemDescription);
                             productDescriptions.remove(itemDescription);
                             break;
                         }
                     }
                     // there is no description for the name
-                    if(!descriptionFound){
+                    if (!descriptionFound) {
                         TextType text = new TextType();
                         text.setLanguageID(itemName.getLanguageID());
-                        item.getDescription().add(text);
+                        catalogueLineType.getGoodsItem().getItem().getDescription().add(text);
                     }
                 }
                 // add name-description pair for the remaining descriptions
-                if(productDescriptions.size() > 0){
-                    for(TextType itemDescription: productDescriptions){
+                if (productDescriptions.size() > 0) {
+                    for (TextType itemDescription : productDescriptions) {
                         // add description
                         TextType description = new TextType();
                         description.setValue(itemDescription.getValue());
                         description.setLanguageID(itemDescription.getLanguageID());
-                        item.getDescription().add(description);
+                        catalogueLineType.getGoodsItem().getItem().getDescription().add(description);
                         // create a name
                         TextType name = new TextType();
                         name.setLanguageID(itemDescription.getLanguageID());
-                        item.getName().add(name);
+                        catalogueLineType.getGoodsItem().getItem().getName().add(name);
                     }
                 }
             }  /*else if (property.getPreferredName().equals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_PRODUCT_DATA_SHEET)) {
@@ -423,10 +417,10 @@ public class TemplateParser {
             }*/ else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WIDTH.toString(), defaultLanguage))) {
                 Cell unitCell = TemplateGenerator.getCellWithMissingCellPolicy(propertiesRow, ++columnIndex);
                 // just to initialize the dimension array
-                item.getDimension();
+                catalogueLineType.getGoodsItem().getItem().getDimension();
                 List<QuantityType> widths;
                 try {
-                    widths = (List<QuantityType>) parseCell(productPropertiesTab,cell,unitCell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WIDTH.toString(), defaultLanguage), TEMPLATE_DATA_TYPE_QUANTITY , true);
+                    widths = (List<QuantityType>) parseCell(productPropertiesTab, cell, unitCell, SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WIDTH.toString(), defaultLanguage), TEMPLATE_DATA_TYPE_QUANTITY, true);
                 } catch (TemplateParseException e) {
                     throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_WIDTH_DIMENSION.toString(), e);
                 }
@@ -434,14 +428,14 @@ public class TemplateParser {
                     DimensionType dimension = new DimensionType();
                     dimension.setAttributeID("Width");
                     dimension.setMeasure(width);
-                    item.getDimension().add(dimension);
+                    catalogueLineType.getGoodsItem().getItem().getDimension().add(dimension);
                 }
 
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_LENGTH.toString(), defaultLanguage))) {
                 Cell unitCell = TemplateGenerator.getCellWithMissingCellPolicy(propertiesRow, ++columnIndex);
                 List<QuantityType> lengths;
                 try {
-                    lengths = (List<QuantityType>) parseCell(productPropertiesTab,cell,unitCell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_LENGTH.toString(), defaultLanguage), TEMPLATE_DATA_TYPE_QUANTITY , true);
+                    lengths = (List<QuantityType>) parseCell(productPropertiesTab, cell, unitCell, SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_LENGTH.toString(), defaultLanguage), TEMPLATE_DATA_TYPE_QUANTITY, true);
                 } catch (TemplateParseException e) {
                     throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_LENGTH_DIMENSION.toString(), e);
                 }
@@ -449,14 +443,14 @@ public class TemplateParser {
                     DimensionType dimension = new DimensionType();
                     dimension.setAttributeID("Length");
                     dimension.setMeasure(width);
-                    item.getDimension().add(dimension);
+                    catalogueLineType.getGoodsItem().getItem().getDimension().add(dimension);
                 }
 
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_HEIGHT.toString(), defaultLanguage))) {
                 Cell unitCell = TemplateGenerator.getCellWithMissingCellPolicy(propertiesRow, ++columnIndex);
                 List<QuantityType> widths;
                 try {
-                    widths = (List<QuantityType>) parseCell(productPropertiesTab,cell,unitCell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_HEIGHT.toString(), defaultLanguage), TEMPLATE_DATA_TYPE_QUANTITY , true);
+                    widths = (List<QuantityType>) parseCell(productPropertiesTab, cell, unitCell, SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_HEIGHT.toString(), defaultLanguage), TEMPLATE_DATA_TYPE_QUANTITY, true);
                 } catch (TemplateParseException e) {
                     throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_HEIGHT_DIMENSION.toString(), e);
                 }
@@ -464,13 +458,13 @@ public class TemplateParser {
                     DimensionType dimension = new DimensionType();
                     dimension.setAttributeID("Height");
                     dimension.setMeasure(width);
-                    item.getDimension().add(dimension);
+                    catalogueLineType.getGoodsItem().getItem().getDimension().add(dimension);
                 }
             } else if (property.getPreferredName(defaultLanguage).equals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WEIGHT.toString(), defaultLanguage))) {
                 Cell unitCell = TemplateGenerator.getCellWithMissingCellPolicy(propertiesRow, ++columnIndex);
                 List<QuantityType> widths;
                 try {
-                    widths = (List<QuantityType>) parseCell(productPropertiesTab,cell,unitCell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WEIGHT.toString(), defaultLanguage), TEMPLATE_DATA_TYPE_QUANTITY , true);
+                    widths = (List<QuantityType>) parseCell(productPropertiesTab, cell, unitCell, SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WEIGHT.toString(), defaultLanguage), TEMPLATE_DATA_TYPE_QUANTITY, true);
                 } catch (TemplateParseException e) {
                     throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_WEIGHT_DIMENSION.toString(), e);
                 }
@@ -478,7 +472,7 @@ public class TemplateParser {
                     DimensionType dimension = new DimensionType();
                     dimension.setAttributeID("Weight");
                     dimension.setMeasure(width);
-                    item.getDimension().add(dimension);
+                    catalogueLineType.getGoodsItem().getItem().getDimension().add(dimension);
                 }
             }
             columnIndex++;
@@ -486,11 +480,11 @@ public class TemplateParser {
     }
 
     private void parseTermsTab(List<CatalogueLineType> catalogueLines, Boolean includeVat) throws TemplateParseException {
-        Sheet termsTab = wb.getSheet(TemplateGenerator.getSheetName(TemplateTextCode.TEMPLATE_TAB_TRADING_DELIVERY_TERMS.toString(),defaultLanguage));
+        Sheet termsTab = wb.getSheet(TemplateGenerator.getSheetName(TemplateTextCode.TEMPLATE_TAB_TRADING_DELIVERY_TERMS.toString(), defaultLanguage));
         for (CatalogueLineType catalogueLine : catalogueLines) {
             ItemType item = catalogueLine.getGoodsItem().getItem();
             // find row corresponding to the provided item
-            int rowIndex = 4;
+            int rowIndex = FIRST_EDITABLE_ROW_INDEX;
             Row row = null;
             Cell cell;
             String value;
@@ -509,7 +503,7 @@ public class TemplateParser {
                 }
             }
             if (row == null) {
-                throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_NO_TRADING_DELIVERY_TERMS_FOR_ITEM.toString(),Arrays.asList(LanguageUtil.getValue(item.getName(),defaultLanguage),item.getManufacturersItemIdentification().getID()));
+                throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_NO_TRADING_DELIVERY_TERMS_FOR_ITEM.toString(), Arrays.asList(LanguageUtil.getValue(item.getName(), defaultLanguage), item.getManufacturersItemIdentification().getID()));
             }
 
             // parse the terms
@@ -517,7 +511,7 @@ public class TemplateParser {
             List<Property> termRelatedProperties = TemplateConfig.getFixedPropertiesForTermsTab(defaultLanguage);
             for (Property property : termRelatedProperties) {
                 cell = TemplateGenerator.getCellWithMissingCellPolicy(row, columnIndex);
-                if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PRICE_AMOUNT.toString(), defaultLanguage) )) {
+                if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PRICE_AMOUNT.toString(), defaultLanguage))) {
                     ItemLocationQuantityType itemLocationQuantity = new ItemLocationQuantityType();
                     catalogueLine.setRequiredItemLocationQuantity(itemLocationQuantity);
                     PriceType price = new PriceType();
@@ -531,44 +525,44 @@ public class TemplateParser {
                     Cell tmp = TemplateGenerator.getCellWithMissingCellPolicy(row, ++columnIndex);
                     Boolean currencyNotExist = (tmp == null || TemplateGenerator.getCellStringValue(tmp).contentEquals(""));
 
-                    if((priceNotExist && !currencyNotExist) || (!priceNotExist && currencyNotExist)){
-                        throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_AMOUNT_CURRENCY_REQUIRED_FOR_PRICE.toString(),Arrays.asList(LanguageUtil.getValue(item.getName(),defaultLanguage),item.getManufacturersItemIdentification().getID()));
+                    if ((priceNotExist && !currencyNotExist) || (!priceNotExist && currencyNotExist)) {
+                        throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_AMOUNT_CURRENCY_REQUIRED_FOR_PRICE.toString(), Arrays.asList(LanguageUtil.getValue(item.getName(), defaultLanguage), item.getManufacturersItemIdentification().getID()));
                     }
 
-                    amount.setValue((BigDecimal) parseCell(cell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PRICE_AMOUNT.toString(), defaultLanguage) , TEMPLATE_DATA_TYPE_NUMBER , false));
+                    amount.setValue((BigDecimal) parseCell(cell, SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PRICE_AMOUNT.toString(), defaultLanguage), TEMPLATE_DATA_TYPE_NUMBER, false));
 
                     value = TemplateGenerator.getCellStringValue(tmp);
                     amount.setCurrencyID(value);
 
-                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PRICE_BASE_QUANTITY.toString(), defaultLanguage) )) {
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PRICE_BASE_QUANTITY.toString(), defaultLanguage))) {
                     Cell unitCell = TemplateGenerator.getCellWithMissingCellPolicy(row, ++columnIndex);
-                    QuantityType baseQuantity = (QuantityType) parseCell(termsTab,cell,unitCell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PRICE_BASE_QUANTITY.toString(), defaultLanguage) , TEMPLATE_DATA_TYPE_QUANTITY , false);
+                    QuantityType baseQuantity = (QuantityType) parseCell(termsTab, cell, unitCell, SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PRICE_BASE_QUANTITY.toString(), defaultLanguage), TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (baseQuantity == null) {
                         baseQuantity = new QuantityType();
                     }
                     catalogueLine.getRequiredItemLocationQuantity().getPrice().setBaseQuantity(baseQuantity);
 
-                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_MINIMUM_ORDER_QUANTITY.toString(), defaultLanguage) )) {
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_MINIMUM_ORDER_QUANTITY.toString(), defaultLanguage))) {
                     Cell unitCell = TemplateGenerator.getCellWithMissingCellPolicy(row, ++columnIndex);
-                    QuantityType minimumOrderQuantity = (QuantityType) parseCell(termsTab,cell,unitCell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_MINIMUM_ORDER_QUANTITY.toString(), defaultLanguage) , TEMPLATE_DATA_TYPE_QUANTITY , false);
+                    QuantityType minimumOrderQuantity = (QuantityType) parseCell(termsTab, cell, unitCell, SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_MINIMUM_ORDER_QUANTITY.toString(), defaultLanguage), TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (minimumOrderQuantity != null) {
                         if (minimumOrderQuantity.getUnitCode() == null) {
-                            throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_UNIT_REQUIRED_FOR_MINIMUM_ORDER_QUANTITY.toString(),Arrays.asList(LanguageUtil.getValue(item.getName(),defaultLanguage),item.getManufacturersItemIdentification().getID()));
+                            throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_UNIT_REQUIRED_FOR_MINIMUM_ORDER_QUANTITY.toString(), Arrays.asList(LanguageUtil.getValue(item.getName(), defaultLanguage), item.getManufacturersItemIdentification().getID()));
                         }
                     } else {
                         minimumOrderQuantity = new QuantityType();
                     }
                     catalogueLine.setMinimumOrderQuantity(minimumOrderQuantity);
 
-                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_FREE_SAMPLE.toString(), defaultLanguage) )) {
-                    catalogueLine.setFreeOfChargeIndicator((Boolean) parseCell(cell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_FREE_SAMPLE.toString(), defaultLanguage) ,TEMPLATE_DATA_TYPE_BOOLEAN  , false));
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_FREE_SAMPLE.toString(), defaultLanguage))) {
+                    catalogueLine.setFreeOfChargeIndicator((Boolean) parseCell(cell, SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_FREE_SAMPLE.toString(), defaultLanguage), TEMPLATE_DATA_TYPE_BOOLEAN, false));
 
-                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_WARRANTY_VALIDITY_PERIOD.toString(), defaultLanguage) )) {
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_WARRANTY_VALIDITY_PERIOD.toString(), defaultLanguage))) {
                     Cell unitCell = TemplateGenerator.getCellWithMissingCellPolicy(row, ++columnIndex);
-                    QuantityType warrantyValidityPeriod = (QuantityType) parseCell(termsTab,cell,unitCell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_WARRANTY_VALIDITY_PERIOD.toString(), defaultLanguage) ,TEMPLATE_DATA_TYPE_QUANTITY  , false);
+                    QuantityType warrantyValidityPeriod = (QuantityType) parseCell(termsTab, cell, unitCell, SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_WARRANTY_VALIDITY_PERIOD.toString(), defaultLanguage), TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (warrantyValidityPeriod != null) {
                         if (warrantyValidityPeriod.getUnitCode() == null) {
-                            throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_UNIT_REQUIRED_FOR_WARRANTY_PERIOD.toString(),Arrays.asList(LanguageUtil.getValue(item.getName(),defaultLanguage),item.getManufacturersItemIdentification().getID()));
+                            throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_UNIT_REQUIRED_FOR_WARRANTY_PERIOD.toString(), Arrays.asList(LanguageUtil.getValue(item.getName(), defaultLanguage), item.getManufacturersItemIdentification().getID()));
                         }
                     } else {
                         warrantyValidityPeriod = new QuantityType();
@@ -577,39 +571,39 @@ public class TemplateParser {
                     catalogueLine.setWarrantyValidityPeriod(period);
                     period.setDurationMeasure(warrantyValidityPeriod);
 
-                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_WARRANTY_INFORMATION.toString(), defaultLanguage) )) {
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_WARRANTY_INFORMATION.toString(), defaultLanguage))) {
                     if (cell != null) {
-                        List<String> values = (List<String>) parseCell(cell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_WARRANTY_INFORMATION.toString(), defaultLanguage) ,TemplateConfig.TEMPLATE_DATA_TYPE_TEXT , true);
+                        List<String> values = (List<String>) parseCell(cell, SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_WARRANTY_INFORMATION.toString(), defaultLanguage), TemplateConfig.TEMPLATE_DATA_TYPE_TEXT, true);
                         if (values.size() > 0) {
                             catalogueLine.getWarrantyInformation().addAll(values);
                         }
                     }
 
-                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_INCOTERMS.toString(), defaultLanguage) )) {
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_INCOTERMS.toString(), defaultLanguage))) {
                     DeliveryTermsType deliveryTerms = new DeliveryTermsType();
                     catalogueLine.getGoodsItem().setDeliveryTerms(deliveryTerms);
-                    value = (String) parseCell(cell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_INCOTERMS.toString(), defaultLanguage) ,TEMPLATE_DATA_TYPE_TEXT  , false);
-                    if (value != null){
-                        value = value.replace("_"," ");
+                    value = (String) parseCell(cell, SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_INCOTERMS.toString(), defaultLanguage), TEMPLATE_DATA_TYPE_TEXT, false);
+                    if (value != null) {
+                        value = value.replace("_", " ");
                     }
                     catalogueLine.getGoodsItem().getDeliveryTerms().setIncoterms(value);
 
-                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_SPECIAL_TERMS.toString(), defaultLanguage) )) {
-                    List<String> values = (List<String>) parseCell(cell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_SPECIAL_TERMS.toString(), defaultLanguage) ,TemplateConfig.TEMPLATE_DATA_TYPE_TEXT , true);
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_SPECIAL_TERMS.toString(), defaultLanguage))) {
+                    List<String> values = (List<String>) parseCell(cell, SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_SPECIAL_TERMS.toString(), defaultLanguage), TemplateConfig.TEMPLATE_DATA_TYPE_TEXT, true);
 
-                    for(String stvalue: values) {
+                    for (String stvalue : values) {
                         TextType textType = new TextType();
                         textType.setLanguageID(defaultLanguage);
                         textType.setValue(stvalue);
 
                         catalogueLine.getGoodsItem().getDeliveryTerms().getSpecialTerms().add(textType);
                     }
-                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD.toString(), defaultLanguage) )) {
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD.toString(), defaultLanguage))) {
                     Cell unitCell = TemplateGenerator.getCellWithMissingCellPolicy(row, ++columnIndex);
-                    QuantityType estimatedDeliveryQuantity = (QuantityType) parseCell(termsTab,cell,unitCell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD.toString(), defaultLanguage) , TEMPLATE_DATA_TYPE_QUANTITY , false);
+                    QuantityType estimatedDeliveryQuantity = (QuantityType) parseCell(termsTab, cell, unitCell, SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD.toString(), defaultLanguage), TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (estimatedDeliveryQuantity != null) {
                         if (estimatedDeliveryQuantity.getUnitCode() == null) {
-                            throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_UNIT_REQUIRED_FOR_DELIVERY_PERIOD.toString(),Arrays.asList(LanguageUtil.getValue(item.getName(),defaultLanguage),item.getManufacturersItemIdentification().getID()));
+                            throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_UNIT_REQUIRED_FOR_DELIVERY_PERIOD.toString(), Arrays.asList(LanguageUtil.getValue(item.getName(), defaultLanguage), item.getManufacturersItemIdentification().getID()));
                         }
 
                     } else {
@@ -620,7 +614,7 @@ public class TemplateParser {
                     catalogueLine.getGoodsItem().getDeliveryTerms().setEstimatedDeliveryPeriod(period);
                     period.setDurationMeasure(estimatedDeliveryQuantity);
 
-                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_TRANSPORT_MODE.toString(), defaultLanguage) )) {
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_TRANSPORT_MODE.toString(), defaultLanguage))) {
                     cell = TemplateGenerator.getCellWithMissingCellPolicy(row, columnIndex);
                     if (cell != null) {
                         value = TemplateGenerator.getCellStringValue(cell);
@@ -629,23 +623,7 @@ public class TemplateParser {
                         catalogueLine.getGoodsItem().getDeliveryTerms().setTransportModeCode(transportModeCode);
                     }
 
-                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_APPLICABLE_ADDRESS_COUNTRY.toString(), defaultLanguage) )) {
-                    List<AddressType> applicableAddressList = new ArrayList<>();
-                    cell = TemplateGenerator.getCellWithMissingCellPolicy(row, columnIndex);
-                    List<String> countries = parseMultiValues(cell);
-                    for(String addr : countries) {
-                        AddressType address = new AddressType();
-                        applicableAddressList.add(address);
-                        CountryType country = new CountryType();
-                        TextType cName = new TextType();
-                        cName.setLanguageID(defaultLanguage);
-                        cName.setValue(addr);
-                        country.setName(cName);
-                        address.setCountry(country);
-                    }
-                    catalogueLine.getRequiredItemLocationQuantity().setApplicableTerritoryAddress(applicableAddressList);
-
-                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PACKAGING_TYPE.toString(), defaultLanguage) )) {
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PACKAGING_TYPE.toString(), defaultLanguage))) {
                     cell = TemplateGenerator.getCellWithMissingCellPolicy(row, columnIndex);
                     CodeType packagingType = new CodeType();
                     if (cell != null) {
@@ -657,33 +635,33 @@ public class TemplateParser {
                     catalogueLine.getGoodsItem().setContainingPackage(packaging);
                     packaging.setPackagingTypeCode(packagingType);
 
-                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PACKAGE_QUANTITY.toString(), defaultLanguage) )) {
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PACKAGE_QUANTITY.toString(), defaultLanguage))) {
                     Cell unitCell = TemplateGenerator.getCellWithMissingCellPolicy(row, ++columnIndex);
-                    QuantityType packageQuantity = (QuantityType) parseCell(termsTab,cell,unitCell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PACKAGE_QUANTITY.toString(), defaultLanguage) , TEMPLATE_DATA_TYPE_QUANTITY , false);
+                    QuantityType packageQuantity = (QuantityType) parseCell(termsTab, cell, unitCell, SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PACKAGE_QUANTITY.toString(), defaultLanguage), TEMPLATE_DATA_TYPE_QUANTITY, false);
                     if (packageQuantity != null) {
                         if (packageQuantity.getUnitCode() == null) {
-                            throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_UNIT_REQUIRED_FOR_PACKAGE_QUANTITY.toString(),Arrays.asList(LanguageUtil.getValue(item.getName(),defaultLanguage),item.getManufacturersItemIdentification().getID()));
+                            throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_UNIT_REQUIRED_FOR_PACKAGE_QUANTITY.toString(), Arrays.asList(LanguageUtil.getValue(item.getName(), defaultLanguage), item.getManufacturersItemIdentification().getID()));
                         }
                     } else {
                         packageQuantity = new QuantityType();
                     }
                     catalogueLine.getGoodsItem().getContainingPackage().setQuantity(packageQuantity);
-                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_CUSTOMIZABLE.toString(), defaultLanguage) )){
-                    catalogueLine.getGoodsItem().getItem().setCustomizable((Boolean) parseCell(cell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_CUSTOMIZABLE.toString(), defaultLanguage) ,TEMPLATE_DATA_TYPE_BOOLEAN  , false));
-                } else if (SpringBridge.getInstance().getCatalogueServiceConfig().getSparePartEnabled() && property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_SPARE_PART.toString(), defaultLanguage) )){
-                    catalogueLine.getGoodsItem().getItem().setSparePart((Boolean) parseCell(cell,SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_SPARE_PART.toString(), defaultLanguage) ,TEMPLATE_DATA_TYPE_BOOLEAN  , false));
+                } else if (property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_CUSTOMIZABLE.toString(), defaultLanguage))) {
+                    catalogueLine.getGoodsItem().getItem().setCustomizable((Boolean) parseCell(cell, SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_CUSTOMIZABLE.toString(), defaultLanguage), TEMPLATE_DATA_TYPE_BOOLEAN, false));
+                } else if (SpringBridge.getInstance().getCatalogueServiceConfig().getSparePartEnabled() && property.getPreferredName(defaultLanguage).contentEquals(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_SPARE_PART.toString(), defaultLanguage))) {
+                    catalogueLine.getGoodsItem().getItem().setSparePart((Boolean) parseCell(cell, SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_SPARE_PART.toString(), defaultLanguage), TEMPLATE_DATA_TYPE_BOOLEAN, false));
                 }
                 columnIndex++;
             }
 
             // price base quantity should be provided if price amount is provided
-            if(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue() != null && catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getValue() == null){
-                throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_BASE_QUANTITY_REQUIRED.toString(),Arrays.asList(catalogueLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID()));
+            if (catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount().getValue() != null && catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getValue() == null) {
+                throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_BASE_QUANTITY_REQUIRED.toString(), Arrays.asList(catalogueLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID()));
             }
             // unit must be the same for price base quantity and minimum order quantity
-            if(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getUnitCode() != null && catalogueLine.getMinimumOrderQuantity().getUnitCode() != null &&
-                    !catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getUnitCode().contentEquals(catalogueLine.getMinimumOrderQuantity().getUnitCode())){
-                throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_SAME_UNIT_REQUIRED_FOR_BASE_AND_MINIMUM_ORDER_QUANTITIES.toString(),Arrays.asList(catalogueLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID()));
+            if (catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getUnitCode() != null && catalogueLine.getMinimumOrderQuantity().getUnitCode() != null &&
+                    !catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getUnitCode().contentEquals(catalogueLine.getMinimumOrderQuantity().getUnitCode())) {
+                throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_SAME_UNIT_REQUIRED_FOR_BASE_AND_MINIMUM_ORDER_QUANTITIES.toString(), Arrays.asList(catalogueLine.getGoodsItem().getItem().getManufacturersItemIdentification().getID()));
             }
         }
 
@@ -691,26 +669,25 @@ public class TemplateParser {
         createVatsForCatalogueLines(catalogueLines, includeVat);
     }
 
-    private void createVatsForCatalogueLines(List<CatalogueLineType> catalogueLines, Boolean includeVat){
-        for(CatalogueLineType line : catalogueLines){
-            if(line.getRequiredItemLocationQuantity().getApplicableTaxCategory() != null &&
+    private void createVatsForCatalogueLines(List<CatalogueLineType> catalogueLines, Boolean includeVat) {
+        for (CatalogueLineType line : catalogueLines) {
+            if (line.getRequiredItemLocationQuantity().getApplicableTaxCategory() != null &&
                     line.getRequiredItemLocationQuantity().getApplicableTaxCategory().size() > 0) {
                 continue;
             }
 
             Integer vatRate = null;
-            if(includeVat){
+            if (includeVat) {
                 AddressType address = line.getGoodsItem().getItem().getManufacturerParty().getPostalAddress();
-                    if(address != null && address.getCountry() != null  && address.getCountry().getName() != null){
-                        String country = line.getGoodsItem().getItem().getManufacturerParty().getPostalAddress().getCountry().getName().getValue();
-                        vatRate = defaultVats.get(country);
-                    }
+                if (address != null && address.getCountry() != null && address.getCountry().getIdentificationCode() != null) {
+                    String country = CountryUtil.getCountryNameByISOCode(line.getGoodsItem().getItem().getManufacturerParty().getPostalAddress().getCountry().getIdentificationCode().getValue());
+                    vatRate = defaultVats.get(country);
+                }
 
-                    if(vatRate == null) {
+                if (vatRate == null) {
                     vatRate = 20;
                 }
-            }
-            else {
+            } else {
                 vatRate = 0;
             }
 
@@ -720,36 +697,36 @@ public class TemplateParser {
         }
     }
 
-    private Object parseCell(Cell cell,String propertyName, String dataType, boolean multiValue) throws TemplateParseException {
-        return parseCell(null,cell,null,propertyName,dataType,multiValue);
+    private Object parseCell(Cell cell, String propertyName, String dataType, boolean multiValue) throws TemplateParseException {
+        return parseCell(null, cell, null, propertyName, dataType, multiValue);
     }
 
-    private Object parseCell(Sheet sheet,Cell cell,Cell adjacentCell,String propertyName, String dataType, boolean multiValue) throws TemplateParseException {
+    private Object parseCell(Sheet sheet, Cell cell, Cell adjacentCell, String propertyName, String dataType, boolean multiValue) throws TemplateParseException {
         List<String> values = parseMultiValues(cell);
         List<Object> results = new ArrayList<>();
         String normalizedDataType = TemplateGenerator.normalizeDataTypeForTemplate(dataType);
         for (String value : values) {
             if (normalizedDataType.contentEquals("BOOLEAN")) {
-                results.add(parseBoolean(propertyName,value));
+                results.add(parseBoolean(propertyName, value));
             } else if (normalizedDataType.compareToIgnoreCase("TEXT") == 0) {
                 results.add(value);
-            } else if (normalizedDataType.compareToIgnoreCase("MULTILINGUAL TEXT") == 0){
+            } else if (normalizedDataType.compareToIgnoreCase("MULTILINGUAL TEXT") == 0) {
                 // remove all the leading and trailing spaces
                 value = value.trim();
                 String languageId;
                 String textValue;
                 // if the value's length is smaller than 3, it does not have any language id
-                if(value.length() >= 3){
-                    String languageIdWithAtSign = value.substring(value.length()-3);
+                if (value.length() >= 3) {
+                    String languageIdWithAtSign = value.substring(value.length() - 3);
                     // if no language id is provided, use en by default
-                    if(languageIdWithAtSign.charAt(0) != '@'){
+                    if (languageIdWithAtSign.charAt(0) != '@') {
                         languageId = "en";
                         textValue = value;
-                    } else{
+                    } else {
                         languageId = languageIdWithAtSign.substring(1);
-                        textValue = value.substring(0,value.length()-3);
+                        textValue = value.substring(0, value.length() - 3);
                     }
-                } else{
+                } else {
                     languageId = "en";
                     textValue = value;
                 }
@@ -763,12 +740,12 @@ public class TemplateParser {
             } else if (normalizedDataType.compareToIgnoreCase("NUMBER") == 0) {
                 try {
                     results.add(new BigDecimal(value));
-                } catch(NumberFormatException e) {
+                } catch (NumberFormatException e) {
                     //  logger.warn("Invalid value passed for number: {}", value);
-                    throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_NUMBER_REQUIRED_FOR_PROPERTY.toString(),Arrays.asList(propertyName,value));
+                    throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_NUMBER_REQUIRED_FOR_PROPERTY.toString(), Arrays.asList(propertyName, value));
                 }
             } else if (normalizedDataType.compareToIgnoreCase(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY) == 0) {
-                results.add(parseQuantity(sheet,propertyName,value, cell,adjacentCell));
+                results.add(parseQuantity(sheet, propertyName, value, cell, adjacentCell));
             } else if (normalizedDataType.compareToIgnoreCase("FILE") == 0) {
                 results.add(parseBinaryObject(value));
             }
@@ -784,12 +761,12 @@ public class TemplateParser {
         return results;
     }
 
-    private Boolean parseBoolean(String propertyName,String value) throws TemplateParseException {
+    private Boolean parseBoolean(String propertyName, String value) throws TemplateParseException {
         if (!(value.compareToIgnoreCase("TRUE") == 0 ||
                 value.compareToIgnoreCase("FALSE") == 0 ||
                 value.compareToIgnoreCase("YES") == 0 ||
                 value.compareToIgnoreCase("NO") == 0)) {
-            throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_VALUE_FOR_BOOLEAN_PROPERTY.toString(),Arrays.asList(propertyName));
+            throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_VALUE_FOR_BOOLEAN_PROPERTY.toString(), Arrays.asList(propertyName));
         }
         if (value.compareToIgnoreCase("YES") == 0) {
             value = "TRUE";
@@ -797,7 +774,7 @@ public class TemplateParser {
         return new Boolean(value);
     }
 
-    private QuantityType parseQuantity(Sheet sheet,String propertyName,String value, Cell cell, Cell adjacentCell) throws TemplateParseException {
+    private QuantityType parseQuantity(Sheet sheet, String propertyName, String value, Cell cell, Cell adjacentCell) throws TemplateParseException {
         QuantityType quantity = new QuantityType();
 
         if (cell == null) {
@@ -809,23 +786,23 @@ public class TemplateParser {
         } catch (NumberFormatException e) {
             //  logger.warn("Invalid number passed for quantity: {}", value, e);
             //  return null;
-            throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_NUMBER_REQUIRED_FOR_PROPERTY.toString(),Arrays.asList(propertyName,value));
+            throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_NUMBER_REQUIRED_FOR_PROPERTY.toString(), Arrays.asList(propertyName, value));
         }
 
         // parse unit
         if (adjacentCell == null) {
-            throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_VALUE_AND_UNIT_REQUIRED_FOR_PROPERTY.toString(),Arrays.asList(propertyName));
+            throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_VALUE_AND_UNIT_REQUIRED_FOR_PROPERTY.toString(), Arrays.asList(propertyName));
         } else {
             // check the data type of the quantity unit
             int columnIndex = adjacentCell.getColumnIndex();
             Row row = sheet.getRow(2);
-            if(!TemplateGenerator.getCellStringValue(row.getCell(columnIndex)).contentEquals(TemplateConfig.TEMPLATE_QUANTITY_UNIT)){
+            if (!TemplateGenerator.getCellStringValue(row.getCell(columnIndex)).contentEquals(TemplateConfig.TEMPLATE_QUANTITY_UNIT)) {
                 throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_WRONG_DATA_TYPE_FOR_QUANTITY.toString());
             }
 
             value = TemplateGenerator.getCellStringValue(adjacentCell);
-            if(value.contentEquals("")) {
-                throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_VALUE_AND_UNIT_REQUIRED_FOR_PROPERTY.toString(),Arrays.asList(propertyName));
+            if (value.contentEquals("")) {
+                throw new TemplateParseException(NimbleExceptionMessageCode.BAD_REQUEST_VALUE_AND_UNIT_REQUIRED_FOR_PROPERTY.toString(), Arrays.asList(propertyName));
             }
         }
 
@@ -848,7 +825,7 @@ public class TemplateParser {
             byte[] srcBytes = Files.readAllBytes(Paths.get(filePath));
             binaryObject.setValue(srcBytes);
         } catch (IOException e) {
-            throw new TemplateParseException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GET_FILE_IN_BASE_64_ENCODING.toString(),Arrays.asList(filePath), e);
+            throw new TemplateParseException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_GET_FILE_IN_BASE_64_ENCODING.toString(), Arrays.asList(filePath), e);
         }
         return binaryObject;
     }
@@ -872,7 +849,7 @@ public class TemplateParser {
         List<Category> categories = new ArrayList<>();
         Row row = metadataTab.getRow(0);
         // if there is no category
-        if(row == null) {
+        if (row == null) {
             return categories;
         }
 

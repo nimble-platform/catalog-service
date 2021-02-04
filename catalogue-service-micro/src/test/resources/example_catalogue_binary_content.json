@@ -1,5 +1,5 @@
 {
-  "id": "default",
+  "id": "Binary Content Catalogue",
   "uuid": null,
   "providerParty": {
     "federationInstanceID": "TEST_INSTANCE",
@@ -16,7 +16,7 @@
     ],
     "partyIdentification": [
       {
-        "id": "704"
+        "id": "706"
       }
     ],
     "websiteURI": "",
@@ -164,7 +164,7 @@
             ],
             "partyIdentification": [
               {
-                "id": "704"
+                "id": "706"
               }
             ],
             "websiteURI": "",

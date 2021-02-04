@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import eu.nimble.common.rest.identity.IdentityClientTypedMockConfig;
 import eu.nimble.service.catalogue.persistence.util.CataloguePersistenceUtil;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
@@ -8,8 +9,6 @@ import eu.nimble.service.model.ubl.commonaggregatecomponents.DimensionType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ItemPropertyType;
 import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
-import eu.nimble.utility.persistence.resource.Resource;
-import eu.nimble.utility.persistence.resource.ResourcePersistenceUtility;
 import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
@@ -29,9 +28,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -52,7 +48,7 @@ public class Test03_TemplatePublishingTest {
     private ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
 
     final private String partyName = "alpCompany";
-    final private String partyId = "381";
+    final private String partyId = "706";
     final private String uploadMode = "replace";
     final private String uploadMode2 = "append";
 
@@ -91,7 +87,7 @@ public class Test03_TemplatePublishingTest {
                 .fileUpload("/catalogue/template/upload")
                 .file(mutipartFile)
                 .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
-                .header("Authorization", TestConfig.buyerId)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
                 .param("uploadMode",uploadMode)
                 .param("partyId",partyId)
                 .param("partyName",partyName))
@@ -137,19 +133,6 @@ public class Test03_TemplatePublishingTest {
         // check incoterms
         Assert.assertSame(true,catalogueLineType3.getGoodsItem().getDeliveryTerms().getIncoterms().equals(incoterms));
 
-        boolean checkEntityIds = Boolean.valueOf(TestConfig.checkEntityIds);
-        if(checkEntityIds) {
-            // check that resources have been managed properly
-            List<Resource> allResources = ResourcePersistenceUtility.getAllResources();
-            Set<Long> catalogueIds = resourceValidationUtil.extractAllHjidsExcludingPartyRelatedOnes(catalogue);
-
-            Set<Long> managedIds = new HashSet<>();
-            for (Resource resource : allResources) {
-                managedIds.add(resource.getEntityId());
-            }
-            Assert.assertTrue("Managed ids do not contain the catalogue ids", managedIds.containsAll(catalogueIds));
-        }
-
         // check whether VAT is set for the products
         Assert.assertEquals(1, catalogueLineType1.getRequiredItemLocationQuantity().getApplicableTaxCategory().size());
         Assert.assertNotEquals(0, catalogueLineType1.getRequiredItemLocationQuantity().getApplicableTaxCategory().get(0).getPercent());
@@ -179,7 +162,7 @@ public class Test03_TemplatePublishingTest {
                 .fileUpload("/catalogue/template/upload")
                 .file(mutipartFile)
                 .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
-                .header("Authorization", TestConfig.buyerId)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
                 .param("uploadMode",uploadMode2)
                 .param("partyId",partyId)
                 .param("partyName",partyName))
@@ -254,7 +237,7 @@ public class Test03_TemplatePublishingTest {
                 .fileUpload("/catalogue/template/upload")
                 .file(mutipartFile)
                 .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
-                .header("Authorization", TestConfig.buyerId)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
                 .param("uploadMode",uploadMode)
                 .param("partyId",partyId)
                 .param("partyName",partyName)

@@ -2,7 +2,7 @@
   "id": "default",
   "uuid": null,
   "providerParty": {
-    "id": "381",
+    "id": "706",
     "nace": [],
     "name": "SRDC",
     "websiteURI": "",
@@ -573,7 +573,7 @@
             }
           ],
           "manufacturerParty": {
-            "id": "381",
+            "id": "706",
             "nace": [],
             "name": "SRDC",
             "websiteURI": "",

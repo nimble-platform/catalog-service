@@ -21,6 +21,7 @@ public class Category {
     private List<Property> properties;
     private String taxonomyId;
     private String categoryUri;
+    private String rootCategoryUri;
 
     public void addPreferredName(String name, String language) {
         TextType prefName = new TextType();
@@ -111,6 +112,14 @@ public class Category {
 
     public void setProperties(List<Property> properties) {
         this.properties = properties;
+    }
+
+    public String getRootCategoryUri() {
+        return rootCategoryUri;
+    }
+
+    public void setRootCategoryUri(String rootCategoryUri) {
+        this.rootCategoryUri = rootCategoryUri;
     }
 
     public String getTaxonomyId() {

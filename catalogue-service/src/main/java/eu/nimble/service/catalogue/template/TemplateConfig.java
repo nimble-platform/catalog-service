@@ -28,6 +28,9 @@ public class TemplateConfig {
     public static String TEMPLATE_DATA_TYPE_STRING_TRANSLATABLE = "STRING_TRANSLATABLE";
     public static String TEMPLATE_DATA_TYPE_BOOLEAN = "BOOLEAN";
 
+    public static String TEMPLATE_DATA_TYPE_AMOUNT = "AMOUNT";
+    public static String TEMPLATE_DATA_TYPE_AMOUNT_VALUE = "AMOUNT VALUE";
+
     public static String TEMPLATE_QUANTITY_VALUE = "QUANTITY VALUE";
     public static String TEMPLATE_QUANTITY_UNIT = "QUANTITY UNIT";
 
@@ -38,6 +41,10 @@ public class TemplateConfig {
     public static String TEMPLATE_WARRANTY_REFERENCE = "SourceList!$E$2:$E$3";
     public static String TEMPLATE_DELIVERY_PERIOD_REFERENCE = "SourceList!$F$2:$F$4";
     public static String TEMPLATE_WEIGHT_UNITS_REFERENCE = "SourceList!$G$2:$G$4";
+    // index of the first editable row for Product Properties and Trading & Delivery Terms sheets
+    public static final int FIRST_EDITABLE_ROW_INDEX = 4;
+    // the first column is reserved for the row names such as Property name, Property data type, property unit etc
+    public static final int NUMBER_OF_RESERVED_COLUMNS_FOR_PRODUCT_PROPERTY_TAB = 1;
 
     public static List<Property> getFixedPropertiesForProductPropertyTab(String language) {
         List<Property> properties = new ArrayList<>();
@@ -45,19 +52,19 @@ public class TemplateConfig {
         // item manufacturer id
         Property prop = new Property();
         prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION.toString(), language), language);
-        prop.setDataType("STRING");
+        prop.setDataType(TEMPLATE_DATA_TYPE_STRING);
         properties.add(prop);
 
         // name
         prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_NAME.toString(), language) , language);
-        prop.setDataType("STRING");
+        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_NAME.toString(), language), language);
+        prop.setDataType(TEMPLATE_DATA_TYPE_STRING);
         properties.add(prop);
 
         // description
         prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION.toString(), language) , language);
-        prop.setDataType("STRING");
+        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_DESCRIPTION.toString(), language), language);
+        prop.setDataType(TEMPLATE_DATA_TYPE_STRING);
         properties.add(prop);
 
         // product data sheet
@@ -74,25 +81,25 @@ public class TemplateConfig {
 
         // width
         prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WIDTH.toString(), language) , language);
+        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WIDTH.toString(), language), language);
         prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
         properties.add(prop);
 
         // length
         prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_LENGTH.toString(), language) , language);
+        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_LENGTH.toString(), language), language);
         prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
         properties.add(prop);
 
         // height
         prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_HEIGHT.toString(), language) , language);
+        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_HEIGHT.toString(), language), language);
         prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
         properties.add(prop);
 
         // weight
         prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WEIGHT.toString(), language) , language);
+        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WEIGHT.toString(), language), language);
         prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
         properties.add(prop);
         return properties;
@@ -103,14 +110,14 @@ public class TemplateConfig {
 
         // item manufacturer id
         Property prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION.toString(), language) , language);
-        prop.setDataType("STRING");
+        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_MANUFACTURER_ITEM_IDENTIFICATION.toString(), language), language);
+        prop.setDataType(TEMPLATE_DATA_TYPE_STRING);
         properties.add(prop);
 
         // price amount
         prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PRICE_AMOUNT.toString(), language) , language);
-        prop.setDataType("AMOUNT");
+        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PRICE_AMOUNT.toString(), language), language);
+        prop.setDataType(TEMPLATE_DATA_TYPE_AMOUNT);
         properties.add(prop);
         Unit unit = new Unit();
         prop.setUnit(unit);
@@ -118,93 +125,87 @@ public class TemplateConfig {
 
         // price base quantity
         prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PRICE_BASE_QUANTITY.toString(), language) , language);
-        prop.setDataType("QUANTITY");
+        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PRICE_BASE_QUANTITY.toString(), language), language);
+        prop.setDataType(TEMPLATE_DATA_TYPE_QUANTITY);
         properties.add(prop);
 
         // minimum order quantity
         prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_MINIMUM_ORDER_QUANTITY.toString(), language) , language);
-        prop.setDataType("QUANTITY");
+        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_MINIMUM_ORDER_QUANTITY.toString(), language), language);
+        prop.setDataType(TEMPLATE_DATA_TYPE_QUANTITY);
         properties.add(prop);
 
         // free sample
         prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_FREE_SAMPLE.toString(), language) , language);
-        prop.setDataType("BOOLEAN");
+        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_FREE_SAMPLE.toString(), language), language);
+        prop.setDataType(TEMPLATE_DATA_TYPE_BOOLEAN);
         properties.add(prop);
 
         // validity period
         prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_WARRANTY_VALIDITY_PERIOD.toString(), language) , language);
-        prop.setDataType("QUANTITY");
+        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_WARRANTY_VALIDITY_PERIOD.toString(), language), language);
+        prop.setDataType(TEMPLATE_DATA_TYPE_QUANTITY);
         properties.add(prop);
 
         // warranty information
         prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_WARRANTY_INFORMATION.toString(), language) , language);
-        prop.setDataType("TEXT");
+        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_WARRANTY_INFORMATION.toString(), language), language);
+        prop.setDataType(TEMPLATE_DATA_TYPE_TEXT);
         properties.add(prop);
 
         // incoterms
         prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_INCOTERMS.toString(), language) , language);
-        prop.setDataType("TEXT");
+        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_INCOTERMS.toString(), language), language);
+        prop.setDataType(TEMPLATE_DATA_TYPE_TEXT);
         properties.add(prop);
 
         // special terms
         prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_SPECIAL_TERMS.toString(), language) , language);
-        prop.setDataType("TEXT");
+        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_SPECIAL_TERMS.toString(), language), language);
+        prop.setDataType(TEMPLATE_DATA_TYPE_TEXT);
         properties.add(prop);
 
         // estimated delivery period
         prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD.toString(), language) , language);
+        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_ESTIMATED_DELIVERY_PERIOD.toString(), language), language);
         prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
-        properties.add(prop);
-
-        // applicable address territory country
-        prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_APPLICABLE_ADDRESS_COUNTRY.toString(), language) , language);
-        prop.setDataType("TEXT");
         properties.add(prop);
 
         // applicable address territory city
         /*prop = new Property();
         prop.setPreferredName(TEMPLATE_TRADING_DELIVERY_APPLICABLE_ADDRESS_CITY);
-        prop.setDataType("TEXT");
+        prop.setDataType(TEMPLATE_DATA_TYPE_TEXT);
         properties.add(prop);*/
 
         // transport mode
         prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_TRANSPORT_MODE.toString(), language) , language);
-        prop.setDataType("TEXT");
+        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_TRANSPORT_MODE.toString(), language), language);
+        prop.setDataType(TEMPLATE_DATA_TYPE_TEXT);
         properties.add(prop);
 
         // packaging type
         prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PACKAGING_TYPE.toString(), language) , language);
-        prop.setDataType("TEXT");
+        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PACKAGING_TYPE.toString(), language), language);
+        prop.setDataType(TEMPLATE_DATA_TYPE_TEXT);
         properties.add(prop);
 
         // packaging quantity
         prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PACKAGE_QUANTITY.toString(), language) , language);
+        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_PACKAGE_QUANTITY.toString(), language), language);
         prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
         properties.add(prop);
 
         // customizable
         prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_CUSTOMIZABLE.toString(), language) , language);
-        prop.setDataType("BOOLEAN");
+        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_CUSTOMIZABLE.toString(), language), language);
+        prop.setDataType(TEMPLATE_DATA_TYPE_BOOLEAN);
         properties.add(prop);
 
         // spare part
-        if(SpringBridge.getInstance().getCatalogueServiceConfig().getSparePartEnabled()){
+        if (SpringBridge.getInstance().getCatalogueServiceConfig().getSparePartEnabled()) {
             prop = new Property();
-            prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_SPARE_PART.toString(), language) , language);
-            prop.setDataType("BOOLEAN");
+            prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TRADING_DELIVERY_SPARE_PART.toString(), language), language);
+            prop.setDataType(TEMPLATE_DATA_TYPE_BOOLEAN);
             properties.add(prop);
         }
         return properties;

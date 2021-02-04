@@ -55,6 +55,8 @@ public class RestServiceInterceptor extends HandlerInterceptorAdapter {
         excludedEndpoints.add("/cataloguelines");
         excludedEndpoints.add("/binary-contents");
         excludedEndpoints.add("/unit-lists");
+        excludedEndpoints.add("/demand-facets");
+        excludedEndpoints.add("/demands");
     }
 
     public static void main(String[] a) {

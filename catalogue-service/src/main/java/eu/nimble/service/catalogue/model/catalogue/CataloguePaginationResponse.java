@@ -10,7 +10,7 @@ public class CataloguePaginationResponse {
     private String catalogueId;
     private long size;
     private List<CatalogueLineType> catalogueLines;
-    private List<String> categoryNames;
+    private List<String> categoryUris;
     private List<String> permittedParties;
     private List<String> restrictedParties;
     private Boolean priceHidden;
@@ -42,12 +42,12 @@ public class CataloguePaginationResponse {
         this.catalogueUuid = catalogueUuid;
     }
 
-    public List<String> getCategoryNames() {
-        return categoryNames;
+    public List<String> getCategoryUris() {
+        return categoryUris;
     }
 
-    public void setCategoryNames(List<String> categoryNames) {
-        this.categoryNames = categoryNames;
+    public void setCategoryUris(List<String> categoryUris) {
+        this.categoryUris = categoryUris;
     }
 
     public String getCatalogueId() {

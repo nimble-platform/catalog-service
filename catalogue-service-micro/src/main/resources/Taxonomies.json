@@ -7,6 +7,43 @@
       "http://www.nimble-project.org/resource/eclass#0173-1#01-ADG629#002",
       "http://www.nimble-project.org/resource/eclass#0173-1#01-ADG630#002",
       "http://www.nimble-project.org/resource/eclass#0173-1#01-AAB315#006"
+    ],
+    "productRootCategories": [
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-ACE546#006",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ644#006",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AKK397#005",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AKJ313#005",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AAT090#006",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AAA183#008",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AAA647#005",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AAA862#005",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AAB072#009",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AAN560#007",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AAB572#005",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AAC168#005",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AAC286#007",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AAC350#007",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AAF397#008",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AAC473#010",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AAD025#004",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AAD111#008",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AAD170#007",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AAD302#005",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AAD640#005",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AAF876#008",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AAE587#006",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AAW154#009",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-ADJ215#001",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AFR088#002",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AFV561#002",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AGD616#001",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AGE763#001",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AGE748#001",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AGE723#001",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AGE390#001",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AGE696#001",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-ACL240#004",
+      "http://www.nimble-project.org/resource/eclass#0173-1#01-AAG961#008"
     ]
   },
   {
@@ -15,6 +52,16 @@
     "serviceRootCategories": [
       "http://www.aidimme.es/FurnitureSectorOntology.owl#LogisticsService",
       "http://www.aidimme.es/FurnitureSectorOntology.owl#Service"
+    ],
+    "productRootCategories": [
+      "http://www.aidimme.es/FurnitureSectorOntology.owl#Price",
+      "http://www.aidimme.es/FurnitureSectorOntology.owl#Technique",
+      "http://www.aidimme.es/FurnitureSectorOntology.owl#ContactPerson",
+      "http://www.aidimme.es/FurnitureSectorOntology.owl#Company",
+      "http://www.aidimme.es/FurnitureSectorOntology.owl#Standard",
+      "http://www.aidimme.es/FurnitureSectorOntology.owl#Catalogue",
+      "http://www.aidimme.es/FurnitureSectorOntology.owl#Product",
+      "http://www.aidimme.es/FurnitureSectorOntology.owl#Process"
     ]
   },
   {
@@ -23,9 +70,13 @@
   },
   {
     "id": "Aerospace",
+
     "namespace": "http://www.nimble-project.org/resource/aerospace#",
     "serviceRootCategories": [
       "http://www.nimble-project.org/resource/aerospace#Services"
+    ],
+    "productRootCategories": [
+      "http://www.nimble-project.org/resource/aerospace#Products"
     ]
   }
 ]

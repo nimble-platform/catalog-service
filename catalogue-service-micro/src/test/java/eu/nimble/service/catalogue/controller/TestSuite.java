@@ -15,7 +15,8 @@ import org.junit.runners.Suite;
         Test05_CatalogueLineControllerTest.class,
         Test06_PriceOptionTest.class,
         Test07_ImportExportControllerText.class,
-        Test08_LCPAControllerTest.class
+        Test08_LCPAControllerTest.class,
+        Test09_DemandControllerTest.class
 })
 public class TestSuite {
 }

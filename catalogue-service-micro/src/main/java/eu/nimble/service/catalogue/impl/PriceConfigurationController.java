@@ -14,13 +14,11 @@ import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.PriceOptionType;
-import eu.nimble.utility.Configuration;
 import eu.nimble.utility.ExecutionContext;
 import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.exception.NimbleException;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
-import eu.nimble.utility.persistence.resource.EntityIdAwareRepositoryWrapper;
-import eu.nimble.utility.persistence.resource.ResourceValidationUtility;
+import eu.nimble.utility.persistence.repository.BinaryContentAwareRepositoryWrapper;
 import eu.nimble.utility.validation.IValidationUtil;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -54,8 +52,6 @@ public class PriceConfigurationController {
 
     private static Logger log = LoggerFactory.getLogger(PriceConfigurationController.class);
 
-    @Autowired
-    private ResourceValidationUtility resourceValidationUtil;
     @Autowired
     private CatalogueService service;
     @Autowired
@@ -99,12 +95,6 @@ public class PriceConfigurationController {
                 throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(), Arrays.asList(catalogueUuid));
             }
 
-            // check the entity ids
-            boolean hjidsExists = resourceValidationUtil.hjidsExit(priceOption);
-            if(hjidsExists) {
-                throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_HJIDS_IN_PRICE_OPTION.toString(),Arrays.asList(JsonSerializationUtility.serializeEntitySilently(priceOption)));
-            }
-
             // check catalogue line
             CatalogueLineType catalogueLine = service.getCatalogueLine(catalogueUuid, lineId);
             if (catalogueLine == null) {
@@ -112,12 +102,11 @@ public class PriceConfigurationController {
             }
 
             // first persist the price options
-            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID());
+            BinaryContentAwareRepositoryWrapper repositoryWrapper = new BinaryContentAwareRepositoryWrapper();
             repositoryWrapper.persistEntity(priceOption);
 
             // update the catalogue line
             catalogueLine.getPriceOption().add(priceOption);
-            repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID());
             repositoryWrapper.updateEntity(catalogueLine);
 
             ObjectMapper objectMapper = JsonSerializationUtility.getObjectMapper();
@@ -187,7 +176,7 @@ public class PriceConfigurationController {
             }
 
             // remove the option and update the line
-            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID());
+            BinaryContentAwareRepositoryWrapper repositoryWrapper = new BinaryContentAwareRepositoryWrapper();
             repositoryWrapper.deleteEntityByHjid(PriceOptionType.class, optionId);
 //            catalogueLine.getPriceOption().remove(optionIndex.intValue());
 //            repositoryWrapper.updateEntity(catalogueLine);
@@ -241,12 +230,6 @@ public class PriceConfigurationController {
                 throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE_LINE.toString(),Arrays.asList(catalogueUuid, lineId));
             }
 
-            // validate the entity ids
-            boolean hjidsBelongToCompany = resourceValidationUtil.hjidsBelongsToParty(priceOption, catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID(), Configuration.Standard.UBL.toString());
-            if(!hjidsBelongToCompany) {
-                throw new NimbleException(NimbleExceptionMessageCode.BAD_REQUEST_INVALID_HJIDS.toString(),Arrays.asList(JsonSerializationUtility.serializeEntitySilently(priceOption)));
-            }
-
             // check option
             PriceOptionType oldOption = null;
             List<PriceOptionType> options = catalogueLine.getPriceOption();
@@ -261,7 +244,7 @@ public class PriceConfigurationController {
             }
 
             // remove the option and update the line
-            EntityIdAwareRepositoryWrapper repositoryWrapper = new EntityIdAwareRepositoryWrapper(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID());
+            BinaryContentAwareRepositoryWrapper repositoryWrapper = new BinaryContentAwareRepositoryWrapper();
             priceOption = repositoryWrapper.updateEntity(priceOption);
 
             log.info("Completed request to update price option. catalogueId: {}, lineId: {}, optionId: {}", catalogueUuid, lineId, priceOption.getHjid());

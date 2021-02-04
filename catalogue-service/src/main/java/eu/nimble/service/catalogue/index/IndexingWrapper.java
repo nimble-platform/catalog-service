@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.index;
 
 import com.google.common.base.Strings;
+import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.category.Taxonomy;
 import eu.nimble.service.catalogue.category.TaxonomyQueryInterface;
 import eu.nimble.service.catalogue.category.eclass.EClassTaxonomyQueryImpl;
@@ -21,7 +22,6 @@ import eu.nimble.service.model.ubl.commonbasiccomponents.BinaryObjectType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 import eu.nimble.service.model.ubl.extension.ItemPropertyValueQualifier;
-import eu.nimble.service.model.ubl.extension.QualityIndicatorParameter;
 import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.exception.NimbleException;
 import org.slf4j.Logger;
@@ -37,9 +37,10 @@ import java.util.stream.Collectors;
 public class IndexingWrapper {
     private static final Logger logger = LoggerFactory.getLogger(IndexingWrapper.class);
 
+    private static final String NON_PUBLIC_INFORMATION_PRICE_ID = "DEFAULT_PRICE";
     private static final String XSD_NS = "http://www.w3.org/2001/XMLSchema#";
-
     private static final List<String> languagePriorityForCustomProperties = Arrays.asList("en", "es", "de", "tr", "it");
+    private static final String circularEconomyCertificateGroup = "Circular Economy (Environment / Sustainability)";
 
     public static ItemType toIndexItem(CatalogueLineType catalogueLine) {
         ItemType indexItem = new ItemType();
@@ -59,8 +60,8 @@ public class IndexingWrapper {
                 catalogueServiceLanguages.forEach(languageId -> indexItem.addLabel(languageId,productNames.get(0).getValue()));
             }
         });
-        indexItem.setApplicableCountries(getCountries(catalogueLine));
-        indexItem.setCertificateType(getCertificates(catalogueLine));
+        indexItem.setCertificateType(getProductServiceCertificates(catalogueLine));
+        indexItem.setCircularEconomyCertificates(getCircularEconomyRelatedCertificateNames(catalogueLine));
         indexItem.setPermittedParties(new HashSet<>(CataloguePersistenceUtil.getPermittedParties(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID())));
         indexItem.setRestrictedParties(new HashSet<>(CataloguePersistenceUtil.getRestrictedParties(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID())));
         AmountValidator amountValidator = new AmountValidator(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount());
@@ -73,8 +74,10 @@ public class IndexingWrapper {
             if(!quantityValidator.bothFieldsPopulated()) {
                 throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
             }
-            indexItem.setBaseQuantity(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getValue().doubleValue());
-            indexItem.setBaseQuantityUnit(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getUnitCode());
+            indexItem.addBaseQuantity(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getUnitCode(), Arrays.asList(catalogueLine.getRequiredItemLocationQuantity().getPrice().getBaseQuantity().getValue().doubleValue()));
+        }
+        if(catalogueLine.getNonPublicInformation() != null && catalogueLine.getNonPublicInformation().stream().filter(nonPublicInformationType -> nonPublicInformationType.getID().contentEquals(NON_PUBLIC_INFORMATION_PRICE_ID)).findAny().isPresent()){
+            indexItem.setPriceHidden(true);
         }
         QuantityValidator quantityValidator = new QuantityValidator(catalogueLine.getGoodsItem().getDeliveryTerms().getEstimatedDeliveryPeriod().getDurationMeasure());
         if(quantityValidator.bothFieldsPopulated()) {
@@ -219,20 +222,24 @@ public class IndexingWrapper {
         indexItem.setClassificationUri(classificationUris);
     }
 
-    private static Set<String> getCountries(CatalogueLineType catalogueLine) {
-        Set<String> countries = new HashSet<>();
-        for(AddressType address : catalogueLine.getRequiredItemLocationQuantity().getApplicableTerritoryAddress()) {
-            address.getCountry().getName();
-        }
-        return countries;
+    private static Set<String> getProductServiceCertificates(CatalogueLineType catalogueLine) {
+        Set<String> certificateNames = new HashSet<>();
+        catalogueLine.getGoodsItem().getItem().getCertificate().stream()
+                .filter(cert -> !cert.getCertificateType().contentEquals(circularEconomyCertificateGroup))
+                .forEach(cert -> {
+                    certificateNames.add(cert.getCertificateTypeCode().getName());
+                });
+        return certificateNames;
     }
 
-    private static Set<String> getCertificates(CatalogueLineType catalogueLine) {
-        Set<String> certificates = new HashSet<>();
-        for(CertificateType certificate : catalogueLine.getGoodsItem().getItem().getCertificate()) {
-            certificates.add(certificate.getCertificateType());
-        }
-        return certificates;
+    private static Set<String> getCircularEconomyRelatedCertificateNames(CatalogueLineType catalogueLine) {
+        Set<String> certificateNames = new HashSet<>();
+        catalogueLine.getGoodsItem().getItem().getCertificate().stream()
+                .filter(cert -> cert.getCertificateType().contentEquals(circularEconomyCertificateGroup))
+                .forEach(cert -> {
+            certificateNames.add(cert.getCertificateTypeCode().getName());
+        });
+        return certificateNames;
     }
 
     private static Set<String> getImageUris(CatalogueLineType catalogueLine) {
@@ -266,6 +273,7 @@ public class IndexingWrapper {
         category.setDefinition(getLabelListFromMap(indexCategory.getDescription()));
         category.setPreferredName(getLabelListFromMap(indexCategory.getLabel()));
         category.setRemark(getSingleLabel(indexCategory.getComment()));
+        category.setRootCategoryUri(IndexCategoryService.getRootCategoryUri(indexCategory));
         if(indexCategory.getLevel() != null) {
             category.setLevel(indexCategory.getLevel());
         }
@@ -436,47 +444,5 @@ public class IndexingWrapper {
         indexProperty.setProduct(associatedCategoryUris);
         indexProperty.setLanguages(indexProperty.getLabel().keySet());
         return indexProperty;
-    }
-
-    public static eu.nimble.service.model.solr.party.PartyType toIndexParty(PartyType party) {
-        eu.nimble.service.model.solr.party.PartyType indexParty = new eu.nimble.service.model.solr.party.PartyType();
-        party.getBrandName().forEach(name -> indexParty.addBrandName(name.getLanguageID(), name.getValue()));
-        indexParty.setLegalName(party.getPartyName().get(0).getName().getValue());
-        String originLang = party.getPostalAddress().getCountry().getName().getLanguageID() != null ? party.getPostalAddress().getCountry().getName().getLanguageID() : "";
-        indexParty.addOrigin(originLang, party.getPostalAddress().getCountry().getName().getValue());
-        indexParty.setId(party.getHjid().toString());
-        indexParty.setUri(party.getHjid().toString());
-
-        // TODO currently we do not support multilingual certificate types
-        party.getCertificate().stream().forEach(certificate -> indexParty.addCertificateType("", certificate.getCertificateTypeCode().getName()));
-        if(party.getPpapCompatibilityLevel() != null) {
-            indexParty.setPpapComplianceLevel(party.getPpapCompatibilityLevel().intValue());
-        }
-        // TODO currently we do not support multilingual ppap document types
-        party.getPpapDocumentReference().forEach(ppapDocument -> indexParty.addPpapDocumentType("", ppapDocument.getDocumentType()));
-
-        // get trust scores
-        party.getQualityIndicator().forEach(qualityIndicator -> {
-            if(qualityIndicator.getQualityParameter() != null && qualityIndicator.getQuantity() != null) {
-                if(qualityIndicator.getQualityParameter().contentEquals(QualityIndicatorParameter.COMPANY_RATING.toString())) {
-                    indexParty.setTrustRating(qualityIndicator.getQuantity().getValue().doubleValue());
-                } else if(qualityIndicator.getQualityParameter().contentEquals(QualityIndicatorParameter.TRUST_SCORE.toString())) {
-                    indexParty.setTrustScore(qualityIndicator.getQuantity().getValue().doubleValue());
-                } else if(qualityIndicator.getQualityParameter().contentEquals(QualityIndicatorParameter.DELIVERY_PACKAGING.toString())) {
-                    indexParty.setTrustDeliveryPackaging(qualityIndicator.getQuantity().getValue().doubleValue());
-                } else if(qualityIndicator.getQualityParameter().contentEquals(QualityIndicatorParameter.FULFILLMENT_OF_TERMS.toString())) {
-                    indexParty.setTrustFullfillmentOfTerms(qualityIndicator.getQuantity().getValue().doubleValue());
-                } else if(qualityIndicator.getQualityParameter().contentEquals(QualityIndicatorParameter.SELLER_COMMUNICATION.toString())) {
-                    indexParty.setTrustSellerCommunication(qualityIndicator.getQuantity().getValue().doubleValue());
-                } else if(qualityIndicator.getQualityParameter().contentEquals(QualityIndicatorParameter.NUMBER_OF_TRANSACTIONS.toString())) {
-                    indexParty.setTrustNumberOfTransactions(qualityIndicator.getQuantity().getValue().doubleValue());
-                } else if(qualityIndicator.getQualityParameter().contentEquals(QualityIndicatorParameter.TRADING_VOLUME.toString())) {
-                    indexParty.setTrustTradingVolume(qualityIndicator.getQuantity().getValue().doubleValue());
-                } else if(qualityIndicator.getQualityParameter().contentEquals(QualityIndicatorParameter.Number_OF_EVALUATIONS.toString())) {
-                    indexParty.setTrustNumberOfEvaluations(qualityIndicator.getQuantity().getValue().doubleValue());
-                }
-            }
-        });
-        return indexParty;
     }
 }

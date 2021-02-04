@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue;
 import eu.nimble.service.catalogue.model.catalogue.CatalogueLineSortOptions;
 import eu.nimble.service.catalogue.model.catalogue.CatalogueIDResponse;
 import eu.nimble.service.catalogue.model.catalogue.CataloguePaginationResponse;
+import eu.nimble.service.catalogue.model.catalogue.ProductStatus;
 import eu.nimble.service.catalogue.model.statistics.ProductAndServiceStatistics;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
@@ -26,7 +27,7 @@ public interface CatalogueService {
 
     public CatalogueType getCatalogue(String id, String partyId);
 
-    public CataloguePaginationResponse getCataloguePaginationResponse(String catalogueId, String partyId, String categoryName,String searchText, String languageId, CatalogueLineSortOptions sortOption, int limit, int offset);
+    public CataloguePaginationResponse getCataloguePaginationResponse(String catalogueId, String partyId, String categoryUri,String searchText, String languageId, CatalogueLineSortOptions sortOption,ProductStatus productStatus, int limit, int offset);
 
     public CatalogueType updateCatalogue(CatalogueType catalogue);
 
@@ -44,7 +45,7 @@ public interface CatalogueService {
 
     public <T> T getCatalogue(String id, String partyId, Configuration.Standard standard);
 
-    public <T> T getCataloguePaginationResponse(String id, String partyId,String categoryName, Configuration.Standard standard,String searchText,String languageId,CatalogueLineSortOptions sortOption, int limit, int offset);
+    public <T> T getCataloguePaginationResponse(String id, String partyId,String categoryUri, Configuration.Standard standard,String searchText,String languageId,CatalogueLineSortOptions sortOption, ProductStatus productStatus,int limit, int offset);
 
     public void deleteCatalogue(String uuid, Configuration.Standard standard);
 
@@ -95,7 +96,7 @@ public interface CatalogueService {
 
     <T> T getCatalogueLines(String catalogueId, List<String> catalogueLineIds);
 
-    CatalogueLineType addLineToCatalogue(String catalogueUuid, String catalogueProviderId, CatalogueLineType catalogueLine);
+    CatalogueLineType addLineToCatalogue(String catalogueUuid, CatalogueLineType catalogueLine);
 
     CatalogueLineType updateLinesCatalogue(String newCatalogueUuid, String oldeCatalogueUuid,CatalogueLineType catalogueLin);
 

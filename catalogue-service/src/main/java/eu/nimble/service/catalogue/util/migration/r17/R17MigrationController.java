@@ -2,12 +2,14 @@ package eu.nimble.service.catalogue.util.migration.r17;
 
 import eu.nimble.service.catalogue.UnitManager;
 import eu.nimble.service.catalogue.config.RoleConfig;
+import eu.nimble.service.catalogue.model.catalogue.ProductStatus;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.QuantityType;
 import eu.nimble.service.model.ubl.commonbasiccomponents.TextType;
 import eu.nimble.utility.ExecutionContext;
 import eu.nimble.utility.HttpResponseUtil;
+import eu.nimble.utility.country.CountryUtil;
 import eu.nimble.utility.persistence.GenericJPARepository;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.validation.IValidationUtil;
@@ -308,6 +310,96 @@ public class R17MigrationController {
         }
 
         logger.info("Completed request to update price options");
+        return ResponseEntity.ok(null);
+    }
+
+    @ApiOperation(value = "", notes = "Set the status of catalogue lines to PUBLISHED")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Set the status of catalogue lines successfully"),
+            @ApiResponse(code = 401, message = "Invalid role")
+    })
+    @RequestMapping(value = "/r17/migration/catalogueline-status",
+            produces = {"application/json"},
+            method = RequestMethod.PATCH)
+    public ResponseEntity setCatalogueLineStatus(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken
+    ) throws IOException {
+        logger.info("Incoming request to set status for catalogue lines");
+
+        if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+        }
+
+        GenericJPARepository catalogueRepo = new JPARepositoryFactory().forCatalogueRepository(true);
+
+        List<CatalogueLineType> catalogueLineTypes = catalogueRepo.getEntities(CatalogueLineType.class);
+
+        for (CatalogueLineType catalogueLine : catalogueLineTypes) {
+            catalogueLine.setProductStatusType(ProductStatus.PUBLISHED.toString());
+
+            catalogueRepo.updateEntity(catalogueLine);
+        }
+
+        logger.info("Completed request to set status for catalogue lines");
+        return ResponseEntity.ok(null);
+    }
+
+    @ApiOperation(value = "", notes = "Set the identification code of countries")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Set the identification code of countries successfully"),
+            @ApiResponse(code = 401, message = "Invalid role")
+    })
+    @RequestMapping(value = "/r17/migration/country-code",
+            produces = {"application/json"},
+            method = RequestMethod.PATCH)
+    public ResponseEntity setCountryIdentificationCode(@ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken
+    ) throws IOException {
+        logger.info("Incoming request to set country identification code");
+
+        if(!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_FOR_ADMIN_OPERATIONS)) {
+            return HttpResponseUtil.createResponseEntityAndLog("Invalid role", HttpStatus.UNAUTHORIZED);
+        }
+
+        GenericJPARepository catalogueRepo = new JPARepositoryFactory().forCatalogueRepository(true);
+
+        List<CountryType> countryTypes = catalogueRepo.getEntities(CountryType.class);
+
+        // update country type
+        for (CountryType countryType : countryTypes) {
+            if(countryType.getName() != null && countryType.getName().getValue() != null){
+                String isoCode = CountryUtil.getISOCodeByCountryName(countryType.getName().getValue());
+                if(isoCode == null){
+                    isoCode = countryType.getName().getValue();
+                }
+
+                CodeType codeType = new CodeType();
+                codeType.setValue(isoCode);
+
+                countryType.setIdentificationCode(codeType);
+
+                catalogueRepo.updateEntity(countryType);
+
+            }
+
+        }
+
+        List<TradingTermType> tradingTermTypes = catalogueRepo.getEntities(TradingTermType.class);
+
+        // update trading terms
+        for (TradingTermType tradingTermType : tradingTermTypes) {
+            if(tradingTermType.getValue() != null && tradingTermType.getValue().getValueQualifier().contentEquals("CODE") &&
+                tradingTermType.getValue().getValueCode() != null && tradingTermType.getValue().getValueCode().size() > 0 &&
+                tradingTermType.getValue().getValueCode().get(0).getListID().contentEquals("COUNTRY_LIST")){
+
+                String isoCode = CountryUtil.getISOCodeByCountryName(tradingTermType.getValue().getValueCode().get(0).getValue());
+                if(isoCode != null){
+                    tradingTermType.getValue().getValueCode().get(0).setValue(isoCode);
+
+                    catalogueRepo.updateEntity(tradingTermType);
+                }
+            }
+        }
+
+        logger.info("Completed request to set country identification code");
         return ResponseEntity.ok(null);
     }
 }

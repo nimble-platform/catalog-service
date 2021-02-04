@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import eu.nimble.common.rest.identity.IdentityClientTypedMockConfig;
 import eu.nimble.service.catalogue.model.category.Category;
 import eu.nimble.utility.JsonSerializationUtility;
 import org.junit.Assert;
@@ -40,7 +41,7 @@ public class Test02_ProductCategoryControllerTest {
     @Test
     public void test1_getAvailableTaxonomies() throws Exception {
         MockHttpServletRequestBuilder request = get("/taxonomies/id")
-                .header("Authorization", TestConfig.buyerId);
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
         JsonParser parser = mapper.getFactory().createParser(result.getResponse().getContentAsString());
@@ -51,7 +52,7 @@ public class Test02_ProductCategoryControllerTest {
     @Test
     public void test2_getCategoriesByName() throws Exception {
         MockHttpServletRequestBuilder request = get("/taxonomies/eClass/categories").param("name", "die")
-                .header("Authorization", TestConfig.buyerId);
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
         ObjectMapper mapper = JsonSerializationUtility.getObjectMapper();
         List<Category> categories = mapper.readValue(result.getResponse().getContentAsString(), new TypeReference<List<Category>>() {});
@@ -66,7 +67,7 @@ public class Test02_ProductCategoryControllerTest {
     public void test3_getCategoriesByName() throws Exception {
         // get logistic categories for warehouse
         MockHttpServletRequestBuilder request = get("/taxonomies/eClass/categories")
-                .header("Authorization", TestConfig.buyerId)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
                 .param("name", "warehouse")
                 .param("forLogistics","true");
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
@@ -78,7 +79,7 @@ public class Test02_ProductCategoryControllerTest {
 
         // get logistic categories for mdf
         request = get("/taxonomies/eClass/categories")
-                .header("Authorization", TestConfig.buyerId)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
                 .param("name", "mdf")
                 .param("forLogistics","true");
         result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();
@@ -91,7 +92,7 @@ public class Test02_ProductCategoryControllerTest {
     @Test
     public void test4_getCategoriesByIds() throws Exception {
         MockHttpServletRequestBuilder request = get("/categories")
-                .header("Authorization", TestConfig.buyerId)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
                 .param("categoryIds", "0173-1#01-BAA975#013")
                 .param("taxonomyIds", "eClass");
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isOk()).andReturn();

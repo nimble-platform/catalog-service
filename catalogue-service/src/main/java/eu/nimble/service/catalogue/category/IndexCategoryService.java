@@ -1,6 +1,7 @@
 package eu.nimble.service.catalogue.category;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.sun.tools.javac.jvm.Code;
 import eu.nimble.service.catalogue.category.eclass.EClassTaxonomyQueryImpl;
 import eu.nimble.service.catalogue.exception.InvalidCategoryException;
 import eu.nimble.service.catalogue.index.ClassIndexClient;
@@ -13,6 +14,8 @@ import eu.nimble.service.model.solr.SearchResult;
 import eu.nimble.service.model.solr.owl.ClassType;
 import eu.nimble.service.model.solr.owl.IClassType;
 import eu.nimble.service.model.solr.owl.IConcept;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.CommodityClassificationType;
+import eu.nimble.service.model.ubl.commonbasiccomponents.CodeType;
 import eu.nimble.utility.JsonSerializationUtility;
 import feign.Response;
 import org.apache.commons.collections.CollectionUtils;
@@ -43,6 +46,9 @@ public class IndexCategoryService {
     private CredentialsUtil credentialsUtil;
     @Autowired
     private ClassIndexClient classIndexClient;
+
+    // TODO make this configurable
+    private static String defaultLanguage = "en";
 
     public Category getCategory(String taxonomyId, String categoryId) throws InvalidCategoryException {
         String categoryUri = constructUri(taxonomyId, categoryId);
@@ -124,6 +130,10 @@ public class IndexCategoryService {
 
     public List<Category> getParentCategories(String taxonomyId, String categoryId) throws InvalidCategoryException {
         String categoryUri = constructUri(taxonomyId, categoryId);
+        return this.getParentCategories(categoryUri);
+    }
+
+    public List<Category> getParentCategories(String categoryUri) {
         List<ClassType> parentIndexCategories = getParentIndexCategories(categoryUri);
 
         // transform to Catalogue category model
@@ -325,37 +335,60 @@ public class IndexCategoryService {
         return logisticServicesCategoryUriMap;
     }
 
-    //    public List<Category> getLogisticsCategoriesForEClass(String name) {
-//        Map<String, String> facetCriteria = new HashMap<>();
-//        facetCriteria.put(IConcept.NAME_SPACE_FIELD, EClassTaxonomyQueryImpl.namespace);
-//        facetCriteria.put(IConcept.CODE_FIELD, "14*");
-//        facetCriteria.put(IClassType.LEVEL_FIELD, "4");
-//        String query = StringUtils.isNotEmpty(name) ? name : "*" ;
-//
-//        List<Category> categories = classIndexClient.getCategories(query, facetCriteria);
-//        return categories;
-//
-////        SolrQuery query = new SolrQuery();
-////        query.set("q", queryField);
-////
-////        List<Category> categories = new ArrayList<>();
-////        try {
-////            QueryResponse response = solrClient.query(query);
-////            List<ClassType> indexCategories = response.getBeans(ClassType.class);
-////            for (ClassType indexCategory : indexCategories) {
-////                categories.add(IndexingWrapper.toCategory(indexCategory));
-////            }
-////
-////            // populate properties
-////            populateCategoryProperties(indexCategories, categories);
-////
-////            logger.info("Retrieved {} eClass logistics categories. name: {}, lang: {}", categories.size(), name, lang);
-////            return categories;
-////
-////        } catch (SolrServerException | IOException e) {
-////            logger.error("Failed to retrieve eClass logistics categories for query: {}", query, e);
-////        }
-////
-////        return new ArrayList<>();
-//    }
+    /**
+     * Finds the root category uri for the given category.
+     * */
+    public static String getRootCategoryUri(ClassType classType){
+        // the given category is the root category since it does not have any parent category
+        if(classType.getAllParents() == null){
+            return classType.getUri();
+        }
+        // find the root category
+        Optional<String> rootCategoryUri = classType.getAllParents().stream().filter(parentCategoryUri-> SpringBridge.getInstance().getTaxonomyManager().getRootCategories().contains(parentCategoryUri)).findFirst();
+        if (rootCategoryUri.isPresent())
+            return rootCategoryUri.get();
+        return null;
+    }
+
+    /**
+     * Finds all parents for all the codes representing a category.
+     * NOTE THAT returned results do not contain codes corresponding the given ones
+     *
+     * @return
+     * @throws InvalidCategoryException
+     */
+    public List<CodeType> getParentCategories(List<CodeType> codes) throws InvalidCategoryException {
+        // get uris of the given categories
+        List<String> uris = new ArrayList<>();
+        for(CodeType code : codes){
+            if(code.getURI() != null){
+                uris.add(code.getURI());
+            }
+        }
+
+        List<CodeType> codeList = new ArrayList<>();
+        // find parents of the selected categories
+        for(CodeType code : codes){
+            // Default/custom categories have no parents
+            if(code.getListID().contentEquals("Default") || code.getListID().contentEquals("Custom")){
+                continue;
+            }
+            List<Category> parentCategories = getParentCategories(code.getURI());
+
+            for(int i = 0; i< parentCategories.size();i++){
+                Category category = parentCategories.get(i);
+                CodeType codeType = new CodeType();
+                codeType.setValue(category.getId());
+                codeType.setName(category.getPreferredName(defaultLanguage));
+                codeType.setListID(category.getTaxonomyId());
+                codeType.setURI(category.getCategoryUri());
+                // check whether it is one of the given categories or it is already added to the list
+                if(!codeList.contains(codeType) && !uris.contains(codeType.getURI())){
+                    codeList.add(codeType);
+                }
+            }
+        }
+        return codeList;
+    }
+
 }

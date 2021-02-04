@@ -28,6 +28,8 @@ public class RoleConfig {
                     NimbleRole.LEGAL_REPRESENTATIVE,
                     NimbleRole.INITIAL_REPRESENTATIVE,
                     NimbleRole.PUBLISHER,
+                    NimbleRole.SALES_OFFICER,
+                    NimbleRole.MONITOR,
                     NimbleRole.NIMBLE_DELETED_USER,
                     NimbleRole.EFACTORY_USER};
 }
