@@ -46,7 +46,7 @@ public class TemplateConfig {
     // the first column is reserved for the row names such as Property name, Property data type, property unit etc
     public static final int NUMBER_OF_RESERVED_COLUMNS_FOR_PRODUCT_PROPERTY_TAB = 1;
 
-    public static List<Property> getFixedPropertiesForProductPropertyTab(String language) {
+    public static List<Property> getFixedPropertiesForProductPropertyTab(String language, boolean isServiceTemplate) {
         List<Property> properties = new ArrayList<>();
 
         // item manufacturer id
@@ -79,29 +79,31 @@ public class TemplateConfig {
         prop.setDataType("FILE");
         properties.add(prop);*/
 
-        // width
-        prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WIDTH.toString(), language), language);
-        prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
-        properties.add(prop);
+        if(!isServiceTemplate){
+            // width
+            prop = new Property();
+            prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WIDTH.toString(), language), language);
+            prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
+            properties.add(prop);
 
-        // length
-        prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_LENGTH.toString(), language), language);
-        prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
-        properties.add(prop);
+            // length
+            prop = new Property();
+            prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_LENGTH.toString(), language), language);
+            prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
+            properties.add(prop);
 
-        // height
-        prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_HEIGHT.toString(), language), language);
-        prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
-        properties.add(prop);
+            // height
+            prop = new Property();
+            prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_HEIGHT.toString(), language), language);
+            prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
+            properties.add(prop);
 
-        // weight
-        prop = new Property();
-        prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WEIGHT.toString(), language), language);
-        prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
-        properties.add(prop);
+            // weight
+            prop = new Property();
+            prop.addPreferredName(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_WEIGHT.toString(), language), language);
+            prop.setDataType(TemplateConfig.TEMPLATE_DATA_TYPE_QUANTITY);
+            properties.add(prop);
+        }
         return properties;
     }
 
