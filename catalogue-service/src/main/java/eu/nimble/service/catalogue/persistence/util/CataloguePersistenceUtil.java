@@ -8,6 +8,7 @@ import eu.nimble.service.catalogue.util.SpringBridge;
 import eu.nimble.service.model.ubl.catalogue.CatalogueType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.CatalogueLineType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.ClauseType;
+import eu.nimble.utility.ExecutionContext;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
 
 import java.util.ArrayList;
@@ -164,12 +165,26 @@ public class CataloguePersistenceUtil {
         return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_ALL_PRODUCT_CATALOGUES_FOR_PARTY, new String[]{"partyId"}, new Object[]{partyId});
     }
 
-    public static boolean checkCatalogueForWhiteBlackList(String catalogueId, String partyId, String vatNumber) {
-        String catalogueUuid = getCatalogueUUid(catalogueId, partyId);
-        return checkCatalogueForWhiteBlackList(catalogueUuid, vatNumber);
+    /**
+     * Checks whether the user, whose data is encapsulated in the execution context, is allowed to access catalogue specified with the catalogue id and provider id.
+     * */
+    public static boolean checkCatalogueForWhiteBlackList(String catalogueId, String cataloguePartyId, ExecutionContext executionContext) {
+        String catalogueUuid = getCatalogueUUid(catalogueId, cataloguePartyId);
+        return checkCatalogueForWhiteBlackList(catalogueUuid, executionContext);
     }
 
-    public static boolean checkCatalogueForWhiteBlackList(String catalogueUuid, String vatNumber) {
+    /**
+     * Checks whether the user, whose data is encapsulated in the execution context, is allowed to access specified catalogue.
+     * */
+    public static boolean checkCatalogueForWhiteBlackList(String catalogueUuid, ExecutionContext executionContext) {
+        // retrieve the catalogue provider id
+        String catalogueProviderId = getCatalogueProviderId(catalogueUuid);
+        // the users who own the catalogue can access it
+        if(catalogueProviderId.contentEquals(executionContext.getCompanyId())){
+            return true;
+        }
+        // for the others, check the catalogue whitelist/blacklist for the given vat number
+        String vatNumber = executionContext.getVatNumber();
         List<String> permittedParties = getPermittedParties(catalogueUuid);
         List<String> restrictedParties = getRestrictedParties(catalogueUuid);
         if (permittedParties.size() > 0) {

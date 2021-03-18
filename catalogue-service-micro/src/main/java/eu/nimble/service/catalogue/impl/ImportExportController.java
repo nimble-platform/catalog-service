@@ -149,7 +149,7 @@ public class ImportExportController {
             throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_CATALOGUE.toString(),Arrays.asList(catalogueUuid),true);
         }
 
-        if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogueUuid,executionContext.getVatNumber())){
+        if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogueUuid,executionContext)){
             throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(), Collections.singletonList(catalogueUuid));
         }
 
@@ -229,7 +229,7 @@ public class ImportExportController {
 
             for (String id : ids) {
                 CatalogueType catalogue = CataloguePersistenceUtil.getCatalogueForParty(id, partyId);
-                if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogue.getUUID(),executionContext.getVatNumber())){
+                if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogue.getUUID(),executionContext)){
                     throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(), Collections.singletonList(catalogue.getUUID()));
                 }
                 ByteArrayOutputStream catalogueBaos = new ByteArrayOutputStream();

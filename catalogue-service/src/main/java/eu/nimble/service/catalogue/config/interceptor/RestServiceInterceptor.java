@@ -1,5 +1,7 @@
 package eu.nimble.service.catalogue.config.interceptor;
 
+import eu.nimble.common.rest.identity.IIdentityClientTyped;
+import eu.nimble.common.rest.identity.model.PersonPartyTuple;
 import eu.nimble.service.catalogue.exception.NimbleExceptionMessageCode;
 import eu.nimble.utility.ExecutionContext;
 import eu.nimble.utility.exception.NimbleException;
@@ -16,6 +18,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -30,6 +33,8 @@ public class RestServiceInterceptor extends HandlerInterceptorAdapter {
 
     @Autowired
     private ExecutionContext executionContext;
+    @Autowired
+    private IIdentityClientTyped identityClient;
     @Autowired
     IValidationUtil iValidationUtil;
 
@@ -103,6 +108,13 @@ public class RestServiceInterceptor extends HandlerInterceptorAdapter {
 
             // to append user email to the exception logs, we do not clear MDC since ExceptionHandler is invoked after afterCompletion method.
             MDC.put("userEmail",email);
+        }
+        // set the company id of execution context
+        try {
+            PersonPartyTuple personPartyTuple = identityClient.getPersonPartyTuple(bearerToken);
+            executionContext.setCompanyId(personPartyTuple.getCompanyID());
+        } catch (IOException e) {
+            logger.error("Failed to retrieve person party tuple for the bearer token.");
         }
         return true;
     }
