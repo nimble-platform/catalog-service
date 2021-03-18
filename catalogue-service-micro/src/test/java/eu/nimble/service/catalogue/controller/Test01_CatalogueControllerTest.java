@@ -303,7 +303,7 @@ public class Test01_CatalogueControllerTest {
     @Test
     public void test63_getDefaultCataloguePagination() throws Exception {
         MockHttpServletRequestBuilder request = get("/catalogue/"+IdentityClientTypedMockConfig.sellerPartyID+"/pagination")
-                .header("Authorization", IdentityClientTypedMockConfig.buyerPartyID)
+                .header("Authorization", IdentityClientTypedMockConfig.buyerUserID)
                 .param("catalogueId","default")
                 .param("limit","10")
                 .param("offset","0")

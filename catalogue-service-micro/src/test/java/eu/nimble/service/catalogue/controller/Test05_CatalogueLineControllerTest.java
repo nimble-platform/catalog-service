@@ -242,7 +242,7 @@ public class Test05_CatalogueLineControllerTest {
         // add new catalogue
         String catalogueJson = IOUtils.toString(Test01_CatalogueControllerTest.class.getResourceAsStream("/example_catalogue_test2.json"));
         MockHttpServletRequestBuilder request = post("/catalogue/ubl")
-                .header("Authorization", IdentityClientTypedMockConfig.sellerPartyID)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(catalogueJson);
         MvcResult result = this.mockMvc.perform(request).andExpect(status().isCreated()).andReturn();
@@ -255,7 +255,7 @@ public class Test05_CatalogueLineControllerTest {
         catalogueLineJson = mapper.writeValueAsString(catalogueLine);
 
         request = post("/catalogue/" + catalogue.getUUID() + "/catalogueline")
-                .header("Authorization", IdentityClientTypedMockConfig.sellerPartyID)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(catalogueLineJson);
         this.mockMvc.perform(request).andDo(print()).andExpect(status().isCreated()).andReturn();
