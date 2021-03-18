@@ -752,7 +752,7 @@ public class CatalogueController {
 
             String catalogueUUid = CataloguePersistenceUtil.getCatalogueUUid(id, partyId);
 
-            if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(id,executionContext)){
+            if(!CataloguePersistenceUtil.checkCatalogueForWhiteBlackList(catalogueUUid,executionContext)){
                 throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_ACCESS_CATALOGUE.toString(),Arrays.asList(id));
             }
 
