@@ -180,7 +180,8 @@ public class CataloguePersistenceUtil {
         // retrieve the catalogue provider id
         String catalogueProviderId = getCatalogueProviderId(catalogueUuid);
         // the users who own the catalogue can access it
-        if(catalogueProviderId.contentEquals(executionContext.getCompanyId())){
+        // skip this check for the anonymous users because they do not have any company id
+        if(executionContext.getCompanyId() != null && catalogueProviderId.contentEquals(executionContext.getCompanyId())){
             return true;
         }
         // for the others, check the catalogue whitelist/blacklist for the given vat number
