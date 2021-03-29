@@ -112,7 +112,9 @@ public class RestServiceInterceptor extends HandlerInterceptorAdapter {
         // set the company id of execution context
         try {
             PersonPartyTuple personPartyTuple = identityClient.getPersonPartyTuple(bearerToken);
-            executionContext.setCompanyId(personPartyTuple.getCompanyID());
+            if(personPartyTuple != null){
+                executionContext.setCompanyId(personPartyTuple.getCompanyID());
+            }
         } catch (IOException e) {
             logger.error("Failed to retrieve person party tuple for the bearer token.");
         }
