@@ -148,6 +148,8 @@ public class DemandController {
                                      @ApiParam(value = "Latest due date. Demands of which due dates are equal or earlier than the provided date are retrieved") @RequestParam(required = false) String dueDate,
                                      @ApiParam(value = "Buyer country") @RequestParam(required = false) String buyerCountry,
                                      @ApiParam(value = "Delivery country") @RequestParam(required = false) String deliveryCountry,
+                                     @ApiParam(value = "Circular economy certificates") @RequestParam(required = false) List<String> circularEconomyCertificates,
+                                     @ApiParam(value = "Certificates other than circular economy related ones") @RequestParam(required = false) List<String> otherCertificates,
                                      @ApiParam(value = "Page no, which used as the offset to retrieve demands. It's also used to calculate the offset for the results", defaultValue = "0") @RequestParam(defaultValue = "0", required = false) Integer pageNo,
                                      @ApiParam(value = "Number of demands to be retrieved", defaultValue = "10") @RequestParam(defaultValue = "10", required = false) Integer limit) {
         try {
@@ -162,8 +164,8 @@ public class DemandController {
             DemandPaginationResponse response;
             // normalize the query term
             query = normalizeQueryTerm(query);
-            demandCount = demandIndexService.getDemandCount(query, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry);
-            demands = demandIndexService.searchDemand(query, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry, pageNo, limit);
+            demandCount = demandIndexService.getDemandCount(query, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry,circularEconomyCertificates,otherCertificates);
+            demands = demandIndexService.searchDemand(query, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry, pageNo, limit,circularEconomyCertificates,otherCertificates);
             response = new DemandPaginationResponse(demandCount, demands);
             // TODO enable this and do not include image content in the actual results
 //            ObjectMapper mapper = JsonSerializationUtility.getObjectMapper(1);
@@ -293,7 +295,9 @@ public class DemandController {
                                     @ApiParam(value = "Demand category") @RequestParam(required = false) String categoryUri,
                                     @ApiParam(value = "Latest due date. Demands of which due dates are equal or earlier than the provided date are retrieved") @RequestParam(required = false) String dueDate,
                                     @ApiParam(value = "Buyer country") @RequestParam(required = false) String buyerCountry,
-                                    @ApiParam(value = "Delivery country") @RequestParam(required = false) String deliveryCountry) {
+                                    @ApiParam(value = "Delivery country") @RequestParam(required = false) String deliveryCountry,
+                                    @ApiParam(value = "Circular economy certificates") @RequestParam(required = false) List<String> circularEconomyCertificates,
+                                    @ApiParam(value = "Certificates other than circular economy related ones") @RequestParam(required = false) List<String> otherCertificates) {
         try {
             // set request log of ExecutionContext
             String requestLog = String.format("Incoming request to get demand facets for party: %s, query term: %s, lang: %s, category: %s, due date: %s, buyer country: %s, delivery country: %s", companyId, query, lang, categoryUri, dueDate, buyerCountry, deliveryCountry);
@@ -303,7 +307,7 @@ public class DemandController {
 
             // normalize the query term
             query = normalizeQueryTerm(query);
-            List<DemandFacetResponse> facets = demandIndexService.getDemandFacets(query, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry);
+            List<DemandFacetResponse> facets = demandIndexService.getDemandFacets(query, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry,circularEconomyCertificates,otherCertificates);
 
             logger.info("Completed request to get demand facets for party: {}, query term: {}, lang: {}, category: {}, due date: {}, buyer country: {}, delivery country: {}", companyId, query, lang, categoryUri, dueDate, buyerCountry, deliveryCountry);
             return ResponseEntity.status(HttpStatus.OK).body(facets);
