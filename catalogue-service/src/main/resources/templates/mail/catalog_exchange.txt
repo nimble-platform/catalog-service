@@ -1,6 +1,6 @@
 Dear [(${partyName})],
 
-[(${requesterUserName})] from [(${requesterCompanyName})] would like to exchange your catalog: [(${catalogName})]
+[(${requesterUserName})] from [(${requesterCompanyName})] (cc'd) would like to exchange your catalog: [(${catalogName})]
 
 [(${details})]
 

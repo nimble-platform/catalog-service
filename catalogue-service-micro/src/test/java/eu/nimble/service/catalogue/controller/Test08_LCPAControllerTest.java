@@ -53,7 +53,7 @@ public class Test08_LCPAControllerTest {
         String catalogueJson = IOUtils.toString(Test08_LCPAControllerTest.class.getResourceAsStream("/example_catalogue_LCPA_inputs.json"));
 
         MockHttpServletRequestBuilder request = post("/catalogue/ubl")
-                .header("Authorization", IdentityClientTypedMockConfig.sellerPartyID)
+                .header("Authorization", IdentityClientTypedMockConfig.sellerPersonID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(catalogueJson);
         MvcResult result = this.mockMvc.perform(request).andDo(print()).andExpect(status().isCreated()).andReturn();

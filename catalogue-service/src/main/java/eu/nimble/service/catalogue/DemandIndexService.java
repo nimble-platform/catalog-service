@@ -26,7 +26,7 @@ public interface DemandIndexService {
      * @param limit
      * @return
      */
-    List<DemandType> searchDemand(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry, Integer pageNo, Integer limit);
+    List<DemandType> searchDemand(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry, Integer pageNo, Integer limit,List<String> circularEconomyCertificates, List<String> otherCertificates);
 
     /**
      * Retrieves number of {@link DemandType}s for the given query parameters
@@ -39,7 +39,8 @@ public interface DemandIndexService {
      * @param deliveryCountry
      * @return
      */
-    int getDemandCount(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry);
+    int getDemandCount(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry,List<String> circularEconomyCertificates, List<String> otherCertificates);
 
-    List<DemandFacetResponse> getDemandFacets(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry);
+    List<DemandFacetResponse> getDemandFacets(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry,
+                                              List<String> circularEconomyCertificates, List<String> otherCertificates);
 }

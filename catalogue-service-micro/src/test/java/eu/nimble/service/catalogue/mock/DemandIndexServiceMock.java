@@ -18,17 +18,17 @@ public class DemandIndexServiceMock implements DemandIndexService {
     }
 
     @Override
-    public List<DemandType> searchDemand(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry, Integer pageNo, Integer limit) {
+    public List<DemandType> searchDemand(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry, Integer pageNo, Integer limit,List<String> circularEconomyCertificates, List<String> otherCertificates) {
         return null;
     }
 
     @Override
-    public int getDemandCount(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry) {
+    public int getDemandCount(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry,List<String> circularEconomyCertificates, List<String> otherCertificates) {
         return 0;
     }
 
     @Override
-    public List<DemandFacetResponse> getDemandFacets(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry) {
+    public List<DemandFacetResponse> getDemandFacets(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry,List<String> circularEconomyCertificates, List<String> otherCertificates) {
         return null;
     }
 }

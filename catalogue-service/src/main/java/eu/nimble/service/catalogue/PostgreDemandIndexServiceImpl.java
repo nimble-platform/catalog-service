@@ -76,10 +76,10 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
 
     @Override
     public List<DemandType> searchDemand(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry,
-                                         Integer pageNo, Integer limit) {
+                                         Integer pageNo, Integer limit,List<String> circularEconomyCertificates, List<String> otherCertificates) {
 
         DemandRetrievalQuery query = constructDemandRetrievalQuery(
-                DemandQueryType.HJID, queryTerm, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry
+                DemandQueryType.HJID, queryTerm, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry,circularEconomyCertificates,otherCertificates
         );
         List<BigInteger> results = new JPARepositoryFactory().forCatalogueRepository()
                 .getEntities(query.query, query.queryParameters.toArray(new String[query.queryParameters.size()]), query.queryValues.toArray(), limit, pageNo * limit, true);
@@ -98,9 +98,9 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
     }
 
     @Override
-    public int getDemandCount(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry) {
+    public int getDemandCount(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry,List<String> circularEconomyCertificates, List<String> otherCertificates) {
         DemandRetrievalQuery query = constructDemandRetrievalQuery(
-                DemandQueryType.COUNT, queryTerm, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry
+                DemandQueryType.COUNT, queryTerm, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry,circularEconomyCertificates,otherCertificates
         );
         BigInteger count = new JPARepositoryFactory().forCatalogueRepository()
                 .getSingleEntity(query.query, query.queryParameters.toArray(new String[query.queryParameters.size()]), query.queryValues.toArray(), true);
@@ -108,19 +108,24 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
     }
 
     @Override
-    public List<DemandFacetResponse> getDemandFacets(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry) {
+    public List<DemandFacetResponse> getDemandFacets(String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry,List<String> circularEconomyCertificates, List<String> otherCertificates) {
         List<DemandFacetResponse> facetResponses = new ArrayList<>();
 
         // category
-        DemandRetrievalQuery query = constructDemandRetrievalQuery(DemandQueryType.CATEGORY, queryTerm, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry);
+        DemandRetrievalQuery query = constructDemandRetrievalQuery(DemandQueryType.CATEGORY, queryTerm, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry, circularEconomyCertificates,otherCertificates);
         facetResponses.add(constructDemandFacetResponse("Category", query));
         // delivery country
-        query = constructDemandRetrievalQuery(DemandQueryType.DELIVERY_COUNTRY, queryTerm, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry);
+        query = constructDemandRetrievalQuery(DemandQueryType.DELIVERY_COUNTRY, queryTerm, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry, circularEconomyCertificates,otherCertificates);
         facetResponses.add(constructDemandFacetResponse("Delivery Country", query));
         // buyer country
-        query = constructDemandRetrievalQuery(DemandQueryType.BUYER_COUNTRY, queryTerm, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry);
+        query = constructDemandRetrievalQuery(DemandQueryType.BUYER_COUNTRY, queryTerm, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry, circularEconomyCertificates,otherCertificates);
         facetResponses.add(constructDemandFacetResponse("Buyer Country", query));
-
+        // circular economy certificates
+        query = constructDemandRetrievalQuery(DemandQueryType.CIRCULAR_ECONOMY_CERTIFICATES, queryTerm, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry, circularEconomyCertificates,otherCertificates);
+        facetResponses.add(constructDemandFacetResponse("Sustainability / Environment Certificates", query));
+        // other certificates
+        query = constructDemandRetrievalQuery(DemandQueryType.OTHER_CERTIFICATES, queryTerm, lang, companyId, categoryUri, dueDate, buyerCountry, deliveryCountry, circularEconomyCertificates,otherCertificates);
+        facetResponses.add(constructDemandFacetResponse("Demand Certificates", query));
         return facetResponses;
     }
 
@@ -136,7 +141,7 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
     }
 
     private static DemandRetrievalQuery constructDemandRetrievalQuery(
-            DemandQueryType queryType, String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry
+            DemandQueryType queryType, String queryTerm, String lang, String companyId, String categoryUri, String dueDate, String buyerCountry, String deliveryCountry,List<String> circularEconomyCertificates, List<String> otherCertificates
     ) {
         StringBuilder query = new StringBuilder("SELECT");
         if (queryType == DemandQueryType.HJID) {
@@ -149,6 +154,10 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
             query.append(" c2.value_, COUNT(c2.value_)");
         } else if (queryType == DemandQueryType.CATEGORY) {
             query.append(" c4.uri, COUNT(c4.uri)");
+        } else if (queryType == DemandQueryType.OTHER_CERTIFICATES){
+            query.append(" c6.name_, COUNT(c6.name_)");
+        } else if(queryType == DemandQueryType.CIRCULAR_ECONOMY_CERTIFICATES ){
+            query.append(" c8.name_, COUNT(c8.name_)");
         }
         query.append(" FROM demand_type d");
 
@@ -172,6 +181,14 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
         if (buyerCountry != null || queryType == DemandQueryType.BUYER_COUNTRY) {
             // join code table
             query.append(", code_type c3");
+        }
+        if (otherCertificates != null || queryType == DemandQueryType.OTHER_CERTIFICATES) {
+            // join code table
+            query.append(", certificate_type c5, code_type c6");
+        }
+        if (circularEconomyCertificates != null || queryType == DemandQueryType.CIRCULAR_ECONOMY_CERTIFICATES) {
+            // join code table
+            query.append(", certificate_type c7, code_type c8");
         }
 
         // join with an other instance of code_type table to get all categories of the matching demands
@@ -197,10 +214,11 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
         }
 
         // where statement
-        if (queryTerm != null || companyId != null || categoryUri != null || dueDate != null || buyerCountry != null || deliveryCountry != null) {
+        if (queryTerm != null || companyId != null || categoryUri != null || dueDate != null || buyerCountry != null || deliveryCountry != null || otherCertificates != null || circularEconomyCertificates != null) {
             query.append(" WHERE");
         } else {
-            if (queryType == DemandQueryType.HJID || queryType == DemandQueryType.CATEGORY || queryType == DemandQueryType.DELIVERY_COUNTRY || queryType == DemandQueryType.BUYER_COUNTRY) {
+            if (queryType == DemandQueryType.HJID || queryType == DemandQueryType.CATEGORY || queryType == DemandQueryType.DELIVERY_COUNTRY || queryType == DemandQueryType.BUYER_COUNTRY || queryType == DemandQueryType.CIRCULAR_ECONOMY_CERTIFICATES
+            || queryType == DemandQueryType.OTHER_CERTIFICATES) {
                 query.append(" WHERE");
             }
         }
@@ -289,6 +307,52 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
             }
         }
 
+        if (circularEconomyCertificates != null) {
+            if (previousCriteria) {
+                query.append(" AND");
+            }
+            previousCriteria = true;
+            query.append(" d.hjid = c7.certificate_demand_type_hjid").append(" AND");
+            query.append(" c8.hjid = c7.certificate_type_code_certif_0").append(" AND");
+            query.append(" c7.certificate_type = 'Circular Economy (Environment / Sustainability)'").append(" AND");
+            query.append(" c8.name_ in :circularEconomyCertificates");
+            queryParameters.add("circularEconomyCertificates");
+            queryValues.add(circularEconomyCertificates);
+        } else {
+            if (queryType == DemandQueryType.CIRCULAR_ECONOMY_CERTIFICATES) {
+                if (previousCriteria) {
+                    query.append(" AND");
+                }
+                previousCriteria = true;
+                query.append(" d.hjid = c7.certificate_demand_type_hjid").append(" AND");
+                query.append(" c8.hjid = c7.certificate_type_code_certif_0").append(" AND");
+                query.append(" c7.certificate_type = 'Circular Economy (Environment / Sustainability)'");
+            }
+        }
+
+        if (otherCertificates != null) {
+            if (previousCriteria) {
+                query.append(" AND");
+            }
+            previousCriteria = true;
+            query.append(" d.hjid = c5.certificate_demand_type_hjid").append(" AND");
+            query.append(" c6.hjid = c5.certificate_type_code_certif_0").append(" AND");
+            query.append(" c5.certificate_type != 'Circular Economy (Environment / Sustainability)'").append(" AND");
+            query.append(" c6.name_ in :otherCertificates");
+            queryParameters.add("otherCertificates");
+            queryValues.add(otherCertificates);
+        } else {
+            if (queryType == DemandQueryType.OTHER_CERTIFICATES) {
+                if (previousCriteria) {
+                    query.append(" AND");
+                }
+                previousCriteria = true;
+                query.append(" d.hjid = c5.certificate_demand_type_hjid").append(" AND");
+                query.append(" c6.hjid = c5.certificate_type_code_certif_0").append(" AND");
+                query.append(" c5.certificate_type != 'Circular Economy (Environment / Sustainability)'");
+            }
+        }
+
         if (queryTerm != null) {
             if (previousCriteria) {
                 query.append(" AND");
@@ -309,6 +373,10 @@ public class PostgreDemandIndexServiceImpl implements DemandIndexService {
             query.append(" GROUP BY c3.value_");
         } else if (queryType == DemandQueryType.CATEGORY) {
             query.append(" GROUP BY c4.uri");
+        } else if (queryType == DemandQueryType.OTHER_CERTIFICATES)  {
+            query.append(" GROUP BY c6.name_");
+        } else if (queryType == DemandQueryType.CIRCULAR_ECONOMY_CERTIFICATES) {
+            query.append(" GROUP BY c8.name_");
         }
 
         DemandRetrievalQuery result = new DemandRetrievalQuery();
@@ -330,5 +398,7 @@ enum DemandQueryType {
     HJID,
     CATEGORY,
     BUYER_COUNTRY,
+    OTHER_CERTIFICATES,
+    CIRCULAR_ECONOMY_CERTIFICATES,
     DELIVERY_COUNTRY
 }

@@ -48,6 +48,7 @@ public class TemplateGenerator {
     // fields to be used to add source lists to the sheet dynamically
     private int sourceListCellIndex = 0;
     private char sourceListColumn = 'H';
+    private boolean isServiceTemplate = false;
 
     public TemplateGenerator() {
         template = new XSSFWorkbook();
@@ -55,13 +56,15 @@ public class TemplateGenerator {
     }
 
     public Workbook generateTemplateForCategory(List<Category> categories, String templateLanguage, String bearerToken) {
+        List<String> serviceRootCategories = SpringBridge.getInstance().getTaxonomyManager().getServiceRootCategories();
+        this.isServiceTemplate = isServiceTemplate(categories);
         return generateTemplateForCategory(categories, templateLanguage, false, bearerToken);
     }
 
     /**
      * @param usePropertyId whether we should use property name or id while generating the excel
      */
-    public Workbook generateTemplateForCategory(List<Category> categories, String templateLanguage, Boolean usePropertyId, String bearerToken) {
+    private Workbook generateTemplateForCategory(List<Category> categories, String templateLanguage, Boolean usePropertyId, String bearerToken) {
         // set defaultLanguage
         defaultLanguage = templateLanguage;
         Sheet infoTab = template.createSheet(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_TAB_INFORMATION.toString(), defaultLanguage));
@@ -88,6 +91,8 @@ public class TemplateGenerator {
     }
 
     public Workbook generateTemplateForCatalogueLines(List<CatalogueLineType> catalogueLines, List<Category> categories, String languageId, String bearerToken) throws InvalidCategoryException {
+        List<String> serviceRootCategories = SpringBridge.getInstance().getTaxonomyManager().getServiceRootCategories();
+        this.isServiceTemplate = isServiceTemplate(categories);
         // use property id while generating the excel
         Workbook template = generateTemplateForCategory(categories, languageId, true, bearerToken);
         fillProductPropertiesTab(template.getSheet(TemplateGenerator.getSheetName(TemplateTextCode.TEMPLATE_TAB_PRODUCT_PROPERTIES.toString(), defaultLanguage)), catalogueLines);
@@ -134,26 +139,28 @@ public class TemplateGenerator {
             }
 
             // dimensions
-            for (DimensionType dimensionType : catalogueLine.getGoodsItem().getItem().getDimension()) {
-                int columnIndex = 10;
-                if (dimensionType.getAttributeID().contentEquals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_WIDTH)) {
-                    columnIndex = 4;
-                } else if (dimensionType.getAttributeID().contentEquals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_LENGTH)) {
-                    columnIndex = 6;
-                } else if (dimensionType.getAttributeID().contentEquals(TEMPLATE_PRODUCT_PROPERTIES_HEIGHT)) {
-                    columnIndex = 8;
-                }
-                cell = row.createCell(columnIndex);
-                // get unit cell
-                Cell unitCell = row.createCell(columnIndex + 1);
-                // set value and unit
-                unitCell.setCellValue(dimensionType.getMeasure().getUnitCode());
-                unitCell.setCellStyle(editableStyle);
-                if (dimensionType.getMeasure().getValue() != null) {
-                    cell.setCellValue(new DecimalFormat(".00").format(dimensionType.getMeasure().getValue()));
-                }
-                if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
-                    cell.setCellStyle(editableStyle);
+            if(!this.isServiceTemplate){
+                for (DimensionType dimensionType : catalogueLine.getGoodsItem().getItem().getDimension()) {
+                    int columnIndex = 10;
+                    if (dimensionType.getAttributeID().contentEquals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_WIDTH)) {
+                        columnIndex = 4;
+                    } else if (dimensionType.getAttributeID().contentEquals(TemplateConfig.TEMPLATE_PRODUCT_PROPERTIES_LENGTH)) {
+                        columnIndex = 6;
+                    } else if (dimensionType.getAttributeID().contentEquals(TEMPLATE_PRODUCT_PROPERTIES_HEIGHT)) {
+                        columnIndex = 8;
+                    }
+                    cell = row.createCell(columnIndex);
+                    // get unit cell
+                    Cell unitCell = row.createCell(columnIndex + 1);
+                    // set value and unit
+                    unitCell.setCellValue(dimensionType.getMeasure().getUnitCode());
+                    unitCell.setCellStyle(editableStyle);
+                    if (dimensionType.getMeasure().getValue() != null) {
+                        cell.setCellValue(new DecimalFormat(".00").format(dimensionType.getMeasure().getValue()));
+                    }
+                    if (rowIndex == FIRST_EDITABLE_ROW_INDEX) {
+                        cell.setCellStyle(editableStyle);
+                    }
                 }
             }
             rowIndex++;
@@ -326,7 +333,7 @@ public class TemplateGenerator {
                 categoryColumnNumber += getColumnCountForCategory(category);
             }
         }
-        int customPropertyColumnIndex = getColumnCountForFixedPropertiesInProductPropertyTab(defaultLanguage) + categoryColumnNumber;
+        int customPropertyColumnIndex = getColumnCountForFixedPropertiesInProductPropertyTab(defaultLanguage,this.isServiceTemplate) + categoryColumnNumber;
 
         int rowIndex = FIRST_EDITABLE_ROW_INDEX;
         for (CatalogueLineType catalogueLine : catalogueLines) {
@@ -605,14 +612,18 @@ public class TemplateGenerator {
             topRow.createCell(i).setCellStyle(readOnlyStyle);
         }
 
-        Cell cell = getCellWithMissingCellPolicy(topRow, 4);
-        cell.setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_DIMENSIONS.toString(), defaultLanguage));
-        cell.setCellStyle(tabCellStyle);
-        CellRangeAddress cra = new CellRangeAddress(0, 0, 4, 11);
-        productPropertiesTab.addMergedRegion(cra);
+        Cell cell;
+        CellRangeAddress cra;
+        if(!this.isServiceTemplate){
+            cell = getCellWithMissingCellPolicy(topRow, 4);
+            cell.setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_DIMENSIONS.toString(), defaultLanguage));
+            cell.setCellStyle(tabCellStyle);
+            cra = new CellRangeAddress(0, 0, 4, 11);
+            productPropertiesTab.addMergedRegion(cra);
+        }
 
         // create the titles for categories
-        int columnOffset = getColumnCountForFixedPropertiesInProductPropertyTab(defaultLanguage);
+        int columnOffset = getColumnCountForFixedPropertiesInProductPropertyTab(defaultLanguage,this.isServiceTemplate);
         for (int i = 0; i < categories.size(); i++) {
             List<Property> properties = getPropertiesToBeIncludedInTemplate(categories.get(i));
             if (properties.size() > 0) {
@@ -651,7 +662,7 @@ public class TemplateGenerator {
 
         // common UBL-based properties
         columnOffset = 1;
-        List<Property> properties = TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage);
+        List<Property> properties = TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage, this.isServiceTemplate);
         for (Property property : properties) {
             cell = secondRow.createCell(columnOffset);
             cell.setCellValue(property.getPreferredName(defaultLanguage));
@@ -842,14 +853,18 @@ public class TemplateGenerator {
             topRow.createCell(i).setCellStyle(readOnlyStyle);
         }
 
-        Cell cell = getCellWithMissingCellPolicy(topRow, 4);
-        cell.setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_DIMENSIONS.toString(), defaultLanguage));
-        cell.setCellStyle(tabCellStyle);
-        CellRangeAddress cra = new CellRangeAddress(0, 0, 4, 11);
-        productPropertiesExampleTab.addMergedRegion(cra);
+        Cell cell;
+        CellRangeAddress cra;
+        if(!this.isServiceTemplate){
+            cell = getCellWithMissingCellPolicy(topRow, 4);
+            cell.setCellValue(SpringBridge.getInstance().getMessage(TemplateTextCode.TEMPLATE_PRODUCT_PROPERTIES_DIMENSIONS.toString(), defaultLanguage));
+            cell.setCellStyle(tabCellStyle);
+            cra = new CellRangeAddress(0, 0, 4, 11);
+            productPropertiesExampleTab.addMergedRegion(cra);
+        }
 
         // create the titles for categories
-        int columnOffset = getColumnCountForFixedPropertiesInProductPropertyTab(defaultLanguage);
+        int columnOffset = getColumnCountForFixedPropertiesInProductPropertyTab(defaultLanguage,this.isServiceTemplate);
         for (int i = 0; i < categories.size(); i++) {
             List<Property> properties = getPropertiesToBeIncludedInTemplate(categories.get(i));
             if (properties.size() > 0) {
@@ -888,7 +903,7 @@ public class TemplateGenerator {
 
         // common UBL-based properties
         columnOffset = 1;
-        List<Property> properties = TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage);
+        List<Property> properties = TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage,this.isServiceTemplate);
         for (Property property : properties) {
             cell = secondRow.createCell(columnOffset);
             cell.setCellValue(property.getPreferredName(defaultLanguage));
@@ -1828,7 +1843,7 @@ public class TemplateGenerator {
         Map<String, String> propertyIdPreferredNameMap = getPropertyIdPreferredNameMap(categories);
         // get the row where property names are specified
         Row row = sheet.getRow(1);
-        for (int i = 10; i < row.getLastCellNum(); i++) {
+        for (int i = 4; i < row.getLastCellNum(); i++) {
             Cell cell = getCellWithMissingCellPolicy(row, i);
             // null cell means we reach to the end of the template
             if (cell == null) {
@@ -2136,8 +2151,8 @@ public class TemplateGenerator {
         return columnCount;
     }
 
-    public static int getColumnCountForFixedPropertiesInProductPropertyTab(String defaultLanguage){
-        return getColumnCountForProperties(TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage)) + NUMBER_OF_RESERVED_COLUMNS_FOR_PRODUCT_PROPERTY_TAB;
+    public static int getColumnCountForFixedPropertiesInProductPropertyTab(String defaultLanguage,boolean serviceTemplate){
+        return getColumnCountForProperties(TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage,serviceTemplate)) + NUMBER_OF_RESERVED_COLUMNS_FOR_PRODUCT_PROPERTY_TAB;
     }
     public static List<Property> getPropertiesToBeIncludedInTemplate(Category category) {
         List<Property> properties = new ArrayList<>();
@@ -2149,5 +2164,18 @@ public class TemplateGenerator {
             }
         }
         return properties;
+    }
+
+    public static boolean isServiceTemplate(List<Category> categories){
+        List<String> serviceRootCategories = SpringBridge.getInstance().getTaxonomyManager().getServiceRootCategories();
+        // find the service categories included in the item
+        boolean isServiceTemplate = false;
+        for (Category cct : categories) {
+            if(serviceRootCategories.contains(cct.getId())){
+                isServiceTemplate = true;
+                break;
+            }
+        }
+        return isServiceTemplate;
     }
 }

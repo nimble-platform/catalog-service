@@ -41,6 +41,7 @@ public class TemplateParser {
     private PartyType party;
     private Workbook wb;
     private String defaultLanguage = "en";
+    private boolean isServiceTemplate = false;
 
     static Map<String, Integer> defaultVats = new HashMap<>();
 
@@ -96,6 +97,7 @@ public class TemplateParser {
 
         Sheet productPropertiesTab = wb.getSheet(TemplateGenerator.getSheetName(TemplateTextCode.TEMPLATE_TAB_PRODUCT_PROPERTIES.toString(), defaultLanguage));
         List<Category> categories = getTemplateCategories(metadataTab);
+        this.isServiceTemplate = TemplateGenerator.isServiceTemplate(categories);
         List<CatalogueLineType> results = new ArrayList<>();
 
         // identifiers of the products in template
@@ -255,7 +257,7 @@ public class TemplateParser {
         for (Category category : categories) {
             totalCategoryPropertyNumber += TemplateGenerator.getColumnCountForCategory(category);
         }
-        int fixedPropNumber = TemplateGenerator.getColumnCountForFixedPropertiesInProductPropertyTab(defaultLanguage);
+        int fixedPropNumber = TemplateGenerator.getColumnCountForFixedPropertiesInProductPropertyTab(defaultLanguage,this.isServiceTemplate);
         int customPropertyNum = productPropertiesTab.getRow(1).getLastCellNum() - (totalCategoryPropertyNumber + fixedPropNumber);
         int columnIndex = fixedPropNumber + totalCategoryPropertyNumber;
 
@@ -334,7 +336,7 @@ public class TemplateParser {
 
     private void parseFixedProperties(Sheet productPropertiesTab, int rowIndex, CatalogueLineType catalogueLineType) throws TemplateParseException {
         Row propertiesRow = productPropertiesTab.getRow(rowIndex);
-        List<Property> properties = TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage);
+        List<Property> properties = TemplateConfig.getFixedPropertiesForProductPropertyTab(defaultLanguage, this.isServiceTemplate);
         int columnIndex = 1;
         for (int i = 0; i < properties.size(); i++) {
             Property property = properties.get(i);

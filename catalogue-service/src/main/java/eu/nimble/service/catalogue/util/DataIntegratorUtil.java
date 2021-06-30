@@ -50,8 +50,27 @@ public class DataIntegratorUtil {
         setCatalogueDocumentReference(catalogueUuid,catalogueLine);
         removePrecedingTrailingSpaces(catalogueLine);
         setCatalogueLineStatus(catalogueLine);
+        checkDimensions(catalogueLine);
     }
 
+    private static void checkDimensions(CatalogueLineType catalogueLineType){
+        List<String> serviceRootCategories = SpringBridge.getInstance().getTaxonomyManager().getServiceRootCategories();
+        // skip the default categories
+        List<CommodityClassificationType> nonDefaultCommodityClassificationTypes = catalogueLineType.getGoodsItem().getItem().getCommodityClassification().stream().
+                filter(commodityClassificationType -> !commodityClassificationType.getItemClassificationCode().getListID().contentEquals("Default")).collect(Collectors.toList());
+        // check whether the item has any service category
+        boolean hasServiceCategory = false;
+        for (CommodityClassificationType cct : nonDefaultCommodityClassificationTypes) {
+            if(serviceRootCategories.contains(cct.getItemClassificationCode().getURI())){
+                hasServiceCategory = true;
+                break;
+            }
+        }
+        // remove the dimensions from the item if it is a service
+        if(hasServiceCategory && catalogueLineType.getGoodsItem().getItem().getDimension() != null){
+            catalogueLineType.getGoodsItem().getItem().getDimension().clear();
+        }
+    }
     private static void setCatalogueLineStatus(CatalogueLineType catalogueLineType){
         if(Strings.isNullOrEmpty(catalogueLineType.getProductStatusType()) || !EnumUtils.isValidEnum(ProductStatus.class,catalogueLineType.getProductStatusType())){
             catalogueLineType.setProductStatusType(ProductStatus.DRAFT.toString());
