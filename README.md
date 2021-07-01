@@ -78,5 +78,12 @@ You can also push the image to a registry:
 docker push nimbleplatform/catalogue-service-micro:<TAG_HERE>
 ```
 
+## Docker Compose
+
+You can also run catalogue service via [docker-compose](./catalogue-service-micro/docker-compose.yml).
+```
+docker compose up -d
+```
+
 ## Language and IDE
 Java (1.8) is used to build and run this application. Any IDE which allows development in Java can be used.
