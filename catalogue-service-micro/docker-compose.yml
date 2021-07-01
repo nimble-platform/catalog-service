@@ -2,9 +2,12 @@ version: '2'
 
 services:
   catalog-service-srdc:
-    image: nimbleplatform/catalogue-service-micro-srdc
+    image: nimbleplatform/catalogue-service-micro
     ports:
       - "8095:8095"
+    # You can put all environment variables into a file and enable the following line to pass them to the service
+    #    env_file:
+    #      - <PATH_TO_ENVIRONMENT_VARIABLES>
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - CONFIG_SERVER_URI=http://config-server:8888

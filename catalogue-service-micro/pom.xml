@@ -120,6 +120,7 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
 					<mainClass>eu.nimble.service.catalogue.CatalogueApp</mainClass>
+					<skip>false</skip>
 				</configuration>
 				<executions>
 					<execution>
