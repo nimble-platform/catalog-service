@@ -2,7 +2,7 @@ version: '2'
 
 services:
   catalog-service-srdc:
-    image: nimbleplatform/catalogue-service-micro-srdc
+    image: nimbleplatform/catalogue-service-micro
     ports:
       - "8095:8095"
     environment:
