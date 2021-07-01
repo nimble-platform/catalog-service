@@ -1,13 +1,15 @@
 server:
-  port: ${PORT:8095}
+  port: ${PORT:8095} # port of the application
 spring:
   application:
     # the name of the application represents the global identifier of this microservice.
     name: catalogue-service-srdc
-    url: ${CATALOGUE_SERVICE_URL}
+    url: ${CATALOGUE_SERVICE_URL} # the url of catalogue service
+  # cache configuration
   cache:
       jcache:
         config: classpath:ehcache.xml
+  # cloud configuration
   cloud:
     config:
       uri: ${CONFIG_SERVER_URI:http://localhost:8888}
@@ -20,12 +22,15 @@ spring:
       # service discovery is disabled by default and should be enabled (set to true) for the "cloud mode".
       # it can be set via an environment variable or the config server
       enabled: ${discovery.enabled:${DISCOVERY_ENABLED:false}}
+  # database connection details
   datasource:
+    # database to store product and catalogue information
     ubldb:
       url: jdbc:postgresql://${UBL_DB_HOST}:${UBL_DB_HOST_PORT}/${UBL_DB_NAME}?currentSchema=public&ApplicationName=catalogue-service-ubldb
       username: ${UBL_DB_USERNAME}
       password: ${UBL_DB_PASSWORD}
       driver-class: org.postgresql.Driver
+    # database to store binary contents of products
     binarycontentdb:
       url: jdbc:postgresql://${BINARY_CONTENT_DB_HOST}:${BINARY_CONTENT_DB_PORT}/${BINARY_CONTENT_DB_NAME}?currentSchema=public&ApplicationName=catalogue-service-binarycontentdb
       username: ${BINARY_CONTENT_DB_USERNAME}
@@ -43,15 +48,18 @@ spring:
     time-between-eviction-runs-millis: 30000
     min-evictable-idle-time-millis: 60000
     validation-query: "SELECT 1;" # Validation query must be set in order to test connections
+  # encoding
   messages:
     encoding: ISO-8859-1
   jackson:
     mapper:
       PROPAGATE_TRANSIENT_MARKER: true
+  # http multipart settings
   http:
     multipart:
       max-file-size: 100MB
       max-request-size: 100MB
+  # mail server configuration
   mail:
     host: ${SMTP_HOST:localhost}
     port: ${SMTP_PORT:25}
@@ -61,6 +69,7 @@ spring:
     smtp.auth: ${SMTP_AUTH:true}
     properties.mail.smtp.starttls.enable: ${SMTP_STARTTLS:true}
     platformName : ${MAIL_PLATFORM_NAME:NIMBLE}
+  # thymeleaf configuration
   thymeleaf:
     cache: false
     mode: HTML
@@ -79,6 +88,7 @@ com:
       log:
         MLog: slf4j
 
+# settings for the database management systems used in catalogue service
 persistence:
   categorydb:
     driver: org.postgresql.Driver
@@ -149,22 +159,29 @@ nimble:
     spare-part: ${SPARE_PART_ENABLED:false}
     category:
       enabled-taxonomies: ${CATALOGUE_SERVICE_ENABLED_TAXONOMIES} #comma separated taxonomy ids as defined in the Taxonomies.json file e.g. eClass,FurnitureOntology
+  # binary content settings
   binary-content:
-    url: CatalogBinaryContentUri
+    url: CatalogBinaryContentUri # the prefix for the product binary contents
+  # identity service settings
   identity:
     url: ${IDENTITY_SERVICE_URL}
-    check-token: ${IDENTITY_SERVICE_CHECK_TOKEN:true}
+    check-token: ${IDENTITY_SERVICE_CHECK_TOKEN:true} # whether the authorization tokens should be validated
+  # keycloak settings
   keycloak:
-    public-key: ${KEYCLOAK_PUBLIC_KEY}
+    public-key: ${KEYCLOAK_PUBLIC_KEY} # keycloak public key used to validate the authorization tokens
+  # frontend service settings
   frontend:
     url: ${FRONTEND_URL:http://localhost:9092}
+  # trust service settings
   trust:
     url: ${TRUST_SERVICE_URL}
+  # indexing service settings
   indexing:
     url: ${INDEXING_SERVICE_URL}
     sync: ${INDEXING_SYNC:true}
     federated-index-enabled: ${FEDERATED_INDEX_ENABLED:false}
     federated-index-url: ${FEDERATED_INDEXING_SERVICE_URL:}
+  # oauth clients to retrieve authorization tokens
   oauth:
     client:
       clientId: ${CATALOG_SERVICE_OAUTH_CLIENT_ID}
@@ -176,11 +193,14 @@ nimble:
       accessTokenUri: ${OAUTH_EFACTORY_CLIENT_ACCESSTOKEN_URI:}
       userDetailsUri: ${OAUTH_EFACTORY_USER_DETAILS_URI:}
   check-entity-ids: ${CHECK_ENTITY_IDS:false}
-  federation-instance-id: ${FEDERATION_INSTANCE_ID}
+  federation-instance-id: ${FEDERATION_INSTANCE_ID} # identifier of the federation instance to which catalogue service belongs
+  # delegate service settings
   delegate-service:
     url: ${DELEGATE_SERVICE_URL:}
+  # the list of available languages for catalogue service
   languages: ${CATALOG_SERVICE_LANGUAGES:en,es}
 
+# hystrix settings
 hystrix:
   command:
     default:
