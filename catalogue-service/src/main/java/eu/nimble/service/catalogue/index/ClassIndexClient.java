@@ -202,6 +202,7 @@ public class ClassIndexClient {
                 }
             }
 
+            logger.info("Token to select class: {}",credentialsUtil.getBearerToken());
             response = indexingClientController.getNimbleIndexClient().selectClass(credentialsUtil.getBearerToken(),Integer.toString(Integer.MAX_VALUE),query,params);
 
             if (response.status() == HttpStatus.OK.value()) {
