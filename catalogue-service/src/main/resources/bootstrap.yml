@@ -181,6 +181,7 @@ nimble:
     sync: ${INDEXING_SYNC:true}
     federated-index-enabled: ${FEDERATED_INDEX_ENABLED:false}
     federated-index-url: ${FEDERATED_INDEXING_SERVICE_URL:}
+    federated-index-platform-name: ${FEDERATED_INDEX_PLATFORM_NAME:nimble}
   # oauth clients to retrieve authorization tokens
   oauth:
     client:
@@ -365,6 +366,7 @@ nimble:
     sync: false
     federated-index-enabled: ${FEDERATED_INDEX_ENABLED:false}
     federated-index-url: ${FEDERATED_INDEXING_SERVICE_URL:http://localhost:8090}
+    federated-index-platform-name: ${FEDERATED_INDEX_PLATFORM_NAME:nimble}
   oauth:
     client:
       clientId:

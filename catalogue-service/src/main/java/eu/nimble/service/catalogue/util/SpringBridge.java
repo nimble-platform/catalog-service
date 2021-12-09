@@ -7,6 +7,7 @@ import eu.nimble.service.catalogue.cache.CacheHelper;
 import eu.nimble.service.catalogue.category.IndexCategoryService;
 import eu.nimble.service.catalogue.category.TaxonomyManager;
 import eu.nimble.service.catalogue.config.CatalogueServiceConfig;
+import eu.nimble.service.catalogue.index.IndexingClientController;
 import eu.nimble.service.catalogue.persistence.util.LockPool;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,8 @@ public class SpringBridge implements ApplicationContextAware {
     private IIndexingServiceClient iIndexingServiceClient;
     @Autowired
     private IndexCategoryService indexCategoryService;
+    @Autowired
+    private IndexingClientController indexingClientController;
     @Autowired
     private LockPool lockPool;
     @Autowired
@@ -87,6 +90,10 @@ public class SpringBridge implements ApplicationContextAware {
 
     public String getFederationId() {
         return getCatalogueServiceConfig().getFederationInstanceId();
+    }
+
+    public String getFederatedIndexPlatformName() {
+        return indexingClientController.getFederatedIndexPlatformName();
     }
 
     public CacheHelper getCacheHelper() {
