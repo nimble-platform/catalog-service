@@ -111,6 +111,8 @@ public class IndexingWrapper {
             indexItem.setSupportedProductNature(catalogueLine.getGoodsItem().getItem().getTransportationServiceDetails().getSupportedCommodityClassification().get(0).getNatureCode().getName());
         }
 
+        // platform name
+        indexItem.setBasePlatform(SpringBridge.getInstance().getFederatedIndexPlatformName());
         return indexItem;
     }
 
