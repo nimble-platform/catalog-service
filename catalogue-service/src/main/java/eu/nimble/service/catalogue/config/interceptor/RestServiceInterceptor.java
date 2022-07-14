@@ -94,6 +94,8 @@ public class RestServiceInterceptor extends HandlerInterceptorAdapter {
 
         // set token to the execution context
         executionContext.setBearerToken(bearerToken);
+        // set language id
+        executionContext.setLanguageId(request.getLocale().getLanguage());
         // set user email and available roles to the execution context
         if(claims != null){
             String email = (String) claims.get(CLAIMS_FIELD_EMAIL);

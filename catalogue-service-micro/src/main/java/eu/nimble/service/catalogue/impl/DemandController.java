@@ -10,15 +10,15 @@ import eu.nimble.service.catalogue.model.demand.DemandFacetResponse;
 import eu.nimble.service.catalogue.model.demand.DemandLastSeenResponse;
 import eu.nimble.service.catalogue.model.demand.DemandPaginationResponse;
 import eu.nimble.service.catalogue.persistence.util.DemandPersistenceUtil;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandInterestCount;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandLastSeenInfo;
-import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType;
+import eu.nimble.service.catalogue.util.email.EmailSenderUtil;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.*;
 import eu.nimble.utility.ExecutionContext;
 import eu.nimble.utility.JsonSerializationUtility;
 import eu.nimble.utility.exception.NimbleException;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
 import eu.nimble.utility.persistence.repository.MetadataUtility;
 import eu.nimble.utility.validation.IValidationUtil;
+import eu.nimble.utility.validation.NimbleRole;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -31,7 +31,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.thymeleaf.context.Context;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -50,6 +53,8 @@ public class DemandController {
     private IIdentityClientTyped identityClient;
     @Autowired
     private DemandIndexService demandIndexService;
+    @Autowired
+    private EmailSenderUtil emailSenderUtil;
 
     @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Creates a demand.")
@@ -90,6 +95,7 @@ public class DemandController {
 //            marshaller.setSchema(schema);
 //            marshaller.marshal(demand, new DefaultHandler());
 
+            inviteCompaniesToDemandDetails(demand,bearerToken,executionContext.getLanguageId());
             logger.info("Completed request to create demand");
             return ResponseEntity.status(HttpStatus.CREATED).body(demand.getHjid());
 
@@ -444,6 +450,12 @@ public class DemandController {
         } catch (Exception e) {
             throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_GET_DEMAND_LAST_SEEN_RESPONSE.toString(), e);
         }
+    }
+
+    private void inviteCompaniesToDemandDetails(DemandType demand, String bearerToken, String languageId){
+        new Thread(() -> {
+            identityClient.inviteCompaniesToDemandDetails(demand, bearerToken,languageId);
+        }).start();
     }
 
     private String normalizeQueryTerm(String query) {
