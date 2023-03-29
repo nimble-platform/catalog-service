@@ -78,5 +78,16 @@
     "productRootCategories": [
       "http://www.nimble-project.org/resource/aerospace#Products"
     ]
+  },
+  {
+    "id": "HWS",
+
+    "namespace": "http://www.nimble-project.org/resource/hws_service#",
+    "serviceRootCategories": [
+      "http://www.nimble-project.org/resource/hws_service#Services"
+    ],
+    "productRootCategories": [
+      "http://www.nimble-project.org/resource/hws_service#Products"
+    ]
   }
 ]
