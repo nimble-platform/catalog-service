@@ -65,6 +65,16 @@
     ]
   },
   {
+    "id": "HarWastingOntology",
+    "namespace": "http://www.harwasting.eu/HarWastingOntology.owl#",
+    "serviceRootCategories": [
+      "http://www.harwasting.eu/HarWastingOntology.owl#HarWastingService"
+    ],
+    "productRootCategories": [
+      "http://www.harwasting.eu/HarWastingOntology.owl#HarWastingProduct"
+    ]
+  },
+  {
     "id": "TextileOntology",
     "namespace": "http://nimble-project.eu/TextileAndWGSectorsOntology.owl#"
   },
