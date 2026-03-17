@@ -84,6 +84,13 @@ public class CataloguePersistenceUtil {
     private static final String QUERY_IS_PRICE_HIDDEN_FOR_CATALOG = "SELECT count(catalogueLine) FROM CatalogueType catalogue join catalogue.catalogueLine catalogueLine WHERE catalogue.UUID = :uuid AND catalogueLine.priceHidden = true";
     private static final String QUERY_GET_PERMITTED_PARTIES_FOR_CATALOG = "SELECT permittedPartyIDs.item FROM CatalogueType catalogue join catalogue.permittedPartyIDItems permittedPartyIDs WHERE catalogue.UUID = :uuid";
     private static final String QUERY_GET_RESTRICTED_PARTIES_FOR_CATALOG = "SELECT restrictedPartyIDs.item FROM CatalogueType catalogue join catalogue.restrictedPartyIDItems restrictedPartyIDs WHERE catalogue.UUID = :uuid";
+
+    /*
+     Queries for line-level access control
+     */
+    private static final String QUERY_GET_PERMITTED_PARTIES_FOR_LINE = "SELECT permittedPartyIDs.item FROM CatalogueLineType line join line.permittedPartyIDItems permittedPartyIDs WHERE line.ID = :lineId";
+    private static final String QUERY_GET_RESTRICTED_PARTIES_FOR_LINE = "SELECT restrictedPartyIDs.item FROM CatalogueLineType line join line.restrictedPartyIDItems restrictedPartyIDs WHERE line.ID = :lineId";
+    private static final String QUERY_GET_CATALOGUE_LINE_BY_CATALOGUE_UUID_AND_LINE_ID = "SELECT line FROM CatalogueType catalogue JOIN catalogue.catalogueLine line WHERE catalogue.UUID = :catalogueUuid AND line.ID = :lineId";
     // native queries
     private static final String QUERY_GET_CATALOGUE_LINE_HJIDS_WITH_CATEGORY_NAME_AND_SEARCH_TEXT_FOR_PARTY = "select catalogueLine.hjid from catalogue_type catalogue join party_type party on (catalogue.provider_party_catalogue_typ_0 = party.hjid)" +
             " join party_identification_type party_identification on (party_identification.party_identification_party_t_0 = party.hjid)" +
@@ -149,6 +156,42 @@ public class CataloguePersistenceUtil {
 
     public static List<String> getRestrictedParties(String catalogueUuid) {
         return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_RESTRICTED_PARTIES_FOR_CATALOG, new String[]{"uuid"}, new Object[]{catalogueUuid});
+    }
+
+    /**
+     * Retrieves the list of VAT numbers that are explicitly permitted to view
+     * the catalogue line identified by the given line id.
+     *
+     * @param lineId the id of the catalogue line (e.g. "HW-HC-RH-002")
+     * @return list of permitted party VAT numbers; empty list if no whitelist is configured
+     */
+    public static List<String> getPermittedPartiesForLine(String lineId) {
+        return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_PERMITTED_PARTIES_FOR_LINE, new String[]{"lineId"}, new Object[]{lineId});
+    }
+
+    /**
+     * Retrieves the list of VAT numbers that are explicitly restricted from viewing
+     * the catalogue line identified by the given line id.
+     *
+     * @param lineId the id of the catalogue line (e.g. "HW-HC-RH-002")
+     * @return list of restricted party VAT numbers; empty list if no blacklist is configured
+     */
+    public static List<String> getRestrictedPartiesForLine(String lineId) {
+        return new JPARepositoryFactory().forCatalogueRepository(true).getEntities(QUERY_GET_RESTRICTED_PARTIES_FOR_LINE, new String[]{"lineId"}, new Object[]{lineId});
+    }
+
+    /**
+     * Retrieves a catalogue line by its parent catalogue UUID and line id.
+     *
+     * @param catalogueUuid the UUID of the parent catalogue
+     * @param lineId        the id of the catalogue line
+     * @return the matching {@link CatalogueLineType}, or {@code null} if not found
+     */
+    public static CatalogueLineType getCatalogueLineByUuidAndLineId(String catalogueUuid, String lineId) {
+        List<CatalogueLineType> results = new JPARepositoryFactory().forCatalogueRepository(true)
+                .getEntities(QUERY_GET_CATALOGUE_LINE_BY_CATALOGUE_UUID_AND_LINE_ID,
+                        new String[]{"catalogueUuid", "lineId"}, new Object[]{catalogueUuid, lineId});
+        return results.isEmpty() ? null : results.get(0);
     }
 
     public static List<CatalogueType> getAllCataloguesForParty(String partyId) {

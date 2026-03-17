@@ -992,6 +992,68 @@ public class CatalogueController {
     }
 
     @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Sets the white/black list for a specific catalogue line, controlling which parties can view the individual product. " +
+            "Whitelisted parties are the only ones permitted to view the line; blacklisted parties are explicitly excluded.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "White/black list updated for the catalogue line successfully"),
+            @ApiResponse(code = 400, message = "No catalogue line found for the given catalogue UUID and line id"),
+            @ApiResponse(code = 401, message = "Invalid role"),
+            @ApiResponse(code = 500, message = "Unexpected error while updating white/black list for the catalogue line")
+    })
+    @RequestMapping(value = "/catalogue/{catalogueId}/catalogueline/{lineId}/white-black-list",
+            consumes = {"application/json"},
+            produces = {"application/json"},
+            method = RequestMethod.PUT)
+    public ResponseEntity addLineBlackWhiteList(
+            @ApiParam(value = "UUID of the catalogue containing the line (catalogue.uuid)", required = true) @PathVariable(value = "catalogueId") String catalogueId,
+            @ApiParam(value = "Id of the catalogue line (catalogueLine.id)", required = true) @PathVariable(value = "lineId") String lineId,
+            @ApiParam(value = "VAT numbers of the companies in the black list") @RequestParam(value = "blackList", required = false) List<String> blackList,
+            @ApiParam(value = "VAT numbers of the companies in the white list") @RequestParam(value = "whiteList", required = false) List<String> whiteList,
+            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+        try {
+            // set request log of ExecutionContext
+            String requestLog = String.format("Incoming request to update white/black list for catalogue line %s in catalogue %s", lineId, catalogueId);
+            executionContext.setRequestLog(requestLog);
+
+            log.info(requestLog);
+            // validate role
+            if (!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_CATALOGUE_WRITE)) {
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
+            }
+
+            // retrieve the catalogue line by its parent catalogue UUID and line id
+            CatalogueLineType catalogueLine = CataloguePersistenceUtil.getCatalogueLineByUuidAndLineId(catalogueId, lineId);
+            if (catalogueLine == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(String.format("No catalogue line found with id %s in catalogue %s", lineId, catalogueId));
+            }
+
+            // clear existing entries before applying the new lists
+            catalogueLine.getPermittedPartyIDItems().clear();
+            catalogueLine.getPermittedPartyID().clear();
+            catalogueLine.getRestrictedPartyIDItems().clear();
+            catalogueLine.getRestrictedPartyID().clear();
+            if (whiteList != null) {
+                catalogueLine.setPermittedPartyID(whiteList);
+            }
+            if (blackList != null) {
+                catalogueLine.setRestrictedPartyID(blackList);
+            }
+
+            new JPARepositoryFactory().forCatalogueRepository(true).updateEntity(catalogueLine);
+
+            // re-index the line so Solr reflects the updated access control lists
+            itemIndexClient.indexCatalogueLine(catalogueLine);
+
+            log.info("Completed request to update white/black list for catalogue line {} in catalogue {}", lineId, catalogueId);
+            return ResponseEntity.ok(null);
+
+        } catch (Exception e) {
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_UNEXPECTED_ERROR_WHILE_ADDING_WHITE_BLACK_LIST.toString(), Arrays.asList(lineId), e);
+        }
+    }
+
+    @CrossOrigin(origins = {"*"})
     @ApiOperation(value = "", notes = "Updates the status of products included in the given catalogues")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Updated product status successfully"),

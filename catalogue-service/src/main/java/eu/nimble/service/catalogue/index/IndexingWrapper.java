@@ -67,8 +67,9 @@ public class IndexingWrapper {
         indexItem.setCreationDate(dateFormat.format(new Date()));
         indexItem.setCertificateType(getProductServiceCertificates(catalogueLine));
         indexItem.setCircularEconomyCertificates(getCircularEconomyRelatedCertificateNames(catalogueLine));
-        indexItem.setPermittedParties(new HashSet<>(CataloguePersistenceUtil.getPermittedParties(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID())));
-        indexItem.setRestrictedParties(new HashSet<>(CataloguePersistenceUtil.getRestrictedParties(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID())));
+        // resolve access control lists at line level
+        indexItem.setPermittedParties(new HashSet<>(CataloguePersistenceUtil.getPermittedPartiesForLine(catalogueLine.getID())));
+        indexItem.setRestrictedParties(new HashSet<>(CataloguePersistenceUtil.getRestrictedPartiesForLine(catalogueLine.getID())));
         AmountValidator amountValidator = new AmountValidator(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount());
         if(amountValidator.bothFieldsPopulated()) {
             if(catalogueLine.isPriceHidden() == null || !catalogueLine.isPriceHidden()){
