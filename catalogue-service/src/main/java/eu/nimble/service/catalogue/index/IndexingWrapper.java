@@ -97,6 +97,18 @@ public class IndexingWrapper {
         }
         indexItem.setImgageUri(getImageUris(catalogueLine));
         indexItem.setManufacturerId(catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID());
+        // Index manufacturer country for region filtering (HCDP-02.2)
+        try {
+            AddressType address = catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPostalAddress();
+            if (address != null && address.getCountry() != null && address.getCountry().getIdentificationCode() != null) {
+                String countryCode = address.getCountry().getIdentificationCode().getValue();
+                if (!Strings.isNullOrEmpty(countryCode)) {
+                    indexItem.setManufacturerCountry(countryCode);
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Could not index manufacturer country for line {}", catalogueLine.getID());
+        }
         quantityValidator = new QuantityValidator(catalogueLine.getGoodsItem().getContainingPackage().getQuantity());
         if(quantityValidator.bothFieldsPopulated()) {
             indexItem.addPackageAmounts(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getUnitCode(), Arrays.asList(catalogueLine.getGoodsItem().getContainingPackage().getQuantity().getValue().doubleValue()));
