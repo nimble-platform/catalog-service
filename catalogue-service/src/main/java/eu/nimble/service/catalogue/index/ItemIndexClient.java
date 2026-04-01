@@ -47,6 +47,7 @@ public class ItemIndexClient {
             catalogue = CataloguePersistenceUtil.getCatalogueByUuid(catalogue.getUUID());
 
             List<ItemType> indexItems = new ArrayList<>();
+            String catalogueUuid = catalogue.getUUID();
             for (CatalogueLineType catalogueLine : catalogue.getCatalogueLine()) {
                 // Catalogue lines with DRAFT status should not be indexed
                 if(catalogueLine.getProductStatusType().contentEquals(ProductStatus.DRAFT.toString())){
@@ -54,7 +55,7 @@ public class ItemIndexClient {
                     deleteCatalogueLine(catalogueLine.getHjid());
                     continue;
                 }
-                indexItems.add(IndexingWrapper.toIndexItem(catalogueLine));
+                indexItems.add(IndexingWrapper.toIndexItem(catalogueLine, catalogueUuid));
             }
             indexItemsJson = JsonSerializationUtility.getObjectMapper().writeValueAsString(indexItems);
 
@@ -113,7 +114,16 @@ public class ItemIndexClient {
         Response response;
         String indexItemJson;
         try {
-            ItemType indexItem = IndexingWrapper.toIndexItem(catalogueLine);
+            // Look up the parent catalogue UUID so catalogue-level ACLs are included in the index item
+            String catalogueUuid = null;
+            try {
+                String catalogueId = catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID();
+                String partyId = catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().get(0).getID();
+                catalogueUuid = CataloguePersistenceUtil.getCatalogueUUid(catalogueId, partyId);
+            } catch (Exception e) {
+                logger.warn("Could not resolve catalogue UUID for line {}, catalogue-level ACLs will not be applied", catalogueLine.getID());
+            }
+            ItemType indexItem = IndexingWrapper.toIndexItem(catalogueLine, catalogueUuid);
             indexItemJson = JsonSerializationUtility.getObjectMapper().writeValueAsString(indexItem);
 
         } catch (Exception e) {

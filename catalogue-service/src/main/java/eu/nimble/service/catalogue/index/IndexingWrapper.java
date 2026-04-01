@@ -44,7 +44,16 @@ public class IndexingWrapper {
     private static final List<String> languagePriorityForCustomProperties = Arrays.asList("en", "es", "de", "tr", "it");
     private static final String circularEconomyCertificateGroup = "Circular Economy (Environment / Sustainability)";
 
-    public static ItemType toIndexItem(CatalogueLineType catalogueLine) {
+    /**
+     * Transforms a CatalogueLineType into an ItemType suitable for Solr indexing,
+     * merging both line-level and catalogue-level permitted/restricted parties so that
+     * catalogue-level white/black list visibility is applied during search.
+     *
+     * @param catalogueLine the catalogue line to index
+     * @param catalogueUuid UUID of the parent catalogue (used to fetch catalogue-level ACLs);
+     *                      may be null, in which case only line-level ACLs are applied
+     */
+    public static ItemType toIndexItem(CatalogueLineType catalogueLine, String catalogueUuid) {
         ItemType indexItem = new ItemType();
 
         indexItem.setCatalogueId(catalogueLine.getGoodsItem().getItem().getCatalogueDocumentReference().getID());
@@ -67,9 +76,15 @@ public class IndexingWrapper {
         indexItem.setCreationDate(dateFormat.format(new Date()));
         indexItem.setCertificateType(getProductServiceCertificates(catalogueLine));
         indexItem.setCircularEconomyCertificates(getCircularEconomyRelatedCertificateNames(catalogueLine));
-        // resolve access control lists at line level
-        indexItem.setPermittedParties(new HashSet<>(CataloguePersistenceUtil.getPermittedPartiesForLine(catalogueLine.getID())));
-        indexItem.setRestrictedParties(new HashSet<>(CataloguePersistenceUtil.getRestrictedPartiesForLine(catalogueLine.getID())));
+        // resolve access control lists: merge line-level and catalogue-level parties
+        Set<String> permittedParties = new HashSet<>(CataloguePersistenceUtil.getPermittedPartiesForLine(catalogueLine.getID()));
+        Set<String> restrictedParties = new HashSet<>(CataloguePersistenceUtil.getRestrictedPartiesForLine(catalogueLine.getID()));
+        if (catalogueUuid != null) {
+            permittedParties.addAll(CataloguePersistenceUtil.getPermittedParties(catalogueUuid));
+            restrictedParties.addAll(CataloguePersistenceUtil.getRestrictedParties(catalogueUuid));
+        }
+        indexItem.setPermittedParties(permittedParties);
+        indexItem.setRestrictedParties(restrictedParties);
         AmountValidator amountValidator = new AmountValidator(catalogueLine.getRequiredItemLocationQuantity().getPrice().getPriceAmount());
         if(amountValidator.bothFieldsPopulated()) {
             if(catalogueLine.isPriceHidden() == null || !catalogueLine.isPriceHidden()){
@@ -127,6 +142,13 @@ public class IndexingWrapper {
         // platform name
         indexItem.setBasePlatform(SpringBridge.getInstance().getFederatedIndexPlatformName());
         return indexItem;
+    }
+
+    /**
+     * Backwards-compatible overload — no catalogue UUID, only line-level ACLs applied.
+     */
+    public static ItemType toIndexItem(CatalogueLineType catalogueLine) {
+        return toIndexItem(catalogueLine, null);
     }
 
     private static void transformAdditionalItemProperties(ItemType indexItem, CatalogueLineType catalogueLine) {
