@@ -105,6 +105,40 @@ public class EmailSenderUtil {
         emailService.send(emailList.toArray(new String[0]), new String[]{requesterUser.getContact().getElectronicMail()}, subject, "catalog_exchange", context);
     }
 
+    /**
+     * Sends a collaboration invitation email to a list of partner companies.
+     *
+     * @param senderUserName       full name of the user sending the invitation
+     * @param senderUserEmail      email of the sender (used as cc)
+     * @param senderCompanyName    display name of the sender's company
+     * @param partnerContacts      list of recipient email addresses (partner company users)
+     * @param partnerName          display name of the partner company
+     * @param collaborationContext name / description of the project or collaboration context
+     * @param message              optional personal message from the sender
+     */
+    public void sendCollaborationInvitation(String senderUserName, String senderUserEmail,
+                                            String senderCompanyName, List<String> partnerContacts,
+                                            String partnerName, String collaborationContext, String message) {
+        if (partnerContacts == null || partnerContacts.isEmpty()) {
+            logger.warn("No recipient contacts found for collaboration invitation to partner: {}", partnerName);
+            return;
+        }
+        String subject = "Collaboration Invitation from " + senderCompanyName;
+        Context context = new Context();
+        context.setVariable("senderUserName", senderUserName);
+        context.setVariable("senderCompanyName", senderCompanyName);
+        context.setVariable("partnerName", partnerName);
+        context.setVariable("collaborationContext", collaborationContext);
+        context.setVariable("message", message != null ? message : "");
+        context.setVariable("platformName", platformName);
+        context.setVariable("url", frontEndURL + "/#/dashboard");
+        String[] ccArray = (senderUserEmail != null && !senderUserEmail.trim().isEmpty())
+                ? new String[]{senderUserEmail} : new String[0];
+        emailService.send(partnerContacts.toArray(new String[0]),
+                ccArray, subject, "collaboration_invite", context);
+        logger.info("Collaboration invitation sent from {} to {}", senderCompanyName, partnerName);
+    }
+
     public void offerProducts(String offerDetails, List<String> vatNumbers, List<String> catalogueUuids, List<String> lineIds, String companyName) throws IOException, UnirestException {
         String url = eFactoryAccessTokenUri;
         RestTemplate restTemplate = new RestTemplate();

@@ -251,6 +251,69 @@ public class CatalogueController {
         return ResponseEntity.ok(null);
     }
 
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Sends collaboration invitation emails to the given partner companies")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Collaboration invitations sent successfully"),
+            @ApiResponse(code = 401, message = "Invalid role."),
+            @ApiResponse(code = 500, message = "Unexpected error while sending collaboration invitations")
+    })
+    @RequestMapping(value = "/catalogue/collaboration-invite",
+            produces = {"application/json"},
+            method = RequestMethod.POST)
+    public ResponseEntity sendCollaborationInvitation(
+            @ApiParam(value = "IDs of the partner parties to invite", required = true) @RequestParam(value = "partnerPartyIds") List<String> partnerPartyIds,
+            @ApiParam(value = "Name or description of the collaboration context (project name, supply chain etc.)", required = true) @RequestParam(value = "collaborationContext") String collaborationContext,
+            @ApiParam(value = "Optional personal message from the sender") @RequestParam(value = "message", required = false) String message,
+            @ApiParam(value = "The Bearer token provided by the identity service", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+
+        String requestLog = String.format("Incoming request to send collaboration invitations to parties: %s, context: %s", partnerPartyIds, collaborationContext);
+        executionContext.setRequestLog(requestLog);
+        log.info(requestLog);
+
+        if (!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_CATALOGUE_READ)) {
+            throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
+        }
+
+        try {
+            // get sender person and company
+            PersonType sender = SpringBridge.getInstance().getiIdentityClientTyped().getPerson(bearerToken);
+            PartyType senderParty = SpringBridge.getInstance().getiIdentityClientTyped().getPartyByPersonID(sender.getID()).get(0);
+            String senderCompanyName = senderParty.getPartyName().get(0).getName().getValue();
+            String senderUserName = sender.getFirstName() + " " + sender.getFamilyName();
+            String senderEmail = sender.getContact().getElectronicMail();
+
+            // send invitation to each partner party
+            for (String partyId : partnerPartyIds) {
+                try {
+                    PartyType partnerParty = SpringBridge.getInstance().getiIdentityClientTyped().getParty(bearerToken, partyId, true);
+                    String partnerName = partnerParty.getPartyName().get(0).getName().getValue();
+
+                    // collect contact emails from partner's persons (legal rep, sales officer, or any available)
+                    List<String> contactEmails = new ArrayList<>();
+                    for (PersonType p : partnerParty.getPerson()) {
+                        if (p.getContact() != null && p.getContact().getElectronicMail() != null
+                                && !p.getContact().getElectronicMail().trim().isEmpty()) {
+                            contactEmails.add(p.getContact().getElectronicMail());
+                        }
+                    }
+
+                    emailSenderUtil.sendCollaborationInvitation(senderUserName, senderEmail,
+                            senderCompanyName, contactEmails, partnerName, collaborationContext, message);
+
+                } catch (Exception e) {
+                    log.warn("Failed to send collaboration invitation to party {}: {}", partyId, e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_REQUEST_CATALOGUE_EXCHANGE.toString(),
+                    Arrays.asList(String.valueOf(partnerPartyIds), collaborationContext), e);
+        }
+
+        log.info("Completed sending collaboration invitations to parties: {}", partnerPartyIds);
+        return ResponseEntity.ok(null);
+    }
+
     private <T> T parseCatalogue(String contentType, String serializedCatalogue, Configuration.Standard standard) throws IOException {
         T catalogue = null;
         if (contentType.contentEquals(MediaType.APPLICATION_XML_VALUE)) {

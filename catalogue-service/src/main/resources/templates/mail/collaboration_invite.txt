@@ -1,0 +1,13 @@
+Dear [(${partnerName})],
+
+[(${senderUserName})] from [(${senderCompanyName})] (cc'd) would like to invite you to collaborate on the following project:
+
+Project / Collaboration Context: [(${collaborationContext})]
+
+[(${message})]
+
+You can view your collaboration workspace and respond via the [(${platformName})] platform:
+[(${url})]
+
+Sincerely,
+[(${platformName})] Notification Service
