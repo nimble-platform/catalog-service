@@ -3,6 +3,7 @@ package eu.nimble.service.catalogue.persistence.util;
 import eu.nimble.service.catalogue.PostgreDemandIndexServiceImpl;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandInterestCount;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandLastSeenInfo;
+import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandResponseType;
 import eu.nimble.service.model.ubl.commonaggregatecomponents.DemandType;
 import eu.nimble.utility.persistence.GenericJPARepositoryImpl;
 import eu.nimble.utility.persistence.JPARepositoryFactory;
@@ -11,6 +12,38 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DemandPersistenceUtil {
+    // HCDP-03-03: Demand Response queries
+    private static final String QUERY_GET_DEMAND_RESPONSES =
+            "SELECT r FROM DemandResponseType r WHERE r.demandHJID = :demandHjid ORDER BY r.createdDate DESC";
+    private static final String QUERY_GET_DEMAND_RESPONSE_COUNT =
+            "SELECT COUNT(r.hjid) FROM DemandResponseType r WHERE r.demandHJID = :demandHjid";
+    private static final String QUERY_GET_DEMAND_RESPONSE_BY_HJID =
+            "SELECT r FROM DemandResponseType r WHERE r.hjid = :hjid";
+
+    public static List<DemandResponseType> getDemandResponses(long demandHjid) {
+        return new JPARepositoryFactory().forCatalogueRepository().getEntities(
+                QUERY_GET_DEMAND_RESPONSES, new String[]{"demandHjid"}, new Object[]{demandHjid});
+    }
+
+    public static long getDemandResponseCount(long demandHjid) {
+        Long count = new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(
+                QUERY_GET_DEMAND_RESPONSE_COUNT, new String[]{"demandHjid"}, new Object[]{demandHjid});
+        return count != null ? count : 0L;
+    }
+
+    public static DemandResponseType getDemandResponseByHjid(Long hjid) {
+        return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(
+                QUERY_GET_DEMAND_RESPONSE_BY_HJID, new String[]{"hjid"}, new Object[]{hjid});
+    }
+
+    public static void saveDemandResponse(DemandResponseType response) {
+        new JPARepositoryFactory().forCatalogueRepository().persistEntity(response);
+    }
+
+    public static void deleteDemandResponse(DemandResponseType response) {
+        new JPARepositoryFactory().forCatalogueRepository().deleteEntity(response);
+    }
+
     private static final String QUERY_GET_DEMANDS_FOR_COMPANY =
             "SELECT demand FROM DemandType demand" +
                     " JOIN demand.metadata metadata" +

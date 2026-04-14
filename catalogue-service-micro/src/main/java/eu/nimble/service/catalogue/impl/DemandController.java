@@ -452,6 +452,142 @@ public class DemandController {
         }
     }
 
+    // =========================================================================
+    // HCDP-03-03: Demand Response endpoints
+    // =========================================================================
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Submits a supplier's offer in response to a demand.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Response submitted successfully"),
+            @ApiResponse(code = 401, message = "Invalid token"),
+            @ApiResponse(code = 403, message = "Cannot respond to own demand"),
+            @ApiResponse(code = 404, message = "Demand not found"),
+            @ApiResponse(code = 500, message = "Unexpected error while submitting demand response"),
+    })
+    @RequestMapping(value = "/demands/{demandHjid}/responses",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity submitDemandResponse(
+            @ApiParam(value = "Demand hjid", required = true) @PathVariable Long demandHjid,
+            @ApiParam(value = "Demand response payload", required = true) @RequestBody DemandResponseType response,
+            @ApiParam(value = "Bearer token", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        try {
+            String requestLog = String.format("Incoming request to submit demand response for demand: %d", demandHjid);
+            executionContext.setRequestLog(requestLog);
+            logger.info(requestLog);
+
+            if (!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_CATALOGUE_WRITE)) {
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
+            }
+
+            DemandType demand = new JPARepositoryFactory().forCatalogueRepository(true).getSingleEntityByHjid(DemandType.class, demandHjid);
+            if (demand == null) {
+                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_DEMAND.toString(), Collections.singletonList(demandHjid.toString()));
+            }
+
+            PersonPartyTuple personPartyTuple = identityClient.getPersonPartyTuple(bearerToken);
+            String responderCompanyId = personPartyTuple.getCompanyID();
+
+            // prevent buyer from responding to their own demand
+            if (MetadataUtility.isOwnerCompany(responderCompanyId, demand.getMetadata())) {
+                throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_CANNOT_RESPOND_TO_OWN_DEMAND.toString());
+            }
+
+            response.setDemandHJID(demandHjid);
+            response.setResponderCompanyId(responderCompanyId);
+            response.setCreatedDate(new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()));
+
+            DemandPersistenceUtil.saveDemandResponse(response);
+
+            logger.info("Completed request to submit demand response for demand: {}", demandHjid);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response.getHjid());
+
+        } catch (NimbleException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_SUBMIT_DEMAND_RESPONSE.toString(), e);
+        }
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Gets all supplier responses for a demand.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Retrieved responses successfully"),
+            @ApiResponse(code = 401, message = "Invalid token"),
+            @ApiResponse(code = 500, message = "Unexpected error while getting demand responses"),
+    })
+    @RequestMapping(value = "/demands/{demandHjid}/responses",
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity getDemandResponses(
+            @ApiParam(value = "Demand hjid", required = true) @PathVariable Long demandHjid,
+            @ApiParam(value = "Bearer token", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        try {
+            String requestLog = String.format("Incoming request to get demand responses for demand: %d", demandHjid);
+            executionContext.setRequestLog(requestLog);
+            logger.info(requestLog);
+
+            List<DemandResponseType> responses = DemandPersistenceUtil.getDemandResponses(demandHjid);
+
+            logger.info("Completed request to get demand responses for demand: {}", demandHjid);
+            return ResponseEntity.status(HttpStatus.OK).body(JsonSerializationUtility.getObjectMapper().writeValueAsString(responses));
+
+        } catch (Exception e) {
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_GET_DEMAND_RESPONSES.toString(), e);
+        }
+    }
+
+    @CrossOrigin(origins = {"*"})
+    @ApiOperation(value = "", notes = "Deletes a demand response.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Deleted response successfully"),
+            @ApiResponse(code = 401, message = "Invalid token"),
+            @ApiResponse(code = 404, message = "Response not found"),
+            @ApiResponse(code = 500, message = "Unexpected error while deleting demand response"),
+    })
+    @RequestMapping(value = "/demands/{demandHjid}/responses/{responseHjid}",
+            method = RequestMethod.DELETE)
+    public ResponseEntity deleteDemandResponse(
+            @ApiParam(value = "Demand hjid", required = true) @PathVariable Long demandHjid,
+            @ApiParam(value = "Response hjid", required = true) @PathVariable Long responseHjid,
+            @ApiParam(value = "Bearer token", required = true) @RequestHeader(value = "Authorization") String bearerToken) {
+        try {
+            String requestLog = String.format("Incoming request to delete demand response: %d for demand: %d", responseHjid, demandHjid);
+            executionContext.setRequestLog(requestLog);
+            logger.info(requestLog);
+
+            if (!validationUtil.validateRole(bearerToken, executionContext.getUserRoles(), RoleConfig.REQUIRED_ROLES_CATALOGUE_WRITE)) {
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZED_INVALID_ROLE.toString());
+            }
+
+            DemandResponseType response = DemandPersistenceUtil.getDemandResponseByHjid(responseHjid);
+            if (response == null) {
+                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_DEMAND_RESPONSE.toString(), Collections.singletonList(responseHjid.toString()));
+            }
+
+            // only the responder or the demand owner can delete
+            PersonPartyTuple personPartyTuple = identityClient.getPersonPartyTuple(bearerToken);
+            String callerCompanyId = personPartyTuple.getCompanyID();
+            DemandType demand = new JPARepositoryFactory().forCatalogueRepository(true).getSingleEntityByHjid(DemandType.class, demandHjid);
+            boolean isResponder = callerCompanyId.equals(response.getResponderCompanyId());
+            boolean isDemandOwner = demand != null && MetadataUtility.isOwnerCompany(callerCompanyId, demand.getMetadata());
+            if (!isResponder && !isDemandOwner) {
+                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZER_INVALID_AUTHORIZATION.toString());
+            }
+
+            DemandPersistenceUtil.deleteDemandResponse(response);
+
+            logger.info("Completed request to delete demand response: {} for demand: {}", responseHjid, demandHjid);
+            return ResponseEntity.ok().build();
+
+        } catch (NimbleException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_DELETE_DEMAND_RESPONSE.toString(), e);
+        }
+    }
+
     private void inviteCompaniesToDemandDetails(DemandType demand, String bearerToken, String languageId){
         new Thread(() -> {
             identityClient.inviteCompaniesToDemandDetails(demand, bearerToken,languageId);
