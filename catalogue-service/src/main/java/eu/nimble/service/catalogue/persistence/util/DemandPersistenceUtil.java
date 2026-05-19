@@ -19,6 +19,10 @@ public class DemandPersistenceUtil {
             "SELECT COUNT(r.hjid) FROM DemandResponseType r WHERE r.demandHJID = :demandHjid";
     private static final String QUERY_GET_DEMAND_RESPONSE_BY_HJID =
             "SELECT r FROM DemandResponseType r WHERE r.hjid = :hjid";
+    private static final String QUERY_FIND_DUPLICATE_DEMAND_RESPONSE =
+            "SELECT r FROM DemandResponseType r WHERE r.demandHJID = :demandHjid" +
+                    " AND r.responderCompanyId = :responderCompanyId" +
+                    " AND r.catalogueLineHjid = :catalogueLineHjid";
 
     public static List<DemandResponseType> getDemandResponses(long demandHjid) {
         return new JPARepositoryFactory().forCatalogueRepository().getEntities(
@@ -34,6 +38,13 @@ public class DemandPersistenceUtil {
     public static DemandResponseType getDemandResponseByHjid(Long hjid) {
         return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(
                 QUERY_GET_DEMAND_RESPONSE_BY_HJID, new String[]{"hjid"}, new Object[]{hjid});
+    }
+
+    public static DemandResponseType findDuplicateDemandResponse(long demandHjid, String responderCompanyId, long catalogueLineHjid) {
+        return new JPARepositoryFactory().forCatalogueRepository().getSingleEntity(
+                QUERY_FIND_DUPLICATE_DEMAND_RESPONSE,
+                new String[]{"demandHjid", "responderCompanyId", "catalogueLineHjid"},
+                new Object[]{demandHjid, responderCompanyId, catalogueLineHjid});
     }
 
     public static void saveDemandResponse(DemandResponseType response) {

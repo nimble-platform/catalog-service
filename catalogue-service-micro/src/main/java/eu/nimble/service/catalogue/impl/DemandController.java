@@ -461,8 +461,9 @@ public class DemandController {
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Response submitted successfully"),
             @ApiResponse(code = 401, message = "Invalid token"),
-            @ApiResponse(code = 403, message = "Cannot respond to own demand"),
-            @ApiResponse(code = 404, message = "Demand not found"),
+            @ApiResponse(code = 403, message = "Cannot respond to own demand or product belongs to another supplier"),
+            @ApiResponse(code = 404, message = "Demand or catalogue line not found"),
+            @ApiResponse(code = 409, message = "This product already suggested for this demand"),
             @ApiResponse(code = 500, message = "Unexpected error while submitting demand response"),
     })
     @RequestMapping(value = "/demands/{demandHjid}/responses",
@@ -494,8 +495,45 @@ public class DemandController {
                 throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_CANNOT_RESPOND_TO_OWN_DEMAND.toString());
             }
 
+            // load the catalogue line from DB and verify that it belongs to the responder
+            long catalogueLineHjid = response.getCatalogueLineHjid();
+            CatalogueLineType catalogueLine = new JPARepositoryFactory().forCatalogueRepository(true)
+                    .getSingleEntityByHjid(CatalogueLineType.class, catalogueLineHjid);
+            if (catalogueLine == null
+                    || catalogueLine.getGoodsItem() == null
+                    || catalogueLine.getGoodsItem().getItem() == null
+                    || catalogueLine.getGoodsItem().getItem().getManufacturerParty() == null
+                    || catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification() == null
+                    || catalogueLine.getGoodsItem().getItem().getManufacturerParty().getPartyIdentification().isEmpty()) {
+                throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_CANNOT_SUBMIT_OTHERS_PRODUCT.toString());
+            }
+            ItemType item = catalogueLine.getGoodsItem().getItem();
+            String manufacturerPartyId = item.getManufacturerParty().getPartyIdentification().get(0).getID();
+            if (!responderCompanyId.equals(manufacturerPartyId)) {
+                throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_CANNOT_SUBMIT_OTHERS_PRODUCT.toString());
+            }
+
+            // duplicate guard: same (demand, responder, catalogue line) cannot be submitted twice
+            DemandResponseType duplicate = DemandPersistenceUtil.findDuplicateDemandResponse(
+                    demandHjid, responderCompanyId, catalogueLineHjid);
+            if (duplicate != null) {
+                throw new NimbleException(NimbleExceptionMessageCode.CONFLICT_DEMAND_RESPONSE_ALREADY_EXISTS.toString());
+            }
+
+            // server-side enrichment: ignore client-supplied product/company fields and re-derive from DB
+            String dbProductName = (item.getName() != null && !item.getName().isEmpty() && item.getName().get(0) != null)
+                    ? item.getName().get(0).getValue() : "";
+            String dbLineId = catalogueLine.getID() != null ? catalogueLine.getID() : "";
+            String dbCatalogueUuid = (item.getCatalogueDocumentReference() != null && item.getCatalogueDocumentReference().getID() != null)
+                    ? item.getCatalogueDocumentReference().getID() : "";
+            String dbResponderName = resolveCompanyName(item, responderCompanyId, bearerToken);
+
             response.setDemandHJID(demandHjid);
             response.setResponderCompanyId(responderCompanyId);
+            response.setResponderCompanyName(dbResponderName);
+            response.setProductName(dbProductName);
+            response.setLineId(dbLineId);
+            response.setCatalogueUuid(dbCatalogueUuid);
             response.setCreatedDate(new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()));
 
             DemandPersistenceUtil.saveDemandResponse(response);
@@ -511,10 +549,12 @@ public class DemandController {
     }
 
     @CrossOrigin(origins = {"*"})
-    @ApiOperation(value = "", notes = "Gets all supplier responses for a demand.")
+    @ApiOperation(value = "", notes = "Gets all supplier responses for a demand. Only the demand owner may view them.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Retrieved responses successfully"),
             @ApiResponse(code = 401, message = "Invalid token"),
+            @ApiResponse(code = 403, message = "Only the demand owner can view responses"),
+            @ApiResponse(code = 404, message = "Demand not found"),
             @ApiResponse(code = 500, message = "Unexpected error while getting demand responses"),
     })
     @RequestMapping(value = "/demands/{demandHjid}/responses",
@@ -528,21 +568,34 @@ public class DemandController {
             executionContext.setRequestLog(requestLog);
             logger.info(requestLog);
 
+            // restrict to demand owner only — competitor suppliers must not read each other's offers
+            DemandType demand = new JPARepositoryFactory().forCatalogueRepository(true).getSingleEntityByHjid(DemandType.class, demandHjid);
+            if (demand == null) {
+                throw new NimbleException(NimbleExceptionMessageCode.NOT_FOUND_NO_DEMAND.toString(), Collections.singletonList(demandHjid.toString()));
+            }
+            PersonPartyTuple personPartyTuple = identityClient.getPersonPartyTuple(bearerToken);
+            if (!MetadataUtility.isOwnerCompany(personPartyTuple.getCompanyID(), demand.getMetadata())) {
+                throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_CANNOT_VIEW_DEMAND_RESPONSES.toString());
+            }
+
             List<DemandResponseType> responses = DemandPersistenceUtil.getDemandResponses(demandHjid);
 
             logger.info("Completed request to get demand responses for demand: {}", demandHjid);
             return ResponseEntity.status(HttpStatus.OK).body(JsonSerializationUtility.getObjectMapper().writeValueAsString(responses));
 
+        } catch (NimbleException e) {
+            throw e;
         } catch (Exception e) {
             throw new NimbleException(NimbleExceptionMessageCode.INTERNAL_SERVER_ERROR_FAILED_TO_GET_DEMAND_RESPONSES.toString(), e);
         }
     }
 
     @CrossOrigin(origins = {"*"})
-    @ApiOperation(value = "", notes = "Deletes a demand response.")
+    @ApiOperation(value = "", notes = "Deletes a demand response. Only the responder or the demand owner may delete.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Deleted response successfully"),
             @ApiResponse(code = 401, message = "Invalid token"),
+            @ApiResponse(code = 403, message = "Only the responder or demand owner can delete"),
             @ApiResponse(code = 404, message = "Response not found"),
             @ApiResponse(code = 500, message = "Unexpected error while deleting demand response"),
     })
@@ -570,10 +623,10 @@ public class DemandController {
             PersonPartyTuple personPartyTuple = identityClient.getPersonPartyTuple(bearerToken);
             String callerCompanyId = personPartyTuple.getCompanyID();
             DemandType demand = new JPARepositoryFactory().forCatalogueRepository(true).getSingleEntityByHjid(DemandType.class, demandHjid);
-            boolean isResponder = callerCompanyId.equals(response.getResponderCompanyId());
+            boolean isResponder = callerCompanyId != null && callerCompanyId.equals(response.getResponderCompanyId());
             boolean isDemandOwner = demand != null && MetadataUtility.isOwnerCompany(callerCompanyId, demand.getMetadata());
             if (!isResponder && !isDemandOwner) {
-                throw new NimbleException(NimbleExceptionMessageCode.UNAUTHORIZER_INVALID_AUTHORIZATION.toString());
+                throw new NimbleException(NimbleExceptionMessageCode.FORBIDDEN_CANNOT_DELETE_DEMAND_RESPONSE.toString());
             }
 
             DemandPersistenceUtil.deleteDemandResponse(response);
@@ -592,6 +645,40 @@ public class DemandController {
         new Thread(() -> {
             identityClient.inviteCompaniesToDemandDetails(demand, bearerToken,languageId);
         }).start();
+    }
+
+    /**
+     * Resolves the responder's display name for a demand response.
+     * Priority: catalogue line's manufacturerParty.partyName → identity-service party.partyName → responderCompanyId.
+     * Never returns null; never trusts client input.
+     */
+    private String resolveCompanyName(ItemType item, String responderCompanyId, String bearerToken) {
+        // 1. try the manufacturer party already attached to the catalogue line
+        if (item != null && item.getManufacturerParty() != null
+                && item.getManufacturerParty().getPartyName() != null
+                && !item.getManufacturerParty().getPartyName().isEmpty()
+                && item.getManufacturerParty().getPartyName().get(0) != null
+                && item.getManufacturerParty().getPartyName().get(0).getName() != null) {
+            String partyName = item.getManufacturerParty().getPartyName().get(0).getName().getValue();
+            if (partyName != null && !partyName.trim().isEmpty()) {
+                return partyName;
+            }
+        }
+        // 2. fall back to identity-service lookup
+        try {
+            PartyType party = identityClient.getParty(bearerToken, responderCompanyId, false);
+            if (party != null && party.getPartyName() != null && !party.getPartyName().isEmpty()
+                    && party.getPartyName().get(0) != null && party.getPartyName().get(0).getName() != null) {
+                String n = party.getPartyName().get(0).getName().getValue();
+                if (n != null && !n.trim().isEmpty()) {
+                    return n;
+                }
+            }
+        } catch (Exception ex) {
+            logger.warn("Failed to resolve party name from identity service for partyId={}", responderCompanyId, ex);
+        }
+        // 3. last resort: company id (never empty)
+        return responderCompanyId;
     }
 
     private String normalizeQueryTerm(String query) {
